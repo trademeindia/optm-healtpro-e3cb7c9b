@@ -1,104 +1,138 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  Heart, Activity, Thermometer, Droplet, Brain, Microscope, 
-  Plus, Search, Filter, ArrowUpDown, FileText, Download
-} from 'lucide-react';
-
-import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Search, Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import BiomarkerCard from '@/components/dashboard/BiomarkerCard';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  status: 'low' | 'normal' | 'elevated' | 'critical';
+  timestamp: string;
+  patientId: string;
+  patientName: string;
+}
 
 const BiomarkersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
-  // Sample biomarker categories
-  const categories = [
-    { id: "all", label: "All Biomarkers" },
-    { id: "inflammation", label: "Inflammation" },
-    { id: "cardiac", label: "Cardiac" },
-    { id: "metabolic", label: "Metabolic" },
-    { id: "hormonal", label: "Hormonal" }
-  ];
-
-  // Sample biomarker data
-  const biomarkerData = [
+  const biomarkers: Biomarker[] = [
     {
-      id: 1,
+      id: "1",
       name: "C-Reactive Protein (CRP)",
       value: 5.5,
       unit: "mg/L",
       normalRange: "0.0 - 8.0",
       status: "normal",
-      category: "inflammation",
-      lastUpdated: "Jun 10, 2023",
-      patient: "Nikolas Pascal"
+      timestamp: "2023-06-10T14:30:00",
+      patientId: "P001",
+      patientName: "Nikolas Pascal"
     },
     {
-      id: 2,
+      id: "2",
       name: "Interleukin-6 (IL-6)",
       value: 12.8,
       unit: "pg/mL",
       normalRange: "0.0 - 7.0",
       status: "elevated",
-      category: "inflammation",
-      lastUpdated: "Jun 10, 2023",
-      patient: "Nikolas Pascal"
+      timestamp: "2023-06-10T14:30:00",
+      patientId: "P001",
+      patientName: "Nikolas Pascal"
     },
     {
-      id: 3,
-      name: "Troponin I",
-      value: 0.02,
-      unit: "ng/mL",
-      normalRange: "0.0 - 0.04",
-      status: "normal",
-      category: "cardiac",
-      lastUpdated: "Jun 12, 2023",
-      patient: "Emma Rodriguez"
-    },
-    {
-      id: 4,
-      name: "Blood Glucose (Fasting)",
-      value: 105,
-      unit: "mg/dL",
-      normalRange: "70 - 100",
+      id: "3",
+      name: "Tumor Necrosis Factor (TNF-α)",
+      value: 22.3,
+      unit: "pg/mL",
+      normalRange: "0.0 - 15.0",
       status: "elevated",
-      category: "metabolic",
-      lastUpdated: "Jun 15, 2023",
-      patient: "Marcus Johnson"
+      timestamp: "2023-06-10T14:30:00",
+      patientId: "P001",
+      patientName: "Nikolas Pascal"
     },
     {
-      id: 5,
-      name: "Thyroid Stimulating Hormone (TSH)",
-      value: 2.5,
-      unit: "μIU/mL",
-      normalRange: "0.4 - 4.0",
+      id: "4",
+      name: "Erythrocyte Sedimentation Rate (ESR)",
+      value: 28,
+      unit: "mm/hr",
+      normalRange: "0 - 22",
+      status: "elevated",
+      timestamp: "2023-06-09T10:15:00",
+      patientId: "P002",
+      patientName: "Emma Rodriguez"
+    },
+    {
+      id: "5",
+      name: "White Blood Cell Count (WBC)",
+      value: 8.5,
+      unit: "K/μL",
+      normalRange: "4.5 - 11.0",
       status: "normal",
-      category: "hormonal",
-      lastUpdated: "Jun 8, 2023",
-      patient: "Emma Rodriguez"
+      timestamp: "2023-06-09T10:15:00",
+      patientId: "P002",
+      patientName: "Emma Rodriguez"
+    },
+    {
+      id: "6",
+      name: "Hemoglobin A1c (HbA1c)",
+      value: 5.7,
+      unit: "%",
+      normalRange: "4.0 - 5.6",
+      status: "elevated",
+      timestamp: "2023-06-08T09:00:00",
+      patientId: "P003",
+      patientName: "Marcus Johnson"
+    },
+    {
+      id: "7",
+      name: "Creatine Kinase (CK)",
+      value: 350,
+      unit: "U/L",
+      normalRange: "30 - 200",
+      status: "elevated",
+      timestamp: "2023-06-12T11:45:00",
+      patientId: "P003",
+      patientName: "Marcus Johnson"
     }
   ];
 
+  const filteredBiomarkers = biomarkers.filter(biomarker => {
+    if (activeTab !== "all" && biomarker.status !== activeTab) {
+      return false;
+    }
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        biomarker.name.toLowerCase().includes(query) ||
+        biomarker.patientName.toLowerCase().includes(query)
+      );
+    }
+    
+    return true;
+  });
+
   const handleAddBiomarker = () => {
     toast({
-      title: "Biomarker Added",
-      description: "New biomarker has been successfully added to the system.",
+      title: "Add Biomarker",
+      description: "Biomarker form would open here."
     });
-    setShowAddDialog(false);
   };
 
   const handleExportData = () => {
     toast({
-      title: "Export Started",
-      description: "Biomarker data is being exported to CSV format.",
+      title: "Export Data",
+      description: "Biomarker data export started."
     });
   };
 
@@ -111,11 +145,11 @@ const BiomarkersPage: React.FC = () => {
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
           <div className="mb-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">Biomarkers</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Track and analyze patient biomarkers and health indicators
+                  Track and analyze patient biomarkers and inflammation indicators
                 </p>
               </div>
               
@@ -125,24 +159,17 @@ const BiomarkersPage: React.FC = () => {
                   <Input 
                     placeholder="Search biomarkers..." 
                     className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 
                 <Button 
                   className="gap-1.5" 
-                  onClick={() => setShowAddDialog(true)}
+                  onClick={handleAddBiomarker}
                 >
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:inline">Add Biomarker</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="gap-1.5"
-                  onClick={handleExportData}
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="hidden md:inline">Export</span>
                 </Button>
               </div>
             </div>
@@ -154,100 +181,126 @@ const BiomarkersPage: React.FC = () => {
               className="w-full"
             >
               <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
-                {categories.map(category => (
-                  <TabsTrigger key={category.id} value={category.id} className="rounded-md">
-                    {category.label}
-                  </TabsTrigger>
-                ))}
+                <TabsTrigger value="all" className="rounded-md">
+                  All Biomarkers
+                </TabsTrigger>
+                <TabsTrigger value="normal" className="rounded-md">
+                  Normal
+                </TabsTrigger>
+                <TabsTrigger value="elevated" className="rounded-md">
+                  Elevated
+                </TabsTrigger>
+                <TabsTrigger value="critical" className="rounded-md">
+                  Critical
+                </TabsTrigger>
+                <TabsTrigger value="low" className="rounded-md">
+                  Low
+                </TabsTrigger>
               </TabsList>
               
-              {categories.map(category => (
-                <TabsContent key={category.id} value={category.id} className="mt-0 space-y-4">
-                  {biomarkerData
-                    .filter(biomarker => category.id === "all" || biomarker.category === category.id)
-                    .map(biomarker => (
-                      <BiomarkerCard
-                        key={biomarker.id}
-                        name={biomarker.name}
-                        value={biomarker.value}
-                        unit={biomarker.unit}
-                        normalRange={biomarker.normalRange}
-                        status={biomarker.status}
-                        lastUpdated={biomarker.lastUpdated}
-                        patientName={biomarker.patient}
-                      />
-                    ))
-                  }
-                </TabsContent>
-              ))}
+              <TabsContent value="all" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBiomarkers.map(biomarker => (
+                    <BiomarkerCard
+                      key={biomarker.id}
+                      name={biomarker.name}
+                      value={biomarker.value}
+                      unit={biomarker.unit}
+                      normalRange={biomarker.normalRange}
+                      status={biomarker.status}
+                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="normal" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBiomarkers.map(biomarker => (
+                    <BiomarkerCard
+                      key={biomarker.id}
+                      name={biomarker.name}
+                      value={biomarker.value}
+                      unit={biomarker.unit}
+                      normalRange={biomarker.normalRange}
+                      status={biomarker.status}
+                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="elevated" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBiomarkers.map(biomarker => (
+                    <BiomarkerCard
+                      key={biomarker.id}
+                      name={biomarker.name}
+                      value={biomarker.value}
+                      unit={biomarker.unit}
+                      normalRange={biomarker.normalRange}
+                      status={biomarker.status}
+                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="critical" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBiomarkers.map(biomarker => (
+                    <BiomarkerCard
+                      key={biomarker.id}
+                      name={biomarker.name}
+                      value={biomarker.value}
+                      unit={biomarker.unit}
+                      normalRange={biomarker.normalRange}
+                      status={biomarker.status}
+                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="low" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBiomarkers.map(biomarker => (
+                    <BiomarkerCard
+                      key={biomarker.id}
+                      name={biomarker.name}
+                      value={biomarker.value}
+                      unit={biomarker.unit}
+                      normalRange={biomarker.normalRange}
+                      status={biomarker.status}
+                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         </main>
       </div>
-      
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Biomarker</DialogTitle>
-            <DialogDescription>
-              Enter the biomarker details for the patient record.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Biomarker Name</label>
-              <Input placeholder="e.g., C-Reactive Protein (CRP)" />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Value</label>
-                <Input type="number" step="0.01" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Unit</label>
-                <Input placeholder="e.g., mg/L" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Normal Range</label>
-              <Input placeholder="e.g., 0.0 - 8.0" />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
-              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option value="inflammation">Inflammation</option>
-                <option value="cardiac">Cardiac</option>
-                <option value="metabolic">Metabolic</option>
-                <option value="hormonal">Hormonal</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Patient</label>
-              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option value="1">Nikolas Pascal</option>
-                <option value="2">Emma Rodriguez</option>
-                <option value="3">Marcus Johnson</option>
-              </select>
-            </div>
-          </div>
-          
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddBiomarker}>
-              Add Biomarker
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

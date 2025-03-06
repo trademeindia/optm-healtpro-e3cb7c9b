@@ -8,6 +8,9 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import PatientDashboard from "./pages/PatientDashboard";
+import BiomarkersPage from "./pages/BiomarkersPage";
+import AppointmentsPage from "./pages/AppointmentsPage";
+import ReportsPage from "./pages/ReportsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -64,17 +67,17 @@ const AppRoutes = () => {
       } />
       <Route path="/biomarkers" element={
         <ProtectedRoute allowedRoles={['doctor']}>
-          <Dashboard />
+          <BiomarkersPage />
         </ProtectedRoute>
       } />
       <Route path="/appointments" element={
         <ProtectedRoute allowedRoles={['doctor']}>
-          <Dashboard />
+          <AppointmentsPage />
         </ProtectedRoute>
       } />
       <Route path="/reports" element={
         <ProtectedRoute allowedRoles={['doctor']}>
-          <Dashboard />
+          <ReportsPage />
         </ProtectedRoute>
       } />
       <Route path="/analytics" element={

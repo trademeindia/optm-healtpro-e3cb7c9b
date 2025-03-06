@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     { 
       icon: LayoutDashboard, 
       label: 'Dashboard', 
-      path: '/',
+      path: '/dashboard',
       description: 'Overview of patient data and clinical metrics'
     },
     { 
