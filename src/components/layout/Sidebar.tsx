@@ -43,17 +43,57 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   }, []);
   
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: Users, label: 'Patients', path: '/patients' },
-    { icon: HeartPulse, label: 'Biomarkers', path: '/biomarkers' },
-    { icon: Calendar, label: 'Appointments', path: '/appointments' },
-    { icon: FileText, label: 'Reports', path: '/reports' },
-    { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+    { 
+      icon: LayoutDashboard, 
+      label: 'Dashboard', 
+      path: '/',
+      description: 'Overview of patient data and clinical metrics'
+    },
+    { 
+      icon: Users, 
+      label: 'Patients', 
+      path: '/patients',
+      description: 'Manage patient records and information'
+    },
+    { 
+      icon: HeartPulse, 
+      label: 'Biomarkers', 
+      path: '/biomarkers',
+      description: 'Track key health indicators and lab results'
+    },
+    { 
+      icon: Calendar, 
+      label: 'Appointments', 
+      path: '/appointments',
+      description: 'Schedule and manage patient appointments'
+    },
+    { 
+      icon: FileText, 
+      label: 'Reports', 
+      path: '/reports',
+      description: 'Access and create clinical reports and documentation'
+    },
+    { 
+      icon: BarChart2, 
+      label: 'Analytics', 
+      path: '/analytics',
+      description: 'Visualize clinical data and treatment outcomes'
+    },
   ];
 
   const bottomMenuItems = [
-    { icon: Settings, label: 'Settings', path: '/settings' },
-    { icon: HelpCircle, label: 'Help', path: '/help' },
+    { 
+      icon: Settings, 
+      label: 'Settings', 
+      path: '/settings',
+      description: 'Configure application preferences'
+    },
+    { 
+      icon: HelpCircle, 
+      label: 'Help', 
+      path: '/help',
+      description: 'Get assistance and support'
+    },
   ];
 
   const toggleSidebar = () => {
@@ -96,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <Link
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative",
                     location.pathname === item.path
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
@@ -108,6 +148,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     location.pathname === item.path ? "text-primary" : "text-foreground/70"
                   )} />
                   {item.label}
+                  
+                  {/* Tooltip for description - only shown on desktop */}
+                  <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
+                    {item.description}
+                  </div>
                 </Link>
               </li>
             ))}
@@ -121,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <Link
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative",
                     location.pathname === item.path
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
@@ -133,6 +178,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     location.pathname === item.path ? "text-primary" : "text-foreground/70"
                   )} />
                   {item.label}
+                  
+                  {/* Tooltip for description - only shown on desktop */}
+                  <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
+                    {item.description}
+                  </div>
                 </Link>
               </li>
             ))}
