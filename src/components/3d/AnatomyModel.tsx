@@ -144,18 +144,27 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
   };
 
   const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
-    if (x < 25) return "right";
-    if (x > 75) return "left";
+    if (x < 30) return "right";
+    if (x > 70) return "left";
     if (y < 40) return "bottom";
     return "top";
   };
 
   const getTooltipAlign = (x: number, y: number): "start" | "center" | "end" => {
-    if (x < 25 || x > 75) {
+    if (x < 30 || x > 70) {
       if (y < 30) return "start";
       if (y > 70) return "end";
     }
     return "center";
+  };
+
+  const getCollisionPadding = () => {
+    return {
+      top: 20,
+      bottom: 20,
+      left: 40,
+      right: 40
+    };
   };
 
   return (
@@ -272,13 +281,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                   <TooltipContent 
                     side={getTooltipSide(hotspot.x, hotspot.y)} 
                     align={getTooltipAlign(hotspot.x, hotspot.y)}
-                    sideOffset={14}
-                    className="z-50 max-w-sm w-[250px] overflow-visible" 
+                    sideOffset={20}
+                    className="z-50 w-auto max-w-[300px] min-w-[200px] overflow-visible"
                     avoidCollisions={true}
-                    collisionPadding={30}
+                    collisionPadding={getCollisionPadding()}
                     sticky="always"
+                    forceMount
                   >
-                    <div className="space-y-1 p-2">
+                    <div className="space-y-2 p-3">
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "inline-block w-2 h-2 rounded-full",
@@ -288,7 +298,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         )}></span>
                         <h3 className="font-bold text-sm">{hotspot.label}</h3>
                       </div>
-                      <p className="text-xs break-words whitespace-normal">{hotspot.description}</p>
+                      <p className="text-xs break-words whitespace-normal overflow-visible">{hotspot.description}</p>
                       {hotspot.status !== 'normal' && (
                         <p className={cn(
                           "text-xs font-medium mt-1 px-2 py-1 rounded",
