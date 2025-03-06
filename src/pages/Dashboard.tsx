@@ -140,13 +140,13 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col h-[700px] order-1 lg:order-2 relative overflow-hidden">
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col h-[750px] order-1 lg:order-2 relative overflow-hidden bg-transparent">
               <h3 className="text-lg font-semibold mb-2 z-10">Interactive 3D Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4 z-10">
                 Click on hotspots to view detailed information. Drag to rotate the model.
               </p>
               
-              <div className="flex-1 relative h-[600px]">
+              <div className="flex-1 relative h-[650px]">
                 <AnatomyModel
                   hotspots={hotspots}
                   className="relative z-10 h-full"

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { RotateCw, RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Html, useGLTF } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface Hotspot {
@@ -172,7 +172,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
           <div 
             className="absolute inset-0 bg-cover bg-center opacity-90 z-0"
             style={{ 
-              backgroundImage: "url('/lovable-uploads/0410eae6-4317-42c6-92dd-546a94db8e4c.png')",
+              backgroundImage: "url('/lovable-uploads/8ee7aeab-db48-461a-af81-0792bfadb4d0.png')",
               backgroundSize: "contain",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat"
@@ -186,7 +186,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
             camera={{ position: [0, 0, 8], fov: 50 }}
             dpr={[1, 2]}
           >
-            {/* Fixed: Use RGB format (3 values) instead of RGBA (4 values) */}
+            {/* Set THREE color to transparent background */}
             <color attach="background" args={[0, 0, 0]} />
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 10]} intensity={1} />
