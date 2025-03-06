@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { InfoIcon, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { InfoIcon, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp, Calendar, ChevronRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { format } from 'date-fns';
