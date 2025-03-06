@@ -27,65 +27,27 @@ interface AnatomyModelProps {
   hotspots: Hotspot[];
 }
 
-// Fallback human model using Three.js primitives
+// Human model for interactive hotspots
 const HumanModel = ({ hotspots, onHotspotClick, activeHotspot }: { 
   hotspots: Hotspot[]; 
   onHotspotClick: (id: string) => void; 
   activeHotspot: string | null;
 }) => {
+  // Using a transparent group to place hotspots
+  // We don't render a 3D model because we're using the background image instead
   const group = useRef<THREE.Group>(null);
   
+  // Add slight automatic rotation
   useFrame(() => {
     if (group.current) {
       // Subtle automatic rotation when not interacting
-      group.current.rotation.y += 0.001;
+      group.current.rotation.y += 0.0005;
     }
   });
 
+  // The actual 3D model is invisible, we just use it for hotspot placement
   return (
     <group ref={group}>
-      {/* Head */}
-      <mesh position={[0, 2.7, 0]}>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
-      {/* Neck */}
-      <mesh position={[0, 2.2, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.5, 32]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
-      {/* Torso */}
-      <mesh position={[0, 1, 0]}>
-        <capsuleGeometry args={[0.8, 1.5, 8, 16]} />
-        <meshStandardMaterial color="#f0b7a4" />
-      </mesh>
-      
-      {/* Left Arm */}
-      <mesh position={[-1.1, 1.2, 0]} rotation={[0, 0, -Math.PI / 6]}>
-        <capsuleGeometry args={[0.2, 1.5, 8, 16]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
-      {/* Right Arm */}
-      <mesh position={[1.1, 1.2, 0]} rotation={[0, 0, Math.PI / 6]}>
-        <capsuleGeometry args={[0.2, 1.5, 8, 16]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
-      {/* Left Leg */}
-      <mesh position={[-0.5, -1, 0]} rotation={[0, 0, Math.PI / 20]}>
-        <capsuleGeometry args={[0.25, 1.8, 8, 16]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
-      {/* Right Leg */}
-      <mesh position={[0.5, -1, 0]} rotation={[0, 0, -Math.PI / 20]}>
-        <capsuleGeometry args={[0.25, 1.8, 8, 16]} />
-        <meshStandardMaterial color="#f5d0c4" />
-      </mesh>
-      
       {/* Add 3D hotspots */}
       {hotspots.map((hotspot) => (
         <group key={hotspot.id} position={[hotspot.x / 25 - 2, hotspot.y / 25 - 2, hotspot.z / 50]}>
@@ -198,8 +160,20 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
           </Button>
         </div>
         
+        {fullscreen && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center opacity-90 z-10"
+            style={{ 
+              backgroundImage: "url('/lovable-uploads/15366aea-43a6-4d71-a42f-52ce619d37e3.png')",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat"
+            }}
+          />
+        )}
+        
         <div className="flex-1 relative">
-          <Canvas className="w-full h-full">
+          <Canvas className="w-full h-full" style={{ background: 'transparent' }}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 10]} intensity={1} />
             <Suspense fallback={null}>

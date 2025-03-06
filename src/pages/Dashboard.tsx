@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Brain, Microscope } from 'lucide-react';
@@ -130,19 +129,30 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[650px] order-1 lg:order-2">
-              <h3 className="text-lg font-semibold mb-2">Interactive 3D Anatomy</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[650px] order-1 lg:order-2 relative overflow-hidden">
+              <h3 className="text-lg font-semibold mb-2 z-10">Interactive 3D Anatomy</h3>
+              <p className="text-sm text-muted-foreground mb-4 z-10">
                 Click on hotspots to view detailed information. Drag to rotate the model.
               </p>
               
               <div className="flex-1 relative h-[300px] md:h-auto">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-90"
+                  style={{ 
+                    backgroundImage: "url('/lovable-uploads/15366aea-43a6-4d71-a42f-52ce619d37e3.png')",
+                    backgroundSize: "contain",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    zIndex: 0
+                  }}
+                />
                 <AnatomyModel
                   hotspots={hotspots}
+                  className="relative z-10"
                 />
               </div>
               
-              <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="mt-4 grid grid-cols-2 gap-2 z-10">
                 <Button 
                   variant="outline"
                   className="bg-primary/10 text-primary rounded-lg py-2 text-sm font-medium"
