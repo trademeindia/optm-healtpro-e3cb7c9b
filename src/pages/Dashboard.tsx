@@ -11,6 +11,9 @@ import HealthMetric from '@/components/dashboard/HealthMetric';
 import PatientProfile from '@/components/dashboard/PatientProfile';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
+import SymptomTracker from '@/components/dashboard/SymptomTracker';
+import PainLocationMap from '@/components/dashboard/PainLocationMap';
+import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -232,6 +235,8 @@ const Dashboard: React.FC = () => {
                 currentValue={8152}
               />
               
+              <SymptomTracker />
+              
               <TreatmentPlan
                 title="Today's Treatment Plan"
                 date="Jun 15, 2023"
@@ -240,36 +245,42 @@ const Dashboard: React.FC = () => {
               />
             </div>
             
-            {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[750px] order-1 lg:order-2">
-              <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Click on the anatomy model to add or remove hotspots. Issues are automatically detected from patient reports.
-              </p>
-              
-              <div className="flex-1 relative h-full">
-                <AnatomyModel
-                  hotspots={hotspots}
-                  className="bg-transparent"
-                  onAddHotspot={handleAddHotspot}
-                  onDeleteHotspot={handleDeleteHotspot}
-                />
+            {/* Middle column - Anatomy Model & Symptom Progress */}
+            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-1 lg:order-2">
+              <div className="glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[450px]">
+                <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Click on the anatomy model to add or remove hotspots. Issues are automatically detected from patient reports.
+                </p>
+                
+                <div className="flex-1 relative h-full">
+                  <AnatomyModel
+                    hotspots={hotspots}
+                    className="bg-transparent"
+                    onAddHotspot={handleAddHotspot}
+                    onDeleteHotspot={handleDeleteHotspot}
+                  />
+                </div>
+                
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button 
+                    variant="outline"
+                    className="bg-primary/10 text-primary rounded-lg py-2 text-sm font-medium"
+                  >
+                    View X-Rays
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    className="rounded-lg py-2 text-sm font-medium"
+                  >
+                    View Reports
+                  </Button>
+                </div>
               </div>
               
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button 
-                  variant="outline"
-                  className="bg-primary/10 text-primary rounded-lg py-2 text-sm font-medium"
-                >
-                  View X-Rays
-                </Button>
-                <Button 
-                  variant="secondary"
-                  className="rounded-lg py-2 text-sm font-medium"
-                >
-                  View Reports
-                </Button>
-              </div>
+              <PainLocationMap />
+              
+              <SymptomProgressChart />
             </div>
             
             {/* Right column */}
