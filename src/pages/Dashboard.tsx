@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -27,7 +26,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 
 const Dashboard: React.FC = () => {
-  // Initial hotspots with correct type for status
   const initialHotspots: Hotspot[] = [
     {
       id: 'shoulder',
@@ -86,14 +84,12 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // State for hotspots
   const [hotspots, setHotspots] = useState<Hotspot[]>(initialHotspots);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedPatient, setSelectedPatient] = useState(0);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const { toast } = useToast();
 
-  // Mock data for patients
   const patients = [
     {
       id: 1,
@@ -136,7 +132,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for activity tracking
   const activityData = [
     { day: 'Mon', value: 8500 },
     { day: 'Tue', value: 9200 },
@@ -147,7 +142,6 @@ const Dashboard: React.FC = () => {
     { day: 'Sun', value: 7300 }
   ];
 
-  // Mock data for documents
   const patientDocuments = [
     {
       id: "doc1",
@@ -187,7 +181,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for treatment tasks
   const treatmentTasks = [
     {
       id: '1',
@@ -215,28 +208,22 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Handler for adding a new hotspot
   const handleAddHotspot = (newHotspot: Hotspot) => {
     setHotspots(prev => [...prev, newHotspot]);
     
-    // Update patient record in a real application
     console.log("Added hotspot to patient record:", newHotspot);
   };
 
-  // Handler for deleting a hotspot
   const handleDeleteHotspot = (id: string) => {
     const hotspotToDelete = hotspots.find(h => h.id === id);
     setHotspots(prev => prev.filter(hotspot => hotspot.id !== id));
     
-    // Update patient record in a real application
     if (hotspotToDelete) {
       console.log("Removed hotspot from patient record:", hotspotToDelete);
     }
   };
 
-  // Handler for document upload
   const handleUploadDocument = () => {
-    // This would connect to a real upload API in a production app
     toast({
       title: "Document Uploaded",
       description: "Your document has been successfully uploaded.",
@@ -244,9 +231,31 @@ const Dashboard: React.FC = () => {
     setShowUploadDialog(false);
   };
 
-  // Simulate automatic analysis of patient reports
+  const handleViewAllPatients = () => {
+    setActiveTab("patients");
+  };
+
+  const handleViewFullSchedule = () => {
+    setActiveTab("calendar");
+  };
+
+  const handleViewReports = (patientId: number) => {
+    toast({
+      title: "Viewing Reports",
+      description: `Opening reports for patient ${patientId}`,
+    });
+    setActiveTab("reports");
+  };
+
+  const handleScheduleAppointment = (patientId: number) => {
+    toast({
+      title: "Schedule Appointment",
+      description: `Opening scheduler for patient ${patientId}`,
+    });
+    setActiveTab("calendar");
+  };
+
   useEffect(() => {
-    // This would typically be an API call to analyze patient reports
     const analyzeReports = () => {
       const mockReportResults = [
         {
@@ -257,7 +266,6 @@ const Dashboard: React.FC = () => {
         }
       ];
 
-      // Check if we should add any new hotspots based on the analysis
       mockReportResults.forEach(result => {
         const existingHotspot = hotspots.find(h => h.label.includes(result.muscleGroup));
         
@@ -285,13 +293,12 @@ const Dashboard: React.FC = () => {
       });
     };
 
-    // Simulate analysis after component mounts
     const timer = setTimeout(() => {
       analyzeReports();
-    }, 3000); // Delay to simulate processing time
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -355,7 +362,6 @@ const Dashboard: React.FC = () => {
               
               <TabsContent value="overview" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
-                  {/* Left sidebar - Patient selector */}
                   <div className="md:col-span-3 space-y-4">
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
                       <div className="flex items-center justify-between mb-3">
@@ -389,7 +395,7 @@ const Dashboard: React.FC = () => {
                         ))}
                       </div>
                       
-                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground">
+                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground" onClick={handleViewAllPatients}>
                         View All Patients
                       </Button>
                     </div>
@@ -426,15 +432,13 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       
-                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground">
+                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground" onClick={handleViewFullSchedule}>
                         View Full Schedule
                       </Button>
                     </div>
                   </div>
                   
-                  {/* Main content */}
                   <div className="md:col-span-9 space-y-6">
-                    {/* Patient profile */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
                       <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                         <div className="flex-shrink-0">
@@ -485,7 +489,6 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Interactive anatomy and health metrics */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
                         <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
@@ -550,7 +553,6 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Biomarkers and treatment */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
                         <h3 className="text-lg font-semibold mb-2">Biomarkers</h3>
@@ -589,7 +591,6 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Patient documents */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold">Patient Documents</h3>
@@ -655,7 +656,6 @@ const Dashboard: React.FC = () => {
                     View and manage all patient reports and medical documents
                   </p>
                   
-                  {/* Document management UI to be expanded in future */}
                   <div className="border border-dashed rounded-lg py-12 flex items-center justify-center">
                     <div className="text-center max-w-sm">
                       <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
@@ -678,7 +678,6 @@ const Dashboard: React.FC = () => {
                     View patient analytics and treatment outcomes
                   </p>
                   
-                  {/* Analytics UI placeholder */}
                   <div className="border border-dashed rounded-lg py-12 flex items-center justify-center">
                     <div className="text-center">
                       <Activity className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
@@ -698,7 +697,6 @@ const Dashboard: React.FC = () => {
                     Manage and schedule patient appointments
                   </p>
                   
-                  {/* Calendar UI placeholder */}
                   <div className="border border-dashed rounded-lg py-12 flex items-center justify-center">
                     <div className="text-center">
                       <Calendar className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
@@ -715,7 +713,6 @@ const Dashboard: React.FC = () => {
         </main>
       </div>
       
-      {/* Document Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

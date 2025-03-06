@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, ArrowUpDown, MoreHorizontal, User, Calendar, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Patient {
   id: number;
@@ -24,12 +24,48 @@ interface PatientRecordsProps {
 
 const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
   
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.icdCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddPatient = () => {
+    toast({
+      title: "Add Patient",
+      description: "Opening new patient form",
+    });
+  };
+
+  const handleViewRecords = (patientId: number) => {
+    toast({
+      title: "Patient Records",
+      description: "Opening patient medical records",
+    });
+  };
+
+  const handleScheduleAppointment = (patientId: number) => {
+    toast({
+      title: "Schedule Appointment",
+      description: "Opening appointment scheduler",
+    });
+  };
+
+  const handleEditProfile = (patientId: number) => {
+    toast({
+      title: "Edit Profile",
+      description: "Opening patient profile editor",
+    });
+  };
+
+  const handleViewOptions = (patientId: number) => {
+    toast({
+      title: "More Options",
+      description: "Opening additional options menu",
+    });
+  };
   
   return (
     <div className="space-y-4">
@@ -57,7 +93,7 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
               <Filter className="h-4 w-4" />
             </Button>
             
-            <Button>
+            <Button onClick={handleAddPatient}>
               <Plus className="h-4 w-4 mr-2" />
               Add Patient
             </Button>
@@ -116,16 +152,36 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleViewRecords(patient.id)}
+                      >
                         <FileText className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleScheduleAppointment(patient.id)}
+                      >
                         <Calendar className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleEditProfile(patient.id)}
+                      >
                         <User className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleViewOptions(patient.id)}
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </div>
