@@ -22,7 +22,7 @@ interface Hotspot {
 
 interface AnatomyModelProps {
   className?: string;
-  image?: string; // Kept for backward compatibility
+  image?: string; 
   modelUrl?: string;
   hotspots: Hotspot[];
 }
@@ -168,11 +168,11 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         </div>
         
         <div className="flex-1 relative">
-          {/* Background image - displayed behind the Canvas */}
+          {/* Updated background image - using the newly uploaded anatomy image */}
           <div 
             className="absolute inset-0 bg-cover bg-center opacity-90 z-0"
             style={{ 
-              backgroundImage: "url('/lovable-uploads/15366aea-43a6-4d71-a42f-52ce619d37e3.png')",
+              backgroundImage: "url('/lovable-uploads/0410eae6-4317-42c6-92dd-546a94db8e4c.png')",
               backgroundSize: "contain",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat"

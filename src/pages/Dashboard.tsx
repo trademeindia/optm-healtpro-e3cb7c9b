@@ -37,13 +37,23 @@ const Dashboard: React.FC = () => {
       icon: '+'
     },
     {
-      id: 'lumbar',
+      id: 'chest',
+      x: 50,
+      y: 35,
+      z: 15,
+      color: '#F0C728',
+      label: 'Chest',
+      description: 'Pectoralis major shows normal muscle tone and function.',
+      icon: '+'
+    },
+    {
+      id: 'abdomen',
       x: 50,
       y: 25,
-      z: -5,
-      color: '#F0C728',
-      label: 'Lumbar Region',
-      description: 'Mild inflammation detected. Recommended for further assessment.',
+      z: 10,
+      color: '#4CAF50',
+      label: 'Abdomen',
+      description: 'Rectus abdominis presents normal tone. No herniation observed.',
       icon: '+'
     }
   ];
@@ -130,13 +140,13 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col h-[650px] order-1 lg:order-2 relative overflow-hidden">
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col h-[700px] order-1 lg:order-2 relative overflow-hidden">
               <h3 className="text-lg font-semibold mb-2 z-10">Interactive 3D Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4 z-10">
                 Click on hotspots to view detailed information. Drag to rotate the model.
               </p>
               
-              <div className="flex-1 relative h-[500px]">
+              <div className="flex-1 relative h-[600px]">
                 <AnatomyModel
                   hotspots={hotspots}
                   className="relative z-10 h-full"
