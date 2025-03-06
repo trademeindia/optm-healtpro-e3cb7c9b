@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle } from 'lucide-react';
@@ -100,16 +101,17 @@ const PatientDashboard: React.FC = () => {
         <Header />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="mb-4 md:mb-6 pl-10 lg:pl-0">
-            <h1 className="text-xl md:text-2xl font-bold">My Health Dashboard</h1>
+          <div className="mb-6 pl-10 lg:pl-0">
+            <h1 className="text-2xl font-bold">My Health Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Welcome back, {user?.name || 'Patient'}
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left column */}
-            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-2 lg:order-1">
+            <div className="lg:col-span-3 space-y-6">
+              {/* Personal Information */}
               <div className="glass-morphism rounded-2xl p-6">
                 <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
                 <div className="space-y-3">
@@ -140,6 +142,7 @@ const PatientDashboard: React.FC = () => {
                 </div>
               </div>
               
+              {/* Activity Tracker */}
               <ActivityTracker
                 title="Your Activity (Steps)"
                 data={activityData}
@@ -147,6 +150,7 @@ const PatientDashboard: React.FC = () => {
                 currentValue={8152}
               />
               
+              {/* Upcoming Appointments */}
               <div className="glass-morphism rounded-2xl p-6">
                 <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
                 <div className="space-y-4">
@@ -193,9 +197,10 @@ const PatientDashboard: React.FC = () => {
               </div>
             </div>
             
-            {/* Middle column */}
-            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-1 lg:order-2">
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {/* Middle column - health metrics and treatment */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Health Metrics */}
+              <div className="grid grid-cols-2 gap-4">
                 <HealthMetric
                   title="Heart Rate"
                   value={72}
@@ -237,6 +242,7 @@ const PatientDashboard: React.FC = () => {
                 />
               </div>
               
+              {/* Treatment Plan */}
               <TreatmentPlan
                 title="Today's Treatment Plan"
                 date="Jun 15, 2023"
@@ -244,19 +250,22 @@ const PatientDashboard: React.FC = () => {
                 progress={50}
               />
               
+              {/* PostureAnalysis Component */}
               <PostureAnalysis />
               
-              <PainLocationMap />
-              
-              <div className="mt-4">
-                <SymptomProgressChart />
-              </div>
+              {/* Progress Chart */}
+              <SymptomProgressChart />
             </div>
             
-            {/* Right column */}
-            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-3">
+            {/* Right column - symptom tracker, documents, messages */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Symptom Tracker */}
               <SymptomTracker />
               
+              {/* Pain Location Map */}
+              <PainLocationMap />
+              
+              {/* Medical Documents */}
               <div className="glass-morphism rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Medical Documents</h3>
@@ -352,6 +361,7 @@ const PatientDashboard: React.FC = () => {
                 </div>
               </div>
               
+              {/* Message Your Doctor */}
               <div className="glass-morphism rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Message Your Doctor</h3>
