@@ -11,6 +11,7 @@ import HealthMetric from '@/components/dashboard/HealthMetric';
 import PatientProfile from '@/components/dashboard/PatientProfile';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
+import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
   // Mock data for anatomy model hotspots
@@ -126,7 +127,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-6 flex flex-col">
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-6 flex flex-col h-[650px]">
               <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Click on hotspots to view detailed information
@@ -140,12 +141,18 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <button className="bg-primary/10 text-primary rounded-lg py-2 text-sm font-medium">
+                <Button 
+                  variant="outline"
+                  className="bg-primary/10 text-primary rounded-lg py-2 text-sm font-medium"
+                >
                   View X-Rays
-                </button>
-                <button className="bg-secondary text-secondary-foreground rounded-lg py-2 text-sm font-medium">
+                </Button>
+                <Button 
+                  variant="secondary"
+                  className="rounded-lg py-2 text-sm font-medium"
+                >
                   View Reports
-                </button>
+                </Button>
               </div>
             </div>
             

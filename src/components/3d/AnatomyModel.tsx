@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import Tooltip from '../ui/Tooltip';
+import Tooltip from '../ui/tooltip';
+import { ArrowLeft, ArrowRight, RotateCw, RotateCcw } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface Hotspot {
   id: string;
@@ -38,7 +40,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
   };
 
   return (
-    <div className={cn("anatomy-model-container", className)}>
+    <div className={cn("anatomy-model-container relative h-full", className)}>
       <motion.div
         className="relative w-full h-full flex items-center justify-center"
         initial={{ opacity: 0 }}
@@ -48,7 +50,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         <motion.img
           src={image}
           alt="Anatomical model"
-          className="anatomy-model"
+          className="anatomy-model max-h-[400px] object-contain"
           animate={{ 
             rotateY: rotation,
           }}
@@ -56,26 +58,30 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         />
 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          <button 
+          <Button 
             onClick={() => rotateModel('left')}
-            className="p-2 rounded-full glass-morphism"
+            variant="secondary"
+            className="p-2 rounded-full glass-morphism h-10 w-10 flex items-center justify-center"
+            aria-label="Rotate left"
           >
-            ↺
-          </button>
-          <button 
+            <RotateCcw className="h-5 w-5" />
+          </Button>
+          <Button 
             onClick={() => rotateModel('right')}
-            className="p-2 rounded-full glass-morphism"
+            variant="secondary"
+            className="p-2 rounded-full glass-morphism h-10 w-10 flex items-center justify-center"
+            aria-label="Rotate right"
           >
-            ↻
-          </button>
+            <RotateCw className="h-5 w-5" />
+          </Button>
         </div>
 
         {hotspots.map((hotspot) => (
           <React.Fragment key={hotspot.id}>
             <motion.div
               className={cn(
-                "hotspot",
-                activeHotspot === hotspot.id && "active"
+                "hotspot absolute w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md border-2 border-white transition-all duration-300 ease-in-out z-10",
+                activeHotspot === hotspot.id && "active scale-110 shadow-lg border-primary"
               )}
               style={{
                 left: `${hotspot.x}%`,
@@ -87,14 +93,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
               whileHover={{ scale: 1.2 }}
               onClick={() => handleHotspotClick(hotspot.id)}
             >
-              {activeHotspot !== hotspot.id && <div className="hotspot-pulse" />}
+              {activeHotspot !== hotspot.id && <div className="hotspot-pulse absolute w-full h-full rounded-full bg-primary/30 animate-pulse-light" />}
               {hotspot.icon || '+'}
             </motion.div>
 
             <div
               className={cn(
-                "annotation",
-                activeHotspot === hotspot.id && "active"
+                "annotation glass-morphism absolute p-4 rounded-lg max-w-xs z-30 opacity-0 scale-95 transition-all duration-300 ease-in-out pointer-events-none",
+                activeHotspot === hotspot.id && "opacity-100 scale-100 pointer-events-auto"
               )}
               style={{
                 left: `${hotspot.x > 50 ? hotspot.x - 30 : hotspot.x + 10}%`,
