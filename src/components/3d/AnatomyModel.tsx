@@ -143,18 +143,25 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     return '';
   };
 
-  const getTooltipSide = (x: number): "top" | "right" | "bottom" | "left" => {
+  const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
     if (x < 25) return "right";
     if (x > 75) return "left";
+    if (y < 30) return "bottom";
     return "top";
+  };
+
+  const getTooltipAlign = (x: number, y: number): "start" | "center" | "end" => {
+    if (y < 25) return "start";
+    if (y > 75) return "end";
+    return "center";
   };
 
   const getCollisionPadding = () => {
     return {
-      top: 25,
-      bottom: 25,
-      left: 25,
-      right: 25
+      top: 50,
+      bottom: 50,
+      left: 50,
+      right: 50
     };
   };
 
@@ -270,14 +277,15 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                     </motion.div>
                   </TooltipTrigger>
                   <TooltipContent 
-                    side={getTooltipSide(hotspot.x)} 
-                    align="center"
-                    sideOffset={15}
-                    className="z-50 p-0 overflow-hidden"
+                    side={getTooltipSide(hotspot.x, hotspot.y)} 
+                    align={getTooltipAlign(hotspot.x, hotspot.y)}
+                    sideOffset={20}
                     avoidCollisions={true}
                     collisionPadding={getCollisionPadding()}
+                    className="p-0"
+                    portalled
                   >
-                    <div className="space-y-1 p-3 max-w-[280px] min-w-[200px]">
+                    <div className="w-full max-w-[300px] space-y-2 p-4 overflow-visible">
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "inline-block w-2 h-2 rounded-full",
@@ -287,7 +295,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         )}></span>
                         <h3 className="font-bold text-sm">{hotspot.label}</h3>
                       </div>
-                      <p className="text-xs break-words whitespace-normal">{hotspot.description}</p>
+                      <p className="text-xs text-wrap break-words whitespace-normal">{hotspot.description}</p>
                       {hotspot.status !== 'normal' && (
                         <p className={cn(
                           "text-xs font-medium mt-1 px-2 py-1 rounded text-center",
