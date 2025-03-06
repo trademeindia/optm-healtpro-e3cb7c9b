@@ -1,94 +1,262 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Heart, Activity, Thermometer, Droplet, Brain, Microscope, 
-  Upload, FileText, Calendar, Clock, User, Plus, X, Search,
-  Filter, ArrowUpDown, ChevronDown, ChevronRight, MoreHorizontal
+  Search, Filter, Upload, X, Plus
 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import AnatomyModel, { Hotspot } from '@/components/3d/AnatomyModel';
-import BiomarkerCard from '@/components/dashboard/BiomarkerCard';
-import HealthMetric from '@/components/dashboard/HealthMetric';
-import PatientProfile from '@/components/dashboard/PatientProfile';
-import ActivityTracker from '@/components/dashboard/ActivityTracker';
-import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
-import SymptomTracker from '@/components/dashboard/SymptomTracker';
-import PainLocationMap from '@/components/dashboard/PainLocationMap';
-import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
-import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
-import PatientRecords from '@/components/dashboard/PatientRecords';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
+import TherapySchedules from '@/components/dashboard/TherapySchedules';
+import ClinicMessages from '@/components/dashboard/ClinicMessages';
+import ClinicDocuments from '@/components/dashboard/ClinicDocuments';
+import ClinicReminders from '@/components/dashboard/ClinicReminders';
+import MiniCalendar from '@/components/dashboard/MiniCalendar';
+import PatientRecords from '@/components/dashboard/PatientRecords';
+import { FileText, Calendar, Activity } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const initialHotspots: Hotspot[] = [
+  const [activeTab, setActiveTab] = useState("overview");
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const { toast } = useToast();
+
+  // Mock data for upcoming appointments
+  const upcomingAppointments = [
     {
-      id: 'shoulder',
-      x: 28,  
-      y: 25,  
-      z: 10,  
-      color: '#FF8787',
-      label: 'Deltoid Muscle',
-      description: 'Calcific tendinitis detected. Inflammation of the tendons in the shoulder joint.',
-      status: 'critical',
-      icon: null
+      id: 'apt1',
+      patientName: 'Emma Rodriguez',
+      patientId: 2,
+      time: '9:00 AM - 9:30 AM',
+      date: 'Today',
+      type: 'Follow-up appointment',
+      status: 'confirmed' as const
     },
     {
-      id: 'chest',
-      x: 50,
-      y: 30,
-      z: 5,
-      color: '#2D7FF9',
-      label: 'Pectoralis Major',
-      description: 'Normal muscle tone. No significant issues detected.',
-      status: 'normal',
-      icon: null
+      id: 'apt2',
+      patientName: 'Marcus Johnson',
+      patientId: 3,
+      time: '11:15 AM - 12:00 PM',
+      date: 'Today',
+      type: 'Rehabilitation session',
+      status: 'scheduled' as const
     },
     {
-      id: 'abs',
-      x: 50,
-      y: 45,
-      z: -5,
-      color: '#F0C728',
-      label: 'Abdominal Muscles',
-      description: 'Mild inflammation detected in the rectus abdominis. Recommended for further assessment.',
-      status: 'warning',
-      icon: null
+      id: 'apt3',
+      patientName: 'Nikolas Pascal',
+      patientId: 1,
+      time: '3:30 PM - 4:15 PM',
+      date: 'Today',
+      type: 'Treatment assessment',
+      status: 'scheduled' as const
     },
     {
-      id: 'bicep',
-      x: 32,
-      y: 35,
-      z: 0,
-      color: '#4CAF50',
-      label: 'Biceps Brachii',
-      description: 'Minor strain detected. Rest and ice therapy recommended.',
-      status: 'warning',
-      icon: null
+      id: 'apt4',
+      patientName: 'Sarah Chen',
+      patientId: 4,
+      time: '10:00 AM - 10:45 AM',
+      date: 'Tomorrow',
+      type: 'Initial consultation',
+      status: 'scheduled' as const
     },
     {
-      id: 'quadriceps',
-      x: 54,
-      y: 60,
-      z: 0,
-      color: '#9C27B0',
-      label: 'Quadriceps',
-      description: 'Normal muscle function. Continue with regular strength training.',
-      status: 'normal',
-      icon: null
+      id: 'apt5',
+      patientName: 'David Wilson',
+      patientId: 5,
+      time: '2:15 PM - 3:00 PM',
+      date: 'Tomorrow',
+      type: 'Physical therapy',
+      status: 'confirmed' as const
     }
   ];
 
-  const [hotspots, setHotspots] = useState<Hotspot[]>(initialHotspots);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [selectedPatient, setSelectedPatient] = useState(0);
-  const [showUploadDialog, setShowUploadDialog] = useState(false);
-  const { toast } = useToast();
+  // Mock data for therapy schedules
+  const therapySchedules = [
+    {
+      id: 'th1',
+      patientName: 'Nikolas Pascal',
+      patientId: 1,
+      therapyType: 'Physical Therapy - Shoulder Rehabilitation',
+      progress: 45,
+      sessionsCompleted: 5,
+      totalSessions: 12,
+      nextSession: 'Today, 3:30 PM'
+    },
+    {
+      id: 'th2',
+      patientName: 'Emma Rodriguez',
+      patientId: 2,
+      therapyType: 'Lower back pain management',
+      progress: 70,
+      sessionsCompleted: 7,
+      totalSessions: 10,
+      nextSession: 'Today, 9:00 AM'
+    },
+    {
+      id: 'th3',
+      patientName: 'Marcus Johnson',
+      patientId: 3,
+      therapyType: 'Sports injury rehabilitation',
+      progress: 30,
+      sessionsCompleted: 3,
+      totalSessions: 8,
+      nextSession: 'Today, 11:15 AM'
+    }
+  ];
+
+  // Mock data for clinic messages
+  const clinicMessages = [
+    {
+      id: 'msg1',
+      sender: 'Emma Rodriguez',
+      content: 'Hi Dr. Smith, I'm experiencing increased pain in my lower back after yesterday's session. Should I be concerned?',
+      timestamp: '10:32 AM',
+      isRead: false
+    },
+    {
+      id: 'msg2',
+      sender: 'Dr. Taylor (Staff)',
+      content: 'Patient files for today's appointments have been updated. Please review before sessions.',
+      timestamp: '9:15 AM',
+      isRead: true
+    },
+    {
+      id: 'msg3',
+      sender: 'Sarah Chen',
+      content: 'Just confirming my appointment for tomorrow at 10 AM. Looking forward to meeting you.',
+      timestamp: 'Yesterday',
+      isRead: true
+    },
+    {
+      id: 'msg4',
+      sender: 'Reception',
+      content: 'Reminder: Staff meeting scheduled for Friday at 12:30 PM in Conference Room B.',
+      timestamp: 'Yesterday',
+      isRead: false
+    }
+  ];
+
+  // Mock data for documents
+  const clinicDocuments = [
+    {
+      id: 'doc1',
+      name: 'X-Ray Report - Left Shoulder',
+      type: 'X-Ray',
+      date: 'Jun 5, 2023',
+      size: '2.4 MB'
+    },
+    {
+      id: 'doc2',
+      name: 'MRI Report - Shoulder',
+      type: 'MRI',
+      date: 'Jun 7, 2023',
+      size: '3.8 MB'
+    },
+    {
+      id: 'doc3',
+      name: 'Blood Test Results',
+      type: 'Lab',
+      date: 'Jun 10, 2023',
+      size: '1.2 MB'
+    },
+    {
+      id: 'doc4',
+      name: 'Treatment Plan - Phase 1',
+      type: 'Plan',
+      date: 'Jun 12, 2023',
+      size: '0.8 MB'
+    },
+    {
+      id: 'doc5',
+      name: 'Weekly Progress Notes',
+      type: 'Notes',
+      date: 'Jun 15, 2023',
+      size: '0.5 MB'
+    }
+  ];
+
+  // Mock data for reminders
+  const clinicReminders = [
+    {
+      id: 'rem1',
+      title: 'Call Emma Rodriguez about therapy progression',
+      dueDate: 'Today, 11:00 AM',
+      priority: 'high' as const,
+      completed: false
+    },
+    {
+      id: 'rem2',
+      title: 'Review Marcus Johnson's treatment plan',
+      dueDate: 'Today, 2:00 PM',
+      priority: 'medium' as const,
+      completed: false
+    },
+    {
+      id: 'rem3',
+      title: 'Order new therapy equipment',
+      dueDate: 'Jun 20, 2023',
+      priority: 'low' as const,
+      completed: true
+    },
+    {
+      id: 'rem4',
+      title: 'Submit monthly insurance claims',
+      dueDate: 'Jun 25, 2023',
+      priority: 'high' as const,
+      completed: false
+    }
+  ];
+
+  // Mock data for calendar events
+  const calendarEvents = {
+    '2023-06-16': [
+      {
+        id: 'evt1',
+        title: 'Emma Rodriguez - Follow-up',
+        time: '9:00 AM',
+        type: 'appointment' as const
+      },
+      {
+        id: 'evt2',
+        title: 'Marcus Johnson - Rehab',
+        time: '11:15 AM',
+        type: 'appointment' as const
+      },
+      {
+        id: 'evt3',
+        title: 'Staff Meeting',
+        time: '1:00 PM',
+        type: 'meeting' as const
+      }
+    ],
+    '2023-06-17': [
+      {
+        id: 'evt4',
+        title: 'Sarah Chen - Initial',
+        time: '10:00 AM',
+        type: 'appointment' as const
+      },
+      {
+        id: 'evt5',
+        title: 'David Wilson - Therapy',
+        time: '2:15 PM',
+        type: 'appointment' as const
+      }
+    ],
+    '2023-06-20': [
+      {
+        id: 'evt6',
+        title: 'Insurance Claims Due',
+        time: 'All day',
+        type: 'reminder' as const
+      }
+    ]
+  };
 
   const patients = [
     {
@@ -132,97 +300,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  const activityData = [
-    { day: 'Mon', value: 8500 },
-    { day: 'Tue', value: 9200 },
-    { day: 'Wed', value: 7800 },
-    { day: 'Thu', value: 8100 },
-    { day: 'Fri', value: 10200 },
-    { day: 'Sat', value: 6500 },
-    { day: 'Sun', value: 7300 }
-  ];
-
-  const patientDocuments = [
-    {
-      id: "doc1",
-      name: "X-Ray Report - Left Shoulder",
-      type: "X-Ray",
-      date: "Jun 5, 2023",
-      uploadedBy: "Dr. Smith",
-      size: "2.4 MB",
-      thumbnailUrl: "/lovable-uploads/d8b182a9-ac94-4497-b6c9-770065e4e760.png",
-    },
-    {
-      id: "doc2",
-      name: "MRI Report - Shoulder",
-      type: "MRI",
-      date: "Jun 7, 2023",
-      uploadedBy: "Dr. Johnson",
-      size: "3.8 MB",
-      thumbnailUrl: "/lovable-uploads/d8b182a9-ac94-4497-b6c9-770065e4e760.png",
-    },
-    {
-      id: "doc3",
-      name: "Blood Test Results",
-      type: "Lab",
-      date: "Jun 10, 2023",
-      uploadedBy: "Dr. Wilson",
-      size: "1.2 MB",
-      thumbnailUrl: null,
-    },
-    {
-      id: "doc4",
-      name: "Treatment Plan - Phase 1",
-      type: "Plan",
-      date: "Jun 12, 2023",
-      uploadedBy: "Dr. Smith",
-      size: "0.8 MB",
-      thumbnailUrl: null,
-    }
-  ];
-
-  const treatmentTasks = [
-    {
-      id: '1',
-      title: 'Heat therapy - 15 minutes',
-      time: '08:00 AM',
-      completed: true
-    },
-    {
-      id: '2',
-      title: 'Stretching exercises - Series A',
-      time: '11:30 AM',
-      completed: true
-    },
-    {
-      id: '3',
-      title: 'Apply anti-inflammatory cream',
-      time: '02:00 PM',
-      completed: false
-    },
-    {
-      id: '4',
-      title: 'Resistance band exercises',
-      time: '05:00 PM',
-      completed: false
-    }
-  ];
-
-  const handleAddHotspot = (newHotspot: Hotspot) => {
-    setHotspots(prev => [...prev, newHotspot]);
-    
-    console.log("Added hotspot to patient record:", newHotspot);
-  };
-
-  const handleDeleteHotspot = (id: string) => {
-    const hotspotToDelete = hotspots.find(h => h.id === id);
-    setHotspots(prev => prev.filter(hotspot => hotspot.id !== id));
-    
-    if (hotspotToDelete) {
-      console.log("Removed hotspot from patient record:", hotspotToDelete);
-    }
-  };
-
   const handleUploadDocument = () => {
     toast({
       title: "Document Uploaded",
@@ -231,74 +308,56 @@ const Dashboard: React.FC = () => {
     setShowUploadDialog(false);
   };
 
-  const handleViewAllPatients = () => {
-    setActiveTab("patients");
-  };
-
-  const handleViewFullSchedule = () => {
+  const handleViewAllAppointments = () => {
     setActiveTab("calendar");
+    toast({
+      title: "Appointments",
+      description: "Viewing all upcoming appointments.",
+    });
   };
 
-  const handleViewReports = (patientId: number) => {
+  const handleViewPatient = (patientId: number) => {
     toast({
-      title: "Viewing Reports",
-      description: `Opening reports for patient ${patientId}`,
+      title: "Patient Profile",
+      description: `Opening patient profile #${patientId}.`,
     });
-    setActiveTab("reports");
   };
 
-  const handleScheduleAppointment = (patientId: number) => {
+  const handleViewAllMessages = () => {
     toast({
-      title: "Schedule Appointment",
-      description: `Opening scheduler for patient ${patientId}`,
+      title: "Messages",
+      description: "Viewing all messages.",
     });
+  };
+
+  const handleViewAllDocuments = () => {
+    toast({
+      title: "Documents",
+      description: "Viewing all clinic documents.",
+    });
+  };
+
+  const handleAddReminder = () => {
+    toast({
+      title: "Add Reminder",
+      description: "Opening reminder form.",
+    });
+  };
+
+  const handleToggleReminder = (id: string) => {
+    toast({
+      title: "Reminder Updated",
+      description: "Reminder status has been updated.",
+    });
+  };
+
+  const handleViewFullCalendar = () => {
     setActiveTab("calendar");
+    toast({
+      title: "Calendar",
+      description: "Opening full calendar view.",
+    });
   };
-
-  useEffect(() => {
-    const analyzeReports = () => {
-      const mockReportResults = [
-        {
-          muscleGroup: 'Lower Back',
-          issue: 'Mild lumbar strain',
-          severity: 'warning',
-          position: { x: 50, y: 50 }
-        }
-      ];
-
-      mockReportResults.forEach(result => {
-        const existingHotspot = hotspots.find(h => h.label.includes(result.muscleGroup));
-        
-        if (!existingHotspot) {
-          const newHotspot: Hotspot = {
-            id: `auto-${Date.now()}`,
-            x: result.position.x,
-            y: result.position.y,
-            z: 0,
-            color: result.severity === 'critical' ? '#FF4D4F' : 
-                   result.severity === 'warning' ? '#FAAD14' : '#52C41A',
-            label: result.muscleGroup,
-            description: result.issue,
-            status: result.severity as 'normal' | 'warning' | 'critical',
-          };
-          
-          setHotspots(prev => [...prev, newHotspot]);
-          
-          toast({
-            title: 'Automatic Issue Detection',
-            description: `New issue detected in ${result.muscleGroup}: ${result.issue}`,
-            variant: result.severity === 'critical' ? 'destructive' : 'default',
-          });
-        }
-      });
-    };
-
-    const timer = setTimeout(() => {
-      analyzeReports();
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -313,7 +372,7 @@ const Dashboard: React.FC = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">Doctor Dashboard</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage patient records, monitor health data, and track treatment progress
+                  Manage your clinic, appointments, and patient care
                 </p>
               </div>
               
@@ -361,286 +420,54 @@ const Dashboard: React.FC = () => {
               </TabsList>
               
               <TabsContent value="overview" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
-                  <div className="md:col-span-3 space-y-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold">Patients</h3>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        {patients.map((patient, index) => (
-                          <div 
-                            key={patient.id} 
-                            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
-                              selectedPatient === index 
-                                ? "bg-primary/10 text-primary" 
-                                : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                            }`}
-                            onClick={() => setSelectedPatient(index)}
-                          >
-                            <div className="w-9 h-9 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-sm font-medium">
-                              {patient.name.split(" ").map(n => n[0]).join("")}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{patient.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {patient.condition}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground" onClick={handleViewAllPatients}>
-                        View All Patients
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                      <h3 className="font-semibold mb-3">Today's Schedule</h3>
-                      
-                      <div className="space-y-3">
-                        <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">9:00 AM - 9:30 AM</span>
-                          </div>
-                          <p className="text-sm font-medium">Emma Rodriguez</p>
-                          <p className="text-xs text-muted-foreground">Follow-up appointment</p>
-                        </div>
-                        
-                        <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">11:15 AM - 12:00 PM</span>
-                          </div>
-                          <p className="text-sm font-medium">Marcus Johnson</p>
-                          <p className="text-xs text-muted-foreground">Rehabilitation session</p>
-                        </div>
-                        
-                        <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">3:30 PM - 4:15 PM</span>
-                          </div>
-                          <p className="text-sm font-medium">Nikolas Pascal</p>
-                          <p className="text-xs text-muted-foreground">Treatment assessment</p>
-                        </div>
-                      </div>
-                      
-                      <Button variant="ghost" className="w-full mt-3 text-sm text-muted-foreground" onClick={handleViewFullSchedule}>
-                        View Full Schedule
-                      </Button>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* First row */}
+                  <div className="md:col-span-8">
+                    <UpcomingAppointments 
+                      appointments={upcomingAppointments}
+                      onViewAll={handleViewAllAppointments}
+                    />
                   </div>
                   
-                  <div className="md:col-span-9 space-y-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-                      <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                        <div className="flex-shrink-0">
-                          <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl font-semibold">
-                            {patients[selectedPatient].name.split(" ").map(n => n[0]).join("")}
-                          </div>
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                            <div>
-                              <h2 className="text-2xl font-bold">{patients[selectedPatient].name}</h2>
-                              <p className="text-muted-foreground">
-                                {patients[selectedPatient].age} years • {patients[selectedPatient].gender}
-                              </p>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                              <Button variant="outline" className="gap-1.5">
-                                <FileText className="h-4 w-4" />
-                                Reports
-                              </Button>
-                              <Button className="gap-1.5">
-                                <Calendar className="h-4 w-4" />
-                                Schedule
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-muted-foreground">Diagnosis</span>
-                              <span className="font-medium">{patients[selectedPatient].condition}</span>
-                              <span className="text-xs text-muted-foreground mt-0.5">ICD: {patients[selectedPatient].icdCode}</span>
-                            </div>
-                            
-                            <div className="flex flex-col">
-                              <span className="text-xs text-muted-foreground">Last Visit</span>
-                              <span className="font-medium">{patients[selectedPatient].lastVisit}</span>
-                            </div>
-                            
-                            <div className="flex flex-col">
-                              <span className="text-xs text-muted-foreground">Next Appointment</span>
-                              <span className="font-medium">{patients[selectedPatient].nextVisit}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Click on the anatomy model to add or remove hotspots. Issues are automatically detected from patient reports.
-                        </p>
-                        
-                        <div className="relative w-full aspect-square md:aspect-auto md:h-80">
-                          <AnatomyModel
-                            hotspots={hotspots}
-                            className="bg-transparent w-full h-full"
-                            onAddHotspot={handleAddHotspot}
-                            onDeleteHotspot={handleDeleteHotspot}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <h3 className="text-lg font-semibold mb-4">Health Metrics</h3>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <HealthMetric
-                            title="Heart Rate"
-                            value={72}
-                            unit="bpm"
-                            change={-3}
-                            changeLabel="vs last week"
-                            icon={<Heart className="w-4 h-4" />}
-                            color="bg-medical-red/10 text-medical-red"
-                          />
-                          
-                          <HealthMetric
-                            title="Blood Pressure"
-                            value="120/80"
-                            unit="mmHg"
-                            change={0}
-                            changeLabel="stable"
-                            icon={<Activity className="w-4 h-4" />}
-                            color="bg-medical-blue/10 text-medical-blue"
-                          />
-                          
-                          <HealthMetric
-                            title="Temperature"
-                            value={98.6}
-                            unit="°F"
-                            change={0.2}
-                            changeLabel="vs yesterday"
-                            icon={<Thermometer className="w-4 h-4" />}
-                            color="bg-medical-yellow/10 text-medical-yellow"
-                          />
-                          
-                          <HealthMetric
-                            title="Oxygen"
-                            value={98}
-                            unit="%"
-                            change={1}
-                            changeLabel="vs last check"
-                            icon={<Droplet className="w-4 h-4" />}
-                            color="bg-medical-green/10 text-medical-green"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <h3 className="text-lg font-semibold mb-2">Biomarkers</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Track patient biomarkers and inflammation indicators
-                        </p>
-                        
-                        <div className="space-y-4">
-                          <BiomarkerCard
-                            name="C-Reactive Protein (CRP)"
-                            value={5.5}
-                            unit="mg/L"
-                            normalRange="0.0 - 8.0"
-                            status="normal"
-                            lastUpdated="Jun 10, 2023"
-                          />
-                          
-                          <BiomarkerCard
-                            name="Interleukin-6 (IL-6)"
-                            value={12.8}
-                            unit="pg/mL"
-                            normalRange="0.0 - 7.0"
-                            status="elevated"
-                            lastUpdated="Jun 10, 2023"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <TreatmentPlan
-                          title="Treatment Plan"
-                          date="Jun 15, 2023"
-                          tasks={treatmentTasks}
-                          progress={50}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">Patient Documents</h3>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1.5"
-                          onClick={() => setShowUploadDialog(true)}
-                        >
-                          <Upload className="h-4 w-4" />
-                          Upload
-                        </Button>
-                      </div>
-                      
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="border-b border-gray-200 dark:border-gray-700">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Name</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Type</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Uploaded By</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {patientDocuments.map((doc) => (
-                              <tr key={doc.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                <td className="py-3 px-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
-                                      <FileText className="h-4 w-4 text-muted-foreground" />
-                                    </div>
-                                    <span className="font-medium text-sm">{doc.name}</span>
-                                  </div>
-                                </td>
-                                <td className="py-3 px-4 text-sm">{doc.type}</td>
-                                <td className="py-3 px-4 text-sm">{doc.date}</td>
-                                <td className="py-3 px-4 text-sm">{doc.uploadedBy}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                  <div className="md:col-span-4">
+                    <MiniCalendar 
+                      currentDate={currentDate} 
+                      events={calendarEvents}
+                      onDateChange={setCurrentDate}
+                      onViewFullCalendar={handleViewFullCalendar}
+                    />
+                  </div>
+                  
+                  {/* Second row */}
+                  <div className="md:col-span-4">
+                    <TherapySchedules 
+                      therapySessions={therapySchedules}
+                      onViewPatient={handleViewPatient}
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-4">
+                    <ClinicMessages 
+                      messages={clinicMessages}
+                      onViewAll={handleViewAllMessages}
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-4">
+                    <ClinicReminders 
+                      reminders={clinicReminders}
+                      onAddReminder={handleAddReminder}
+                      onToggleReminder={handleToggleReminder}
+                    />
+                  </div>
+                  
+                  {/* Third row */}
+                  <div className="md:col-span-12">
+                    <ClinicDocuments 
+                      documents={clinicDocuments}
+                      onUpload={() => setShowUploadDialog(true)}
+                      onViewAll={handleViewAllDocuments}
+                    />
                   </div>
                 </div>
               </TabsContent>
