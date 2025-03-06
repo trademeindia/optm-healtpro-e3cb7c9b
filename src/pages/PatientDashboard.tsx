@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle } from 'lucide-react';
@@ -11,6 +10,7 @@ import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import PainLocationMap from '@/components/dashboard/PainLocationMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
+import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -243,6 +243,8 @@ const PatientDashboard: React.FC = () => {
                 tasks={treatmentTasks}
                 progress={50}
               />
+              
+              <PostureAnalysis />
               
               <PainLocationMap />
               

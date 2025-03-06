@@ -13,6 +13,7 @@ import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import PainLocationMap from '@/components/dashboard/PainLocationMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
+import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -276,6 +277,8 @@ const Dashboard: React.FC = () => {
                   </Button>
                 </div>
               </div>
+              
+              <PostureAnalysis />
               
               <PainLocationMap />
               
