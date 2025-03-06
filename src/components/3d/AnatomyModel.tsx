@@ -186,8 +186,8 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
             camera={{ position: [0, 0, 8], fov: 50 }}
             dpr={[1, 2]}
           >
-            {/* Fix: Use an actual color value instead of 'transparent' */}
-            <color attach="background" args={[0, 0, 0, 0]} />
+            {/* Fixed: Use RGB format (3 values) instead of RGBA (4 values) */}
+            <color attach="background" args={[0, 0, 0]} />
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 10]} intensity={1} />
             <Suspense fallback={null}>
