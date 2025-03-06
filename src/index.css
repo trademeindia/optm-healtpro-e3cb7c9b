@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -169,6 +168,25 @@
 
 .anatomy-model {
   @apply w-full h-full object-contain transition-all duration-500 ease-in-out;
+}
+
+/* Additional responsive utilities for anatomy model */
+@media (max-width: 640px) {
+  .anatomy-model-container img {
+    max-height: 280px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .anatomy-model-container img {
+    max-height: 350px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .anatomy-model-container img {
+    max-height: 400px;
+  }
 }
 
 .biomarker-card {

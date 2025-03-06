@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -169,7 +170,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     <div 
       className={cn(
         "anatomy-model-container relative bg-transparent",
-        fullscreen ? "fixed inset-0 z-50 bg-background/90 backdrop-blur-sm" : "h-full", 
+        fullscreen ? "fixed inset-0 z-50 bg-background/90 backdrop-blur-sm" : "h-full w-full", 
         className
       )}
     >
@@ -233,7 +234,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
             <img 
               src="/lovable-uploads/5948eb29-98e2-4f5e-84f5-215cd42d103e.png" 
               alt="Human Anatomy" 
-              className="h-full object-contain"
+              className="h-full w-auto max-h-full object-contain"
             />
             
             {hotspots.map((hotspot) => (

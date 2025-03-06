@@ -247,16 +247,16 @@ const Dashboard: React.FC = () => {
             
             {/* Middle column - Anatomy Model & Symptom Progress */}
             <div className="lg:col-span-1 space-y-4 md:space-y-6 order-1 lg:order-2">
-              <div className="glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[450px]">
+              <div className="glass-morphism rounded-2xl p-4 md:p-6 flex flex-col h-[400px] sm:h-[450px] md:h-[500px]">
                 <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Click on the anatomy model to add or remove hotspots. Issues are automatically detected from patient reports.
                 </p>
                 
-                <div className="flex-1 relative h-full">
+                <div className="flex-1 relative w-full">
                   <AnatomyModel
                     hotspots={hotspots}
-                    className="bg-transparent"
+                    className="bg-transparent w-full h-full"
                     onAddHotspot={handleAddHotspot}
                     onDeleteHotspot={handleDeleteHotspot}
                   />

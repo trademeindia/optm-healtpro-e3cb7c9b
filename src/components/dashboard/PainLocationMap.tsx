@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -30,12 +29,11 @@ const PainLocationMap: React.FC<PainLocationMapProps> = ({ className }) => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
-    // This is just for demonstration. In a real app, you'd open a dialog to name the pain point
     const newLocation: PainLocation = {
       id: Date.now().toString(),
       x,
       y,
-      painLevel: 5, // Default pain level
+      painLevel: 5,
       name: 'New Pain Point',
     };
     
@@ -72,26 +70,20 @@ const PainLocationMap: React.FC<PainLocationMapProps> = ({ className }) => {
       </div>
       
       <div 
-        className="relative w-full h-72 bg-white/30 dark:bg-white/10 rounded-lg overflow-hidden"
+        className="relative w-full h-64 sm:h-72 bg-white/30 dark:bg-white/10 rounded-lg overflow-hidden"
         onClick={handleBodyClick}
       >
-        {/* Human body silhouette - simplified for example */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30">
           <svg width="100px" height="220px" viewBox="0 0 100 220">
-            {/* Head */}
             <circle cx="50" cy="30" r="20" fill="currentColor" />
-            {/* Body */}
             <rect x="40" y="50" width="20" height="60" fill="currentColor" />
-            {/* Arms */}
             <rect x="15" y="60" width="25" height="10" fill="currentColor" />
             <rect x="60" y="60" width="25" height="10" fill="currentColor" />
-            {/* Legs */}
             <rect x="40" y="110" width="8" height="70" fill="currentColor" />
             <rect x="52" y="110" width="8" height="70" fill="currentColor" />
           </svg>
         </div>
         
-        {/* Pain location markers */}
         {painLocations.map(location => (
           <div
             key={location.id}
