@@ -283,7 +283,6 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                     avoidCollisions={true}
                     collisionPadding={getCollisionPadding()}
                     className="p-0"
-                    portalled
                   >
                     <div className="w-full max-w-[300px] space-y-2 p-4 overflow-visible">
                       <div className="flex items-center gap-2">
