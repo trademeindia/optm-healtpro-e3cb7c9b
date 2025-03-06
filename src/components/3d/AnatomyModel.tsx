@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -286,7 +287,6 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                     avoidCollisions={true}
                     collisionPadding={getCollisionPadding()}
                     sticky="always"
-                    forceMount
                   >
                     <div className="space-y-2 p-3">
                       <div className="flex items-center gap-2">
