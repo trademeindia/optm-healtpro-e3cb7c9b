@@ -120,20 +120,6 @@
   .text-gradient {
     @apply bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent;
   }
-
-  .perspective-3d {
-    transform-style: preserve-3d;
-    perspective: 1000px;
-  }
-  
-  .rotate-3d {
-    transform: rotateY(5deg) rotateX(3deg);
-    transition: transform 0.3s ease;
-  }
-  
-  .rotate-3d:hover {
-    transform: rotateY(-5deg) rotateX(-3deg);
-  }
 }
 
 .hotspot {
@@ -177,11 +163,11 @@
 }
 
 .anatomy-model-container {
-  @apply w-full h-full relative overflow-hidden perspective-3d;
+  @apply w-full h-full relative overflow-hidden;
 }
 
 .anatomy-model {
-  @apply w-full h-full object-contain transition-all duration-500 ease-in-out rotate-3d;
+  @apply w-full h-full object-contain transition-all duration-500 ease-in-out;
 }
 
 /* Additional responsive utilities for anatomy model */
