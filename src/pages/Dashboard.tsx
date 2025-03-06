@@ -26,7 +26,6 @@ const Dashboard: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { toast } = useToast();
 
-  // Mock data for upcoming appointments
   const upcomingAppointments = [
     {
       id: 'apt1',
@@ -75,7 +74,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for therapy schedules
   const therapySchedules = [
     {
       id: 'th1',
@@ -109,19 +107,18 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for clinic messages
   const clinicMessages = [
     {
       id: 'msg1',
       sender: 'Emma Rodriguez',
-      content: 'Hi Dr. Smith, I'm experiencing increased pain in my lower back after yesterday's session. Should I be concerned?',
+      content: "Hi Dr. Smith, I'm experiencing increased pain in my lower back after yesterday's session. Should I be concerned?",
       timestamp: '10:32 AM',
       isRead: false
     },
     {
       id: 'msg2',
       sender: 'Dr. Taylor (Staff)',
-      content: 'Patient files for today's appointments have been updated. Please review before sessions.',
+      content: "Patient files for today's appointments have been updated. Please review before sessions.",
       timestamp: '9:15 AM',
       isRead: true
     },
@@ -141,7 +138,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for documents
   const clinicDocuments = [
     {
       id: 'doc1',
@@ -180,7 +176,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for reminders
   const clinicReminders = [
     {
       id: 'rem1',
@@ -191,7 +186,7 @@ const Dashboard: React.FC = () => {
     },
     {
       id: 'rem2',
-      title: 'Review Marcus Johnson's treatment plan',
+      title: "Review Marcus Johnson's treatment plan",
       dueDate: 'Today, 2:00 PM',
       priority: 'medium' as const,
       completed: false
@@ -212,7 +207,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Mock data for calendar events
   const calendarEvents = {
     '2023-06-16': [
       {
@@ -421,7 +415,6 @@ const Dashboard: React.FC = () => {
               
               <TabsContent value="overview" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  {/* First row */}
                   <div className="md:col-span-8">
                     <UpcomingAppointments 
                       appointments={upcomingAppointments}
@@ -438,7 +431,6 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Second row */}
                   <div className="md:col-span-4">
                     <TherapySchedules 
                       therapySessions={therapySchedules}
@@ -461,7 +453,6 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Third row */}
                   <div className="md:col-span-12">
                     <ClinicDocuments 
                       documents={clinicDocuments}
@@ -485,7 +476,7 @@ const Dashboard: React.FC = () => {
                   
                   <div className="border border-dashed rounded-lg py-12 flex items-center justify-center">
                     <div className="text-center max-w-sm">
-                      <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
+                      <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
                       <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Drag and drop your files here, or click to select files
@@ -600,3 +591,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
