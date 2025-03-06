@@ -86,19 +86,19 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
 
   return (
     <motion.div
-      className={cn("biomarker-card", className)}
+      className={cn("biomarker-card p-4 md:p-6", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3 md:mb-4">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-lg font-semibold">{name}</h3>
+            <h3 className="text-base md:text-lg font-semibold">{name}</h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <InfoIcon className="w-4 h-4 text-muted-foreground" />
+                  <InfoIcon className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
                   Normal range: {normalRange} {unit}
@@ -109,7 +109,7 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
           <p className="text-xs text-muted-foreground">Last updated: {lastUpdated}</p>
         </div>
         <span className={cn(
-          "px-2 py-1 rounded-full text-xs font-medium",
+          "px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium",
           status === 'normal' && "bg-medical-green/20",
           status === 'elevated' && "bg-medical-yellow/20",
           status === 'low' && "bg-medical-blue/20",
@@ -119,8 +119,8 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
         </span>
       </div>
       
-      <div className="flex items-center gap-6">
-        <div className="relative w-20 h-20">
+      <div className="flex items-center gap-3 md:gap-6">
+        <div className="relative w-14 h-14 md:w-20 md:h-20">
           <svg width="100%" height="100%" viewBox="0 0 100 100" className="rotate-[-90deg]">
             <circle
               cx="50"
@@ -148,15 +148,15 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-bold">{percentage}%</span>
+            <span className="text-sm md:text-lg font-bold">{percentage}%</span>
           </div>
         </div>
         
         <div className="flex-1">
-          <div className="text-3xl font-bold mb-1 flex items-center gap-2">
-            {value} <span className="text-base font-normal text-muted-foreground">{unit}</span>
+          <div className="text-xl md:text-3xl font-bold mb-0 md:mb-1 flex items-center gap-1 md:gap-2">
+            {value} <span className="text-sm md:text-base font-normal text-muted-foreground">{unit}</span>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Range: {normalRange} {unit}
           </p>
         </div>

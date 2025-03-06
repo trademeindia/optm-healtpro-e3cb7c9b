@@ -43,25 +43,25 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
 
   return (
     <motion.div
-      className={cn("metric-card", className)}
+      className={cn("metric-card p-3 md:p-4", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="text-sm font-medium text-muted-foreground">{title}</div>
-        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", color)}>
+      <div className="flex items-start justify-between mb-2 md:mb-3">
+        <div className="text-xs md:text-sm font-medium text-muted-foreground">{title}</div>
+        <div className={cn("w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center", color)}>
           {icon}
         </div>
       </div>
       
-      <div className="flex items-baseline gap-2">
-        <div className="text-2xl font-bold">{value}</div>
-        {unit && <div className="text-sm text-muted-foreground">{unit}</div>}
+      <div className="flex items-baseline gap-1 md:gap-2">
+        <div className="text-lg md:text-2xl font-bold">{value}</div>
+        {unit && <div className="text-xs md:text-sm text-muted-foreground">{unit}</div>}
       </div>
       
       {typeof change !== 'undefined' && (
-        <div className="mt-2 flex items-center">
+        <div className="mt-1 md:mt-2 flex items-center">
           <div className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded", getChangeColor())}>
             {getChangeIcon()}
             <span>{Math.abs(change)}%</span>

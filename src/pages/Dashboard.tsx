@@ -88,20 +88,20 @@ const Dashboard: React.FC = () => {
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold">Patient Dashboard</h1>
-            <p className="text-muted-foreground">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="mb-4 md:mb-6 pl-10 lg:pl-0">
+            <h1 className="text-xl md:text-2xl font-bold">Patient Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
               View patient health data and treatment progress
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left column */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-3 lg:order-1">
               <PatientProfile
                 name="Nikolas Pascal"
                 age={32}
@@ -127,13 +127,13 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-6 flex flex-col h-[650px]">
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[650px] order-1 lg:order-2">
               <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Click on hotspots to view detailed information
               </p>
               
-              <div className="flex-1 relative">
+              <div className="flex-1 relative h-[300px] md:h-auto">
                 <AnatomyModel
                   image="/lovable-uploads/b60c3153-1d31-447c-a492-29234c29898a.png"
                   hotspots={hotspots}
@@ -157,8 +157,8 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Right column */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="lg:col-span-1 space-y-4 md:space-y-6 order-2 lg:order-3">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <HealthMetric
                   title="Heart Rate"
                   value={72}
