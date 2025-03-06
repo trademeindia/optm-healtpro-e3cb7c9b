@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Brain, Microscope } from 'lucide-react';
@@ -14,7 +13,7 @@ import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
-  // Updated hotspots to match the anatomy image
+  // Updated hotspots to match the anatomy image and include status
   const hotspots = [
     {
       id: 'shoulder',
@@ -24,7 +23,8 @@ const Dashboard: React.FC = () => {
       color: '#FF8787',
       label: 'Deltoid Muscle',
       description: 'Calcific tendinitis detected. Inflammation of the tendons in the shoulder joint.',
-      icon: '+'
+      status: 'critical',
+      icon: null
     },
     {
       id: 'chest',
@@ -34,7 +34,8 @@ const Dashboard: React.FC = () => {
       color: '#2D7FF9',
       label: 'Pectoralis Major',
       description: 'Normal muscle tone. No significant issues detected.',
-      icon: '+'
+      status: 'normal',
+      icon: null
     },
     {
       id: 'abs',
@@ -44,7 +45,8 @@ const Dashboard: React.FC = () => {
       color: '#F0C728',
       label: 'Abdominal Muscles',
       description: 'Mild inflammation detected in the rectus abdominis. Recommended for further assessment.',
-      icon: '+'
+      status: 'warning',
+      icon: null
     },
     {
       id: 'bicep',
@@ -54,7 +56,8 @@ const Dashboard: React.FC = () => {
       color: '#4CAF50',
       label: 'Biceps Brachii',
       description: 'Minor strain detected. Rest and ice therapy recommended.',
-      icon: '+'
+      status: 'warning',
+      icon: null
     },
     {
       id: 'quadriceps',
@@ -64,7 +67,8 @@ const Dashboard: React.FC = () => {
       color: '#9C27B0',
       label: 'Quadriceps',
       description: 'Normal muscle function. Continue with regular strength training.',
-      icon: '+'
+      status: 'normal',
+      icon: null
     }
   ];
 
