@@ -144,10 +144,18 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
   };
 
   const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
-    if (x < 33) return "right";
-    if (x > 66) return "left";
-    if (y < 50) return "bottom";
+    if (x < 25) return "right";
+    if (x > 75) return "left";
+    if (y < 40) return "bottom";
     return "top";
+  };
+
+  const getTooltipAlign = (x: number, y: number): "start" | "center" | "end" => {
+    if (x < 25 || x > 75) {
+      if (y < 30) return "start";
+      if (y > 70) return "end";
+    }
+    return "center";
   };
 
   return (
@@ -263,12 +271,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                   </TooltipTrigger>
                   <TooltipContent 
                     side={getTooltipSide(hotspot.x, hotspot.y)} 
-                    sideOffset={8}
-                    align="center"
-                    className="z-50 max-w-[250px] overflow-hidden"
+                    align={getTooltipAlign(hotspot.x, hotspot.y)}
+                    sideOffset={12}
+                    className="z-50 max-w-[250px] overflow-visible" 
                     avoidCollisions={true}
+                    collisionPadding={20}
+                    sticky="always"
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-1 p-1">
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "inline-block w-2 h-2 rounded-full",
