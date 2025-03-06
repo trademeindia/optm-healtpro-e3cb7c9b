@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { InfoIcon } from 'lucide-react';
-import Tooltip from '../ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BiomarkerCardProps {
   name: string;
@@ -95,9 +95,16 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
         <div>
           <div className="flex items-center gap-1.5">
             <h3 className="text-lg font-semibold">{name}</h3>
-            <Tooltip content={`Normal range: ${normalRange} ${unit}`} position="right">
-              <InfoIcon className="w-4 h-4 text-muted-foreground" />
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <InfoIcon className="w-4 h-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  Normal range: {normalRange} {unit}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <p className="text-xs text-muted-foreground">Last updated: {lastUpdated}</p>
         </div>

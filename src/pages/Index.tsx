@@ -1,17 +1,12 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Auto-redirect to dashboard to ensure the user sees the main content
-    navigate('/dashboard');
-  }, [navigate]);
-
-  return <Dashboard />;
+  // Using Navigate component instead of useNavigate hook
+  // to avoid React Router context issues
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default Index;
