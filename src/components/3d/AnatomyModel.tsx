@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { RotateCw, RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Html } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Html, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface Hotspot {
@@ -22,38 +22,75 @@ interface Hotspot {
 
 interface AnatomyModelProps {
   className?: string;
-  image?: string; 
+  image?: string; // Kept for backward compatibility
   modelUrl?: string;
   hotspots: Hotspot[];
 }
 
-// Human model for interactive hotspots
+// Fallback human model using Three.js primitives
 const HumanModel = ({ hotspots, onHotspotClick, activeHotspot }: { 
   hotspots: Hotspot[]; 
   onHotspotClick: (id: string) => void; 
   activeHotspot: string | null;
 }) => {
-  // Using a transparent group to place hotspots
   const group = useRef<THREE.Group>(null);
   
-  // Add slight automatic rotation
   useFrame(() => {
     if (group.current) {
       // Subtle automatic rotation when not interacting
-      group.current.rotation.y += 0.0005;
+      group.current.rotation.y += 0.001;
     }
   });
 
   return (
-    <group ref={group} position={[0, 0, 0]}>
+    <group ref={group}>
+      {/* Head */}
+      <mesh position={[0, 2.7, 0]}>
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
+      {/* Neck */}
+      <mesh position={[0, 2.2, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.5, 32]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
+      {/* Torso */}
+      <mesh position={[0, 1, 0]}>
+        <capsuleGeometry args={[0.8, 1.5, 8, 16]} />
+        <meshStandardMaterial color="#f0b7a4" />
+      </mesh>
+      
+      {/* Left Arm */}
+      <mesh position={[-1.1, 1.2, 0]} rotation={[0, 0, -Math.PI / 6]}>
+        <capsuleGeometry args={[0.2, 1.5, 8, 16]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
+      {/* Right Arm */}
+      <mesh position={[1.1, 1.2, 0]} rotation={[0, 0, Math.PI / 6]}>
+        <capsuleGeometry args={[0.2, 1.5, 8, 16]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
+      {/* Left Leg */}
+      <mesh position={[-0.5, -1, 0]} rotation={[0, 0, Math.PI / 20]}>
+        <capsuleGeometry args={[0.25, 1.8, 8, 16]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
+      {/* Right Leg */}
+      <mesh position={[0.5, -1, 0]} rotation={[0, 0, -Math.PI / 20]}>
+        <capsuleGeometry args={[0.25, 1.8, 8, 16]} />
+        <meshStandardMaterial color="#f5d0c4" />
+      </mesh>
+      
       {/* Add 3D hotspots */}
       {hotspots.map((hotspot) => (
         <group key={hotspot.id} position={[hotspot.x / 25 - 2, hotspot.y / 25 - 2, hotspot.z / 50]}>
           <mesh 
-            onClick={(e) => {
-              e.stopPropagation();
-              onHotspotClick(hotspot.id);
-            }}
+            onClick={() => onHotspotClick(hotspot.id)}
             scale={activeHotspot === hotspot.id ? 1.2 : 1}
           >
             <sphereGeometry args={[0.12, 16, 16]} />
@@ -94,13 +131,7 @@ const CameraControls = ({ zoom, setZoom }: { zoom: number; setZoom: (zoom: numbe
     camera.position.z = 10 - zoom * 5;
   }, [zoom, camera]);
   
-  return <OrbitControls 
-    enablePan={true} 
-    enableZoom={true} 
-    enableRotate={true}
-    minDistance={3}
-    maxDistance={15}
-  />;
+  return <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />;
 };
 
 // Main component
@@ -168,35 +199,17 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         </div>
         
         <div className="flex-1 relative">
-          {/* Updated background image - using the newly uploaded anatomy image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center opacity-90 z-0"
-            style={{ 
-              backgroundImage: "url('/lovable-uploads/8ee7aeab-db48-461a-af81-0792bfadb4d0.png')",
-              backgroundSize: "contain",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat"
-            }}
-          />
-          
-          {/* 3D Canvas with transparent background */}
-          <Canvas 
-            className="w-full h-full z-10" 
-            style={{ background: 'transparent', position: 'relative' }}
-            camera={{ position: [0, 0, 8], fov: 50 }}
-            dpr={[1, 2]}
-          >
-            {/* Set THREE color to transparent background */}
-            <color attach="background" args={[0, 0, 0]} />
+          <Canvas className="w-full h-full">
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 10]} intensity={1} />
             <Suspense fallback={null}>
+              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+              <CameraControls zoom={zoom} setZoom={setZoom} />
               <HumanModel 
                 hotspots={enhancedHotspots} 
                 onHotspotClick={handleHotspotClick} 
                 activeHotspot={activeHotspot} 
               />
-              <CameraControls zoom={zoom} setZoom={setZoom} />
             </Suspense>
           </Canvas>
         </div>
