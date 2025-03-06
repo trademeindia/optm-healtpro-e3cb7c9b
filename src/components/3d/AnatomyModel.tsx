@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -144,27 +143,18 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     return '';
   };
 
-  const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
-    if (x < 30) return "right";
-    if (x > 70) return "left";
-    if (y < 40) return "bottom";
+  const getTooltipSide = (x: number): "top" | "right" | "bottom" | "left" => {
+    if (x < 25) return "right";
+    if (x > 75) return "left";
     return "top";
-  };
-
-  const getTooltipAlign = (x: number, y: number): "start" | "center" | "end" => {
-    if (x < 30 || x > 70) {
-      if (y < 30) return "start";
-      if (y > 70) return "end";
-    }
-    return "center";
   };
 
   const getCollisionPadding = () => {
     return {
-      top: 20,
-      bottom: 20,
-      left: 40,
-      right: 40
+      top: 25,
+      bottom: 25,
+      left: 25,
+      right: 25
     };
   };
 
@@ -280,15 +270,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                     </motion.div>
                   </TooltipTrigger>
                   <TooltipContent 
-                    side={getTooltipSide(hotspot.x, hotspot.y)} 
-                    align={getTooltipAlign(hotspot.x, hotspot.y)}
-                    sideOffset={20}
-                    className="z-50 w-auto max-w-[300px] min-w-[200px] overflow-visible"
+                    side={getTooltipSide(hotspot.x)} 
+                    align="center"
+                    sideOffset={15}
+                    className="z-50 p-0 overflow-hidden"
                     avoidCollisions={true}
                     collisionPadding={getCollisionPadding()}
-                    sticky="always"
                   >
-                    <div className="space-y-2 p-3">
+                    <div className="space-y-1 p-3 max-w-[280px] min-w-[200px]">
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "inline-block w-2 h-2 rounded-full",
@@ -298,10 +287,10 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         )}></span>
                         <h3 className="font-bold text-sm">{hotspot.label}</h3>
                       </div>
-                      <p className="text-xs break-words whitespace-normal overflow-visible">{hotspot.description}</p>
+                      <p className="text-xs break-words whitespace-normal">{hotspot.description}</p>
                       {hotspot.status !== 'normal' && (
                         <p className={cn(
-                          "text-xs font-medium mt-1 px-2 py-1 rounded",
+                          "text-xs font-medium mt-1 px-2 py-1 rounded text-center",
                           hotspot.status === 'critical' ? "bg-red-100 text-red-800" : 
                           "bg-yellow-100 text-yellow-800"
                         )}>
