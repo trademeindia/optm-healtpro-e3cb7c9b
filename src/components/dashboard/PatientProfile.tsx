@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Calendar, MapPin, Phone, Mail } from 'lucide-react';
-
 interface PatientProfileProps {
   name: string;
   age: number;
@@ -14,7 +12,6 @@ interface PatientProfileProps {
   image?: string;
   className?: string;
 }
-
 const PatientProfile: React.FC<PatientProfileProps> = ({
   name,
   age,
@@ -23,25 +20,23 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   phone,
   email,
   image,
-  className,
+  className
 }) => {
-  return (
-    <motion.div
-      className={cn("glass-morphism rounded-2xl p-6", className)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+  return <motion.div initial={{
+    opacity: 0,
+    y: 20
+  }} animate={{
+    opacity: 1,
+    y: 0
+  }} transition={{
+    duration: 0.5
+  }} className="">
       <div className="flex items-center gap-4 mb-6">
         <div className="relative">
           <div className="w-16 h-16 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
-            {image ? (
-              <img src={image} alt={name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xl font-semibold text-primary">
+            {image ? <img src={image} alt={name} className="w-full h-full object-cover" /> : <span className="text-xl font-semibold text-primary">
                 {name.split(' ').map(n => n[0]).join('')}
-              </span>
-            )}
+              </span>}
           </div>
           <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-medical-green flex items-center justify-center">
             <span className="text-white text-xs">✓</span>
@@ -81,8 +76,6 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           View History
         </button>
       </div>
-    </motion.div>
-  );
+    </motion.div>;
 };
-
 export default PatientProfile;
