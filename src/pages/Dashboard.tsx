@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Brain, Microscope } from 'lucide-react';
@@ -280,7 +279,9 @@ const Dashboard: React.FC = () => {
               
               <PainLocationMap />
               
-              <SymptomProgressChart />
+              <div className="mt-8">
+                <SymptomProgressChart />
+              </div>
             </div>
             
             {/* Right column */}
