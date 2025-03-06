@@ -7,14 +7,18 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import PatientDashboard from "./pages/PatientDashboard";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 // Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles = ['doctor', 'patient'] }: { 
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
   
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -24,53 +28,77 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" />;
   }
   
+  // Check if user has the required role
+  if (user && !allowedRoles.includes(user.role)) {
+    return <Navigate to={user.role === 'doctor' ? '/dashboard' : '/patient-dashboard'} />;
+  }
+  
   return <>{children}</>;
 };
 
 // AppRoutes component to use AuthContext
 const AppRoutes = () => {
+  const { user } = useAuth();
+
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={
+        user ? (
+          <Navigate to={user.role === 'doctor' ? '/dashboard' : '/patient-dashboard'} />
+        ) : (
+          <Index />
+        )
+      } />
       <Route path="/login" element={<Login />} />
+      
+      {/* Doctor routes */}
       <Route path="/dashboard" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/patients" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/biomarkers" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/appointments" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/reports" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/analytics" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
         </ProtectedRoute>
       } />
+      
+      {/* Patient routes */}
+      <Route path="/patient-dashboard" element={
+        <ProtectedRoute allowedRoles={['patient']}>
+          <PatientDashboard />
+        </ProtectedRoute>
+      } />
+      
+      {/* Shared routes */}
       <Route path="/settings" element={
         <ProtectedRoute>
-          <Dashboard />
+          {user?.role === 'doctor' ? <Dashboard /> : <PatientDashboard />}
         </ProtectedRoute>
       } />
       <Route path="/help" element={
         <ProtectedRoute>
-          <Dashboard />
+          {user?.role === 'doctor' ? <Dashboard /> : <PatientDashboard />}
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

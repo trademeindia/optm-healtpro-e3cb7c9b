@@ -2,9 +2,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeartPulse } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +16,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
+  const [userType, setUserType] = useState<'doctor' | 'patient'>('doctor');
   const { login, forgotPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +58,14 @@ const Login: React.FC = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleTabChange = (value: string) => {
+    if (value === 'doctor' || value === 'patient') {
+      setUserType(value);
+      setEmail('');
+      setPassword('');
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
       {/* Left side - Login Form */}
@@ -73,44 +85,62 @@ const Login: React.FC = () => {
           
           {!showForgotPassword ? (
             <>
-              <h2 className="text-2xl font-bold mb-2">Doctor Login</h2>
-              <p className="text-muted-foreground mb-8">Please sign in to continue to your dashboard</p>
+              <Tabs 
+                defaultValue="doctor" 
+                className="mb-6"
+                onValueChange={handleTabChange}
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="doctor" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>Doctor</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="patient" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Patient</span>
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="doctor">
+                  <h2 className="text-2xl font-bold mb-2">Doctor Login</h2>
+                  <p className="text-muted-foreground mb-4">Access patient records and treatment plans</p>
+                </TabsContent>
+                <TabsContent value="patient">
+                  <h2 className="text-2xl font-bold mb-2">Patient Login</h2>
+                  <p className="text-muted-foreground mb-4">View your health data and treatment progress</p>
+                </TabsContent>
+              </Tabs>
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Email Address
-                  </label>
+                  <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Mail className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <input
+                    <Input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="doctor@example.com"
+                      className="pl-10"
+                      placeholder={userType === 'doctor' ? "doctor@example.com" : "patient@example.com"}
                       required
                     />
                   </div>
                 </div>
                 
                 <div className="mb-6">
-                  <label htmlFor="password" className="block text-sm font-medium mb-2">
-                    Password
-                  </label>
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Lock className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <input
+                    <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="pl-10"
                       placeholder="••••••••"
                       required
                     />
@@ -157,7 +187,9 @@ const Login: React.FC = () => {
               </form>
               
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                Demo credentials: doctor@example.com / password123
+                {userType === 'doctor' 
+                  ? 'Demo: doctor@example.com / password123' 
+                  : 'Demo: patient@example.com / password123'}
               </p>
             </>
           ) : (
@@ -167,20 +199,18 @@ const Login: React.FC = () => {
               
               <form onSubmit={handleForgotPassword}>
                 <div className="mb-6">
-                  <label htmlFor="forgotEmail" className="block text-sm font-medium mb-2">
-                    Email Address
-                  </label>
+                  <Label htmlFor="forgotEmail">Email Address</Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Mail className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <input
+                    <Input
                       id="forgotEmail"
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="doctor@example.com"
+                      className="pl-10"
+                      placeholder="your@email.com"
                       required
                     />
                   </div>
@@ -221,33 +251,66 @@ const Login: React.FC = () => {
           >
             <h2 className="text-2xl font-bold mb-4">Welcome to OPTM HealPro</h2>
             <p className="mb-4">
-              Access your patient records, biomarkers, and treatment plans all in one place.
+              {userType === 'doctor' 
+                ? 'Access your patient records, biomarkers, and treatment plans all in one place.'
+                : 'Monitor your health progress, treatment plans, and communicate with your doctor.'}
             </p>
             <ul className="space-y-2">
-              <li className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Advanced patient tracking</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Interactive anatomical models</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Biomarker analysis and trends</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Secure and compliant platform</span>
-              </li>
+              {userType === 'doctor' ? (
+                <>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Advanced patient tracking</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Interactive anatomical models</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Biomarker analysis and trends</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Secure and compliant platform</span>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Track your health progress</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>View your treatment plan</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Communication with your doctor</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span>Secure access to medical records</span>
+                  </li>
+                </>
+              )}
             </ul>
           </motion.div>
         </div>

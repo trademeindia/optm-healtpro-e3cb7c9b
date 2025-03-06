@@ -3,11 +3,13 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+type UserRole = 'doctor' | 'patient';
+
 type User = {
   id: string;
   email: string;
   name: string;
-  role: 'doctor';
+  role: UserRole;
 };
 
 type AuthContextType = {
@@ -49,14 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // Mock login function - in real implementation this would call an API
+  // Mock login function with support for different user roles
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, we're checking locally
+      // For demo purposes, check credentials locally
       // In production, this would validate with a backend server
       if (email === 'doctor@example.com' && password === 'password123') {
         const userData: User = {
@@ -72,6 +74,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         toast.success('Login successful');
         navigate('/dashboard');
+      } else if (email === 'patient@example.com' && password === 'password123') {
+        const userData: User = {
+          id: '2',
+          email: 'patient@example.com',
+          name: 'Alex Johnson',
+          role: 'patient'
+        };
+        
+        // Store user in state and localStorage
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        toast.success('Login successful');
+        navigate('/patient-dashboard');
       } else {
         throw new Error('Invalid email or password');
       }
