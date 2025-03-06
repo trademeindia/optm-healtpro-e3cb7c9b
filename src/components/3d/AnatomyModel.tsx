@@ -272,13 +272,13 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                   <TooltipContent 
                     side={getTooltipSide(hotspot.x, hotspot.y)} 
                     align={getTooltipAlign(hotspot.x, hotspot.y)}
-                    sideOffset={12}
-                    className="z-50 max-w-[250px] overflow-visible" 
+                    sideOffset={14}
+                    className="z-50 max-w-sm w-[250px] overflow-visible" 
                     avoidCollisions={true}
-                    collisionPadding={20}
+                    collisionPadding={30}
                     sticky="always"
                   >
-                    <div className="space-y-1 p-1">
+                    <div className="space-y-1 p-2">
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "inline-block w-2 h-2 rounded-full",
@@ -288,7 +288,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         )}></span>
                         <h3 className="font-bold text-sm">{hotspot.label}</h3>
                       </div>
-                      <p className="text-xs">{hotspot.description}</p>
+                      <p className="text-xs break-words whitespace-normal">{hotspot.description}</p>
                       {hotspot.status !== 'normal' && (
                         <p className={cn(
                           "text-xs font-medium mt-1 px-2 py-1 rounded",
