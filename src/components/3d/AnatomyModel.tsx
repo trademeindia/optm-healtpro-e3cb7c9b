@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ZoomIn, ZoomOut, Maximize2, Info, AlertTriangle, Check, Activity, Plus, X, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
+import HotspotForm from './HotspotForm';
 
 export interface Hotspot {
   id: string;
@@ -41,6 +42,8 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [addingHotspot, setAddingHotspot] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [tempClickPosition, setTempClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isHotspotFormOpen, setIsHotspotFormOpen] = useState(false);
   const { toast } = useToast();
   
   const handleHotspotClick = (id: string, label: string, status: 'normal' | 'warning' | 'critical') => {
@@ -76,26 +79,40 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
+    // Store the position and open the form
+    setTempClickPosition({ x, y });
+    setIsHotspotFormOpen(true);
+  };
+  
+  const handleSaveHotspot = (hotspotData: Partial<Hotspot>) => {
+    if (!onAddHotspot || !tempClickPosition) return;
+    
     const newHotspot: Hotspot = {
       id: `hotspot-${Date.now()}`,
-      x,
-      y,
+      x: tempClickPosition.x,
+      y: tempClickPosition.y,
       z: 0,
-      color: '#52C41A',
-      label: 'New Hotspot',
-      description: 'Add description here',
-      status: 'normal',
+      color: hotspotData.color || '#52C41A',
+      label: hotspotData.label || 'New Hotspot',
+      description: hotspotData.description || 'No description provided',
+      status: hotspotData.status || 'normal',
     };
     
-    if (onAddHotspot) {
-      onAddHotspot(newHotspot);
-      toast({
-        title: "Hotspot added",
-        description: "New hotspot has been added to the anatomy model",
-      });
-    }
+    onAddHotspot(newHotspot);
+    toast({
+      title: "Issue added",
+      description: `${newHotspot.label} has been added to the patient record`,
+      variant: newHotspot.status === 'critical' ? 'destructive' : 
+               newHotspot.status === 'warning' ? 'default' : 'default',
+    });
     
     setAddingHotspot(false);
+    setTempClickPosition(null);
+  };
+  
+  const handleCloseForm = () => {
+    setIsHotspotFormOpen(false);
+    setTempClickPosition(null);
   };
   
   const handleZoom = (direction: 'in' | 'out') => {
@@ -296,6 +313,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
           </Button>
         </div>
       </motion.div>
+      
+      {/* Hotspot Form Dialog */}
+      <HotspotForm 
+        isOpen={isHotspotFormOpen}
+        onClose={handleCloseForm}
+        onSave={handleSaveHotspot}
+        position={tempClickPosition}
+      />
     </div>
   );
 };

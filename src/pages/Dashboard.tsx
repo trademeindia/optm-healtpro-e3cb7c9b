@@ -120,11 +120,33 @@ const Dashboard: React.FC = () => {
   // Handler for adding a new hotspot
   const handleAddHotspot = (newHotspot: Hotspot) => {
     setHotspots(prev => [...prev, newHotspot]);
+    
+    // Update patient record in a real application
+    console.log("Added hotspot to patient record:", newHotspot);
+    
+    // In a real application, this would be an API call to update the patient's medical record
+    // savePatientRecord(patientId, { 
+    //   issueType: 'muscular',
+    //   location: newHotspot.label,
+    //   severity: newHotspot.status,
+    //   description: newHotspot.description,
+    //   detectedAt: new Date(),
+    //   detectedBy: 'manual-entry', // Indicates doctor manually added this issue
+    // });
   };
 
   // Handler for deleting a hotspot
   const handleDeleteHotspot = (id: string) => {
+    const hotspotToDelete = hotspots.find(h => h.id === id);
     setHotspots(prev => prev.filter(hotspot => hotspot.id !== id));
+    
+    // Update patient record in a real application
+    if (hotspotToDelete) {
+      console.log("Removed hotspot from patient record:", hotspotToDelete);
+      
+      // In a real application, this would be an API call to update the patient's medical record
+      // removePatientIssue(patientId, id);
+    }
   };
 
   // Simulate automatic analysis of patient reports
