@@ -17,9 +17,9 @@ const Dashboard: React.FC = () => {
   const hotspots = [
     {
       id: 'shoulder',
-      x: 75,  // Adjusted for 3D space
-      y: 45,  // Adjusted for 3D space
-      z: 10,  // Added z-coordinate for 3D positioning
+      x: 75,
+      y: 45,
+      z: 10,
       color: '#FF8787',
       label: 'Shoulder',
       description: 'Calcific tendinitis of the shoulder. Inflammation of the tendons in the shoulder joint.',
@@ -135,20 +135,10 @@ const Dashboard: React.FC = () => {
                 Click on hotspots to view detailed information. Drag to rotate the model.
               </p>
               
-              <div className="flex-1 relative h-[300px] md:h-auto">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center opacity-90"
-                  style={{ 
-                    backgroundImage: "url('/lovable-uploads/15366aea-43a6-4d71-a42f-52ce619d37e3.png')",
-                    backgroundSize: "contain",
-                    backgroundPosition: "center",
-                    backgroundRepeat: "no-repeat",
-                    zIndex: 0
-                  }}
-                />
+              <div className="flex-1 relative h-[400px] md:h-auto">
                 <AnatomyModel
                   hotspots={hotspots}
-                  className="relative z-10"
+                  className="relative z-10 h-full"
                 />
               </div>
               

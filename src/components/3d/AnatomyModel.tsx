@@ -34,7 +34,6 @@ const HumanModel = ({ hotspots, onHotspotClick, activeHotspot }: {
   activeHotspot: string | null;
 }) => {
   // Using a transparent group to place hotspots
-  // We don't render a 3D model because we're using the background image instead
   const group = useRef<THREE.Group>(null);
   
   // Add slight automatic rotation
@@ -45,14 +44,16 @@ const HumanModel = ({ hotspots, onHotspotClick, activeHotspot }: {
     }
   });
 
-  // The actual 3D model is invisible, we just use it for hotspot placement
   return (
-    <group ref={group}>
+    <group ref={group} position={[0, 0, 0]}>
       {/* Add 3D hotspots */}
       {hotspots.map((hotspot) => (
         <group key={hotspot.id} position={[hotspot.x / 25 - 2, hotspot.y / 25 - 2, hotspot.z / 50]}>
           <mesh 
-            onClick={() => onHotspotClick(hotspot.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onHotspotClick(hotspot.id);
+            }}
             scale={activeHotspot === hotspot.id ? 1.2 : 1}
           >
             <sphereGeometry args={[0.12, 16, 16]} />
@@ -93,7 +94,13 @@ const CameraControls = ({ zoom, setZoom }: { zoom: number; setZoom: (zoom: numbe
     camera.position.z = 10 - zoom * 5;
   }, [zoom, camera]);
   
-  return <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />;
+  return <OrbitControls 
+    enablePan={true} 
+    enableZoom={true} 
+    enableRotate={true}
+    minDistance={3}
+    maxDistance={15}
+  />;
 };
 
 // Main component
@@ -160,9 +167,10 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
           </Button>
         </div>
         
-        {fullscreen && (
+        <div className="flex-1 relative">
+          {/* Background image - displayed behind the Canvas */}
           <div 
-            className="absolute inset-0 bg-cover bg-center opacity-90 z-10"
+            className="absolute inset-0 bg-cover bg-center opacity-90 z-0"
             style={{ 
               backgroundImage: "url('/lovable-uploads/15366aea-43a6-4d71-a42f-52ce619d37e3.png')",
               backgroundSize: "contain",
@@ -170,20 +178,24 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
               backgroundRepeat: "no-repeat"
             }}
           />
-        )}
-        
-        <div className="flex-1 relative">
-          <Canvas className="w-full h-full" style={{ background: 'transparent' }}>
+          
+          {/* 3D Canvas with transparent background */}
+          <Canvas 
+            className="w-full h-full z-10" 
+            style={{ background: 'transparent', position: 'relative' }}
+            camera={{ position: [0, 0, 8], fov: 50 }}
+            dpr={[1, 2]}
+          >
+            <color attach="background" args={['transparent']} />
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 10]} intensity={1} />
             <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-              <CameraControls zoom={zoom} setZoom={setZoom} />
               <HumanModel 
                 hotspots={enhancedHotspots} 
                 onHotspotClick={handleHotspotClick} 
                 activeHotspot={activeHotspot} 
               />
+              <CameraControls zoom={zoom} setZoom={setZoom} />
             </Suspense>
           </Canvas>
         </div>
