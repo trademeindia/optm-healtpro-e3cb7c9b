@@ -1,3 +1,4 @@
+importtypescript
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -591,4 +592,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
