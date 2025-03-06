@@ -14,36 +14,56 @@ import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
-  // Mock data for anatomy model hotspots with 3D coordinates
+  // Updated hotspots to match the anatomy image
   const hotspots = [
     {
       id: 'shoulder',
-      x: 75,  // Adjusted for 3D space
-      y: 45,  // Adjusted for 3D space
-      z: 10,  // Added z-coordinate for 3D positioning
+      x: 28,  
+      y: 25,  
+      z: 10,  
       color: '#FF8787',
-      label: 'Shoulder',
-      description: 'Calcific tendinitis of the shoulder. Inflammation of the tendons in the shoulder joint.',
+      label: 'Deltoid Muscle',
+      description: 'Calcific tendinitis detected. Inflammation of the tendons in the shoulder joint.',
       icon: '+'
     },
     {
-      id: 'neck',
+      id: 'chest',
       x: 50,
-      y: 70,
+      y: 30,
       z: 5,
       color: '#2D7FF9',
-      label: 'Neck',
-      description: 'Normal range of motion. No significant issues detected.',
+      label: 'Pectoralis Major',
+      description: 'Normal muscle tone. No significant issues detected.',
       icon: '+'
     },
     {
-      id: 'lumbar',
+      id: 'abs',
       x: 50,
-      y: 25,
+      y: 45,
       z: -5,
       color: '#F0C728',
-      label: 'Lumbar Region',
-      description: 'Mild inflammation detected. Recommended for further assessment.',
+      label: 'Abdominal Muscles',
+      description: 'Mild inflammation detected in the rectus abdominis. Recommended for further assessment.',
+      icon: '+'
+    },
+    {
+      id: 'bicep',
+      x: 32,
+      y: 35,
+      z: 0,
+      color: '#4CAF50',
+      label: 'Biceps Brachii',
+      description: 'Minor strain detected. Rest and ice therapy recommended.',
+      icon: '+'
+    },
+    {
+      id: 'quadriceps',
+      x: 54,
+      y: 60,
+      z: 0,
+      color: '#9C27B0',
+      label: 'Quadriceps',
+      description: 'Normal muscle function. Continue with regular strength training.',
       icon: '+'
     }
   ];
@@ -130,15 +150,16 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Middle column - Anatomy Model */}
-            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[650px] order-1 lg:order-2">
-              <h3 className="text-lg font-semibold mb-2">Interactive 3D Anatomy</h3>
+            <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[750px] order-1 lg:order-2">
+              <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Click on hotspots to view detailed information. Drag to rotate the model.
+                Click on hotspots to view detailed information about muscle groups.
               </p>
               
-              <div className="flex-1 relative h-[300px] md:h-auto">
+              <div className="flex-1 relative h-full">
                 <AnatomyModel
                   hotspots={hotspots}
+                  className="bg-transparent"
                 />
               </div>
               
