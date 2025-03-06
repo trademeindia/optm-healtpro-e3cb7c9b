@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ZoomIn, ZoomOut, Maximize2, Info, AlertTriangle, Check, Activity } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Info, AlertTriangle, Check, Activity, Plus, X, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-interface Hotspot {
+export interface Hotspot {
   id: string;
   x: number;
   y: number;
@@ -24,18 +24,37 @@ interface AnatomyModelProps {
   image?: string;
   modelUrl?: string;
   hotspots: Hotspot[];
+  onAddHotspot?: (hotspot: Hotspot) => void;
+  onDeleteHotspot?: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const AnatomyModel: React.FC<AnatomyModelProps> = ({
   className,
   hotspots,
+  onAddHotspot,
+  onDeleteHotspot,
+  readOnly = false,
 }) => {
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
+  const [addingHotspot, setAddingHotspot] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const { toast } = useToast();
   
-  const handleHotspotClick = (id: string, label: string, status: string) => {
+  const handleHotspotClick = (id: string, label: string, status: 'normal' | 'warning' | 'critical') => {
+    if (editMode) {
+      if (onDeleteHotspot) {
+        onDeleteHotspot(id);
+        toast({
+          title: "Hotspot removed",
+          description: `${label} has been removed`,
+        });
+      }
+      return;
+    }
+    
     setActiveHotspot(id === activeHotspot ? null : id);
     
     // Show toast notification with issue details
@@ -50,6 +69,35 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     }
   };
   
+  const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!addingHotspot || readOnly) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    const newHotspot: Hotspot = {
+      id: `hotspot-${Date.now()}`,
+      x,
+      y,
+      z: 0,
+      color: '#52C41A',
+      label: 'New Hotspot',
+      description: 'Add description here',
+      status: 'normal',
+    };
+    
+    if (onAddHotspot) {
+      onAddHotspot(newHotspot);
+      toast({
+        title: "Hotspot added",
+        description: "New hotspot has been added to the anatomy model",
+      });
+    }
+    
+    setAddingHotspot(false);
+  };
+  
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom(prev => {
       if (direction === 'in') return Math.min(prev + 0.1, 2);
@@ -62,7 +110,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     setFullscreen(!fullscreen);
   };
 
-  const getHotspotIcon = (status: string) => {
+  const getHotspotIcon = (status: 'normal' | 'warning' | 'critical') => {
     switch(status) {
       case 'critical':
         return <AlertTriangle className="h-3 w-3 text-white" />;
@@ -75,7 +123,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     }
   };
 
-  const getPulseAnimation = (status: string) => {
+  const getPulseAnimation = (status: 'normal' | 'warning' | 'critical') => {
     if (status === 'critical') return 'animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite]';
     if (status === 'warning') return 'animate-[pulse_2.5s_cubic-bezier(0.4,0,0.6,1)_infinite]';
     return '';
@@ -95,7 +143,35 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="absolute top-2 right-2 z-20">
+        <div className="absolute top-2 right-2 z-20 flex space-x-2">
+          {!readOnly && (
+            <>
+              <Button
+                onClick={() => {
+                  setAddingHotspot(!addingHotspot);
+                  setEditMode(false);
+                }}
+                variant={addingHotspot ? "default" : "outline"}
+                size="icon"
+                className="h-8 w-8 rounded-full bg-background/50 backdrop-blur-sm"
+                title={addingHotspot ? "Cancel adding" : "Add hotspot"}
+              >
+                {addingHotspot ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditMode(!editMode);
+                  setAddingHotspot(false);
+                }}
+                variant={editMode ? "destructive" : "outline"}
+                size="icon"
+                className="h-8 w-8 rounded-full bg-background/50 backdrop-blur-sm"
+                title={editMode ? "Exit delete mode" : "Delete hotspots"}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <Button
             onClick={toggleFullscreen}
             variant="ghost"
@@ -108,11 +184,15 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         
         <div className="flex-1 relative overflow-hidden">
           <div 
-            className="relative w-full h-full flex items-center justify-center"
+            className={cn(
+              "relative w-full h-full flex items-center justify-center",
+              addingHotspot && !readOnly ? "cursor-crosshair" : ""
+            )}
             style={{ 
               transform: `scale(${zoom})`,
               transition: 'transform 0.3s ease'
             }}
+            onClick={handleImageClick}
           >
             <img 
               src="/lovable-uploads/5948eb29-98e2-4f5e-84f5-215cd42d103e.png" 
@@ -130,12 +210,13 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         getPulseAnimation(hotspot.status),
                         hotspot.status === 'critical' ? "w-7 h-7" : "w-6 h-6",
                         hotspot.status !== 'normal' ? "ring-2 ring-white ring-opacity-50" : "",
-                        activeHotspot === hotspot.id ? "z-10" : "z-0"
+                        activeHotspot === hotspot.id ? "z-10" : "z-0",
+                        editMode && !readOnly ? "hover:ring-2 hover:ring-destructive" : ""
                       )}
                       style={{
                         backgroundColor: hotspot.status === 'critical' ? '#FF4D4F' : 
-                                        hotspot.status === 'warning' ? '#FAAD14' : 
-                                        '#52C41A',
+                                       hotspot.status === 'warning' ? '#FAAD14' : 
+                                       '#52C41A',
                         left: `${hotspot.x}%`,
                         top: `${hotspot.y}%`,
                         borderRadius: '50%'
@@ -154,7 +235,9 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                       }}
                       onClick={() => handleHotspotClick(hotspot.id, hotspot.label, hotspot.status)}
                     >
-                      {hotspot.icon || getHotspotIcon(hotspot.status)}
+                      {editMode && !readOnly ? 
+                        <X className="h-3 w-3 text-white" /> : 
+                        (hotspot.icon || getHotspotIcon(hotspot.status))}
                     </motion.div>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="z-50 max-w-[250px]">
@@ -183,6 +266,14 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                 </Tooltip>
               </TooltipProvider>
             ))}
+            
+            {addingHotspot && !readOnly && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="p-4 bg-background/70 rounded-lg backdrop-blur-sm">
+                  <p className="text-sm text-center">Click anywhere on the anatomy model to add a hotspot</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

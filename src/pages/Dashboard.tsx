@@ -1,20 +1,22 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Brain, Microscope } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import AnatomyModel from '@/components/3d/AnatomyModel';
+import AnatomyModel, { Hotspot } from '@/components/3d/AnatomyModel';
 import BiomarkerCard from '@/components/dashboard/BiomarkerCard';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import PatientProfile from '@/components/dashboard/PatientProfile';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
-  // Updated hotspots to match the anatomy image and include status
-  const hotspots = [
+  // Initial hotspots with correct type for status
+  const initialHotspots: Hotspot[] = [
     {
       id: 'shoulder',
       x: 28,  
@@ -72,6 +74,10 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // State for hotspots
+  const [hotspots, setHotspots] = useState<Hotspot[]>(initialHotspots);
+  const { toast } = useToast();
+
   // Mock data for activity tracking
   const activityData = [
     { day: 'Mon', value: 8500 },
@@ -110,6 +116,65 @@ const Dashboard: React.FC = () => {
       completed: false
     }
   ];
+
+  // Handler for adding a new hotspot
+  const handleAddHotspot = (newHotspot: Hotspot) => {
+    setHotspots(prev => [...prev, newHotspot]);
+  };
+
+  // Handler for deleting a hotspot
+  const handleDeleteHotspot = (id: string) => {
+    setHotspots(prev => prev.filter(hotspot => hotspot.id !== id));
+  };
+
+  // Simulate automatic analysis of patient reports
+  useEffect(() => {
+    // This would typically be an API call to analyze patient reports
+    const analyzeReports = () => {
+      const mockReportResults = [
+        {
+          muscleGroup: 'Lower Back',
+          issue: 'Mild lumbar strain',
+          severity: 'warning',
+          position: { x: 50, y: 50 }
+        }
+      ];
+
+      // Check if we should add any new hotspots based on the analysis
+      mockReportResults.forEach(result => {
+        const existingHotspot = hotspots.find(h => h.label.includes(result.muscleGroup));
+        
+        if (!existingHotspot) {
+          const newHotspot: Hotspot = {
+            id: `auto-${Date.now()}`,
+            x: result.position.x,
+            y: result.position.y,
+            z: 0,
+            color: result.severity === 'critical' ? '#FF4D4F' : 
+                   result.severity === 'warning' ? '#FAAD14' : '#52C41A',
+            label: result.muscleGroup,
+            description: result.issue,
+            status: result.severity as 'normal' | 'warning' | 'critical',
+          };
+          
+          setHotspots(prev => [...prev, newHotspot]);
+          
+          toast({
+            title: 'Automatic Issue Detection',
+            description: `New issue detected in ${result.muscleGroup}: ${result.issue}`,
+            variant: result.severity === 'critical' ? 'destructive' : 'default',
+          });
+        }
+      });
+    };
+
+    // Simulate analysis after component mounts
+    const timer = setTimeout(() => {
+      analyzeReports();
+    }, 3000); // Delay to simulate processing time
+
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -157,13 +222,15 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[750px] order-1 lg:order-2">
               <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Click on hotspots to view detailed information about muscle groups.
+                Click on the anatomy model to add or remove hotspots. Issues are automatically detected from patient reports.
               </p>
               
               <div className="flex-1 relative h-full">
                 <AnatomyModel
                   hotspots={hotspots}
                   className="bg-transparent"
+                  onAddHotspot={handleAddHotspot}
+                  onDeleteHotspot={handleDeleteHotspot}
                 />
               </div>
               
