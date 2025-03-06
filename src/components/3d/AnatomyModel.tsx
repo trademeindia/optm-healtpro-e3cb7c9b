@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -60,7 +59,6 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     
     setActiveHotspot(id === activeHotspot ? null : id);
     
-    // Show toast notification with issue details
     if (status !== 'normal') {
       toast({
         title: `${label} issue detected`,
@@ -79,11 +77,10 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
-    // Store the position and open the form
     setTempClickPosition({ x, y });
     setIsHotspotFormOpen(true);
   };
-  
+
   const handleSaveHotspot = (hotspotData: Partial<Hotspot>) => {
     if (!onAddHotspot || !tempClickPosition) return;
     
@@ -109,12 +106,12 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     setAddingHotspot(false);
     setTempClickPosition(null);
   };
-  
+
   const handleCloseForm = () => {
     setIsHotspotFormOpen(false);
     setTempClickPosition(null);
   };
-  
+
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom(prev => {
       if (direction === 'in') return Math.min(prev + 0.1, 2);
@@ -122,7 +119,7 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
       return prev;
     });
   };
-  
+
   const toggleFullscreen = () => {
     setFullscreen(!fullscreen);
   };
@@ -144,6 +141,13 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
     if (status === 'critical') return 'animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite]';
     if (status === 'warning') return 'animate-[pulse_2.5s_cubic-bezier(0.4,0,0.6,1)_infinite]';
     return '';
+  };
+
+  const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
+    if (x < 33) return "right";
+    if (x > 66) return "left";
+    if (y < 50) return "bottom";
+    return "top";
   };
 
   return (
@@ -257,7 +261,13 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
                         (hotspot.icon || getHotspotIcon(hotspot.status))}
                     </motion.div>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="z-50 max-w-[250px]">
+                  <TooltipContent 
+                    side={getTooltipSide(hotspot.x, hotspot.y)} 
+                    sideOffset={8}
+                    align="center"
+                    className="z-50 max-w-[250px] overflow-hidden"
+                    avoidCollisions={true}
+                  >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className={cn(
@@ -314,7 +324,6 @@ const AnatomyModel: React.FC<AnatomyModelProps> = ({
         </div>
       </motion.div>
       
-      {/* Hotspot Form Dialog */}
       <HotspotForm 
         isOpen={isHotspotFormOpen}
         onClose={handleCloseForm}
