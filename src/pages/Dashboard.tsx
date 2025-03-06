@@ -14,12 +14,13 @@ import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
-  // Mock data for anatomy model hotspots
+  // Mock data for anatomy model hotspots with 3D coordinates
   const hotspots = [
     {
       id: 'shoulder',
-      x: 30,
-      y: 20,
+      x: 75,  // Adjusted for 3D space
+      y: 45,  // Adjusted for 3D space
+      z: 10,  // Added z-coordinate for 3D positioning
       color: '#FF8787',
       label: 'Shoulder',
       description: 'Calcific tendinitis of the shoulder. Inflammation of the tendons in the shoulder joint.',
@@ -28,7 +29,8 @@ const Dashboard: React.FC = () => {
     {
       id: 'neck',
       x: 50,
-      y: 12,
+      y: 70,
+      z: 5,
       color: '#2D7FF9',
       label: 'Neck',
       description: 'Normal range of motion. No significant issues detected.',
@@ -37,7 +39,8 @@ const Dashboard: React.FC = () => {
     {
       id: 'lumbar',
       x: 50,
-      y: 40,
+      y: 25,
+      z: -5,
       color: '#F0C728',
       label: 'Lumbar Region',
       description: 'Mild inflammation detected. Recommended for further assessment.',
@@ -128,14 +131,13 @@ const Dashboard: React.FC = () => {
             
             {/* Middle column - Anatomy Model */}
             <div className="lg:col-span-1 glass-morphism rounded-2xl p-4 md:p-6 flex flex-col md:h-[650px] order-1 lg:order-2">
-              <h3 className="text-lg font-semibold mb-2">Interactive Anatomy</h3>
+              <h3 className="text-lg font-semibold mb-2">Interactive 3D Anatomy</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Click on hotspots to view detailed information
+                Click on hotspots to view detailed information. Drag to rotate the model.
               </p>
               
               <div className="flex-1 relative h-[300px] md:h-auto">
                 <AnatomyModel
-                  image="/lovable-uploads/b60c3153-1d31-447c-a492-29234c29898a.png"
                   hotspots={hotspots}
                 />
               </div>
