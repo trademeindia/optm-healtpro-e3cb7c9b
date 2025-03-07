@@ -1,9 +1,6 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { useCameraPermission } from './utils/cameraPermission';
-import { setupVideoElement, ensureVideoIsPlaying } from './utils/videoElementSetup';
-import { stopCameraStream, requestCameraStream } from './utils/cameraStream';
 
 interface UseCameraProps {
   onCameraStart?: () => void;
@@ -22,6 +19,7 @@ interface UseCameraResult {
 
 export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResult => {
   const [cameraActive, setCameraActive] = useState(false);
+  const [permission, setPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const [cameraError, setCameraError] = useState<string | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,19 +27,101 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const streamRef = useRef<MediaStream | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
   
-  const { permission, setPermission, handlePermissionError } = useCameraPermission();
-  
   // Clean up function to stop the camera stream
   const stopCamera = useCallback(() => {
-    stopCameraStream({ streamRef, videoRef }, retryTimeoutRef);
-    // After stopping the stream, we need to manually update the refs
-    streamRef.current = null;
+    console.log("Stopping camera...");
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setCameraActive(false);
+    setCameraError(null);
+    
+    // Clear any retry timeouts
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = null;
     }
-    setCameraActive(false);
-    setCameraError(null);
+  }, []);
+
+  // Function to ensure video element is playing properly
+  const ensureVideoIsPlaying = useCallback(async () => {
+    if (!videoRef.current) return false;
+    
+    const videoElement = videoRef.current;
+    
+    console.log("Ensuring video is playing...");
+    console.log("Video paused:", videoElement.paused);
+    console.log("Video ended:", videoElement.ended);
+    console.log("Video readyState:", videoElement.readyState);
+    
+    if (videoElement.paused || videoElement.ended) {
+      try {
+        console.log("Attempting to play video...");
+        await videoElement.play();
+        console.log("Video playback started successfully");
+        return true;
+      } catch (error) {
+        console.error("Failed to play video:", error);
+        return false;
+      }
+    }
+    
+    return !videoElement.paused;
+  }, []);
+  
+  // Setup video element after stream is acquired
+  const setupVideoElement = useCallback(async (stream: MediaStream) => {
+    if (!videoRef.current) return false;
+    
+    try {
+      // Set stream as source for video element
+      videoRef.current.srcObject = stream;
+      
+      // Set proper size for the video
+      if (canvasRef.current) {
+        canvasRef.current.width = 640;
+        canvasRef.current.height = 480;
+      }
+      
+      // Play the video
+      if (videoRef.current.readyState >= 2) {
+        await videoRef.current.play();
+        console.log("Video playing (metadata already loaded)");
+      } else {
+        // Wait for metadata to load before playing
+        return new Promise<boolean>((resolve) => {
+          if (!videoRef.current) {
+            resolve(false);
+            return;
+          }
+          
+          videoRef.current.onloadedmetadata = async () => {
+            if (!videoRef.current) {
+              resolve(false);
+              return;
+            }
+            
+            try {
+              await videoRef.current.play();
+              console.log("Video playing (after metadata loaded)");
+              resolve(true);
+            } catch (err) {
+              console.error("Error playing video after metadata loaded:", err);
+              resolve(false);
+            }
+          };
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error setting up video element:", error);
+      return false;
+    }
   }, []);
   
   // Main function to toggle camera
@@ -52,21 +132,30 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }
     
     try {
+      console.log("Requesting camera access...");
       setCameraError(null);
       
-      // Request camera stream
-      const stream = await requestCameraStream();
+      // Request camera permission and turn on camera
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user',
+          frameRate: { ideal: 30 }
+        } 
+      });
+      
       console.log("Camera access granted");
       streamRef.current = stream;
       
       // Setup video element
-      const videoSetupSuccess = await setupVideoElement(stream, { videoRef, canvasRef });
+      const videoSetupSuccess = await setupVideoElement(stream);
       if (!videoSetupSuccess) {
         throw new Error("Failed to setup video element");
       }
       
       // Verify video is playing
-      const isPlaying = await ensureVideoIsPlaying(videoRef);
+      const isPlaying = await ensureVideoIsPlaying();
       if (!isPlaying) {
         throw new Error("Failed to start video playback");
       }
@@ -81,7 +170,18 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       console.error('Error accessing or setting up camera:', error);
       
       // Handle specific errors
-      const errorMessage = handlePermissionError(error);
+      let errorMessage = "Failed to access camera";
+      
+      if (error instanceof DOMException) {
+        if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          errorMessage = "No camera found. Please connect a camera and try again.";
+        } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          errorMessage = "Camera access denied. Please allow camera access in your browser settings.";
+          setPermission('denied');
+        } else if (error.name === 'AbortError') {
+          errorMessage = "Camera access was aborted. Please try again.";
+        }
+      }
       
       setCameraError(errorMessage);
       toast({
@@ -93,7 +193,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       // Clean up any partial setup
       stopCamera();
     }
-  }, [cameraActive, stopCamera, onCameraStart, setPermission, handlePermissionError]);
+  }, [cameraActive, stopCamera, ensureVideoIsPlaying, setupVideoElement, onCameraStart]);
   
   // Setup automatic retry for video playback issues
   useEffect(() => {
@@ -111,12 +211,12 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
             
             // If we've had multiple failures, restart the camera
             if (!retryTimeoutRef.current) {
-              const timeoutId = window.setTimeout(() => {
+              retryTimeoutRef.current = window.setTimeout(() => {
                 console.log("Multiple play failures, restarting camera...");
                 stopCamera();
                 toggleCamera();
+                retryTimeoutRef.current = null;
               }, 2000);
-              retryTimeoutRef.current = timeoutId;
             }
           }
         }
