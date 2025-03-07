@@ -10,7 +10,8 @@ import { usePoseModel } from './usePoseModel';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
 import { useFeedbackState } from './hooks/useFeedbackState';
-import { usePoseDetectionLoop, DetectionStatus } from './hooks/detection';
+import { usePoseDetectionLoop } from './hooks/detection';
+import type { DetectionStatus } from './hooks/detection';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
 import { SquatState } from './types';
 
