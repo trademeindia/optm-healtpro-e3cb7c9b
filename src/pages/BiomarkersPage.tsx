@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TestTube, Upload, FileText, Check, X, AlertCircle, Scan } from 'lucide-react';
@@ -12,8 +11,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 
-// Mock biomarker data - in a real app, this would come from an API
-const mockBiomarkers = [
+interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  status: 'normal' | 'elevated' | 'low' | 'critical';
+  timestamp: string;
+  percentage?: number;
+  trend?: 'up' | 'down' | 'stable';
+  description?: string;
+}
+
+const mockBiomarkers: Biomarker[] = [
   {
     id: 'bm1',
     name: 'Hemoglobin',
@@ -94,7 +105,7 @@ const BiomarkersPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingFile, setProcessingFile] = useState(false);
-  const [biomarkers, setBiomarkers] = useState(mockBiomarkers);
+  const [biomarkers, setBiomarkers] = useState<Biomarker[]>(mockBiomarkers);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +126,6 @@ const BiomarkersPage: React.FC = () => {
 
     setIsUploading(true);
     
-    // Simulate file upload progress
     const interval = setInterval(() => {
       setUploadProgress((prev) => {
         const newProgress = prev + 10;
@@ -127,19 +137,16 @@ const BiomarkersPage: React.FC = () => {
       });
     }, 300);
 
-    // Simulate file upload completion after 3 seconds
     setTimeout(() => {
       clearInterval(interval);
       setUploadProgress(100);
       setIsUploading(false);
       setProcessingFile(true);
       
-      // Simulate AI processing
       setTimeout(() => {
         setProcessingFile(false);
         
-        // Simulate adding new biomarkers
-        const newBiomarker = {
+        const newBiomarker: Biomarker = {
           id: `bm${biomarkers.length + 1}`,
           name: 'Vitamin D',
           value: 28,
@@ -154,7 +161,6 @@ const BiomarkersPage: React.FC = () => {
         
         setBiomarkers([...biomarkers, newBiomarker]);
         
-        // Reset the file input
         setUploadedFile(null);
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) {
