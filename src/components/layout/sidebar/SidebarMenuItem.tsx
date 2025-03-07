@@ -15,19 +15,32 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
 }) => {
   const location = useLocation();
   
-  // Check if this menu item is active - fixed for all paths
-  const isActive = 
-    location.pathname === item.path || 
-    (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
-    (location.pathname === '/dashboard' && item.path === '/dashboard') ||
-    (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
-    (location.pathname === '/biomarkers' && item.path === '/biomarkers') ||
-    (location.pathname === '/health-apps' && item.path === '/health-apps' && !location.pathname.startsWith('/health-apps/')) ||
-    (location.pathname === '/exercises' && item.path === '/exercises') ||
-    (location.pathname === '/patient-reports' && item.path === '/patient-reports') ||
-    (location.pathname === '/appointments' && item.path === '/appointments') ||
-    (location.pathname === '/settings' && item.path === '/settings') ||
-    (location.pathname === '/help' && item.path === '/help');
+  // Check if this menu item is active - refactored for cleaner code
+  const isActive = (() => {
+    const path = location.pathname;
+    
+    // Direct path match
+    if (path === item.path) return true;
+    
+    // Special cases for nested routes
+    switch (item.path) {
+      case '/patients':
+        return path.startsWith('/patient/');
+      case '/health-apps':
+        return path === '/health-apps' || (path.startsWith('/health-apps/') && path !== '/health-apps/');
+      case '/dashboard':
+      case '/patient-dashboard':
+      case '/biomarkers':
+      case '/exercises':
+      case '/patient-reports':
+      case '/appointments':
+      case '/settings':
+      case '/help':
+        return path === item.path;
+      default:
+        return false;
+    }
+  })();
 
   return (
     <li>
