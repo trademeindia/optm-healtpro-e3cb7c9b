@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ZoomIn, ZoomOut, Info, Target } from 'lucide-react';
+import { ZoomIn, ZoomOut, Target } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -15,13 +15,13 @@ interface AnatomicalRegion {
   id: string;
   name: string;
   // Coordinates represent the percentage position on the image
-  // These are more precisely mapped to actual body regions
   x: number;
   y: number;
 }
 
 // Defined anatomical regions with precise coordinates
 const anatomicalRegions: Record<string, AnatomicalRegion> = {
+  head: { id: 'region-head', name: 'Head', x: 50, y: 14 },
   neck: { id: 'region-neck', name: 'Neck', x: 50, y: 20 },
   rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 40, y: 27 },
   leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 60, y: 27 },
@@ -52,7 +52,7 @@ interface HotSpot {
   description: string;
 }
 
-// Mock data - mapped to specific anatomical regions
+// Updated hotspots to ensure they use valid region keys
 const initialHotspots: HotSpot[] = [
   {
     id: 'spot1',
@@ -107,6 +107,8 @@ const AnatomicalMap: React.FC = () => {
 
   // Get the position for a hotspot based on its anatomical region
   const getHotspotPosition = (region: string) => {
+    if (!region) return { x: 50, y: 50 }; // Default to center if region is undefined
+    
     const regionData = anatomicalRegions[region];
     if (!regionData) {
       console.warn(`Region ${region} not found in anatomical regions`);
@@ -166,7 +168,7 @@ const AnatomicalMap: React.FC = () => {
       <CardContent className="p-0 pb-4 px-4">
         <div className="relative flex justify-center overflow-hidden bg-muted/20 rounded-lg border border-border/50 h-[500px]">
           <motion.div
-            className="relative"
+            className="relative w-full h-full flex justify-center"
             style={{
               scale: zoom,
               transition: 'scale 0.2s ease-out'
@@ -177,6 +179,7 @@ const AnatomicalMap: React.FC = () => {
               src="/lovable-uploads/1470fab3-8415-4671-8b34-b510f4784781.png"
               alt="Human Anatomy Model"
               className="h-[500px] object-contain"
+              style={{ objectPosition: 'center center' }}
             />
             
             {/* Hotspots */}
@@ -197,6 +200,7 @@ const AnatomicalMap: React.FC = () => {
                           border: activeHotspot?.id === hotspot.id ? '2px solid white' : '2px dashed rgba(255,255,255,0.7)',
                           boxShadow: '0 0 10px rgba(0,0,0,0.2)',
                           transform: 'translate(-50%, -50%)', // Center the hotspot on its position
+                          zIndex: 10
                         }}
                         whileHover={{ scale: 1.2 }}
                         onClick={() => handleHotspotClick(hotspot)}
