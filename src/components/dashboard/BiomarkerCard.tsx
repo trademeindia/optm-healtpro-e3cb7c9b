@@ -13,12 +13,13 @@ interface BiomarkerCardProps {
   unit: string;
   normalRange: string;
   status: 'normal' | 'elevated' | 'low' | 'critical';
-  lastUpdated: string;
+  timestamp: string; // Changed from lastUpdated to timestamp
   className?: string;
   history?: Array<{date: string; value: number}>;
   trend?: 'up' | 'down' | 'stable';
   description?: string;
   recommendations?: string[];
+  percentage?: number;
 }
 
 const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
@@ -27,20 +28,26 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
   unit,
   normalRange,
   status,
-  lastUpdated,
+  timestamp, // Changed from lastUpdated to timestamp
   className,
   history = [],
   trend = 'stable',
   description = "",
-  recommendations = []
+  recommendations = [],
+  percentage: initialPercentage
 }) => {
   const pathRef = useRef<SVGCircleElement>(null);
   const [circumference, setCircumference] = useState(0);
-  const [percentage, setPercentage] = useState(0);
+  const [percentage, setPercentage] = useState(initialPercentage || 0);
   const [showDetails, setShowDetails] = useState(false);
   
-  // Calculate the percentage based on status
+  // Calculate the percentage based on status if not provided
   useEffect(() => {
+    if (initialPercentage !== undefined) {
+      setPercentage(initialPercentage);
+      return;
+    }
+    
     let percent = 0;
     switch (status) {
       case 'normal':
@@ -57,7 +64,7 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
         break;
     }
     setPercentage(percent);
-  }, [status]);
+  }, [status, initialPercentage]);
   
   useEffect(() => {
     if (pathRef.current) {
@@ -142,7 +149,7 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
-            <span>Last updated: {lastUpdated}</span>
+            <span>Last updated: {timestamp}</span>
           </div>
         </div>
         <span className={cn(

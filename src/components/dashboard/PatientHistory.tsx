@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, Trash2, Edit, X, Save, Plus, TestTube, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import BiomarkerDisplay from './BiomarkerDisplay';
 
 interface MedicalRecord {
   id: string;
@@ -78,7 +78,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   
   const { toast } = useToast();
 
-  // Initialize medical records if they don't exist
   if (!patient.medicalRecords) {
     patient.medicalRecords = [
       {
@@ -111,7 +110,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
     ];
   }
 
-  // Initialize biomarkers if they don't exist
   if (!patient.biomarkers) {
     patient.biomarkers = [
       {
@@ -562,7 +560,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
           </TabsContent>
         ))}
 
-        {/* Biomarkers Tab Content */}
         <TabsContent value="biomarkers">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -578,56 +575,12 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {!editedPatient.biomarkers || editedPatient.biomarkers.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No biomarker data found for this patient
-                  </div>
-                ) : (
-                  editedPatient.biomarkers.map((biomarker) => (
-                    <div key={biomarker.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{biomarker.name}</h3>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              biomarker.status === 'normal' ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300' :
-                              biomarker.status === 'elevated' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-300' :
-                              biomarker.status === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-300' :
-                              'bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300'
-                            }`}>
-                              {biomarker.status.charAt(0).toUpperCase() + biomarker.status.slice(1)}
-                            </span>
-                          </div>
-                          <p className="text-lg font-semibold mt-1">
-                            {biomarker.value} {biomarker.unit}
-                            <span className="text-xs text-muted-foreground ml-2">
-                              (Normal Range: {biomarker.normalRange})
-                            </span>
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Date: {biomarker.timestamp}
-                          </p>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => confirmDeleteBiomarker(biomarker)}
-                          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              <BiomarkerDisplay biomarkers={editedPatient.biomarkers || []} />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -720,7 +673,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         </DialogContent>
       </Dialog>
 
-      {/* Add Biomarker Dialog */}
       <Dialog open={showAddBiomarkerDialog} onOpenChange={setShowAddBiomarkerDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -808,7 +760,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -855,3 +806,4 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
 
 export { PatientHistory };
 export default PatientHistory;
+
