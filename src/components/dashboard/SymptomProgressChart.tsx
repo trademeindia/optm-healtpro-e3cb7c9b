@@ -25,8 +25,7 @@ const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({
       }} 
       transition={{
         duration: 0.5
-      }} 
-      className="my-[127px]"
+      }}
     >
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
