@@ -25,42 +25,42 @@ const CameraView: React.FC<CameraViewProps> = ({
       // This helps with some browser rendering issues
       const checkVideoPlaying = () => {
         console.log("Checking video playback...");
-        console.log("Video paused:", videoElement.paused);
-        console.log("Video ended:", videoElement.ended);
-        console.log("Video readyState:", videoElement.readyState);
         
-        if (videoElement.paused || videoElement.ended) {
-          console.log("Video not playing, attempting to play...");
+        if (videoElement.paused && videoElement.readyState >= 2) {
+          console.log("Video not playing but ready, attempting to play...");
           videoElement.play().catch(e => console.error("Failed to play video:", e));
         }
       };
       
-      // Initial check
-      checkVideoPlaying();
+      // Initial check with delay to ensure DOM is ready
+      const initialCheckTimer = setTimeout(checkVideoPlaying, 200);
       
-      // Set up video event listeners for debugging
-      const onError = () => console.error("Video error event triggered");
+      // Set up video event listeners
+      const onError = (e: Event) => console.error("Video error event triggered", e);
       const onStalled = () => console.warn("Video stalled event triggered");
       const onSuspend = () => console.warn("Video suspend event triggered");
       const onWaiting = () => console.warn("Video waiting for data");
       const onPlaying = () => console.log("Video playing event triggered");
+      const onLoadedMetadata = () => {
+        console.log("Video metadata loaded");
+        checkVideoPlaying();
+      };
       
       videoElement.addEventListener('error', onError);
       videoElement.addEventListener('stalled', onStalled);
       videoElement.addEventListener('suspend', onSuspend);
       videoElement.addEventListener('waiting', onWaiting);
       videoElement.addEventListener('playing', onPlaying);
-      
-      // Check again after a short delay
-      const timer = setTimeout(checkVideoPlaying, 500);
+      videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
       
       return () => {
-        clearTimeout(timer);
+        clearTimeout(initialCheckTimer);
         videoElement.removeEventListener('error', onError);
         videoElement.removeEventListener('stalled', onStalled);
         videoElement.removeEventListener('suspend', onSuspend);
         videoElement.removeEventListener('waiting', onWaiting);
         videoElement.removeEventListener('playing', onPlaying);
+        videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
       };
     }
   }, [cameraActive, videoRef]);

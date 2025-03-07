@@ -27,7 +27,9 @@ export const usePoseDetectionLoop = ({
   // Detect pose in video stream
   const detectPose = useCallback(async () => {
     if (!model || !videoRef.current || !cameraActive) {
-      console.log("Cannot detect pose: missing model, video, or camera inactive");
+      if (!model) console.log("Cannot detect pose: missing model");
+      if (!videoRef.current) console.log("Cannot detect pose: missing video element");
+      if (!cameraActive) console.log("Cannot detect pose: camera inactive");
       return;
     }
     
@@ -35,14 +37,14 @@ export const usePoseDetectionLoop = ({
       if (videoRef.current.readyState < 2) {
         // Video not ready yet
         requestAnimationRef.current = requestAnimationFrame(detectPose);
-        console.log("Video not ready for pose detection, waiting...");
+        console.log("Video not ready for pose detection, waiting... ReadyState:", videoRef.current.readyState);
         return;
       }
       
       // Ensure video is not paused
       if (videoRef.current.paused || videoRef.current.ended) {
         try {
-          console.log("Video is paused/ended, attempting to play...");
+          console.log("Video is paused/ended during detection, attempting to play...");
           await videoRef.current.play();
         } catch (error) {
           console.error("Failed to play video during pose detection:", error);
@@ -73,7 +75,7 @@ export const usePoseDetectionLoop = ({
         flipHorizontal: true  // Mirror the camera view
       });
       
-      console.log("Pose detected:", detectedPose.score);
+      console.log("Pose detected, score:", detectedPose.score);
       lastDetectionTimeRef.current = performance.now();
       
       // Reset failure counter on successful detection
@@ -82,11 +84,6 @@ export const usePoseDetectionLoop = ({
       // Calculate FPS for monitoring
       const detectionTime = performance.now() - now;
       console.log(`Pose detection completed in ${detectionTime.toFixed(2)}ms (${(1000/detectionTime).toFixed(1)} FPS)`);
-      
-      // Check if detection is taking too long
-      if (detectionTime > 100) {
-        console.warn("Pose detection is slow, may impact performance");
-      }
       
       // Only proceed if we have a pose with sufficient confidence
       if (detectedPose.score > config.minPoseConfidence) {
@@ -125,23 +122,27 @@ export const usePoseDetectionLoop = ({
   // Start pose detection when camera is active
   useEffect(() => {
     if (cameraActive && model && videoRef.current) {
-      console.log("Starting pose detection...");
+      console.log("Starting pose detection loop...");
       // Start detection
       requestAnimationRef.current = requestAnimationFrame(detectPose);
-    } else if (!cameraActive) {
-      // Stop detection if camera is inactive
-      if (requestAnimationRef.current) {
-        if (typeof requestAnimationRef.current === 'number') {
-          cancelAnimationFrame(requestAnimationRef.current);
-        } else {
-          clearTimeout(requestAnimationRef.current);
+      
+      return () => {
+        // Cleanup animation frame on unmount or dependency change
+        if (requestAnimationRef.current) {
+          if (typeof requestAnimationRef.current === 'number') {
+            cancelAnimationFrame(requestAnimationRef.current);
+          } else {
+            clearTimeout(requestAnimationRef.current);
+          }
+          requestAnimationRef.current = null;
         }
-        requestAnimationRef.current = null;
-      }
+      };
     }
-    
+  }, [cameraActive, model, detectPose, videoRef]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      // Cleanup animation frame on unmount or dependency change
       if (requestAnimationRef.current) {
         if (typeof requestAnimationRef.current === 'number') {
           cancelAnimationFrame(requestAnimationRef.current);
@@ -151,7 +152,7 @@ export const usePoseDetectionLoop = ({
         requestAnimationRef.current = null;
       }
     };
-  }, [cameraActive, model, detectPose, videoRef]);
+  }, []);
   
   return {
     isDetectionRunning: !!requestAnimationRef.current

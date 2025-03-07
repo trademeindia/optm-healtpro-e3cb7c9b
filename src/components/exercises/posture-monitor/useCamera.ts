@@ -75,51 +75,72 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   
   // Setup video element after stream is acquired
   const setupVideoElement = useCallback(async (stream: MediaStream) => {
-    if (!videoRef.current) return false;
+    if (!videoRef.current) {
+      console.error("Video element ref is null");
+      return false;
+    }
     
     try {
+      console.log("Setting up video element with stream");
+      
       // Set stream as source for video element
       videoRef.current.srcObject = stream;
       
-      // Set proper size for the video
+      // Set proper size for the video and canvas
       if (canvasRef.current) {
         canvasRef.current.width = 640;
         canvasRef.current.height = 480;
       }
       
-      // Play the video
-      if (videoRef.current.readyState >= 2) {
-        await videoRef.current.play();
-        console.log("Video playing (metadata already loaded)");
-      } else {
-        // Wait for metadata to load before playing
-        return new Promise<boolean>((resolve) => {
+      // Wait for video metadata to load
+      return new Promise<boolean>((resolve) => {
+        if (!videoRef.current) {
+          console.error("Video ref became null during setup");
+          resolve(false);
+          return;
+        }
+        
+        // Handle video loading event
+        const onLoadedMetadata = async () => {
           if (!videoRef.current) {
+            console.error("Video ref is null in onLoadedMetadata");
             resolve(false);
             return;
           }
           
-          videoRef.current.onloadedmetadata = async () => {
-            if (!videoRef.current) {
-              resolve(false);
-              return;
-            }
-            
-            try {
-              await videoRef.current.play();
-              console.log("Video playing (after metadata loaded)");
+          videoRef.current.removeEventListener('loadedmetadata', onLoadedMetadata);
+          
+          try {
+            // Try to play video
+            await videoRef.current.play();
+            console.log("Video is now playing after metadata loaded");
+            resolve(true);
+          } catch (err) {
+            console.error("Failed to play video after metadata loaded:", err);
+            resolve(false);
+          }
+        };
+        
+        // If metadata already loaded
+        if (videoRef.current.readyState >= 2) {
+          console.log("Video metadata already loaded, playing now");
+          videoRef.current.play()
+            .then(() => {
+              console.log("Video playing (metadata already loaded)");
               resolve(true);
-            } catch (err) {
-              console.error("Error playing video after metadata loaded:", err);
+            })
+            .catch((err) => {
+              console.error("Error playing video (metadata already loaded):", err);
               resolve(false);
-            }
-          };
-        });
-      }
-      
-      return true;
+            });
+        } else {
+          // Wait for metadata to load
+          console.log("Waiting for video metadata to load");
+          videoRef.current.addEventListener('loadedmetadata', onLoadedMetadata);
+        }
+      });
     } catch (error) {
-      console.error("Error setting up video element:", error);
+      console.error("Error in setupVideoElement:", error);
       return false;
     }
   }, []);
@@ -142,7 +163,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
           height: { ideal: 480 },
           facingMode: 'user',
           frameRate: { ideal: 30 }
-        } 
+        },
+        audio: false
       });
       
       console.log("Camera access granted");
@@ -150,16 +172,12 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       
       // Setup video element
       const videoSetupSuccess = await setupVideoElement(stream);
+      
       if (!videoSetupSuccess) {
         throw new Error("Failed to setup video element");
       }
       
-      // Verify video is playing
-      const isPlaying = await ensureVideoIsPlaying();
-      if (!isPlaying) {
-        throw new Error("Failed to start video playback");
-      }
-      
+      // Set camera as active
       setCameraActive(true);
       setPermission('granted');
       
@@ -193,38 +211,28 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       // Clean up any partial setup
       stopCamera();
     }
-  }, [cameraActive, stopCamera, ensureVideoIsPlaying, setupVideoElement, onCameraStart]);
+  }, [cameraActive, stopCamera, setupVideoElement, onCameraStart]);
   
-  // Setup automatic retry for video playback issues
+  // Monitor video state and restart if needed
   useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      const checkVideoInterval = setInterval(async () => {
-        const videoEl = videoRef.current;
-        if (!videoEl) return;
-        
-        if ((videoEl.paused || videoEl.ended) && streamRef.current) {
-          console.log("Video not playing, attempting to resume...");
-          try {
-            await videoEl.play();
-          } catch (err) {
-            console.error("Failed to resume video:", err);
-            
-            // If we've had multiple failures, restart the camera
-            if (!retryTimeoutRef.current) {
-              retryTimeoutRef.current = window.setTimeout(() => {
-                console.log("Multiple play failures, restarting camera...");
-                stopCamera();
-                toggleCamera();
-                retryTimeoutRef.current = null;
-              }, 2000);
-            }
-          }
-        }
-      }, 3000);
+    if (!cameraActive) return;
+    
+    const checkVideoInterval = setInterval(() => {
+      if (!videoRef.current || !streamRef.current) return;
       
-      return () => clearInterval(checkVideoInterval);
-    }
-  }, [cameraActive, stopCamera, toggleCamera]);
+      const videoEl = videoRef.current;
+      
+      // Check if video element is properly playing
+      if (videoEl.paused || videoEl.ended) {
+        console.log("Video not playing during monitoring, attempting to resume");
+        videoEl.play().catch(err => {
+          console.error("Failed to resume video during monitoring:", err);
+        });
+      }
+    }, 3000);
+    
+    return () => clearInterval(checkVideoInterval);
+  }, [cameraActive]);
   
   // Clean up on unmount
   useEffect(() => {
