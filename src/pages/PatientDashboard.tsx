@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle } from 'lucide-react';
@@ -118,7 +117,6 @@ const PatientDashboard: React.FC = () => {
           <Tabs defaultValue="dashboard" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="reports">My Reports</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
