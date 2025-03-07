@@ -1,6 +1,5 @@
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import * as posenet from '@tensorflow-models/posenet';
+import { useState, useCallback } from 'react';
 import { 
   UsePoseDetectionProps, 
   UsePoseDetectionResult
@@ -11,9 +10,11 @@ import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
 import { useFeedbackState } from './hooks/useFeedbackState';
 import { usePoseDetectionLoop } from './hooks/detection';
-import type { DetectionStatus } from './hooks/detection';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
-import { SquatState } from './types';
+import { usePoseHandler } from './hooks/usePoseHandler';
+import { useDetectionStatusHandler } from './hooks/useDetectionStatusHandler';
+import { useSessionReset } from './hooks/useSessionReset';
+import type { DetectionStatus } from './hooks/detection';
 
 interface ExtendedUsePoseDetectionProps extends UsePoseDetectionProps {
   videoReady?: boolean;
@@ -29,10 +30,6 @@ export const usePoseDetection = ({
   
   // Load the pose model
   const { model, isModelLoading, error: modelError } = usePoseModel(config);
-  
-  // Pose detection related states
-  const [pose, setPose] = useState<posenet.Pose | null>(null);
-  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus | null>(null);
   
   // Squat state tracking
   const { 
@@ -70,11 +67,10 @@ export const usePoseDetection = ({
     setFeedback: setFeedbackMessage
   });
   
-  // Handle pose detection
-  const handlePoseDetected = useCallback((detectedPose: posenet.Pose) => {
-    setPose(detectedPose);
-    analyzePose(detectedPose);
-  }, [analyzePose]);
+  // Pose detection handler
+  const { pose, handlePoseDetected } = usePoseHandler({
+    analyzePose
+  });
   
   // Pose detection loop with status updates
   const { isDetectionRunning, detectionStatus: loopStatus } = usePoseDetectionLoop({
@@ -87,20 +83,17 @@ export const usePoseDetection = ({
     videoReady
   });
   
-  // Update detection status from loop
-  useEffect(() => {
-    if (loopStatus) {
-      setDetectionStatus(loopStatus);
-    }
-  }, [loopStatus]);
+  // Detection status management
+  const { detectionStatus } = useDetectionStatusHandler(loopStatus);
   
-  // Reset session function to clear stats and state
-  const resetSession = useCallback(() => {
-    resetMetrics();
-    setCurrentSquatState(SquatState.STANDING);
-    setPrevSquatState(SquatState.STANDING);
-    setFeedbackMessage("Session reset. Ready to start squatting!", feedback.type);
-  }, [resetMetrics, setCurrentSquatState, setPrevSquatState, setFeedbackMessage, feedback.type]);
+  // Session reset functionality
+  const { resetSession } = useSessionReset({
+    resetMetrics,
+    setCurrentSquatState,
+    setPrevSquatState,
+    setFeedbackMessage,
+    feedbackType: feedback.type
+  });
 
   return {
     model,
