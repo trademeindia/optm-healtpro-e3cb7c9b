@@ -47,6 +47,16 @@ const anatomicalRegions: Record<string, AnatomicalRegion> = {
   leftFinger: { id: 'region-l-finger', name: 'Left Finger', x: 70, y: 51 },
 };
 
+// Adding back the missing HotSpot interface
+interface HotSpot {
+  id: string;
+  region: string; // Corresponds to keys in anatomicalRegions
+  size: number;
+  color: string;
+  label: string;
+  description: string;
+}
+
 // Function to get hotspot color based on pain level
 const getPainLevelColor = (level: number) => {
   if (level <= 3) return 'rgba(34, 197, 94, 0.8)'; // Green for low pain
