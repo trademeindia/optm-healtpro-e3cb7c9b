@@ -1,8 +1,7 @@
-
 import { useState, useCallback } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { SquatState, FeedbackType } from '../types';
-import { analyzeSquatForm } from '../poseDetectionUtils';
+import { analyzeSquatForm } from '../utils/poseAnalysis';
 
 interface UsePoseAnalysisProps {
   currentSquatState: SquatState;

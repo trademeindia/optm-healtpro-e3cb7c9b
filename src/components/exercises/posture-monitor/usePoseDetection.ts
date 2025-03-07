@@ -1,10 +1,9 @@
-
 import { useState, useCallback } from 'react';
 import { 
   UsePoseDetectionProps, 
   UsePoseDetectionResult
 } from './poseDetectionTypes';
-import { DEFAULT_POSE_CONFIG } from './poseDetectionUtils';
+import { DEFAULT_POSE_CONFIG } from './utils/poseDetectionConfig';
 import { usePoseModel } from './usePoseModel';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
