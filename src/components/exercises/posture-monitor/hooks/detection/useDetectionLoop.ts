@@ -5,6 +5,7 @@ import { useDetectionFailureHandler } from './useDetectionFailureHandler';
 import { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
 import { useDetectionStatus } from './useDetectionStatus';
 import { useVideoReadyCheck } from './useVideoReadyCheck';
+import { usePoseEstimation } from './usePoseEstimation';
 import { FeedbackType } from '../../types';
 
 export const useDetectionLoop = ({
@@ -36,6 +37,44 @@ export const useDetectionLoop = ({
   
   const { isVideoReady } = useVideoReadyCheck({ videoRef, videoReady });
   
+  const handlePoseDetectionSuccess = useCallback((detectedPose: posenet.Pose, detectionTime: number) => {
+    updateFpsStats(detectionTime, detectionStateRef);
+    updateDetectionTime();
+    
+    const visibleKeypoints = detectedPose.keypoints.filter(kp => kp.score > config.minPartConfidence).length;
+    
+    setDetectionStatus(prevStatus => ({
+      ...prevStatus,
+      isDetecting: true,
+      confidence: detectedPose.score,
+      detectedKeypoints: visibleKeypoints,
+      lastDetectionTime: performance.now()
+    }));
+    
+    resetFailureCounter();
+    
+    if (detectedPose.score > config.minPoseConfidence) {
+      onPoseDetected(detectedPose);
+    }
+  }, [
+    updateFpsStats, 
+    detectionStateRef, 
+    updateDetectionTime, 
+    config, 
+    setDetectionStatus, 
+    resetFailureCounter, 
+    onPoseDetected
+  ]);
+  
+  const { estimatePose } = usePoseEstimation({
+    model,
+    videoRef,
+    config,
+    onDetectionSuccess: handlePoseDetectionSuccess,
+    onDetectionFailure: handleDetectionFailure,
+    setFeedback
+  });
+  
   const detectPose = useCallback(async () => {
     if (isDetectingRef.current) return;
     
@@ -65,47 +104,8 @@ export const useDetectionLoop = ({
       }
       
       isDetectingRef.current = true;
-      
-      const startTime = performance.now();
-      
-      const detectedPose = await model.estimateSinglePose(videoRef.current, {
-        flipHorizontal: true
-      });
-      
-      const detectionTime = performance.now() - startTime;
-      updateFpsStats(detectionTime, detectionStateRef);
-      updateDetectionTime();
-      
-      const visibleKeypoints = detectedPose.keypoints.filter(kp => kp.score > config.minPartConfidence).length;
-      
-      setDetectionStatus(prevStatus => ({
-        ...prevStatus,
-        isDetecting: true,
-        confidence: detectedPose.score,
-        detectedKeypoints: visibleKeypoints,
-        lastDetectionTime: performance.now()
-      }));
-      
-      if (performance.now() % 5000 < 100) {
-        console.log(`Pose detected, score: ${detectedPose.score}`);
-        console.log(`Pose detection completed in ${detectionTime.toFixed(2)}ms (${(1000/detectionTime).toFixed(1)} FPS)`);
-      }
-      
-      resetFailureCounter();
-      
-      if (detectedPose.score > config.minPoseConfidence) {
-        onPoseDetected(detectedPose);
-      } else {
-        if (detectedPose.score < 0.1) {
-          setFeedback(
-            "Can't detect your pose clearly. Ensure good lighting and that your full body is visible.",
-            FeedbackType.WARNING
-          );
-        }
-      }
+      await estimatePose();
     } catch (error) {
-      handleDetectionFailure(error);
-      
       setDetectionStatus(prevStatus => ({
         ...prevStatus,
         isDetecting: false
@@ -122,16 +122,10 @@ export const useDetectionLoop = ({
     model, 
     cameraActive, 
     videoRef, 
-    config, 
-    onPoseDetected, 
-    setFeedback, 
-    handleDetectionFailure,
-    resetFailureCounter,
-    updateDetectionTime,
-    calculateFrameDelay,
-    isVideoReady,
-    updateFpsStats,
+    isVideoReady, 
+    estimatePose,
     setDetectionStatus,
+    calculateFrameDelay,
     detectionStateRef
   ]);
   
