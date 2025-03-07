@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ZoomIn, ZoomOut, Target } from 'lucide-react';
@@ -20,42 +19,33 @@ interface AnatomicalRegion {
   y: number;
 }
 
-// Updated anatomical regions with more accurate coordinates
+// Updated anatomical regions with accurate coordinates
 const anatomicalRegions: Record<string, AnatomicalRegion> = {
   head: { id: 'region-head', name: 'Head', x: 50, y: 9 },
   neck: { id: 'region-neck', name: 'Neck', x: 50, y: 15 },
-  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 33, y: 21 },
-  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 67, y: 21 },
+  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 41, y: 21 },
+  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 59, y: 21 },
   chest: { id: 'region-chest', name: 'Chest', x: 50, y: 25 },
   upperBack: { id: 'region-upper-back', name: 'Upper Back', x: 50, y: 25 },
-  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 28, y: 35 },
-  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 72, y: 35 },
+  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 35, y: 35 },
+  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 65, y: 35 },
   abdomen: { id: 'region-abdomen', name: 'Abdomen', x: 50, y: 36 },
   lowerBack: { id: 'region-lower-back', name: 'Lower Back', x: 50, y: 37 },
-  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 22, y: 44 },
-  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 78, y: 44 },
-  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 45, y: 46 },
-  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 55, y: 46 },
-  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 44, y: 67 },
-  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 56, y: 67 },
-  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 44, y: 84 },
-  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 56, y: 84 },
+  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 33, y: 44 },
+  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 67, y: 44 },
+  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 42, y: 48 },
+  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 58, y: 48 },
+  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 42, y: 67 },
+  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 58, y: 67 },
+  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 42, y: 84 },
+  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 58, y: 84 },
   rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 43, y: 91 },
   leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 57, y: 91 },
-  rightHand: { id: 'region-r-hand', name: 'Right Hand', x: 20, y: 48 },
-  leftHand: { id: 'region-l-hand', name: 'Left Hand', x: 80, y: 48 },
-  rightFinger: { id: 'region-r-finger', name: 'Right Finger', x: 19, y: 51 },
-  leftFinger: { id: 'region-l-finger', name: 'Left Finger', x: 81, y: 51 },
+  rightHand: { id: 'region-r-hand', name: 'Right Hand', x: 31, y: 48 },
+  leftHand: { id: 'region-l-hand', name: 'Left Hand', x: 69, y: 48 },
+  rightFinger: { id: 'region-r-finger', name: 'Right Finger', x: 30, y: 51 },
+  leftFinger: { id: 'region-l-finger', name: 'Left Finger', x: 70, y: 51 },
 };
-
-interface HotSpot {
-  id: string;
-  region: string; // Corresponds to keys in anatomicalRegions
-  size: number;
-  color: string;
-  label: string;
-  description: string;
-}
 
 // Function to get hotspot color based on pain level
 const getPainLevelColor = (level: number) => {
@@ -96,6 +86,7 @@ const AnatomicalMap: React.FC = () => {
 
   // Convert symptoms to hotspots whenever symptoms change
   useEffect(() => {
+    console.log("Symptoms updated in AnatomicalMap:", symptoms);
     const newHotspots: HotSpot[] = symptoms.map(symptom => ({
       id: symptom.id,
       region: symptom.location,
