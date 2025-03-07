@@ -1,16 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from 'lucide-react';
 import { FeedbackType } from './types';
 import { useCamera } from './camera';
 import { usePoseDetection } from './usePoseDetection';
+import { usePermissionMonitor } from './hooks/usePermissionMonitor';
+import { useVideoStatusMonitor } from './hooks/useVideoStatusMonitor';
+import { useAutoStartCamera } from './hooks/useAutoStartCamera';
 import FeedbackDisplay from './FeedbackDisplay';
 import StatsDisplay from './StatsDisplay';
 import TutorialDialog from './TutorialDialog';
 import PoseRenderer from './PoseRenderer';
 import CameraView from './CameraView';
 import ControlButtons from './ControlButtons';
+import ExerciseSelectionView from './ExerciseSelectionView';
+import type { CustomFeedback } from './hooks/types';
 
 interface PostureMonitorProps {
   exerciseId: string | null;
@@ -65,45 +70,28 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   });
   
   // Override feedback (e.g., for camera permission issues)
-  const [customFeedback, setCustomFeedback] = useState<{ message: string | null, type: FeedbackType } | null>(null);
+  const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
-  // Update permission-related feedback
-  useEffect(() => {
-    if (permission === 'denied') {
-      setCustomFeedback({
-        message: "Camera access denied. Please check your browser permissions.",
-        type: FeedbackType.WARNING
-      });
-    }
-  }, [permission]);
+  // Hook for permission monitoring
+  usePermissionMonitor({
+    permission,
+    setCustomFeedback
+  });
   
-  // Auto-start camera when component mounts
-  useEffect(() => {
-    // Give browser a moment to initialize
-    const timer = setTimeout(() => {
-      if (!cameraActive && permission !== 'denied') {
-        toggleCamera().catch(err => {
-          console.error("Failed to auto-start camera:", err);
-          setCustomFeedback({
-            message: "Failed to start camera automatically. Please try the Enable Camera button.",
-            type: FeedbackType.WARNING
-          });
-        });
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [cameraActive, permission, toggleCamera]);
+  // Hook for video status monitoring
+  useVideoStatusMonitor({
+    cameraActive,
+    videoStatus,
+    setCustomFeedback
+  });
   
-  // Monitor video status and provide feedback
-  useEffect(() => {
-    if (cameraActive && !videoStatus.isReady && videoStatus.errorCount > 3) {
-      setCustomFeedback({
-        message: "Camera feed issues detected. The video may not be properly initialized.",
-        type: FeedbackType.WARNING
-      });
-    }
-  }, [cameraActive, videoStatus]);
+  // Hook for auto-starting camera
+  useAutoStartCamera({
+    cameraActive,
+    permission,
+    toggleCamera,
+    setCustomFeedback
+  });
   
   // Handle finishing the exercise
   const handleFinish = () => {
@@ -115,22 +103,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   const displayFeedback = customFeedback || feedback;
   
   if (!exerciseId || !exerciseName) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Posture Monitor</CardTitle>
-          <CardDescription>
-            Select an exercise to start posture analysis
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center p-6">
-          <div className="text-center text-muted-foreground">
-            <Info className="mx-auto h-12 w-12 mb-2 text-muted-foreground/50" />
-            <p>Please select an exercise from the library to begin</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ExerciseSelectionView />;
   }
 
   return (
