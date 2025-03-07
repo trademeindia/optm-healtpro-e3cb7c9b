@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ZoomIn, ZoomOut, Target } from 'lucide-react';
 import {
@@ -19,28 +19,28 @@ interface AnatomicalRegion {
   y: number;
 }
 
-// Defined anatomical regions with precise coordinates
+// Refined anatomical regions with more accurate coordinates based on the specific image
 const anatomicalRegions: Record<string, AnatomicalRegion> = {
-  head: { id: 'region-head', name: 'Head', x: 50, y: 14 },
-  neck: { id: 'region-neck', name: 'Neck', x: 50, y: 20 },
-  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 40, y: 27 },
-  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 60, y: 27 },
-  upperBack: { id: 'region-upper-back', name: 'Upper Back', x: 50, y: 30 },
-  lowerBack: { id: 'region-lower-back', name: 'Lower Back', x: 50, y: 45 },
-  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 43, y: 54 },
-  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 57, y: 54 },
-  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 45, y: 75 },
-  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 55, y: 75 },
-  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 36, y: 42 },
-  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 64, y: 42 },
-  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 32, y: 53 },
-  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 68, y: 53 },
-  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 46, y: 90 },
-  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 54, y: 90 },
-  chest: { id: 'region-chest', name: 'Chest', x: 50, y: 35 },
-  abdomen: { id: 'region-abdomen', name: 'Abdomen', x: 50, y: 50 },
-  rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 45, y: 95 },
-  leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 55, y: 95 },
+  head: { id: 'region-head', name: 'Head', x: 50, y: 12 },
+  neck: { id: 'region-neck', name: 'Neck', x: 50, y: 19 },
+  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 36, y: 25 },
+  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 64, y: 25 },
+  chest: { id: 'region-chest', name: 'Chest', x: 50, y: 30 },
+  upperBack: { id: 'region-upper-back', name: 'Upper Back', x: 50, y: 28 },
+  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 30, y: 38 },
+  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 70, y: 38 },
+  abdomen: { id: 'region-abdomen', name: 'Abdomen', x: 50, y: 42 },
+  lowerBack: { id: 'region-lower-back', name: 'Lower Back', x: 50, y: 42 },
+  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 25, y: 48 },
+  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 75, y: 48 },
+  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 40, y: 53 },
+  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 60, y: 53 },
+  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 42, y: 70 },
+  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 58, y: 70 },
+  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 43, y: 86 },
+  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 57, y: 86 },
+  rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 42, y: 93 },
+  leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 58, y: 93 },
 };
 
 interface HotSpot {
@@ -52,7 +52,7 @@ interface HotSpot {
   description: string;
 }
 
-// Updated hotspots to ensure they use valid region keys
+// Sample hotspots that accurately reference body parts
 const initialHotspots: HotSpot[] = [
   {
     id: 'spot1',
@@ -91,7 +91,9 @@ const initialHotspots: HotSpot[] = [
 const AnatomicalMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
-  const [hotspots] = useState<HotSpot[]>(initialHotspots);
+  const [hotspots, setHotspots] = useState<HotSpot[]>(initialHotspots);
+  const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   const handleZoomIn = () => {
     if (zoom < 2) setZoom(prev => prev + 0.2);
@@ -105,15 +107,29 @@ const AnatomicalMap: React.FC = () => {
     setActiveHotspot(hotspot === activeHotspot ? null : hotspot);
   };
 
+  // Function to handle image load event to ensure markers are positioned correctly
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    setMapDimensions({
+      width: img.clientWidth,
+      height: img.clientHeight
+    });
+    setImageLoaded(true);
+  };
+
   // Get the position for a hotspot based on its anatomical region
   const getHotspotPosition = (region: string) => {
-    if (!region) return { x: 50, y: 50 }; // Default to center if region is undefined
+    if (!region) {
+      console.warn('Region is undefined');
+      return { x: 50, y: 50 }; // Default to center if region is undefined
+    }
     
     const regionData = anatomicalRegions[region];
     if (!regionData) {
       console.warn(`Region ${region} not found in anatomical regions`);
       return { x: 50, y: 50 }; // Fallback to center if region not found
     }
+    
     return { x: regionData.x, y: regionData.y };
   };
 
@@ -178,12 +194,13 @@ const AnatomicalMap: React.FC = () => {
             <img
               src="/lovable-uploads/1470fab3-8415-4671-8b34-b510f4784781.png"
               alt="Human Anatomy Model"
-              className="h-[500px] object-contain"
-              style={{ objectPosition: 'center center' }}
+              className="h-full object-contain"
+              style={{ maxHeight: '500px' }}
+              onLoad={handleImageLoad}
             />
             
-            {/* Hotspots */}
-            {hotspots.map((hotspot) => {
+            {/* Hotspots - Only render if image is loaded */}
+            {imageLoaded && hotspots.map((hotspot) => {
               const position = getHotspotPosition(hotspot.region);
               return (
                 <TooltipProvider key={hotspot.id}>
