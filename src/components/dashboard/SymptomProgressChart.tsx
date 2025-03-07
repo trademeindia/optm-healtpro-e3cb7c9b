@@ -2,24 +2,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
-import { getSymptomsMockData } from './symptom-progress/mockData';
-import { calculatePainReduction, prepareChartData } from './symptom-progress/utils';
 import PainReductionCard from './symptom-progress/PainReductionCard';
 import SymptomChart from './symptom-progress/SymptomChart';
 import SymptomCardsContainer from './symptom-progress/SymptomCardsContainer';
+import { useSymptomProgress } from './symptom-progress/useSymptomProgress';
 import { SymptomProgressChartProps } from './symptom-progress/types';
 
 const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({
   className
 }) => {
-  // Get mock data for symptom tracking
-  const symptoms = getSymptomsMockData();
-
-  // Combined data for the chart
-  const chartData = prepareChartData(symptoms);
-
-  // Calculate average pain reduction
-  const painReduction = calculatePainReduction(symptoms);
+  const { symptoms, chartData, painReduction } = useSymptomProgress();
   
   return (
     <motion.div 
