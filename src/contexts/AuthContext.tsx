@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -22,7 +21,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithSocialProvider: (provider: AuthProvider) => Promise<void>;
-  handleOAuthCallback: (provider: string, code: string) => Promise<void>; // New method
+  handleOAuthCallback: (provider: string, code: string) => Promise<void>; // Expected to return Promise<void>
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
@@ -43,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Check if user is already logged in from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -58,15 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // Mock login function with support for different user roles
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, check credentials locally
-      // In production, this would validate with a backend server
       if (email === 'doctor@example.com' && password === 'password123') {
         const userData: User = {
           id: '1',
@@ -76,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           provider: 'email'
         };
         
-        // Store user in state and localStorage
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
@@ -91,7 +84,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           provider: 'email'
         };
         
-        // Store user in state and localStorage
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
@@ -108,23 +100,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock signup function
   const signup = async (email: string, password: string, name: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app, this would create a new user in the backend
       const userData: User = {
-        id: Math.random().toString(36).substr(2, 9), // Generate mock ID
+        id: Math.random().toString(36).substr(2, 9),
         email,
         name,
         role,
         provider: 'email'
       };
       
-      // Store user in state and localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       
@@ -138,28 +126,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Improved social login function - now redirects to provider
   const loginWithSocialProvider = async (provider: AuthProvider) => {
-    // In a real implementation, this would redirect to the provider's OAuth page
     window.location.href = `/oauth-callback?code=${Math.random().toString(36).substring(2, 15)}&state=mock-state&provider=${provider}`;
   };
-  
-  // New function to handle OAuth callbacks
+
   const handleOAuthCallback = async (provider: string, code: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call to exchange code for token
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Get mock user profile that would come from the provider
       const profile = getMockUserProfileFromProvider(provider);
       
       if (!profile) {
         throw new Error(`Failed to get profile from ${provider}`);
       }
       
-      // Generate random role for demo purposes
-      // In a real app, the role would be stored in your database
       const isDoctor = Math.random() > 0.5;
       
       const userData: User = {
@@ -171,14 +152,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         picture: profile.picture
       };
       
-      // Store user in state and localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Navigate to the appropriate dashboard
       navigate(userData.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-      
-      return userData;
     } catch (error) {
       console.error(`${provider} OAuth handling failed:`, error);
       toast.error(`${provider} login failed`);
@@ -197,7 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const forgotPassword = async (email: string) => {
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast.success('Password reset link sent to your email');
