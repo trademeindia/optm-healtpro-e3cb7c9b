@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Play, Pause, AlertCircle } from 'lucide-react';
+import { Check, Play, Pause, Dumbbell, Trophy, BarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ExerciseVideoProps {
@@ -36,6 +36,10 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
       onStartExercise(id);
     }
     setIsPlaying(!isPlaying);
+  };
+  
+  const handleStartAIAnalysis = () => {
+    onStartExercise(id);
   };
 
   const getDifficultyColor = () => {
@@ -124,17 +128,18 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
           ) : (
             <>
               <Play className="h-4 w-4" />
-              <span>Start Exercise</span>
+              <span>Watch Video</span>
             </>
           )}
         </Button>
         <Button
-          variant="ghost"
+          variant="default"
           size="sm"
           className="gap-1"
+          onClick={handleStartAIAnalysis}
         >
-          <Check className="h-4 w-4" />
-          <span>Mark Complete</span>
+          <BarChart className="h-4 w-4" />
+          <span>Start AI Analysis</span>
         </Button>
       </CardFooter>
     </Card>

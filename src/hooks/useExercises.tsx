@@ -11,7 +11,7 @@ export interface Exercise {
   duration: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   muscleGroups: string[];
-  category: 'rehabilitation' | 'strength' | 'flexibility' | 'cardio';
+  category: 'rehabilitation' | 'strength' | 'flexibility' | 'cardio' | 'squat';
   completionStatus?: 'completed' | 'in-progress' | 'not-started';
 }
 
@@ -30,6 +30,30 @@ export interface ProgressData {
 
 // Mock data for exercises
 const mockExercises: Exercise[] = [
+  {
+    id: 'ex7',
+    title: 'Basic Squat Technique',
+    description: 'Learn the fundamentals of proper squat form to build lower body strength and prevent injury',
+    videoUrl: 'https://cdn.videvo.net/videvo_files/video/premium/video0294/large_watermarked/901-1_901-0025_preview.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80',
+    duration: '10 mins',
+    difficulty: 'beginner',
+    muscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings', 'Core'],
+    category: 'squat',
+    completionStatus: 'not-started'
+  },
+  {
+    id: 'ex8',
+    title: 'Advanced Squat Variations',
+    description: 'Take your squats to the next level with these challenging variations to build serious lower body strength',
+    videoUrl: 'https://cdn.videvo.net/videvo_files/video/premium/video0294/large_watermarked/901-1_901-0176_preview.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1566241142404-6c2bb4201a30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1776&q=80',
+    duration: '15 mins',
+    difficulty: 'advanced',
+    muscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings', 'Core', 'Lower Back'],
+    category: 'squat',
+    completionStatus: 'not-started'
+  },
   {
     id: 'ex1',
     title: 'Lower Back Stretches',

@@ -15,14 +15,14 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
 }) => {
   const location = useLocation();
   
-  // Check if this menu item is active - fix for Health Apps highlighting issue
+  // Check if this menu item is active - fixed for all paths
   const isActive = 
     location.pathname === item.path || 
     (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
     (location.pathname === '/dashboard' && item.path === '/dashboard') ||
     (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
     (location.pathname === '/biomarkers' && item.path === '/biomarkers') ||
-    (location.pathname === '/health-apps' && item.path === '/health-apps') ||
+    (location.pathname === '/health-apps' && item.path === '/health-apps' && !location.pathname.startsWith('/health-apps/')) ||
     (location.pathname === '/exercises' && item.path === '/exercises') ||
     (location.pathname === '/patient-reports' && item.path === '/patient-reports') ||
     (location.pathname === '/appointments' && item.path === '/appointments') ||

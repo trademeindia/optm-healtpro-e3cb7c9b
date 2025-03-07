@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Dumbbell, Activity, Filter, Target, ArrowLeft } from 'lucide-react';
+import { Dumbbell, Activity, Filter, Target, ArrowLeft, BarChart2 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -104,6 +104,15 @@ const ExercisePage: React.FC = () => {
                     >
                       <Activity className="h-4 w-4" />
                       <span>All Exercises</span>
+                    </Button>
+                    <Button
+                      variant={activeCategory === 'squat' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleCategoryFilter('squat')}
+                      className="gap-1"
+                    >
+                      <BarChart2 className="h-4 w-4" />
+                      <span>Squat Analysis</span>
                     </Button>
                     <Button
                       variant={activeCategory === 'rehabilitation' ? "default" : "outline"}
