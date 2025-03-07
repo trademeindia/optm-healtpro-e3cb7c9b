@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,7 +12,7 @@ import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
 import BiomarkersPage from "./pages/BiomarkersPage";
 import HealthAppsPage from "./pages/HealthAppsPage";
-import ExercisePage from "./pages/ExercisePage";
+import ExercisePage from "./pages/exercises";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PatientReportsPage } from "./pages/PatientReportsPage";
