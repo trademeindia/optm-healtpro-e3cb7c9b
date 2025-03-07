@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import PostureAnalysisTabs from './posture-analysis/PostureAnalysisTabs';
 import RecommendedExercises from './posture-analysis/RecommendedExercises';
+import { PostureArea } from './posture-analysis/types';
 
 interface PostureAnalysisProps {
   className?: string;
@@ -21,15 +22,15 @@ const PostureAnalysis: React.FC<PostureAnalysisProps> = ({
     { id: 3, date: 'Jul 25, 2023', posture: 'Second Follow-up', improvement: '27%' }
   ];
 
-  // Mock posture analysis data
+  // Mock posture analysis data with proper typing
   const postureAnalysis = {
     overallScore: 68,
     areas: [
-      { name: 'Head Alignment', score: 75, status: 'good', recommendation: 'Maintain current posture' },
-      { name: 'Shoulder Balance', score: 62, status: 'moderate', recommendation: 'Try shoulder rolls and stretches' },
-      { name: 'Spine Curvature', score: 58, status: 'moderate', recommendation: 'Focus on core strengthening' },
-      { name: 'Hip Alignment', score: 77, status: 'good', recommendation: 'Continue hip-opening exercises' }
-    ]
+      { name: 'Head Alignment', score: 75, status: 'good' as const, recommendation: 'Maintain current posture' },
+      { name: 'Shoulder Balance', score: 62, status: 'moderate' as const, recommendation: 'Try shoulder rolls and stretches' },
+      { name: 'Spine Curvature', score: 58, status: 'moderate' as const, recommendation: 'Focus on core strengthening' },
+      { name: 'Hip Alignment', score: 77, status: 'good' as const, recommendation: 'Continue hip-opening exercises' }
+    ] as PostureArea[]
   };
   
   return (

@@ -1,6 +1,13 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogTrigger
+} from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Move, ArrowLeftRight, Ruler } from 'lucide-react';
