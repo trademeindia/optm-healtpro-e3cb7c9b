@@ -71,6 +71,20 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     }
   }, [permission]);
   
+  // Auto-start camera when component mounts
+  useEffect(() => {
+    // Give browser a moment to initialize
+    const timer = setTimeout(() => {
+      if (!cameraActive && permission !== 'denied') {
+        toggleCamera().catch(err => {
+          console.error("Failed to auto-start camera:", err);
+        });
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [cameraActive, permission, toggleCamera]);
+  
   const handleFinish = () => {
     stopCamera();
     onFinish();

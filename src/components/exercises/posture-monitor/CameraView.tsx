@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Camera } from 'lucide-react';
 
 interface CameraViewProps {
@@ -15,6 +15,26 @@ const CameraView: React.FC<CameraViewProps> = ({
   videoRef,
   canvasRef
 }) => {
+  // Force video element update if camera is active
+  useEffect(() => {
+    if (cameraActive && videoRef.current && videoRef.current.srcObject) {
+      const videoElement = videoRef.current;
+      
+      // This helps with some browser rendering issues
+      const checkVideoPlaying = () => {
+        if (videoElement.paused || videoElement.ended) {
+          videoElement.play().catch(e => console.error("Failed to play video:", e));
+        }
+      };
+      
+      checkVideoPlaying();
+      
+      // Check again after a short delay
+      const timer = setTimeout(checkVideoPlaying, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [cameraActive, videoRef]);
+
   return (
     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
       {cameraActive ? (
@@ -32,6 +52,9 @@ const CameraView: React.FC<CameraViewProps> = ({
             className="w-full h-full absolute inset-0 z-10"
             style={{ transform: 'scaleX(-1)' }}
           />
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            Camera active
+          </div>
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">

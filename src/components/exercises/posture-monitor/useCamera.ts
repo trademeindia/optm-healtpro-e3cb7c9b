@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseCameraProps {
   onCameraStart?: () => void;
@@ -27,6 +27,9 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setCameraActive(false);
   }, []);
@@ -61,6 +64,12 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       }
       
       if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          // Clear any previous content on the canvas
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+        
         canvasRef.current.width = 640;
         canvasRef.current.height = 480;
       }
@@ -76,6 +85,13 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       setPermission('denied');
     }
   }, [cameraActive, stopCamera, onCameraStart]);
+  
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
   
   return {
     cameraActive,

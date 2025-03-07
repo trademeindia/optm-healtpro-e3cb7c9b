@@ -164,7 +164,7 @@ export const usePoseDetection = ({
     try {
       // Estimate pose
       const detectedPose = await model.estimateSinglePose(videoRef.current, {
-        flipHorizontal: false
+        flipHorizontal: true  // Fix: Change to true to match camera view transform
       });
       
       // Only proceed if we have a pose with sufficient confidence
