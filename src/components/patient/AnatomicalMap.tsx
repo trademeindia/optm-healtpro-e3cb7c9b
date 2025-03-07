@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ZoomIn, ZoomOut, Target } from 'lucide-react';
 import {
   Tooltip,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSymptoms, SymptomEntry } from '@/contexts/SymptomContext';
 
 interface AnatomicalRegion {
   id: string;
@@ -19,7 +20,7 @@ interface AnatomicalRegion {
   y: number;
 }
 
-// Updated anatomical regions with more accurate coordinates based on the specific image
+// Updated anatomical regions with more accurate coordinates
 const anatomicalRegions: Record<string, AnatomicalRegion> = {
   head: { id: 'region-head', name: 'Head', x: 50, y: 9 },
   neck: { id: 'region-neck', name: 'Neck', x: 50, y: 15 },
@@ -41,6 +42,10 @@ const anatomicalRegions: Record<string, AnatomicalRegion> = {
   leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 56, y: 84 },
   rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 43, y: 91 },
   leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 57, y: 91 },
+  rightHand: { id: 'region-r-hand', name: 'Right Hand', x: 20, y: 48 },
+  leftHand: { id: 'region-l-hand', name: 'Left Hand', x: 80, y: 48 },
+  rightFinger: { id: 'region-r-finger', name: 'Right Finger', x: 19, y: 51 },
+  leftFinger: { id: 'region-l-finger', name: 'Left Finger', x: 81, y: 51 },
 };
 
 interface HotSpot {
@@ -52,64 +57,18 @@ interface HotSpot {
   description: string;
 }
 
-// Sample hotspots that accurately reference body parts
-const initialHotspots: HotSpot[] = [
-  {
-    id: 'spot1',
-    region: 'neck',
-    size: 20,
-    color: 'rgba(234, 56, 76, 0.8)',
-    label: 'Neck Strain',
-    description: 'Mild tension in the trapezius muscle. Recommended: heat therapy and gentle stretching.'
-  },
-  {
-    id: 'spot2',
-    region: 'lowerBack',
-    size: 25,
-    color: 'rgba(249, 115, 22, 0.7)',
-    label: 'Lower Back Pain',
-    description: 'Lumbar muscle inflammation. Monitoring progress with prescribed anti-inflammatory medication.'
-  },
-  {
-    id: 'spot3',
-    region: 'rightHip',
-    size: 18,
-    color: 'rgba(139, 92, 246, 0.7)',
-    label: 'Hip Joint',
-    description: 'Minor inflammation in the right hip joint. Continuing physical therapy exercises.'
-  },
-  {
-    id: 'spot4',
-    region: 'leftKnee',
-    size: 22,
-    color: 'rgba(249, 115, 22, 0.7)',
-    label: 'Left Knee',
-    description: 'Mild patellofemoral pain syndrome. Responding well to strengthening exercises.'
-  }
-];
-
-// This function would normally come from a context or API call
-// to get new symptoms reported by the patient or added by doctors
-const fetchNewSymptoms = (): HotSpot[] => {
-  // In a real application, this would be an API call
-  // For demonstration, we'll return a hardcoded new symptom
-  return [
-    ...initialHotspots,
-    {
-      id: 'spot5',
-      region: 'leftShoulder',
-      size: 20,
-      color: 'rgba(14, 165, 233, 0.7)', // Ocean Blue
-      label: 'Shoulder Pain',
-      description: 'New symptom: Pain in left shoulder when lifting arm above head.'
-    }
-  ];
+// Function to get hotspot color based on pain level
+const getPainLevelColor = (level: number) => {
+  if (level <= 3) return 'rgba(34, 197, 94, 0.8)'; // Green for low pain
+  if (level <= 6) return 'rgba(249, 115, 22, 0.7)'; // Orange for medium pain
+  return 'rgba(234, 56, 76, 0.8)'; // Red for high pain
 };
 
 const AnatomicalMap: React.FC = () => {
+  const { symptoms } = useSymptoms();
   const [zoom, setZoom] = useState(1);
   const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
-  const [hotspots, setHotspots] = useState<HotSpot[]>(initialHotspots);
+  const [hotspots, setHotspots] = useState<HotSpot[]>([]);
   const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
   
@@ -135,19 +94,19 @@ const AnatomicalMap: React.FC = () => {
     setImageLoaded(true);
   };
 
-  // Simulate fetching new symptoms (in a real app this would be a useEffect with a dependency or websocket)
+  // Convert symptoms to hotspots whenever symptoms change
   useEffect(() => {
-    // Poll for new symptoms every 30 seconds (in a real app, use websockets instead)
-    const intervalId = setInterval(() => {
-      const updatedSymptoms = fetchNewSymptoms();
-      setHotspots(updatedSymptoms);
-    }, 30000);
+    const newHotspots: HotSpot[] = symptoms.map(symptom => ({
+      id: symptom.id,
+      region: symptom.location,
+      size: 20 + (symptom.painLevel * 0.8), // Size based on pain level
+      color: getPainLevelColor(symptom.painLevel),
+      label: symptom.symptomName,
+      description: symptom.notes
+    }));
     
-    // Initial fetch when component mounts
-    setHotspots(fetchNewSymptoms());
-    
-    return () => clearInterval(intervalId);
-  }, []);
+    setHotspots(newHotspots);
+  }, [symptoms]);
 
   // Get the position for a hotspot based on its anatomical region
   const getHotspotPosition = (region: string) => {
@@ -232,38 +191,46 @@ const AnatomicalMap: React.FC = () => {
             />
             
             {/* Hotspots - Only render if image is loaded */}
-            {imageLoaded && hotspots.map((hotspot) => {
-              const position = getHotspotPosition(hotspot.region);
-              return (
-                <TooltipProvider key={hotspot.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <motion.div
-                        className="absolute cursor-pointer rounded-full flex items-center justify-center"
-                        style={{
-                          left: `${position.x}%`,
-                          top: `${position.y}%`,
-                          width: `${hotspot.size}px`,
-                          height: `${hotspot.size}px`,
-                          backgroundColor: hotspot.color,
-                          border: activeHotspot?.id === hotspot.id ? '2px solid white' : '2px dashed rgba(255,255,255,0.7)',
-                          boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-                          transform: 'translate(-50%, -50%)', // Center the hotspot on its position
-                          zIndex: 20 // Ensure hotspots are above the image
-                        }}
-                        whileHover={{ scale: 1.2 }}
-                        onClick={() => handleHotspotClick(hotspot)}
-                      >
-                        <Target className="h-3 w-3 text-white" />
-                      </motion.div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="font-medium">{hotspot.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+            {imageLoaded && (
+              <AnimatePresence>
+                {hotspots.map((hotspot) => {
+                  const position = getHotspotPosition(hotspot.region);
+                  return (
+                    <TooltipProvider key={hotspot.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <motion.div
+                            className="absolute cursor-pointer rounded-full flex items-center justify-center"
+                            style={{
+                              left: `${position.x}%`,
+                              top: `${position.y}%`,
+                              width: `${hotspot.size}px`,
+                              height: `${hotspot.size}px`,
+                              backgroundColor: hotspot.color,
+                              border: activeHotspot?.id === hotspot.id ? '2px solid white' : '2px dashed rgba(255,255,255,0.7)',
+                              boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+                              transform: 'translate(-50%, -50%)', // Center the hotspot on its position
+                              zIndex: 20 // Ensure hotspots are above the image
+                            }}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            whileHover={{ scale: 1.2 }}
+                            onClick={() => handleHotspotClick(hotspot)}
+                          >
+                            <Target className="h-3 w-3 text-white" />
+                          </motion.div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-medium">{hotspot.label}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })}
+              </AnimatePresence>
+            )}
           </motion.div>
         </div>
         

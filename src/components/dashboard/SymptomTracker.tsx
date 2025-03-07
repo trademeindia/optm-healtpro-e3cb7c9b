@@ -5,53 +5,48 @@ import { cn } from '@/lib/utils';
 import { Calendar, Activity, Plus, Thermometer } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSymptoms, SymptomEntry } from '@/contexts/SymptomContext';
 
-// Define the symptom and pain level types
-type SymptomEntry = {
-  id: string;
-  date: Date;
-  symptomName: string;
-  painLevel: number;
-  location: string;
-  notes: string;
-};
+// Define the body regions for the select input
+const bodyRegions = [
+  { value: 'head', label: 'Head' },
+  { value: 'neck', label: 'Neck' },
+  { value: 'rightShoulder', label: 'Right Shoulder' },
+  { value: 'leftShoulder', label: 'Left Shoulder' },
+  { value: 'chest', label: 'Chest' },
+  { value: 'upperBack', label: 'Upper Back' },
+  { value: 'rightElbow', label: 'Right Elbow' },
+  { value: 'leftElbow', label: 'Left Elbow' },
+  { value: 'abdomen', label: 'Abdomen' },
+  { value: 'lowerBack', label: 'Lower Back' },
+  { value: 'rightWrist', label: 'Right Wrist' },
+  { value: 'leftWrist', label: 'Left Wrist' },
+  { value: 'rightHip', label: 'Right Hip' },
+  { value: 'leftHip', label: 'Left Hip' },
+  { value: 'rightKnee', label: 'Right Knee' },
+  { value: 'leftKnee', label: 'Left Knee' },
+  { value: 'rightAnkle', label: 'Right Ankle' },
+  { value: 'leftAnkle', label: 'Left Ankle' },
+  { value: 'rightFoot', label: 'Right Foot' },
+  { value: 'leftFoot', label: 'Left Foot' },
+  { value: 'rightHand', label: 'Right Hand' },
+  { value: 'leftHand', label: 'Left Hand' },
+  { value: 'rightFinger', label: 'Right Finger' },
+  { value: 'leftFinger', label: 'Left Finger' },
+];
 
 interface SymptomTrackerProps {
   className?: string;
 }
 
 const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
-  const [symptoms, setSymptoms] = useState<SymptomEntry[]>([
-    {
-      id: '1',
-      date: new Date('2023-06-10'),
-      symptomName: 'Shoulder Pain',
-      painLevel: 7,
-      location: 'Right shoulder',
-      notes: 'Pain increases during movement and lifting objects'
-    },
-    {
-      id: '2',
-      date: new Date('2023-06-12'),
-      symptomName: 'Lower Back Pain',
-      painLevel: 5,
-      location: 'Lower back',
-      notes: 'Dull ache that worsens after sitting for long periods'
-    },
-    {
-      id: '3',
-      date: new Date('2023-06-14'),
-      symptomName: 'Headache',
-      painLevel: 3,
-      location: 'Temples and forehead',
-      notes: 'Mild throbbing pain, reduced after medication'
-    }
-  ]);
+  const { symptoms, addSymptom } = useSymptoms();
   
   const [newSymptom, setNewSymptom] = useState<Partial<SymptomEntry>>({
     date: new Date(),
@@ -64,6 +59,10 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewSymptom(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewSymptom(prev => ({ ...prev, location: value }));
   };
 
   const handlePainLevelChange = (level: number) => {
@@ -91,7 +90,7 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
       notes: newSymptom.notes || ''
     };
     
-    setSymptoms(prev => [symptomEntry, ...prev]);
+    addSymptom(symptomEntry);
     setNewSymptom({
       date: new Date(),
       painLevel: 1
@@ -108,6 +107,12 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
     if (level <= 3) return 'bg-medical-green text-white';
     if (level <= 6) return 'bg-medical-yellow text-white';
     return 'bg-medical-red text-white';
+  };
+
+  // Get the location label for display purposes
+  const getLocationLabel = (locationValue: string) => {
+    const region = bodyRegions.find(r => r.value === locationValue);
+    return region ? region.label : locationValue;
   };
 
   return (
@@ -137,6 +142,9 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Log a New Symptom</DialogTitle>
+            <DialogDescription>
+              Record your symptoms to track your health over time
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
@@ -173,13 +181,24 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
             
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" 
-                name="location" 
-                value={newSymptom.location || ''} 
-                onChange={handleInputChange} 
-                placeholder="Where does it hurt?"
-              />
+              <Select
+                value={newSymptom.location}
+                onValueChange={handleSelectChange}
+              >
+                <SelectTrigger id="location">
+                  <SelectValue placeholder="Select body part" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Body Parts</SelectLabel>
+                    {bodyRegions.map(region => (
+                      <SelectItem key={region.value} value={region.value}>
+                        {region.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">
@@ -215,7 +234,7 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
               <div className="flex justify-between items-start">
                 <div>
                   <h4 className="font-medium">{symptom.symptomName}</h4>
-                  <p className="text-sm text-muted-foreground">{symptom.location}</p>
+                  <p className="text-sm text-muted-foreground">{getLocationLabel(symptom.location)}</p>
                 </div>
                 <div 
                   className={cn(
