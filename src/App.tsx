@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import AppointmentsPage from "./pages/AppointmentsPage";
 import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
 import BiomarkersPage from "./pages/BiomarkersPage";
+import HealthAppsPage from "./pages/HealthAppsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PatientReportsPage } from "./pages/PatientReportsPage";
@@ -26,7 +26,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected route component
 const ProtectedRoute = ({ children, allowedRoles = ['doctor', 'patient'] }: { 
   children: React.ReactNode;
   allowedRoles?: string[];
@@ -41,7 +40,6 @@ const ProtectedRoute = ({ children, allowedRoles = ['doctor', 'patient'] }: {
     return <Navigate to="/login" />;
   }
   
-  // Check if user has the required role
   if (user && !allowedRoles.includes(user.role)) {
     return <Navigate to={user.role === 'doctor' ? '/dashboard' : '/patient-dashboard'} />;
   }
@@ -49,7 +47,6 @@ const ProtectedRoute = ({ children, allowedRoles = ['doctor', 'patient'] }: {
   return <>{children}</>;
 };
 
-// AppRoutes component to use AuthContext
 const AppRoutes = () => {
   const { user } = useAuth();
 
@@ -65,7 +62,6 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/oauth-callback" element={<OAuthCallback />} />
       
-      {/* Doctor routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute allowedRoles={['doctor']}>
           <Dashboard />
@@ -92,7 +88,6 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Patient routes */}
       <Route path="/patient-dashboard" element={
         <ProtectedRoute allowedRoles={['patient']}>
           <PatientDashboard />
@@ -108,8 +103,12 @@ const AppRoutes = () => {
           <PatientReportsPage />
         </ProtectedRoute>
       } />
+      <Route path="/health-apps" element={
+        <ProtectedRoute allowedRoles={['patient']}>
+          <HealthAppsPage />
+        </ProtectedRoute>
+      } />
       
-      {/* Shared routes */}
       <Route path="/settings" element={
         <ProtectedRoute>
           {user?.role === 'doctor' ? <Dashboard /> : <PatientDashboard />}
