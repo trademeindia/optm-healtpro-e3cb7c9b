@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Trash2, Edit, X, Save, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Edit, X, Save, Plus, TestTube, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,16 @@ interface MedicalRecord {
   fileSize?: string;
 }
 
+interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  status: 'low' | 'normal' | 'elevated' | 'critical';
+  timestamp: string;
+}
+
 interface PatientData {
   id: number;
   name: string;
@@ -33,6 +43,7 @@ interface PatientData {
   lastVisit: string;
   nextVisit: string;
   medicalRecords?: MedicalRecord[];
+  biomarkers?: Biomarker[];
 }
 
 interface PatientHistoryProps {
@@ -49,10 +60,20 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   const [editedPatient, setEditedPatient] = useState<PatientData>({ ...patient });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null);
+  const [biomarkerToDelete, setBiomarkerToDelete] = useState<Biomarker | null>(null);
+  const [showAddBiomarkerDialog, setShowAddBiomarkerDialog] = useState(false);
   const [newRecord, setNewRecord] = useState<Partial<MedicalRecord>>({
     title: '',
     details: '',
     date: new Date().toISOString().split('T')[0]
+  });
+  const [newBiomarker, setNewBiomarker] = useState<Partial<Biomarker>>({
+    name: '',
+    value: 0,
+    unit: '',
+    normalRange: '',
+    status: 'normal',
+    timestamp: new Date().toISOString().split('T')[0]
   });
   
   const { toast } = useToast();
@@ -86,6 +107,30 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         details: 'Take as needed for pain, not to exceed 3 tablets per day',
         fileUrl: '/placeholder.svg',
         fileSize: '0.5 MB'
+      }
+    ];
+  }
+
+  // Initialize biomarkers if they don't exist
+  if (!patient.biomarkers) {
+    patient.biomarkers = [
+      {
+        id: 'bio1',
+        name: 'C-Reactive Protein (CRP)',
+        value: 5.5,
+        unit: 'mg/L',
+        normalRange: '0.0 - 8.0',
+        status: 'normal',
+        timestamp: '2023-05-15'
+      },
+      {
+        id: 'bio2',
+        name: 'Interleukin-6 (IL-6)',
+        value: 12.8,
+        unit: 'pg/mL',
+        normalRange: '0.0 - 7.0',
+        status: 'elevated',
+        timestamp: '2023-05-15'
       }
     ];
   }
@@ -148,6 +193,50 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
     });
   };
 
+  const handleAddBiomarker = () => {
+    if (!newBiomarker.name || newBiomarker.value === undefined) {
+      toast({
+        title: "Error",
+        description: "Please enter a name and value for the biomarker.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const biomarker: Biomarker = {
+      id: `bio-${Date.now()}`,
+      name: newBiomarker.name || '',
+      value: newBiomarker.value,
+      unit: newBiomarker.unit || '',
+      normalRange: newBiomarker.normalRange || '',
+      status: newBiomarker.status as 'low' | 'normal' | 'elevated' | 'critical',
+      timestamp: newBiomarker.timestamp || new Date().toISOString().split('T')[0]
+    };
+
+    const updatedPatient = {
+      ...editedPatient,
+      biomarkers: [...(editedPatient.biomarkers || []), biomarker]
+    };
+
+    setEditedPatient(updatedPatient);
+    onUpdate(updatedPatient);
+    
+    setShowAddBiomarkerDialog(false);
+    setNewBiomarker({
+      name: '',
+      value: 0,
+      unit: '',
+      normalRange: '',
+      status: 'normal',
+      timestamp: new Date().toISOString().split('T')[0]
+    });
+    
+    toast({
+      title: "Biomarker Added",
+      description: `New biomarker has been added to patient's records.`,
+    });
+  };
+
   const handleDeleteRecord = () => {
     if (!recordToDelete) return;
 
@@ -167,6 +256,25 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
     });
   };
 
+  const handleDeleteBiomarker = () => {
+    if (!biomarkerToDelete) return;
+
+    const updatedBiomarkers = editedPatient.biomarkers?.filter(bio => bio.id !== biomarkerToDelete.id) || [];
+    const updatedPatient = {
+      ...editedPatient,
+      biomarkers: updatedBiomarkers
+    };
+
+    setEditedPatient(updatedPatient);
+    onUpdate(updatedPatient);
+    setShowDeleteDialog(false);
+    
+    toast({
+      title: "Biomarker Deleted",
+      description: "Biomarker has been removed from patient's records.",
+    });
+  };
+
   const filteredRecords = (type: string) => {
     return editedPatient.medicalRecords?.filter(record => record.type === type) || [];
   };
@@ -178,6 +286,13 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
 
   const confirmDelete = (record: MedicalRecord) => {
     setRecordToDelete(record);
+    setBiomarkerToDelete(null);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteBiomarker = (biomarker: Biomarker) => {
+    setBiomarkerToDelete(biomarker);
+    setRecordToDelete(null);
     setShowDeleteDialog(true);
   };
 
@@ -381,6 +496,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
           <TabsTrigger value="bloodTest" className="rounded-md">Blood Tests</TabsTrigger>
           <TabsTrigger value="medication" className="rounded-md">Medications</TabsTrigger>
           <TabsTrigger value="notes" className="rounded-md">Clinical Notes</TabsTrigger>
+          <TabsTrigger value="biomarkers" className="rounded-md">Biomarkers</TabsTrigger>
         </TabsList>
         
         {['xray', 'bloodTest', 'medication', 'notes'].map((type) => (
@@ -445,6 +561,70 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
             </Card>
           </TabsContent>
         ))}
+
+        {/* Biomarkers Tab Content */}
+        <TabsContent value="biomarkers">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Biomarkers</CardTitle>
+                <CardDescription>
+                  Track inflammation markers and other important health indicators
+                </CardDescription>
+              </div>
+              <Button onClick={() => setShowAddBiomarkerDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Biomarker
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {!editedPatient.biomarkers || editedPatient.biomarkers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No biomarker data found for this patient
+                  </div>
+                ) : (
+                  editedPatient.biomarkers.map((biomarker) => (
+                    <div key={biomarker.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{biomarker.name}</h3>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              biomarker.status === 'normal' ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300' :
+                              biomarker.status === 'elevated' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-300' :
+                              biomarker.status === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-300' :
+                              'bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300'
+                            }`}>
+                              {biomarker.status.charAt(0).toUpperCase() + biomarker.status.slice(1)}
+                            </span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1">
+                            {biomarker.value} {biomarker.unit}
+                            <span className="text-xs text-muted-foreground ml-2">
+                              (Normal Range: {biomarker.normalRange})
+                            </span>
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Date: {biomarker.timestamp}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => confirmDeleteBiomarker(biomarker)}
+                          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Upload Dialog */}
@@ -540,13 +720,101 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         </DialogContent>
       </Dialog>
 
+      {/* Add Biomarker Dialog */}
+      <Dialog open={showAddBiomarkerDialog} onOpenChange={setShowAddBiomarkerDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Biomarker</DialogTitle>
+            <DialogDescription>
+              Record new biomarker test results for this patient
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className="text-sm">Biomarker Name</label>
+                <Input 
+                  placeholder="e.g., C-Reactive Protein (CRP)"
+                  value={newBiomarker.name}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, name: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm">Value</label>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    placeholder="e.g., 5.5"
+                    value={newBiomarker.value}
+                    onChange={(e) => setNewBiomarker({...newBiomarker, value: parseFloat(e.target.value)})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm">Unit</label>
+                  <Input 
+                    placeholder="e.g., mg/L"
+                    value={newBiomarker.unit}
+                    onChange={(e) => setNewBiomarker({...newBiomarker, unit: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Normal Range</label>
+                <Input 
+                  placeholder="e.g., 0.0 - 8.0"
+                  value={newBiomarker.normalRange}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, normalRange: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Status</label>
+                <select 
+                  className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  value={newBiomarker.status}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, status: e.target.value as any})}
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="elevated">Elevated</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Date</label>
+                <Input 
+                  type="date" 
+                  value={newBiomarker.timestamp}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, timestamp: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setShowAddBiomarkerDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddBiomarker}>
+              Add Biomarker
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this record? This action cannot be undone.
+              Are you sure you want to delete this {recordToDelete ? 'record' : 'biomarker'}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           
@@ -557,14 +825,26 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
                 <p className="text-sm text-muted-foreground">Date: {recordToDelete.date}</p>
               </div>
             )}
+            {biomarkerToDelete && (
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="font-medium">{biomarkerToDelete.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Value: {biomarkerToDelete.value} {biomarkerToDelete.unit}
+                </p>
+                <p className="text-sm text-muted-foreground">Date: {biomarkerToDelete.timestamp}</p>
+              </div>
+            )}
           </div>
           
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteRecord}>
-              Delete Record
+            <Button 
+              variant="destructive" 
+              onClick={recordToDelete ? handleDeleteRecord : handleDeleteBiomarker}
+            >
+              Delete {recordToDelete ? 'Record' : 'Biomarker'}
             </Button>
           </div>
         </DialogContent>
