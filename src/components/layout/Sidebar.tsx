@@ -11,7 +11,8 @@ import {
   HelpCircle,
   HeartPulse,
   Menu,
-  X
+  X,
+  TestTube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -87,6 +88,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   // Patient specific menu items
   const patientMenuItems = [
     dashboardItem,
+    { 
+      icon: TestTube, 
+      label: 'Biomarkers', 
+      path: '/biomarkers',
+      description: 'View and upload your biomarker data and test results'
+    },
     { 
       icon: FileText, 
       label: 'My Reports', 
@@ -179,7 +186,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     location.pathname === item.path || 
                     (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
                     (location.pathname === '/dashboard' && item.path === '/dashboard') ||
-                    (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard')
+                    (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
+                    (location.pathname === '/biomarkers' && item.path === '/biomarkers')
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
                   )}

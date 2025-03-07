@@ -11,6 +11,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
+import BiomarkersPage from "./pages/BiomarkersPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PatientReportsPage } from "./pages/PatientReportsPage";
@@ -73,10 +74,6 @@ const AppRoutes = () => {
           <PatientsPage />
         </ProtectedRoute>
       } />
-      {/* Redirect from /biomarkers to /dashboard */}
-      <Route path="/biomarkers" element={
-        <Navigate to="/dashboard" replace />
-      } />
       <Route path="/appointments" element={
         <ProtectedRoute allowedRoles={['doctor']}>
           <AppointmentsPage />
@@ -97,6 +94,11 @@ const AppRoutes = () => {
       <Route path="/patient-dashboard" element={
         <ProtectedRoute allowedRoles={['patient']}>
           <PatientDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/biomarkers" element={
+        <ProtectedRoute allowedRoles={['patient']}>
+          <BiomarkersPage />
         </ProtectedRoute>
       } />
       <Route path="/patient-reports" element={
