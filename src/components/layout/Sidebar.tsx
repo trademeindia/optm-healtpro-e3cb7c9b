@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SidebarProps {
   className?: string;
@@ -22,8 +23,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const { toast } = useToast();
   
   // Check if mobile on mount and when window resizes
   useEffect(() => {
@@ -100,6 +103,22 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     setIsOpen(!isOpen);
   };
 
+  const handleNavigation = (path: string) => {
+    // Close sidebar on mobile after navigation
+    if (isMobile) {
+      setIsOpen(false);
+    }
+    
+    // Show toast notification for navigation
+    toast({
+      title: `Navigating to ${path.substring(1)}`,
+      description: `Loading ${path.substring(1)} page...`,
+    });
+    
+    // Navigate to the path
+    navigate(path);
+  };
+
   // Mobile toggle button that's always visible
   const MobileToggle = () => (
     <Button
@@ -133,15 +152,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <ul className="space-y-1">
             {menuItems.map((item) => (
               <li key={item.path}>
-                <Link
-                  to={item.path}
+                <button
+                  onClick={() => handleNavigation(item.path)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative",
-                    location.pathname === item.path
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
+                    location.pathname === item.path || 
+                    (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
+                    (location.pathname === '/dashboard' && item.path === '/dashboard')
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
                   )}
-                  onClick={() => isMobile && setIsOpen(false)}
                 >
                   <item.icon className={cn(
                     "w-5 h-5",
@@ -153,7 +173,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                   <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
                     {item.description}
                   </div>
-                </Link>
+                </button>
               </li>
             ))}
           </ul>
@@ -163,15 +183,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <ul className="space-y-1">
             {bottomMenuItems.map((item) => (
               <li key={item.path}>
-                <Link
-                  to={item.path}
+                <button
+                  onClick={() => handleNavigation(item.path)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
                     location.pathname === item.path
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
                   )}
-                  onClick={() => isMobile && setIsOpen(false)}
                 >
                   <item.icon className={cn(
                     "w-5 h-5",
@@ -183,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                   <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
                     {item.description}
                   </div>
-                </Link>
+                </button>
               </li>
             ))}
           </ul>
