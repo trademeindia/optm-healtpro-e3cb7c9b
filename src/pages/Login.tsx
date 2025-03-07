@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -95,13 +94,10 @@ const Login: React.FC = () => {
   };
 
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
-    setIsSubmitting(true);
     try {
       await loginWithSocialProvider(provider);
     } catch (error) {
-      console.error(`${provider} login failed:`, error);
-    } finally {
-      setIsSubmitting(false);
+      console.error(`${provider} login initiation failed:`, error);
     }
   };
 
@@ -124,7 +120,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
-      {/* Left side - Login Form */}
       <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
         <motion.div 
           className="w-full max-w-md"
@@ -166,7 +161,6 @@ const Login: React.FC = () => {
                 </TabsContent>
               </Tabs>
               
-              {/* Social Login Buttons */}
               <div className="flex flex-col gap-3 mb-6">
                 <Button 
                   variant="outline" 
@@ -351,7 +345,6 @@ const Login: React.FC = () => {
         </motion.div>
       </div>
       
-      {/* Right side - Image Background */}
       <div className="hidden md:block w-1/2 bg-gradient-to-br from-primary to-accent p-10">
         <div className="h-full flex flex-col justify-center items-center">
           <motion.div
@@ -427,7 +420,6 @@ const Login: React.FC = () => {
         </div>
       </div>
       
-      {/* Signup Dialog */}
       <Dialog open={showSignupDialog} onOpenChange={setShowSignupDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -513,3 +505,4 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+

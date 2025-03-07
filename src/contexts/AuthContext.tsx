@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getMockUserProfileFromProvider } from '@/utils/oauth';
 
 type UserRole = 'doctor' | 'patient';
 type AuthProvider = 'email' | 'google' | 'apple' | 'github';
@@ -12,6 +13,7 @@ type User = {
   name: string;
   role: UserRole;
   provider?: AuthProvider;
+  picture?: string; // Added profile picture field
 };
 
 type AuthContextType = {
@@ -20,6 +22,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithSocialProvider: (provider: AuthProvider) => Promise<void>;
+  handleOAuthCallback: (provider: string, code: string) => Promise<void>; // New method
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
@@ -135,42 +138,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock social login function
+  // Improved social login function - now redirects to provider
   const loginWithSocialProvider = async (provider: AuthProvider) => {
+    // In a real implementation, this would redirect to the provider's OAuth page
+    window.location.href = `/oauth-callback?code=${Math.random().toString(36).substring(2, 15)}&state=mock-state&provider=${provider}`;
+  };
+  
+  // New function to handle OAuth callbacks
+  const handleOAuthCallback = async (provider: string, code: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate API call to exchange code for token
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate mock user data based on provider
-      // In a real app, this would authenticate with the provider
-      // and create/fetch a user account
+      // Get mock user profile that would come from the provider
+      const profile = getMockUserProfileFromProvider(provider);
       
-      // For demo, we'll create a random doctor or patient
+      if (!profile) {
+        throw new Error(`Failed to get profile from ${provider}`);
+      }
+      
+      // Generate random role for demo purposes
+      // In a real app, the role would be stored in your database
       const isDoctor = Math.random() > 0.5;
-      const providerNames = {
-        google: isDoctor ? 'Dr. Google User' : 'Google Patient',
-        apple: isDoctor ? 'Dr. Apple User' : 'Apple Patient',
-        github: isDoctor ? 'Dr. GitHub User' : 'GitHub Patient',
-        email: isDoctor ? 'Dr. Email User' : 'Email Patient'
-      };
       
       const userData: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email: `${provider.toLowerCase()}user@example.com`,
-        name: providerNames[provider],
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
         role: isDoctor ? 'doctor' : 'patient',
-        provider
+        provider: provider as AuthProvider,
+        picture: profile.picture
       };
       
       // Store user in state and localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      toast.success(`${provider} login successful`);
+      // Navigate to the appropriate dashboard
       navigate(userData.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+      
+      return userData;
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : `${provider} login failed`);
+      console.error(`${provider} OAuth handling failed:`, error);
+      toast.error(`${provider} login failed`);
       throw error;
     } finally {
       setIsLoading(false);
@@ -204,6 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         loginWithSocialProvider,
+        handleOAuthCallback,
         signup,
         logout,
         forgotPassword

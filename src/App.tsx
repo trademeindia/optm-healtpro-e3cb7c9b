@@ -15,6 +15,7 @@ import BiomarkersPage from "./pages/BiomarkersPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PatientReportsPage } from "./pages/PatientReportsPage";
+import OAuthCallback from "./pages/OAuthCallback";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +63,7 @@ const AppRoutes = () => {
         )
       } />
       <Route path="/login" element={<Login />} />
+      <Route path="/oauth-callback" element={<OAuthCallback />} />
       
       {/* Doctor routes */}
       <Route path="/dashboard" element={
