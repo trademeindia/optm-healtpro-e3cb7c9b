@@ -1,10 +1,10 @@
-
 import { useRef, useCallback, useEffect } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { UsePoseDetectionLoopProps } from './types';
 import { useDetectionFailureHandler } from './useDetectionFailureHandler';
 import { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
 import { useDetectionStatus } from './useDetectionStatus';
+import { useVideoReadyCheck } from './useVideoReadyCheck';
 import { FeedbackType } from '../../types';
 
 export const useDetectionLoop = ({
@@ -34,20 +34,7 @@ export const useDetectionLoop = ({
   
   const { calculateFrameDelay } = useAdaptiveFrameRate();
   
-  const isVideoReady = useCallback(() => {
-    if (videoReady === false) return false;
-    
-    if (!videoRef.current) return false;
-    
-    const video = videoRef.current;
-    
-    return (
-      video.readyState >= 2 && 
-      !video.paused && 
-      video.videoWidth > 0 &&
-      video.videoHeight > 0
-    );
-  }, [videoRef, videoReady]);
+  const { isVideoReady } = useVideoReadyCheck({ videoRef, videoReady });
   
   const detectPose = useCallback(async () => {
     if (isDetectingRef.current) return;
