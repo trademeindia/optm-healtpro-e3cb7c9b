@@ -13,6 +13,7 @@ import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { PatientReportsPage } from "./pages/PatientReportsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +97,11 @@ const AppRoutes = () => {
       <Route path="/patient-dashboard" element={
         <ProtectedRoute allowedRoles={['patient']}>
           <PatientDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient-reports" element={
+        <ProtectedRoute allowedRoles={['patient']}>
+          <PatientReportsPage />
         </ProtectedRoute>
       } />
       

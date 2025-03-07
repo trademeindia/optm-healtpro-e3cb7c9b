@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -15,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   className?: string;
@@ -26,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth(); // Get the current user
   
   // Check if mobile on mount and when window resizes
   useEffect(() => {
@@ -44,20 +47,23 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
   
-  const menuItems = [
-    { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      path: '/dashboard',
-      description: 'Overview of patient data and clinical metrics'
-    },
+  // Define common menu items
+  const dashboardItem = { 
+    icon: LayoutDashboard, 
+    label: 'Dashboard', 
+    path: user?.role === 'doctor' ? '/dashboard' : '/patient-dashboard',
+    description: 'Overview of patient data and clinical metrics'
+  };
+  
+  // Doctor specific menu items
+  const doctorMenuItems = [
+    dashboardItem,
     { 
       icon: Users, 
       label: 'Patients', 
       path: '/patients',
       description: 'Manage patient records and information'
     },
-    // Removed Biomarkers entry
     { 
       icon: Calendar, 
       label: 'Appointments', 
@@ -77,6 +83,26 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       description: 'Visualize clinical data and treatment outcomes'
     },
   ];
+
+  // Patient specific menu items
+  const patientMenuItems = [
+    dashboardItem,
+    { 
+      icon: FileText, 
+      label: 'My Reports', 
+      path: '/patient-reports',
+      description: 'View your medical reports and documents'
+    },
+    { 
+      icon: Calendar, 
+      label: 'Appointments', 
+      path: '/appointments',
+      description: 'Schedule and manage your appointments'
+    },
+  ];
+
+  // Determine which menu items to show based on user role
+  const menuItems = user?.role === 'doctor' ? doctorMenuItems : patientMenuItems;
 
   const bottomMenuItems = [
     { 
@@ -152,7 +178,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
                     location.pathname === item.path || 
                     (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
-                    (location.pathname === '/dashboard' && item.path === '/dashboard')
+                    (location.pathname === '/dashboard' && item.path === '/dashboard') ||
+                    (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard')
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
                   )}
