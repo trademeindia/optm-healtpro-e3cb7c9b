@@ -1,21 +1,13 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Play, Pause, Dumbbell, Trophy, BarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Exercise } from '@/types/exercise.types';
 
-interface ExerciseVideoProps {
-  id: string;
-  title: string;
-  description: string;
-  videoUrl: string;
-  thumbnailUrl: string;
-  duration: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  muscleGroups: string[];
+type ExerciseVideoProps = Omit<Exercise, 'completionStatus' | 'category'> & {
   onStartExercise: (exerciseId: string) => void;
-}
+};
 
 const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
   id,

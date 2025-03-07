@@ -1,26 +1,12 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line } from 'recharts';
-
-// Type definitions
-interface MuscleGroup {
-  id: string;
-  name: string;
-  progress: number;
-}
-
-interface MuscleProgressData {
-  date: string;
-  strength: number;
-  flexibility: number;
-  endurance: number;
-}
+import { MuscleGroup, ProgressData } from '@/types/exercise.types';
 
 interface MuscleProgressProps {
   muscleGroups: MuscleGroup[];
-  progressData: MuscleProgressData[];
+  progressData: ProgressData[];
 }
 
 const MuscleProgress: React.FC<MuscleProgressProps> = ({
