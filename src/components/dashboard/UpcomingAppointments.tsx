@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock, User, CalendarCheck } from 'lucide-react';
+import { Calendar, Clock, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,6 @@ interface Appointment {
   date: string;
   type: string;
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
-  calendarEventId?: string; // Added to track if synced with Google Calendar
 }
 
 interface UpcomingAppointmentsProps {
@@ -55,14 +54,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
                   <User className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{appointment.patientName}</p>
-                    {appointment.calendarEventId && (
-                      <span className="inline-flex items-center text-green-600 dark:text-green-400">
-                        <CalendarCheck className="h-3 w-3" />
-                      </span>
-                    )}
-                  </div>
+                  <p className="font-medium">{appointment.patientName}</p>
                   <p className="text-sm text-muted-foreground">{appointment.type}</p>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center text-xs text-muted-foreground">

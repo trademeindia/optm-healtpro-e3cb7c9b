@@ -1,16 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
-import { 
-  addAppointmentToCalendar,
-  updateAppointmentInCalendar,
-  deleteAppointmentFromCalendar
-} from '@/utils/googleCalendar';
 import { 
   Calendar as CalendarIcon, Clock, User, Plus, Search, 
   ChevronLeft, ChevronRight, Filter, MoreHorizontal, 
-  Video, Phone, Calendar, CheckCircle
+  Video, Phone
 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
@@ -19,42 +13,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-// Extended appointment interface
-interface Appointment {
-  id: number;
-  patientName: string;
-  patientId: string;
-  reason: string;
-  date: string;
-  time: string;
-  type: 'in-person' | 'video' | 'phone';
-  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
-  calendarEventId?: string;
-  reminderSent?: boolean;
-}
 
 const AppointmentsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showReminderSettingsDialog, setShowReminderSettingsDialog] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { toast } = useToast();
-  const { isSignedIn, isLoading, syncEnabled, signIn, signOut, toggleSync } = useGoogleCalendar();
-  
-  // Reminder settings
-  const [reminderSettings, setReminderSettings] = useState({
-    emailReminders: true,
-    emailReminderTime: "24",  // hours before
-    browserReminders: true,
-    browserReminderTime: "30" // minutes before
-  });
 
-  // Sample appointment data (extended with calendar event IDs)
-  const [appointments, setAppointments] = useState<Appointment[]>([
+  // Sample appointment data
+  const appointments = [
     {
       id: 1,
       patientName: "Nikolas Pascal",
@@ -63,9 +30,7 @@ const AppointmentsPage: React.FC = () => {
       date: "2023-06-22",
       time: "09:00 AM - 09:30 AM",
       type: "in-person",
-      status: "confirmed",
-      calendarEventId: "",
-      reminderSent: false
+      status: "confirmed"
     },
     {
       id: 2,
@@ -75,9 +40,7 @@ const AppointmentsPage: React.FC = () => {
       date: "2023-06-22",
       time: "11:15 AM - 12:00 PM",
       type: "video",
-      status: "confirmed",
-      calendarEventId: "",
-      reminderSent: false
+      status: "confirmed"
     },
     {
       id: 3,
@@ -87,9 +50,7 @@ const AppointmentsPage: React.FC = () => {
       date: "2023-06-22",
       time: "02:30 PM - 03:15 PM",
       type: "in-person",
-      status: "confirmed",
-      calendarEventId: "",
-      reminderSent: false
+      status: "confirmed"
     },
     {
       id: 4,
@@ -99,9 +60,7 @@ const AppointmentsPage: React.FC = () => {
       date: "2023-06-23",
       time: "10:00 AM - 11:00 AM",
       type: "phone",
-      status: "pending",
-      calendarEventId: "",
-      reminderSent: false
+      status: "pending"
     },
     {
       id: 5,
@@ -111,76 +70,15 @@ const AppointmentsPage: React.FC = () => {
       date: "2023-06-24",
       time: "09:30 AM - 10:00 AM",
       type: "in-person",
-      status: "confirmed",
-      calendarEventId: "",
-      reminderSent: false
+      status: "confirmed"
     }
-  ]);
+  ];
 
   // Filter appointments
   const upcomingAppointments = appointments.filter(a => new Date(a.date) >= new Date());
   const todayAppointments = appointments.filter(a => a.date === new Date().toISOString().split('T')[0]);
   
-  // New appointment form state
-  const [newAppointment, setNewAppointment] = useState({
-    patientId: "",
-    appointmentType: "in-person",
-    date: "",
-    time: "",
-    duration: "30",
-    reason: "",
-    notes: ""
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewAppointment(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddAppointment = async () => {
-    // Create new appointment
-    const newId = Math.max(...appointments.map(a => a.id), 0) + 1;
-    const patient = appointments.find(a => a.patientId === newAppointment.patientId);
-    
-    const startTime = new Date(`${newAppointment.date}T${newAppointment.time}`);
-    const endTime = new Date(startTime.getTime() + parseInt(newAppointment.duration) * 60000);
-    
-    const formattedStartTime = startTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
-    });
-    
-    const formattedEndTime = endTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
-    });
-    
-    const appointment: Appointment = {
-      id: newId,
-      patientName: patient?.patientName || "Unknown Patient",
-      patientId: newAppointment.patientId,
-      reason: newAppointment.reason,
-      date: newAppointment.date,
-      time: `${formattedStartTime} - ${formattedEndTime}`,
-      type: newAppointment.appointmentType as 'in-person' | 'video' | 'phone',
-      status: "confirmed",
-      calendarEventId: "",
-      reminderSent: false
-    };
-    
-    // Add to Google Calendar if sync enabled
-    if (syncEnabled && isSignedIn) {
-      try {
-        const eventId = await addAppointmentToCalendar(appointment);
-        appointment.calendarEventId = eventId;
-      } catch (error) {
-        console.error("Failed to sync with calendar", error);
-      }
-    }
-    
-    setAppointments(prev => [...prev, appointment]);
+  const handleAddAppointment = () => {
     toast({
       title: "Appointment Scheduled",
       description: "The appointment has been successfully scheduled.",
@@ -188,41 +86,11 @@ const AppointmentsPage: React.FC = () => {
     setShowAddDialog(false);
   };
 
-  const handleConfirmAppointment = async (id: number) => {
-    setAppointments(prev => prev.map(appointment => {
-      if (appointment.id === id) {
-        return { ...appointment, status: "confirmed" };
-      }
-      return appointment;
-    }));
-    
+  const handleConfirmAppointment = (id: number) => {
     toast({
       title: "Appointment Confirmed",
       description: `Appointment #${id} has been confirmed.`,
     });
-    
-    // Sync with calendar if enabled
-    const appointment = appointments.find(a => a.id === id);
-    if (appointment && syncEnabled && isSignedIn) {
-      try {
-        if (appointment.calendarEventId) {
-          await updateAppointmentInCalendar(
-            { ...appointment, status: "confirmed" },
-            appointment.calendarEventId
-          );
-        } else {
-          const eventId = await addAppointmentToCalendar({ ...appointment, status: "confirmed" });
-          setAppointments(prev => prev.map(a => {
-            if (a.id === id) {
-              return { ...a, status: "confirmed", calendarEventId: eventId };
-            }
-            return a;
-          }));
-        }
-      } catch (error) {
-        console.error("Failed to sync with calendar", error);
-      }
-    }
   };
 
   const handleRescheduleAppointment = (id: number) => {
@@ -232,25 +100,7 @@ const AppointmentsPage: React.FC = () => {
     });
   };
 
-  const handleCancelAppointment = async (id: number) => {
-    const appointment = appointments.find(a => a.id === id);
-    
-    // Remove from Google Calendar if synced
-    if (appointment?.calendarEventId && syncEnabled && isSignedIn) {
-      try {
-        await deleteAppointmentFromCalendar(appointment.calendarEventId);
-      } catch (error) {
-        console.error("Failed to remove from calendar", error);
-      }
-    }
-    
-    setAppointments(prev => prev.map(appointment => {
-      if (appointment.id === id) {
-        return { ...appointment, status: "cancelled", calendarEventId: undefined };
-      }
-      return appointment;
-    }));
-    
+  const handleCancelAppointment = (id: number) => {
     toast({
       title: "Appointment Cancelled",
       description: `Appointment #${id} has been cancelled.`,
@@ -267,56 +117,6 @@ const AppointmentsPage: React.FC = () => {
     const prev = new Date(currentDate);
     prev.setDate(prev.getDate() - 1);
     setCurrentDate(prev);
-  };
-
-  const handleSaveReminderSettings = () => {
-    setShowReminderSettingsDialog(false);
-    toast({
-      title: "Reminder Settings Saved",
-      description: "Your appointment reminder settings have been updated.",
-    });
-  };
-
-  // Handle sync all appointments
-  const handleSyncAllAppointments = async () => {
-    if (!isSignedIn) {
-      try {
-        await signIn();
-      } catch (error) {
-        return;
-      }
-    }
-    
-    let successCount = 0;
-    let failCount = 0;
-    
-    // Only sync upcoming appointments
-    for (const appointment of upcomingAppointments) {
-      if (appointment.status !== "cancelled" && !appointment.calendarEventId) {
-        try {
-          const eventId = await addAppointmentToCalendar(appointment);
-          
-          // Update the appointment with the calendar event ID
-          setAppointments(prev => prev.map(a => {
-            if (a.id === appointment.id) {
-              return { ...a, calendarEventId: eventId };
-            }
-            return a;
-          }));
-          
-          successCount++;
-        } catch (error) {
-          console.error("Failed to sync appointment", appointment.id, error);
-          failCount++;
-        }
-      }
-    }
-    
-    toast({
-      title: "Calendar Sync Complete",
-      description: `Successfully synced ${successCount} appointments${failCount > 0 ? `, ${failCount} failed` : ''}.`,
-      variant: failCount > 0 ? "destructive" : "default",
-    });
   };
 
   return (
@@ -345,15 +145,6 @@ const AppointmentsPage: React.FC = () => {
                   />
                 </div>
                 
-                <Button
-                  variant="outline"
-                  className="gap-1.5"
-                  onClick={() => setShowReminderSettingsDialog(true)}
-                >
-                  <Clock className="h-4 w-4" />
-                  <span className="hidden md:inline">Reminders</span>
-                </Button>
-                
                 <Button 
                   className="gap-1.5" 
                   onClick={() => setShowAddDialog(true)}
@@ -361,61 +152,6 @@ const AppointmentsPage: React.FC = () => {
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:inline">New Appointment</span>
                 </Button>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <div>
-                    <h3 className="font-medium">Google Calendar Sync</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Sync your appointments with Google Calendar
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  {isLoading ? (
-                    <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-9 w-24 rounded-md"></div>
-                  ) : isSignedIn ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={syncEnabled}
-                          onCheckedChange={toggleSync}
-                          id="calendar-sync"
-                        />
-                        <Label htmlFor="calendar-sync">
-                          {syncEnabled ? "Sync enabled" : "Sync disabled"}
-                        </Label>
-                      </div>
-                      
-                      {syncEnabled && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={handleSyncAllAppointments}
-                        >
-                          Sync All
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={signOut}
-                      >
-                        Disconnect
-                      </Button>
-                    </>
-                  ) : (
-                    <Button onClick={signIn}>
-                      Connect Google Calendar
-                    </Button>
-                  )}
-                </div>
               </div>
             </div>
             
@@ -452,12 +188,6 @@ const AppointmentsPage: React.FC = () => {
                                 <div className="flex items-center gap-2 mb-1">
                                   <User className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-medium">{appointment.patientName}</span>
-                                  {appointment.calendarEventId && (
-                                    <span className="inline-flex items-center bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 text-xs px-2 py-0.5 rounded-full">
-                                      <CalendarIcon className="h-3 w-3 mr-1" />
-                                      Synced
-                                    </span>
-                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
                                   <CalendarIcon className="h-4 w-4" />
@@ -511,12 +241,6 @@ const AppointmentsPage: React.FC = () => {
                                   <div className="flex items-center gap-2 mb-1">
                                     <User className="h-4 w-4 text-muted-foreground" />
                                     <span className="font-medium">{appointment.patientName}</span>
-                                    {appointment.calendarEventId && (
-                                      <span className="inline-flex items-center bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 text-xs px-2 py-0.5 rounded-full">
-                                        <CalendarIcon className="h-3 w-3 mr-1" />
-                                        Synced
-                                      </span>
-                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
                                     <Clock className="h-4 w-4" />
@@ -577,7 +301,6 @@ const AppointmentsPage: React.FC = () => {
                               <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">REASON</th>
                               <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">TYPE</th>
                               <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">STATUS</th>
-                              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">SYNCED</th>
                               <th className="text-right py-3 px-4 text-xs font-medium text-muted-foreground">ACTIONS</th>
                             </tr>
                           </thead>
@@ -618,22 +341,10 @@ const AppointmentsPage: React.FC = () => {
                                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                                     appointment.status === 'confirmed' 
                                       ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
-                                      : appointment.status === 'cancelled'
-                                      ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
                                       : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
                                   }`}>
                                     {appointment.status}
                                   </div>
-                                </td>
-                                <td className="py-3 px-4">
-                                  {appointment.calendarEventId ? (
-                                    <div className="inline-flex items-center text-green-600 dark:text-green-400">
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      <span className="text-xs">Synced</span>
-                                    </div>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">Not synced</span>
-                                  )}
                                 </td>
                                 <td className="py-3 px-4 text-right">
                                   <div className="flex items-center justify-end gap-2">
@@ -718,12 +429,6 @@ const AppointmentsPage: React.FC = () => {
                           </div>
                           <div className="font-medium">{appointment.patientName}</div>
                           <div className="text-sm text-muted-foreground">{appointment.reason}</div>
-                          {appointment.calendarEventId && (
-                            <div className="mt-1 text-xs text-green-600 dark:text-green-400 flex items-center">
-                              <CalendarIcon className="h-3 w-3 mr-1" />
-                              Synced with calendar
-                            </div>
-                          )}
                         </div>
                       ))}
                     
@@ -752,20 +457,13 @@ const AppointmentsPage: React.FC = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Patient</label>
-              <Select
-                value={newAppointment.patientId}
-                onValueChange={(value) => setNewAppointment(prev => ({ ...prev, patientId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a patient" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PT-1001">Nikolas Pascal</SelectItem>
-                  <SelectItem value="PT-1002">Emma Rodriguez</SelectItem>
-                  <SelectItem value="PT-1003">Marcus Johnson</SelectItem>
-                  <SelectItem value="PT-1004">Sophia Williams</SelectItem>
-                </SelectContent>
-              </Select>
+              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <option value="">Select a patient</option>
+                <option value="1">Nikolas Pascal</option>
+                <option value="2">Emma Rodriguez</option>
+                <option value="3">Marcus Johnson</option>
+                <option value="4">Sophia Williams</option>
+              </select>
             </div>
             
             <div className="space-y-2">
@@ -773,27 +471,24 @@ const AppointmentsPage: React.FC = () => {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant={newAppointment.appointmentType === "in-person" ? "default" : "outline"}
+                  variant="outline"
                   className="flex-1 gap-1"
-                  onClick={() => setNewAppointment(prev => ({ ...prev, appointmentType: "in-person" }))}
                 >
                   <User className="h-4 w-4" />
                   <span>In-person</span>
                 </Button>
                 <Button
                   type="button"
-                  variant={newAppointment.appointmentType === "video" ? "default" : "outline"}
+                  variant="outline"
                   className="flex-1 gap-1"
-                  onClick={() => setNewAppointment(prev => ({ ...prev, appointmentType: "video" }))}
                 >
                   <Video className="h-4 w-4" />
                   <span>Video</span>
                 </Button>
                 <Button
                   type="button"
-                  variant={newAppointment.appointmentType === "phone" ? "default" : "outline"}
+                  variant="outline"
                   className="flex-1 gap-1"
-                  onClick={() => setNewAppointment(prev => ({ ...prev, appointmentType: "phone" }))}
                 >
                   <Phone className="h-4 w-4" />
                   <span>Phone</span>
@@ -804,52 +499,29 @@ const AppointmentsPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Date</label>
-                <Input 
-                  type="date" 
-                  name="date"
-                  value={newAppointment.date}
-                  onChange={handleInputChange}
-                />
+                <Input type="date" />
               </div>
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Time</label>
-                <Input 
-                  type="time" 
-                  name="time"
-                  value={newAppointment.time}
-                  onChange={handleInputChange}
-                />
+                <Input type="time" />
               </div>
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Duration</label>
-              <Select
-                value={newAppointment.duration}
-                onValueChange={(value) => setNewAppointment(prev => ({ ...prev, duration: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">1 hour</SelectItem>
-                  <SelectItem value="90">1.5 hours</SelectItem>
-                </SelectContent>
-              </Select>
+              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+              </select>
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Reason for Visit</label>
-              <Input 
-                placeholder="Brief description of the appointment" 
-                name="reason"
-                value={newAppointment.reason}
-                onChange={handleInputChange}
-              />
+              <Input placeholder="Brief description of the appointment" />
             </div>
             
             <div className="space-y-2">
@@ -857,25 +529,8 @@ const AppointmentsPage: React.FC = () => {
               <textarea 
                 className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[80px]"
                 placeholder="Additional notes for the appointment"
-                name="notes"
-                value={newAppointment.notes}
-                onChange={handleInputChange}
               ></textarea>
             </div>
-            
-            {isSignedIn && (
-              <div className="flex items-center space-x-2 pt-2">
-                <Switch 
-                  id="add-to-calendar"
-                  checked={syncEnabled}
-                  onCheckedChange={toggleSync}
-                  disabled={!isSignedIn}
-                />
-                <Label htmlFor="add-to-calendar">
-                  Add to Google Calendar
-                </Label>
-              </div>
-            )}
           </div>
           
           <div className="flex justify-between">
@@ -884,114 +539,6 @@ const AppointmentsPage: React.FC = () => {
             </Button>
             <Button onClick={handleAddAppointment}>
               Schedule Appointment
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={showReminderSettingsDialog} onOpenChange={setShowReminderSettingsDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reminder Settings</DialogTitle>
-            <DialogDescription>
-              Configure how you want to be reminded about upcoming appointments.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Email Reminders</h4>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-reminders">Send email reminders</Label>
-                  <p className="text-xs text-muted-foreground">Receive email notifications for appointments</p>
-                </div>
-                <Switch 
-                  id="email-reminders"
-                  checked={reminderSettings.emailReminders}
-                  onCheckedChange={(checked) => setReminderSettings({...reminderSettings, emailReminders: checked})}
-                />
-              </div>
-              
-              {reminderSettings.emailReminders && (
-                <div className="ml-6 space-y-2">
-                  <Label htmlFor="email-reminder-time">Remind me</Label>
-                  <Select
-                    value={reminderSettings.emailReminderTime}
-                    onValueChange={(value) => setReminderSettings({...reminderSettings, emailReminderTime: value})}
-                  >
-                    <SelectTrigger id="email-reminder-time">
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hour before</SelectItem>
-                      <SelectItem value="2">2 hours before</SelectItem>
-                      <SelectItem value="24">1 day before</SelectItem>
-                      <SelectItem value="48">2 days before</SelectItem>
-                      <SelectItem value="168">1 week before</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Browser Notifications</h4>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="browser-reminders">Browser notifications</Label>
-                  <p className="text-xs text-muted-foreground">Show popup reminders in your browser</p>
-                </div>
-                <Switch 
-                  id="browser-reminders"
-                  checked={reminderSettings.browserReminders}
-                  onCheckedChange={(checked) => setReminderSettings({...reminderSettings, browserReminders: checked})}
-                />
-              </div>
-              
-              {reminderSettings.browserReminders && (
-                <div className="ml-6 space-y-2">
-                  <Label htmlFor="browser-reminder-time">Remind me</Label>
-                  <Select
-                    value={reminderSettings.browserReminderTime}
-                    onValueChange={(value) => setReminderSettings({...reminderSettings, browserReminderTime: value})}
-                  >
-                    <SelectTrigger id="browser-reminder-time">
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 minutes before</SelectItem>
-                      <SelectItem value="10">10 minutes before</SelectItem>
-                      <SelectItem value="15">15 minutes before</SelectItem>
-                      <SelectItem value="30">30 minutes before</SelectItem>
-                      <SelectItem value="60">1 hour before</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Calendar Syncing</h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm">Sync reminders with Google Calendar</p>
-                </div>
-                <p className="text-xs text-muted-foreground ml-6">
-                  When enabled, all appointments are synced with your Google Calendar
-                  and will trigger reminders based on your Google Calendar settings.
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setShowReminderSettingsDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveReminderSettings}>
-              Save Settings
             </Button>
           </div>
         </DialogContent>
