@@ -5,7 +5,7 @@ import { PatientHistory } from '@/components/dashboard/PatientHistory';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 
-// Sample patient data
+// Sample patient data with adjusted biomarker properties to match the Biomarker interface
 const samplePatients = [
   {
     id: 1,
@@ -27,7 +27,7 @@ const samplePatients = [
         unit: "mg/L",
         normalRange: "0.0 - 8.0",
         status: "normal",
-        lastUpdated: "Jun 10, 2023",
+        timestamp: "2023-06-10", // Changed lastUpdated to timestamp
         percentage: 85,
         trend: "stable",
         description: "C-reactive protein is a protein made by the liver. CRP levels in the blood increase when there is a condition causing inflammation somewhere in the body."
@@ -39,7 +39,7 @@ const samplePatients = [
         unit: "pg/mL",
         normalRange: "0.0 - 7.0",
         status: "elevated",
-        lastUpdated: "Jun 10, 2023",
+        timestamp: "2023-06-10", // Changed lastUpdated to timestamp
         percentage: 60,
         trend: "stable",
         description: "Interleukin-6 is an interleukin that acts as both a pro-inflammatory cytokine and an anti-inflammatory myokine."
@@ -51,7 +51,7 @@ const samplePatients = [
         unit: "pg/mL",
         normalRange: "0.0 - 15.0",
         status: "elevated",
-        lastUpdated: "Jun 10, 2023",
+        timestamp: "2023-06-10", // Changed lastUpdated to timestamp
         percentage: 60,
         trend: "stable",
         description: "Tumor necrosis factor is a cell signaling protein involved in systemic inflammation."
@@ -63,7 +63,7 @@ const samplePatients = [
         unit: "mm/hr",
         normalRange: "0 - 22",
         status: "elevated",
-        lastUpdated: "Jun 9, 2023",
+        timestamp: "2023-06-09", // Changed lastUpdated to timestamp
         percentage: 60,
         trend: "stable",
         description: "ESR is the rate at which red blood cells sediment in a period of one hour. It is a common hematology test that is a non-specific measure of inflammation."
@@ -75,7 +75,7 @@ const samplePatients = [
         unit: "K/μL",
         normalRange: "4.5 - 11.0",
         status: "normal",
-        lastUpdated: "Jun 9, 2023",
+        timestamp: "2023-06-09", // Changed lastUpdated to timestamp
         percentage: 85,
         trend: "stable",
         description: "A white blood cell count measures the number of white blood cells in your body. White blood cells help fight infections."
@@ -87,7 +87,7 @@ const samplePatients = [
         unit: "%",
         normalRange: "4.0 - 5.6",
         status: "elevated",
-        lastUpdated: "Jun 8, 2023",
+        timestamp: "2023-06-08", // Changed lastUpdated to timestamp
         percentage: 60,
         trend: "stable",
         description: "Hemoglobin A1c is a form of hemoglobin that is bound to glucose. The higher the HbA1c, the higher the risk of developing diabetes complications."
@@ -114,7 +114,7 @@ const samplePatients = [
         unit: "mg/L",
         normalRange: "0.0 - 8.0",
         status: "normal",
-        lastUpdated: "May 22, 2023",
+        timestamp: "2023-05-22", // Changed lastUpdated to timestamp
         percentage: 85,
         trend: "stable",
         description: "C-reactive protein is a protein made by the liver. CRP levels in the blood increase when there is a condition causing inflammation somewhere in the body."
@@ -126,7 +126,7 @@ const samplePatients = [
         unit: "K/μL",
         normalRange: "4.5 - 11.0",
         status: "normal",
-        lastUpdated: "May 22, 2023",
+        timestamp: "2023-05-22", // Changed lastUpdated to timestamp
         percentage: 85,
         trend: "stable",
         description: "A white blood cell count measures the number of white blood cells in your body. White blood cells help fight infections."
@@ -153,7 +153,7 @@ const samplePatients = [
         unit: "mm/hr",
         normalRange: "0 - 22",
         status: "elevated",
-        lastUpdated: "Jun 5, 2023",
+        timestamp: "2023-06-05", // Changed lastUpdated to timestamp
         percentage: 60,
         trend: "up",
         description: "ESR is the rate at which red blood cells sediment in a period of one hour. It is a common hematology test that is a non-specific measure of inflammation."
