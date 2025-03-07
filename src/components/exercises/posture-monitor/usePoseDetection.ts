@@ -48,7 +48,7 @@ export const usePoseDetection = ({
   const [incorrectReps, setIncorrectReps] = useState(0);
   
   // Feedback states
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>("Loading pose detection model...");
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(FeedbackType.INFO);
   
   // Animation frame reference
@@ -57,12 +57,17 @@ export const usePoseDetection = ({
   // Load PoseNet model
   useEffect(() => {
     const loadModel = async () => {
+      if (model) return; // Prevent reloading if model exists
+      
       setIsModelLoading(true);
       try {
+        console.log("Loading TensorFlow.js...");
         // Make sure TensorFlow.js is ready
         await tf.ready();
+        console.log("TensorFlow.js is ready");
         
         // Load PoseNet model
+        console.log("Loading PoseNet model...");
         const loadedModel = await posenet.load({
           architecture: 'MobileNetV1',
           outputStride: 16,
@@ -70,6 +75,7 @@ export const usePoseDetection = ({
           multiplier: 0.75
         });
         
+        console.log("PoseNet model loaded successfully");
         setModel(loadedModel);
         setFeedback("PoseNet model loaded successfully. You can start exercising now.");
         setFeedbackType(FeedbackType.SUCCESS);
@@ -90,7 +96,7 @@ export const usePoseDetection = ({
         cancelAnimationFrame(requestAnimationRef.current);
       }
     };
-  }, []);
+  }, [model]);
 
   // Analyze squat form
   const analyzeSquatForm = useCallback((pose: posenet.Pose) => {
@@ -162,13 +168,27 @@ export const usePoseDetection = ({
     if (!model || !videoRef.current || !cameraActive) return;
     
     try {
+      if (videoRef.current.readyState < 2) {
+        // Video not ready yet
+        requestAnimationRef.current = requestAnimationFrame(detectPose);
+        return;
+      }
+      
+      // Ensure video is not paused
+      if (videoRef.current.paused || videoRef.current.ended) {
+        await videoRef.current.play();
+      }
+      
+      console.log("Estimating pose...");
       // Estimate pose
       const detectedPose = await model.estimateSinglePose(videoRef.current, {
-        flipHorizontal: true  // Fix: Change to true to match camera view transform
+        flipHorizontal: true  // Mirror the camera view
       });
       
+      console.log("Pose detected:", detectedPose.score);
+      
       // Only proceed if we have a pose with sufficient confidence
-      if (detectedPose.score > 0.3) {
+      if (detectedPose.score > 0.2) { // Lower threshold for better detection
         setPose(detectedPose);
         
         // Analyze squat form
@@ -188,18 +208,13 @@ export const usePoseDetection = ({
   // Start pose detection when camera is active
   useEffect(() => {
     if (cameraActive && model && videoRef.current) {
-      // Ensure video is playing before starting detection
-      const checkVideoReady = () => {
-        if (videoRef.current?.readyState === 4) {
-          // Video is ready - start detection
-          requestAnimationRef.current = requestAnimationFrame(detectPose);
-        } else {
-          // Check again in a moment
-          setTimeout(checkVideoReady, 100);
-        }
-      };
-      
-      checkVideoReady();
+      console.log("Starting pose detection...");
+      // Start detection
+      requestAnimationRef.current = requestAnimationFrame(detectPose);
+    } else if (!cameraActive && requestAnimationRef.current) {
+      // Stop detection if camera is inactive
+      cancelAnimationFrame(requestAnimationRef.current);
+      requestAnimationRef.current = null;
     }
     
     return () => {

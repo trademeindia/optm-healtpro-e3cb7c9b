@@ -17,16 +17,23 @@ const CameraView: React.FC<CameraViewProps> = ({
 }) => {
   // Force video element update if camera is active
   useEffect(() => {
-    if (cameraActive && videoRef.current && videoRef.current.srcObject) {
+    if (cameraActive && videoRef.current) {
       const videoElement = videoRef.current;
       
       // This helps with some browser rendering issues
       const checkVideoPlaying = () => {
+        console.log("Checking video playback...");
+        console.log("Video paused:", videoElement.paused);
+        console.log("Video ended:", videoElement.ended);
+        console.log("Video readyState:", videoElement.readyState);
+        
         if (videoElement.paused || videoElement.ended) {
+          console.log("Video not playing, attempting to play...");
           videoElement.play().catch(e => console.error("Failed to play video:", e));
         }
       };
       
+      // Initial check
       checkVideoPlaying();
       
       // Check again after a short delay
