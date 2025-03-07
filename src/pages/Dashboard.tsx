@@ -18,12 +18,14 @@ import ClinicDocuments from '@/components/dashboard/ClinicDocuments';
 import ClinicReminders from '@/components/dashboard/ClinicReminders';
 import MiniCalendar from '@/components/dashboard/MiniCalendar';
 import PatientRecords from '@/components/dashboard/PatientRecords';
+import PatientHistory from '@/components/dashboard/PatientHistory';
 import { FileText, Calendar, Activity } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const { toast } = useToast();
 
   const upcomingAppointments = [
@@ -263,8 +265,9 @@ const Dashboard: React.FC = () => {
       email: "nikolas.p@example.com",
       condition: "Calcific tendinitis of the shoulder",
       icdCode: "M75.3",
-      lastVisit: "Jun 10, 2023",
-      nextVisit: "Jun 22, 2023"
+      lastVisit: "2023-06-10",
+      nextVisit: "2023-06-22",
+      medicalRecords: []
     },
     {
       id: 2,
@@ -276,8 +279,9 @@ const Dashboard: React.FC = () => {
       email: "emma.r@example.com",
       condition: "Lumbar strain",
       icdCode: "M54.5",
-      lastVisit: "Jun 05, 2023",
-      nextVisit: "Jun 25, 2023"
+      lastVisit: "2023-06-05",
+      nextVisit: "2023-06-25",
+      medicalRecords: []
     },
     {
       id: 3,
@@ -289,8 +293,9 @@ const Dashboard: React.FC = () => {
       email: "marcus.j@example.com",
       condition: "Sports-related knee injury",
       icdCode: "S83.9",
-      lastVisit: "Jun 12, 2023",
-      nextVisit: "Jun 19, 2023"
+      lastVisit: "2023-06-12",
+      nextVisit: "2023-06-19",
+      medicalRecords: []
     }
   ];
 
@@ -311,9 +316,26 @@ const Dashboard: React.FC = () => {
   };
 
   const handleViewPatient = (patientId: number) => {
+    const patient = patients.find(p => p.id === patientId);
+    if (patient) {
+      setSelectedPatient(patient);
+    } else {
+      toast({
+        title: "Patient Not Found",
+        description: "Could not find patient record.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleClosePatientHistory = () => {
+    setSelectedPatient(null);
+  };
+
+  const handleUpdatePatient = (updatedPatient: any) => {
     toast({
-      title: "Patient Profile",
-      description: `Opening patient profile #${patientId}.`,
+      title: "Patient Updated",
+      description: "Patient information has been updated successfully.",
     });
   };
 
@@ -464,7 +486,18 @@ const Dashboard: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="patients" className="mt-0">
-                <PatientRecords patients={patients} />
+                {selectedPatient ? (
+                  <PatientHistory 
+                    patient={selectedPatient} 
+                    onClose={handleClosePatientHistory}
+                    onUpdate={handleUpdatePatient}
+                  />
+                ) : (
+                  <PatientRecords 
+                    patients={patients} 
+                    onViewPatient={handleViewPatient}
+                  />
+                )}
               </TabsContent>
               
               <TabsContent value="reports" className="mt-0">

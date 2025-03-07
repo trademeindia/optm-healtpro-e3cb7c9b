@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Filter, ArrowUpDown, MoreHorizontal, User, Calendar, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,13 +17,15 @@ interface Patient {
   icdCode: string;
   lastVisit: string;
   nextVisit: string;
+  medicalRecords?: any[];
 }
 
 interface PatientRecordsProps {
   patients: Patient[];
+  onViewPatient: (patientId: number) => void;
 }
 
-const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
+const PatientRecords: React.FC<PatientRecordsProps> = ({ patients, onViewPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   
@@ -40,10 +43,7 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
   };
 
   const handleViewRecords = (patientId: number) => {
-    toast({
-      title: "Patient Records",
-      description: "Opening patient medical records",
-    });
+    onViewPatient(patientId);
   };
 
   const handleScheduleAppointment = (patientId: number) => {
@@ -54,10 +54,7 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
   };
 
   const handleEditProfile = (patientId: number) => {
-    toast({
-      title: "Edit Profile",
-      description: "Opening patient profile editor",
-    });
+    onViewPatient(patientId);
   };
 
   const handleViewOptions = (patientId: number) => {
@@ -124,7 +121,11 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
             </thead>
             <tbody>
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <tr 
+                  key={patient.id} 
+                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                  onClick={() => handleViewRecords(patient.id)}
+                >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs">
@@ -156,7 +157,10 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => handleViewRecords(patient.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewRecords(patient.id);
+                        }}
                       >
                         <FileText className="h-4 w-4" />
                       </Button>
@@ -164,7 +168,10 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => handleScheduleAppointment(patient.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleScheduleAppointment(patient.id);
+                        }}
                       >
                         <Calendar className="h-4 w-4" />
                       </Button>
@@ -172,7 +179,10 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => handleEditProfile(patient.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditProfile(patient.id);
+                        }}
                       >
                         <User className="h-4 w-4" />
                       </Button>
@@ -180,7 +190,10 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients }) => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => handleViewOptions(patient.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewOptions(patient.id);
+                        }}
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
