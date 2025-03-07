@@ -16,21 +16,23 @@ export const DEFAULT_POSE_CONFIG: PoseDetectionConfig = {
 };
 
 // Performance configurations based on device capability
-export const PERFORMANCE_CONFIGS = {
+export const PERFORMANCE_CONFIGS: {
+  [key in 'low' | 'medium' | 'high']: Partial<PoseDetectionConfig>;
+} = {
   low: {
     inputResolution: { width: 480, height: 360 },
     frameskip: 2, // Process every 3rd frame
-    optimizationLevel: 'performance'
+    optimizationLevel: 'performance' as const
   },
   medium: {
     inputResolution: { width: 640, height: 480 },
     frameskip: 1, // Process every 2nd frame
-    optimizationLevel: 'balanced'
+    optimizationLevel: 'balanced' as const
   },
   high: {
     inputResolution: { width: 640, height: 480 },
     frameskip: 0, // Process every frame
-    optimizationLevel: 'accuracy'
+    optimizationLevel: 'accuracy' as const
   }
 };
 
