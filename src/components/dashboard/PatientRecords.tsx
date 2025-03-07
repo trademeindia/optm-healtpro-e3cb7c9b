@@ -256,4 +256,5 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients, onViewPatient
   );
 };
 
+export { PatientRecords };
 export default PatientRecords;

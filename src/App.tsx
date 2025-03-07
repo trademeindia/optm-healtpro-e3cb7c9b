@@ -11,6 +11,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import BiomarkersPage from "./pages/BiomarkersPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import ReportsPage from "./pages/ReportsPage";
+import PatientsPage from "./pages/PatientsPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -69,7 +70,7 @@ const AppRoutes = () => {
       } />
       <Route path="/patients" element={
         <ProtectedRoute allowedRoles={['doctor']}>
-          <Dashboard />
+          <PatientsPage />
         </ProtectedRoute>
       } />
       <Route path="/biomarkers" element={

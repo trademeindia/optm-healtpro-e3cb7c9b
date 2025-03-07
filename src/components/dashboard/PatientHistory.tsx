@@ -853,4 +853,5 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   );
 };
 
+export { PatientHistory };
 export default PatientHistory;
