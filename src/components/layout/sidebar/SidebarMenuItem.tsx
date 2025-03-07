@@ -23,6 +23,7 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
     (location.pathname === '/biomarkers' && item.path === '/biomarkers') ||
     (location.pathname === '/health-apps' && item.path === '/health-apps') ||
+    (location.pathname === '/exercises' && item.path === '/exercises') ||
     (location.pathname === '/patient-reports' && item.path === '/patient-reports') ||
     (location.pathname === '/appointments' && item.path === '/appointments') ||
     (location.pathname === '/settings' && item.path === '/settings') ||

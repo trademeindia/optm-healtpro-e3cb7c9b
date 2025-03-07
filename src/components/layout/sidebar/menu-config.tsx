@@ -8,7 +8,8 @@ import {
   Settings, 
   HelpCircle,
   TestTube,
-  Smartphone
+  Smartphone,
+  Dumbbell
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -69,6 +70,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'Health Apps', 
     path: '/health-apps',
     description: 'Connect and manage your health and fitness applications'
+  },
+  { 
+    icon: Dumbbell, 
+    label: 'Exercises', 
+    path: '/exercises',
+    description: 'View and perform recommended exercises with AI guidance'
   },
   { 
     icon: Calendar, 
