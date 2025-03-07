@@ -12,7 +12,8 @@ import {
   HeartPulse,
   Menu,
   X,
-  TestTube
+  TestTube,
+  Smartphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -101,6 +102,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       description: 'View your medical reports and documents'
     },
     { 
+      icon: Smartphone, 
+      label: 'Health Apps', 
+      path: '/health-apps',
+      description: 'Connect and manage your health and fitness applications'
+    },
+    { 
       icon: Calendar, 
       label: 'Appointments', 
       path: '/appointments',
@@ -187,7 +194,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
                     (location.pathname === '/dashboard' && item.path === '/dashboard') ||
                     (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
-                    (location.pathname === '/biomarkers' && item.path === '/biomarkers')
+                    (location.pathname === '/biomarkers' && item.path === '/biomarkers') ||
+                    (location.pathname === '/health-apps' && location.pathname.startsWith('/health-apps'))
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
                   )}
