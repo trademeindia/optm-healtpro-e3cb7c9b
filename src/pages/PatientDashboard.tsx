@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw, Check } from 'lucide-react';
 
@@ -12,6 +12,8 @@ import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import PatientReports from '@/components/patient/PatientReports';
+import UpcomingDoctorAppointments from '@/components/patient/UpcomingDoctorAppointments';
+import DoctorMessages from '@/components/patient/DoctorMessages';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -79,14 +81,46 @@ const PatientDashboard: React.FC = () => {
       date: 'June 20, 2023',
       time: '10:30 AM',
       doctor: 'Dr. Nikolas Pascal',
-      type: 'Follow-up'
+      type: 'Follow-up',
+      isConfirmed: false,
+      isSyncedToCalendar: true
     },
     {
       id: '2',
       date: 'July 5, 2023',
       time: '02:00 PM',
       doctor: 'Dr. Nikolas Pascal',
-      type: 'Physical Therapy'
+      type: 'Physical Therapy',
+      isConfirmed: true,
+      isSyncedToCalendar: false
+    }
+  ];
+
+  // Mock doctor messages
+  const doctorMessages = [
+    {
+      id: 'msg1',
+      sender: 'Dr. Nikolas Pascal',
+      content: "Hi Alex, I've reviewed your latest test results and would like to discuss them at our next appointment.",
+      timestamp: '10:32 AM',
+      isRead: false,
+      isFromDoctor: true
+    },
+    {
+      id: 'msg2',
+      sender: 'Dr. Emma Rodriguez',
+      content: "Your physical therapy exercises look good. Keep up with the daily routine we discussed.",
+      timestamp: '9:15 AM',
+      isRead: true,
+      isFromDoctor: true
+    },
+    {
+      id: 'msg3',
+      sender: 'Nurse Sarah',
+      content: 'Your prescription has been renewed and is ready for pickup at the pharmacy.',
+      timestamp: 'Yesterday',
+      isRead: true,
+      isFromDoctor: true
     }
   ];
 
@@ -106,30 +140,27 @@ const PatientDashboard: React.FC = () => {
     });
   };
 
-  // Function to handle sync of all health data
-  const handleSyncAllData = async () => {
-    const connectedProviders = providers.filter(p => p.isConnected);
-    if (connectedProviders.length === 0) {
-      toast({
-        title: "No connected apps",
-        description: "Please connect a health app to sync data.",
-      });
-      return;
-    }
-
+  // Function to handle viewing all appointments
+  const handleViewAllAppointments = () => {
     toast({
-      title: "Syncing data",
-      description: "Syncing data from all connected health apps...",
+      title: "View Appointments",
+      description: "Opening all appointments view.",
     });
+  };
 
-    // Sync data from all connected providers
-    for (const provider of connectedProviders) {
-      await refreshProviderData(provider.id);
-    }
-
+  // Function to handle message reading
+  const handleReadMessage = (id: string) => {
     toast({
-      title: "Sync complete",
-      description: "Your health data has been updated.",
+      title: "Message Opened",
+      description: "Opening message details.",
+    });
+  };
+
+  // Function to handle viewing all messages
+  const handleViewAllMessages = () => {
+    toast({
+      title: "View Messages",
+      description: "Opening all messages view.",
     });
   };
 
@@ -263,51 +294,13 @@ const PatientDashboard: React.FC = () => {
                   lastSync={steps.lastSync}
                 />
                 
-                {/* Upcoming Appointments */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
-                  <div className="space-y-4">
-                    {upcomingAppointments.map(appointment => (
-                      <div key={appointment.id} className="p-3 border rounded-lg bg-card">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-medium">{appointment.type}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {appointment.date} at {appointment.time}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {appointment.doctor}
-                            </p>
-                          </div>
-                          <div className="bg-primary/10 text-primary p-2 rounded-full">
-                            <Calendar className="h-4 w-4" />
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-xs flex-1"
-                            onClick={() => handleConfirmAppointment(appointment.id)}
-                          >
-                            Confirm
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-xs flex-1"
-                            onClick={() => handleRescheduleAppointment(appointment.id)}
-                          >
-                            Reschedule
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Button variant="ghost" className="w-full mt-3 text-sm">
-                    View All Appointments
-                  </Button>
-                </div>
+                {/* Upcoming Doctor Appointments - new component */}
+                <UpcomingDoctorAppointments
+                  appointments={upcomingAppointments}
+                  onViewAll={handleViewAllAppointments}
+                  onConfirm={handleConfirmAppointment}
+                  onReschedule={handleRescheduleAppointment}
+                />
               </div>
               
               {/* Middle column - health metrics and treatment */}
@@ -399,6 +392,13 @@ const PatientDashboard: React.FC = () => {
               
               {/* Right column - symptom tracker, documents, messages */}
               <div className="lg:col-span-4 space-y-6">
+                {/* Doctor Messages - new component */}
+                <DoctorMessages
+                  messages={doctorMessages}
+                  onViewAll={handleViewAllMessages}
+                  onReadMessage={handleReadMessage}
+                />
+                
                 {/* Symptom Tracker - Now connected via SymptomContext */}
                 <SymptomTracker />
                 
