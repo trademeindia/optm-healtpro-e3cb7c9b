@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -369,6 +368,13 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(err => {
+              console.error("Error playing video:", err);
+            });
+          }
+        };
       }
       
       if (canvasRef.current) {
@@ -482,10 +488,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
                   playsInline
                   muted
                   className="w-full h-full object-cover absolute inset-0"
+                  style={{ transform: 'scaleX(-1)' }}
                 />
                 <canvas 
                   ref={canvasRef}
                   className="w-full h-full absolute inset-0 z-10"
+                  style={{ transform: 'scaleX(-1)' }}
                 />
               </>
             ) : (
