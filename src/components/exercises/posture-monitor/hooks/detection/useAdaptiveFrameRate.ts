@@ -7,5 +7,10 @@ export const useAdaptiveFrameRate = () => {
     return Math.max(0, 33 - (performance.now() - lastDetectionTime));
   }, []);
 
-  return { calculateFrameDelay };
+  // Add initial delay to ensure video element is ready
+  const getInitialDelay = useCallback(() => {
+    return 500; // 500ms initial delay to ensure video is loaded
+  }, []);
+
+  return { calculateFrameDelay, getInitialDelay };
 };

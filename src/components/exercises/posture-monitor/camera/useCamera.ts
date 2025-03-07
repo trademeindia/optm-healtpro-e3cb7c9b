@@ -22,6 +22,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const [cameraActive, setCameraActive] = useState(false);
   const [permission, setPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,43 +59,78 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       return;
     }
     
+    if (isInitializing) {
+      console.log("Camera initialization already in progress");
+      return;
+    }
+    
+    setIsInitializing(true);
     setCameraError(null);
     
-    // Request camera permission and turn on camera
-    const { stream, error, permissionDenied } = await requestCameraAccess() || {};
-    
-    if (error) {
-      setCameraError(error);
-      if (permissionDenied) {
-        setPermission('denied');
+    try {
+      // Request camera permission and turn on camera
+      const { stream, error, permissionDenied } = await requestCameraAccess() || {};
+      
+      if (error) {
+        setCameraError(error);
+        if (permissionDenied) {
+          setPermission('denied');
+        }
+        setIsInitializing(false);
+        return;
       }
-      return;
-    }
-    
-    if (!stream) {
-      setCameraError("Failed to access camera stream");
-      return;
-    }
-    
-    streamRef.current = stream;
-    
-    // Setup video element
-    const videoSetupSuccess = await setupVideoElement(videoRef, canvasRef, stream);
-    
-    if (!videoSetupSuccess) {
-      setCameraError("Failed to setup video element");
+      
+      if (!stream) {
+        setCameraError("Failed to access camera stream");
+        setIsInitializing(false);
+        return;
+      }
+      
+      streamRef.current = stream;
+      
+      // Make sure video element exists before proceeding
+      if (!videoRef.current) {
+        console.error("Video element not found in DOM");
+        setCameraError("Video element not available. Please try again.");
+        stopCamera();
+        setIsInitializing(false);
+        return;
+      }
+      
+      // Setup video element
+      const videoSetupSuccess = await setupVideoElement(videoRef, canvasRef, stream);
+      
+      if (!videoSetupSuccess) {
+        setCameraError("Failed to setup video element");
+        stopCamera();
+        setIsInitializing(false);
+        return;
+      }
+      
+      // Wait a brief moment to ensure video is playing
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Double-check video state
+      if (!videoRef.current || videoRef.current.paused) {
+        console.error("Video not playing after setup");
+        await ensureVideoIsPlaying(videoRef);
+      }
+      
+      // Set camera as active
+      setCameraActive(true);
+      setPermission('granted');
+      
+      if (onCameraStart) {
+        onCameraStart();
+      }
+    } catch (err) {
+      console.error("Error in toggleCamera:", err);
+      setCameraError(`Camera setup failed: ${err}`);
       stopCamera();
-      return;
+    } finally {
+      setIsInitializing(false);
     }
-    
-    // Set camera as active
-    setCameraActive(true);
-    setPermission('granted');
-    
-    if (onCameraStart) {
-      onCameraStart();
-    }
-  }, [cameraActive, stopCamera, requestCameraAccess, setupVideoElement, onCameraStart]);
+  }, [cameraActive, stopCamera, requestCameraAccess, setupVideoElement, ensureVideoIsPlaying, onCameraStart, isInitializing]);
   
   // Monitor video state and restart if needed
   useEffect(() => {

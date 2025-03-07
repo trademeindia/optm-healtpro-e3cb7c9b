@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { 
   UsePoseDetectionProps, 
@@ -20,6 +20,7 @@ export const usePoseDetection = ({
 }: UsePoseDetectionProps): UsePoseDetectionResult => {
   // Configuration
   const [config] = useState(DEFAULT_POSE_CONFIG);
+  const videoReadyRef = useRef(false);
   
   // Load the pose model
   const { model, isModelLoading, error: modelError } = usePoseModel(config);
@@ -63,6 +64,27 @@ export const usePoseDetection = ({
     setFeedback: setFeedbackMessage
   });
   
+  // Check if video element is ready
+  useEffect(() => {
+    if (cameraActive && videoRef.current) {
+      const checkVideoReady = () => {
+        if (videoRef.current && 
+            videoRef.current.readyState >= 2 && 
+            !videoRef.current.paused) {
+          console.log("Video is ready for pose detection");
+          videoReadyRef.current = true;
+        } else {
+          videoReadyRef.current = false;
+          setTimeout(checkVideoReady, 100);
+        }
+      };
+      
+      checkVideoReady();
+    } else {
+      videoReadyRef.current = false;
+    }
+  }, [cameraActive, videoRef]);
+  
   // Handle pose detection
   const handlePoseDetected = useCallback((detectedPose: posenet.Pose) => {
     setPose(detectedPose);
@@ -76,7 +98,8 @@ export const usePoseDetection = ({
     videoRef,
     config,
     onPoseDetected: handlePoseDetected,
-    setFeedback: setFeedbackMessage
+    setFeedback: setFeedbackMessage,
+    videoReady: videoReadyRef.current
   });
   
   // Reset session function to clear stats and state
