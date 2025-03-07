@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw, Check } from 'lucide-react';
+import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -17,12 +18,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { SymptomProvider } from '@/contexts/SymptomContext';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -393,8 +388,10 @@ const PatientDashboard: React.FC = () => {
                 {/* PostureAnalysis Component */}
                 <PostureAnalysis />
                 
-                {/* Progress Chart */}
-                <SymptomProgressChart />
+                {/* Symptom Progress Chart with better integration */}
+                <div className="glass-morphism rounded-2xl p-6">
+                  <SymptomProgressChart />
+                </div>
               </div>
               
               {/* Right column - symptom tracker, documents, messages */}
