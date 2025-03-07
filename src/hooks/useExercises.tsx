@@ -33,7 +33,7 @@ const useExercises = () => {
       setExercises(prevExercises => 
         prevExercises.map(ex => 
           ex.id === exerciseId && ex.completionStatus !== 'completed'
-            ? { ...ex, completionStatus: 'in-progress' } 
+            ? { ...ex, completionStatus: 'in-progress' as const } 
             : ex
         )
       );

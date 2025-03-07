@@ -17,7 +17,7 @@ export const updateExerciseProgress = (
   // Update exercises completion status
   const updatedExercises = exercises.map(ex => 
     ex.id === exerciseId 
-      ? { ...ex, completionStatus: 'completed' } 
+      ? { ...ex, completionStatus: 'completed' as const } 
       : ex
   );
   
