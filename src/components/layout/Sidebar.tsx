@@ -1,141 +1,31 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  FileText, 
-  BarChart2, 
-  Settings, 
-  HelpCircle,
-  HeartPulse,
-  Menu,
-  X,
-  TestTube,
-  Smartphone
-} from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-
-interface SidebarProps {
-  className?: string;
-}
+import { SidebarProps } from './sidebar/types';
+import { 
+  getDoctorMenuItems, 
+  getPatientMenuItems, 
+  getBottomMenuItems 
+} from './sidebar/menu-config';
+import { MobileToggle } from './sidebar/MobileToggle';
+import { SidebarContent } from './sidebar/SidebarContent';
+import { useSidebarResponsive } from './sidebar/useSidebarResponsive';
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth(); // Get the current user
+  const { isOpen, isMobile, toggleSidebar, setIsOpen } = useSidebarResponsive();
   
-  // Check if mobile on mount and when window resizes
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth < 1024) {
-        setIsOpen(false);
-      } else {
-        setIsOpen(true);
-      }
-    };
-    
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
-  
-  // Define common menu items
-  const dashboardItem = { 
-    icon: LayoutDashboard, 
-    label: 'Dashboard', 
-    path: user?.role === 'doctor' ? '/dashboard' : '/patient-dashboard',
-    description: 'Overview of patient data and clinical metrics'
-  };
-  
-  // Doctor specific menu items
-  const doctorMenuItems = [
-    dashboardItem,
-    { 
-      icon: Users, 
-      label: 'Patients', 
-      path: '/patients',
-      description: 'Manage patient records and information'
-    },
-    { 
-      icon: Calendar, 
-      label: 'Appointments', 
-      path: '/appointments',
-      description: 'Schedule and manage patient appointments'
-    },
-    { 
-      icon: FileText, 
-      label: 'Reports', 
-      path: '/reports',
-      description: 'Access and create clinical reports and documentation'
-    },
-    { 
-      icon: BarChart2, 
-      label: 'Analytics', 
-      path: '/analytics',
-      description: 'Visualize clinical data and treatment outcomes'
-    },
-  ];
-
-  // Patient specific menu items
-  const patientMenuItems = [
-    dashboardItem,
-    { 
-      icon: TestTube, 
-      label: 'Biomarkers', 
-      path: '/biomarkers',
-      description: 'View and upload your biomarker data and test results'
-    },
-    { 
-      icon: FileText, 
-      label: 'My Reports', 
-      path: '/patient-reports',
-      description: 'View your medical reports and documents'
-    },
-    { 
-      icon: Smartphone, 
-      label: 'Health Apps', 
-      path: '/health-apps',
-      description: 'Connect and manage your health and fitness applications'
-    },
-    { 
-      icon: Calendar, 
-      label: 'Appointments', 
-      path: '/appointments',
-      description: 'Schedule and manage your appointments'
-    },
-  ];
-
   // Determine which menu items to show based on user role
-  const menuItems = user?.role === 'doctor' ? doctorMenuItems : patientMenuItems;
+  const menuItems = user?.role === 'doctor' 
+    ? getDoctorMenuItems() 
+    : getPatientMenuItems();
 
-  const bottomMenuItems = [
-    { 
-      icon: Settings, 
-      label: 'Settings', 
-      path: '/settings',
-      description: 'Configure application preferences'
-    },
-    { 
-      icon: HelpCircle, 
-      label: 'Help', 
-      path: '/help',
-      description: 'Get assistance and support'
-    },
-  ];
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  const bottomMenuItems = getBottomMenuItems();
 
   const handleNavigation = (path: string) => {
     // Close sidebar on mobile after navigation
@@ -153,21 +43,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     navigate(path);
   };
 
-  // Mobile toggle button that's always visible
-  const MobileToggle = () => (
-    <Button
-      onClick={toggleSidebar}
-      variant="ghost"
-      size="icon"
-      className="lg:hidden fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
-    >
-      {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-    </Button>
-  );
-
   return (
     <>
-      <MobileToggle />
+      <MobileToggle isOpen={isOpen} toggleSidebar={toggleSidebar} />
       
       {/* Use conditional classes for mobile sidebar */}
       <aside className={cn(
@@ -176,74 +54,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         isMobile && isOpen ? "fixed inset-0 w-64 h-full" : "",
         className
       )}>
-        <div className="px-4 mb-8 flex items-center justify-center">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-            <HeartPulse className="w-6 h-6 text-white" />
-          </div>
-        </div>
-        
-        <nav className="flex-1 px-3">
-          <ul className="space-y-1">
-            {menuItems.map((item) => (
-              <li key={item.path}>
-                <button
-                  onClick={() => handleNavigation(item.path)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
-                    location.pathname === item.path || 
-                    (item.path === '/patients' && location.pathname.startsWith('/patient/')) ||
-                    (location.pathname === '/dashboard' && item.path === '/dashboard') ||
-                    (location.pathname === '/patient-dashboard' && item.path === '/patient-dashboard') ||
-                    (location.pathname === '/biomarkers' && item.path === '/biomarkers') ||
-                    (location.pathname === '/health-apps' && location.pathname.startsWith('/health-apps'))
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
-                  )}
-                >
-                  <item.icon className={cn(
-                    "w-5 h-5",
-                    location.pathname === item.path ? "text-primary" : "text-foreground/70"
-                  )} />
-                  {item.label}
-                  
-                  {/* Tooltip for description - only shown on desktop */}
-                  <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
-                    {item.description}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        <div className="mt-auto px-3">
-          <ul className="space-y-1">
-            {bottomMenuItems.map((item) => (
-              <li key={item.path}>
-                <button
-                  onClick={() => handleNavigation(item.path)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
-                    location.pathname === item.path
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
-                  )}
-                >
-                  <item.icon className={cn(
-                    "w-5 h-5",
-                    location.pathname === item.path ? "text-primary" : "text-foreground/70"
-                  )} />
-                  {item.label}
-                  
-                  {/* Tooltip for description - only shown on desktop */}
-                  <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">
-                    {item.description}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <SidebarContent 
+          menuItems={menuItems}
+          bottomMenuItems={bottomMenuItems}
+          onNavigate={handleNavigation}
+        />
       </aside>
       
       {/* Add overlay for mobile */}
