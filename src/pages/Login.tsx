@@ -2,12 +2,21 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, User, Users } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Users, Github, Apple } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeartPulse } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { FcGoogle } from 'react-icons/fc';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +26,15 @@ const Login: React.FC = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [userType, setUserType] = useState<'doctor' | 'patient'>('doctor');
-  const { login, forgotPassword } = useAuth();
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
+  const [signupData, setSignupData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
+  const { login, loginWithSocialProvider, signup, forgotPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +71,40 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!signupData.name || !signupData.email || !signupData.password) {
+      return;
+    }
+    
+    if (signupData.password !== signupData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await signup(signupData.email, signupData.password, signupData.name, userType);
+      setShowSignupDialog(false);
+    } catch (error) {
+      console.error('Signup failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
+    setIsSubmitting(true);
+    try {
+      await loginWithSocialProvider(provider);
+    } catch (error) {
+      console.error(`${provider} login failed:`, error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -64,6 +115,11 @@ const Login: React.FC = () => {
       setEmail('');
       setPassword('');
     }
+  };
+
+  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSignupData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -109,6 +165,48 @@ const Login: React.FC = () => {
                   <p className="text-muted-foreground mb-4">View your health data and treatment progress</p>
                 </TabsContent>
               </Tabs>
+              
+              {/* Social Login Buttons */}
+              <div className="flex flex-col gap-3 mb-6">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center justify-center gap-2 h-11"
+                  onClick={() => handleSocialLogin('google')}
+                  disabled={isSubmitting}
+                >
+                  <FcGoogle className="h-5 w-5" />
+                  <span>Continue with Google</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="flex items-center justify-center gap-2 h-11"
+                  onClick={() => handleSocialLogin('apple')}
+                  disabled={isSubmitting}
+                >
+                  <Apple className="h-5 w-5" />
+                  <span>Continue with Apple</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="flex items-center justify-center gap-2 h-11"
+                  onClick={() => handleSocialLogin('github')}
+                  disabled={isSubmitting}
+                >
+                  <Github className="h-5 w-5" />
+                  <span>Continue with GitHub</span>
+                </Button>
+              </div>
+              
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-background text-muted-foreground">or</span>
+                </div>
+              </div>
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -185,6 +283,19 @@ const Login: React.FC = () => {
                   {isSubmitting ? 'Signing in...' : 'Sign in'}
                 </Button>
               </form>
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <button
+                    type="button"
+                    className="text-primary hover:text-primary/80 font-medium"
+                    onClick={() => setShowSignupDialog(true)}
+                  >
+                    Sign up
+                  </button>
+                </p>
+              </div>
               
               <p className="mt-8 text-center text-sm text-muted-foreground">
                 {userType === 'doctor' 
@@ -315,6 +426,88 @@ const Login: React.FC = () => {
           </motion.div>
         </div>
       </div>
+      
+      {/* Signup Dialog */}
+      <Dialog open={showSignupDialog} onOpenChange={setShowSignupDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create your account</DialogTitle>
+            <DialogDescription>
+              Sign up as a {userType === 'doctor' ? 'Doctor' : 'Patient'} to access OPTM HealPro
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSignup} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="signup-name">Full Name</Label>
+              <Input
+                id="signup-name"
+                name="name"
+                value={signupData.name}
+                onChange={handleSignupInputChange}
+                placeholder={userType === 'doctor' ? "Dr. John Doe" : "Alex Johnson"}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="signup-email">Email</Label>
+              <Input
+                id="signup-email"
+                name="email"
+                type="email"
+                value={signupData.email}
+                onChange={handleSignupInputChange}
+                placeholder="your@email.com"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="signup-password">Password</Label>
+              <Input
+                id="signup-password"
+                name="password"
+                type="password"
+                value={signupData.password}
+                onChange={handleSignupInputChange}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+              <Input
+                id="signup-confirm-password"
+                name="confirmPassword"
+                type="password"
+                value={signupData.confirmPassword}
+                onChange={handleSignupInputChange}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            
+            <DialogFooter className="sm:justify-between mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSignupDialog(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

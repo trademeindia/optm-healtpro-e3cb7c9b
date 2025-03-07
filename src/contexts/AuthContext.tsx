@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 type UserRole = 'doctor' | 'patient';
+type AuthProvider = 'email' | 'google' | 'apple' | 'github';
 
 type User = {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  provider?: AuthProvider;
 };
 
 type AuthContextType = {
@@ -17,6 +19,8 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithSocialProvider: (provider: AuthProvider) => Promise<void>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
 };
@@ -65,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: '1',
           email: 'doctor@example.com',
           name: 'Dr. Nikolas Pascal',
-          role: 'doctor'
+          role: 'doctor',
+          provider: 'email'
         };
         
         // Store user in state and localStorage
@@ -79,7 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: '2',
           email: 'patient@example.com',
           name: 'Alex Johnson',
-          role: 'patient'
+          role: 'patient',
+          provider: 'email'
         };
         
         // Store user in state and localStorage
@@ -93,6 +99,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock signup function
+  const signup = async (email: string, password: string, name: string, role: UserRole) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, this would create a new user in the backend
+      const userData: User = {
+        id: Math.random().toString(36).substr(2, 9), // Generate mock ID
+        email,
+        name,
+        role,
+        provider: 'email'
+      };
+      
+      // Store user in state and localStorage
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      toast.success('Account created successfully');
+      navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Signup failed');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock social login function
+  const loginWithSocialProvider = async (provider: AuthProvider) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate mock user data based on provider
+      // In a real app, this would authenticate with the provider
+      // and create/fetch a user account
+      
+      // For demo, we'll create a random doctor or patient
+      const isDoctor = Math.random() > 0.5;
+      const providerNames = {
+        google: isDoctor ? 'Dr. Google User' : 'Google Patient',
+        apple: isDoctor ? 'Dr. Apple User' : 'Apple Patient',
+        github: isDoctor ? 'Dr. GitHub User' : 'GitHub Patient',
+        email: isDoctor ? 'Dr. Email User' : 'Email Patient'
+      };
+      
+      const userData: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        email: `${provider.toLowerCase()}user@example.com`,
+        name: providerNames[provider],
+        role: isDoctor ? 'doctor' : 'patient',
+        provider
+      };
+      
+      // Store user in state and localStorage
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      toast.success(`${provider} login successful`);
+      navigate(userData.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `${provider} login failed`);
       throw error;
     } finally {
       setIsLoading(false);
@@ -125,6 +203,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithSocialProvider,
+        signup,
         logout,
         forgotPassword
       }}
