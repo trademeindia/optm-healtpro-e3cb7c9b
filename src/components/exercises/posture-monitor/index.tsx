@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from 'lucide-react';
 import { FeedbackType } from './types';
-import { useCamera } from './useCamera';
+import { useCamera } from './camera';
 import { usePoseDetection } from './usePoseDetection';
 import FeedbackDisplay from './FeedbackDisplay';
 import StatsDisplay from './StatsDisplay';
