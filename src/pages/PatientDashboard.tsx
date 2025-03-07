@@ -9,7 +9,7 @@ import HealthMetric from '@/components/dashboard/HealthMetric';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
-import PainLocationMap from '@/components/dashboard/PainLocationMap';
+import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import PatientReports from '@/components/patient/PatientReports';
@@ -276,8 +276,8 @@ const PatientDashboard: React.FC = () => {
                   {/* Symptom Tracker */}
                   <SymptomTracker />
                   
-                  {/* Pain Location Map */}
-                  <PainLocationMap />
+                  {/* Replace PainLocationMap with AnatomicalMap */}
+                  <AnatomicalMap />
                   
                   {/* Medical Documents */}
                   <div className="glass-morphism rounded-2xl p-6">
