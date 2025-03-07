@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { SquatState, FeedbackType } from './types';
-import { analyzeSquatForm } from './poseDetectionUtils';
+import { analyzeSquatForm } from './utils/squatAnalysisUtils';
 import { PoseAnalysis, PoseFeedback, PoseStats } from './poseDetectionTypes';
 import * as posenet from '@tensorflow-models/posenet';
 import { toast } from '@/hooks/use-toast';
