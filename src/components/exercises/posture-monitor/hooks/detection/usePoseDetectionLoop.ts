@@ -1,3 +1,4 @@
+
 import { useRef, useCallback, useEffect, useState } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { UsePoseDetectionLoopProps, DetectionState } from './types';
@@ -133,8 +134,7 @@ export const usePoseDetectionLoop = ({
       const startTime = performance.now();
       
       const detectedPose = await model.estimateSinglePose(videoRef.current, {
-        flipHorizontal: true,
-        nmsRadius: 30
+        flipHorizontal: true
       });
       
       const detectionTime = performance.now() - startTime;
