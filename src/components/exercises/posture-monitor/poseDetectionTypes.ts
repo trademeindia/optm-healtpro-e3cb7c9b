@@ -10,6 +10,9 @@ export interface PoseDetectionConfig {
     height: number;
   };
   scoreThreshold: number;
+  maxPoseDetections?: number;
+  frameskip: number;  // Number of frames to skip (0 = process every frame)
+  optimizationLevel: 'performance' | 'balanced' | 'accuracy';
 }
 
 export interface PoseAnalysis {

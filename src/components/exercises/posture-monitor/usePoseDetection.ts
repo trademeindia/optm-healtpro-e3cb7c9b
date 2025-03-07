@@ -7,17 +7,22 @@ import {
   UsePoseDetectionResult,
   PoseDetectionConfig 
 } from './poseDetectionTypes';
-import { DEFAULT_POSE_CONFIG } from './utils/configUtils';
+import { getOptimizedConfig } from './utils/configUtils';
 import { usePoseModel } from './usePoseModel';
 import { usePoseAnalysis } from './usePoseAnalysis';
 import { usePoseDetectionLoop } from './usePoseDetectionLoop';
 
+interface ExtendedUsePoseDetectionProps extends UsePoseDetectionProps {
+  initialConfig?: PoseDetectionConfig;
+}
+
 export const usePoseDetection = ({ 
   cameraActive, 
-  videoRef 
-}: UsePoseDetectionProps): UsePoseDetectionResult => {
+  videoRef,
+  initialConfig
+}: ExtendedUsePoseDetectionProps): UsePoseDetectionResult => {
   // Configuration
-  const [config] = useState<PoseDetectionConfig>(DEFAULT_POSE_CONFIG);
+  const [config] = useState<PoseDetectionConfig>(initialConfig || getOptimizedConfig());
   
   // Load the pose model
   const { model, isModelLoading, error: modelError } = usePoseModel(config);

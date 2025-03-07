@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { SquatState } from './types';
 import { PoseDetectionConfig } from './poseDetectionTypes';
@@ -22,8 +22,9 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
   config
 }) => {
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [renderCount, setRenderCount] = useState(0);
   
-  // Adjust canvas to match video dimensions
+  // Adjust canvas to match video dimensions - with optimization to reduce unnecessary updates
   const adjustCanvas = useCallback(() => {
     if (!canvasRef.current) return;
     
@@ -45,7 +46,8 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
       canvas.style.height = displayHeight + "px";
       
       // Set actual size in memory (scaled for high DPI displays)
-      const dpr = window.devicePixelRatio || 1;
+      // For performance, limit DPR to 2 max
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = displayWidth * dpr;
       canvas.height = displayHeight * dpr;
       
@@ -54,37 +56,64 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
       
       // Store the new size
       setCanvasSize({ width: displayWidth, height: displayHeight });
-      
-      console.log(`Canvas resized to ${displayWidth}x${displayHeight} (DPR: ${dpr})`);
     }
     
     // Clear the canvas after resize
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }, [canvasRef]);
   
-  // Set up resize observer
+  // Set up resize observer with debounce for better performance
   useEffect(() => {
     adjustCanvas();
     
+    // Debounce resize handling
+    let resizeTimeout: number | null = null;
+    
+    const handleResize = () => {
+      if (resizeTimeout) {
+        window.clearTimeout(resizeTimeout);
+      }
+      
+      resizeTimeout = window.setTimeout(() => {
+        adjustCanvas();
+      }, 200);
+    };
+    
     // Watch for container resize
-    const resizeObserver = new ResizeObserver(() => {
-      adjustCanvas();
-    });
+    const resizeObserver = new ResizeObserver(handleResize);
     
     if (canvasRef.current?.parentElement) {
       resizeObserver.observe(canvasRef.current.parentElement);
     }
     
     // Also watch for window resize
-    window.addEventListener('resize', adjustCanvas);
+    window.addEventListener('resize', handleResize);
     
     return () => {
+      if (resizeTimeout) {
+        window.clearTimeout(resizeTimeout);
+      }
       resizeObserver.disconnect();
-      window.removeEventListener('resize', adjustCanvas);
+      window.removeEventListener('resize', handleResize);
     };
   }, [adjustCanvas, canvasRef]);
   
-  // Draw pose keypoints and skeleton on canvas
+  // Pre-compute connections for drawing skeleton
+  const adjacentKeyPoints = useMemo(() => [
+    ['nose', 'leftEye'], ['leftEye', 'leftEar'], ['nose', 'rightEye'],
+    ['rightEye', 'rightEar'], ['nose', 'leftShoulder'],
+    ['leftShoulder', 'leftElbow'], ['leftElbow', 'leftWrist'],
+    ['leftShoulder', 'leftHip'], ['leftHip', 'leftKnee'],
+    ['leftKnee', 'leftAnkle'], ['nose', 'rightShoulder'],
+    ['rightShoulder', 'rightElbow'], ['rightElbow', 'rightWrist'],
+    ['rightShoulder', 'rightHip'], ['rightHip', 'rightKnee'],
+    ['rightKnee', 'rightAnkle'],
+    // Connect shoulders and hips to form torso
+    ['leftShoulder', 'rightShoulder'],
+    ['leftHip', 'rightHip']
+  ], []);
+  
+  // Draw pose keypoints and skeleton on canvas with performance optimizations
   const drawPose = useCallback(() => {
     if (!pose || !canvasRef.current) return;
     
@@ -93,7 +122,8 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     if (!ctx) return;
     
     // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio);
+    ctx.clearRect(0, 0, canvas.width / (Math.min(window.devicePixelRatio || 1, 2)), 
+                      canvas.height / (Math.min(window.devicePixelRatio || 1, 2)));
     
     // Calculate scale factors for the canvas
     const videoWidth = config?.inputResolution.width || 640; 
@@ -104,8 +134,21 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     // Minimum confidence threshold for displaying keypoints
     const minPartConfidence = config?.minPartConfidence || 0.5;
     
-    // Draw keypoints
+    // Performance optimization: Only draw the most important keypoints on low-end devices
+    const optimizationLevel = config?.optimizationLevel || 'balanced';
+    const isHighPerformanceMode = optimizationLevel === 'performance';
+    
+    // Keypoints to always draw regardless of performance mode
+    const criticalKeypoints = ['leftShoulder', 'rightShoulder', 'leftHip', 'rightHip', 
+                               'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle'];
+    
+    // Draw keypoints with optimization
     pose.keypoints.forEach(keypoint => {
+      // Skip non-critical keypoints in high performance mode
+      if (isHighPerformanceMode && !criticalKeypoints.includes(keypoint.part)) {
+        return;
+      }
+      
       if (keypoint.score > minPartConfidence) {
         // Determine color based on keypoint type
         let color = 'aqua';
@@ -122,45 +165,43 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
         ctx.arc(
           keypoint.position.x * scaleX, 
           keypoint.position.y * scaleY, 
-          6, 0, 2 * Math.PI
+          isHighPerformanceMode ? 4 : 6, 0, 2 * Math.PI
         );
         ctx.fillStyle = color;
         ctx.fill();
         
-        // Add keypoint label with more contrast for readability
-        ctx.font = '12px Arial';
-        ctx.fillStyle = 'black';
-        ctx.fillText(
-          keypoint.part, 
-          keypoint.position.x * scaleX + 11, 
-          keypoint.position.y * scaleY + 1
-        );
-        ctx.fillStyle = 'white';
-        ctx.fillText(
-          keypoint.part, 
-          keypoint.position.x * scaleX + 10, 
-          keypoint.position.y * scaleY
-        );
+        // Add keypoint label only in balanced or accuracy mode
+        if (!isHighPerformanceMode) {
+          ctx.font = '12px Arial';
+          ctx.fillStyle = 'black';
+          ctx.fillText(
+            keypoint.part, 
+            keypoint.position.x * scaleX + 11, 
+            keypoint.position.y * scaleY + 1
+          );
+          ctx.fillStyle = 'white';
+          ctx.fillText(
+            keypoint.part, 
+            keypoint.position.x * scaleX + 10, 
+            keypoint.position.y * scaleY
+          );
+        }
       }
     });
     
-    // Define connections for drawing skeleton
-    const adjacentKeyPoints = [
-      ['nose', 'leftEye'], ['leftEye', 'leftEar'], ['nose', 'rightEye'],
-      ['rightEye', 'rightEar'], ['nose', 'leftShoulder'],
-      ['leftShoulder', 'leftElbow'], ['leftElbow', 'leftWrist'],
-      ['leftShoulder', 'leftHip'], ['leftHip', 'leftKnee'],
-      ['leftKnee', 'leftAnkle'], ['nose', 'rightShoulder'],
-      ['rightShoulder', 'rightElbow'], ['rightElbow', 'rightWrist'],
-      ['rightShoulder', 'rightHip'], ['rightHip', 'rightKnee'],
-      ['rightKnee', 'rightAnkle'],
-      // Connect shoulders and hips to form torso
-      ['leftShoulder', 'rightShoulder'],
-      ['leftHip', 'rightHip']
-    ];
-    
-    // Draw skeleton with gradient colors based on body part
+    // Draw skeleton with optimization
     adjacentKeyPoints.forEach(([partA, partB]) => {
+      // Skip some connections in high performance mode
+      if (isHighPerformanceMode) {
+        const isImportantConnection = 
+          (partA.includes('Shoulder') || partA.includes('Hip') || 
+           partA.includes('Knee') || partA.includes('Ankle')) &&
+          (partB.includes('Shoulder') || partB.includes('Hip') || 
+           partB.includes('Knee') || partB.includes('Ankle'));
+        
+        if (!isImportantConnection) return;
+      }
+      
       const keyPointA = pose.keypoints.find(kp => kp.part === partA);
       const keyPointB = pose.keypoints.find(kp => kp.part === partB);
       
@@ -174,13 +215,13 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
             (partA.includes('Hip') && partB.includes('Shoulder'))) {
           // Torso connections
           color = 'yellow';
-          ctx.lineWidth = 4;
+          ctx.lineWidth = isHighPerformanceMode ? 3 : 4;
         } else if (partA.includes('Knee') || partB.includes('Knee')) {
           // Knee connections - highlight the important parts for squats
           color = 'lime';
-          ctx.lineWidth = 4;
+          ctx.lineWidth = isHighPerformanceMode ? 3 : 4;
         } else {
-          ctx.lineWidth = 3;
+          ctx.lineWidth = isHighPerformanceMode ? 2 : 3;
         }
         
         ctx.strokeStyle = color;
@@ -223,7 +264,7 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
       }
     };
     
-    // Add knee and hip angles
+    // Add knee and hip angles - critical info
     addAngleDisplay(kneeAngle, 'Knee', 'leftKnee');
     addAngleDisplay(hipAngle, 'Hip', 'leftHip');
     
@@ -243,7 +284,7 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
       
       // Color based on confidence
       const confidenceColor = pose.score > 0.6 ? 'lime' : 
-                               pose.score > 0.4 ? 'yellow' : 'red';
+                             pose.score > 0.4 ? 'yellow' : 'red';
       
       ctx.fillStyle = confidenceColor;
       ctx.fillText(`Confidence: ${Math.round(pose.score * 100)}%`, 20, 65);
@@ -251,19 +292,39 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     
     drawStateInfo();
     
-  }, [pose, canvasRef, kneeAngle, hipAngle, currentSquatState, canvasSize, config]);
+    // Update render count for performance tracking
+    setRenderCount(prev => prev + 1);
+    
+  }, [pose, canvasRef, kneeAngle, hipAngle, currentSquatState, canvasSize, config, adjacentKeyPoints]);
 
-  // Run the drawing effect
+  // Run the drawing effect with requestAnimationFrame for smoother rendering
   useEffect(() => {
-    if (pose) {
-      requestAnimationFrame(drawPose);
-    } else if (canvasRef.current) {
-      // Clear canvas when no pose is detected
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    let animationId: number | null = null;
+    
+    const renderLoop = () => {
+      if (pose) {
+        drawPose();
       }
-    }
+      animationId = requestAnimationFrame(renderLoop);
+    };
+    
+    // Start render loop
+    animationId = requestAnimationFrame(renderLoop);
+    
+    return () => {
+      // Cancel animation on cleanup
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+      }
+      
+      // Clear canvas when no pose is detected
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+      }
+    };
   }, [pose, drawPose, canvasRef]);
 
   return null;

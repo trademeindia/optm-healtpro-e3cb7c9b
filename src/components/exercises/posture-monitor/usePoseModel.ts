@@ -4,6 +4,7 @@ import * as tf from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
 import { PoseDetectionConfig } from './poseDetectionTypes';
 import { toast } from '@/hooks/use-toast';
+import { getOptimizedConfig } from './utils/configUtils';
 
 interface UsePoseModelResult {
   model: posenet.PoseNet | null;
@@ -15,6 +16,12 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
   const [model, setModel] = useState<posenet.PoseNet | null>(null);
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get optimized configuration based on device performance
+  const optimizedConfig = useCallback(() => {
+    // Apply performance-optimized configs
+    return getOptimizedConfig();
+  }, []);
   
   // Load PoseNet model
   const loadModel = useCallback(async () => {
@@ -29,24 +36,34 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       await tf.ready();
       console.log("TensorFlow.js is ready");
       
-      // Force garbage collection to free up memory before loading
+      // Apply memory optimizations before loading
       if (tf.env().get('IS_BROWSER')) {
         try {
-          // @ts-ignore - accessing internals but it's useful for memory management
-          tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
+          // Use backend.disposeVariables() if available (newer versions)
+          const backend = tf.getBackend();
+          if (backend === 'webgl' && (tf as any).webgl) {
+            (tf as any).webgl.disposeVariables();
+          }
         } catch (e) {
           console.warn("Failed to cleanup memory:", e);
         }
       }
+      
+      // Get performance-optimized configuration
+      const deviceConfig = optimizedConfig();
+      console.log("Using optimized config:", deviceConfig);
+      
+      // Set lower multiplier and quantization for faster loading and inference
+      const modelMultiplier = deviceConfig.optimizationLevel === 'performance' ? 0.5 : 0.75;
       
       // Load PoseNet model
       console.log("Loading PoseNet model...");
       const loadedModel = await posenet.load({
         architecture: 'MobileNetV1',
         outputStride: 16,
-        inputResolution: config.inputResolution,
-        multiplier: 0.75,
-        quantBytes: 2
+        inputResolution: deviceConfig.inputResolution,
+        multiplier: modelMultiplier,
+        quantBytes: 2 // Use 2-byte quantization for better performance
       });
       
       console.log("PoseNet model loaded successfully");
@@ -54,7 +71,7 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       
       toast({
         title: "Model Loaded",
-        description: "Pose detection model loaded successfully. You can start exercising now.",
+        description: "Pose detection model loaded successfully.",
       });
     } catch (error) {
       console.error('Error loading PoseNet model:', error);
@@ -68,7 +85,7 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
     } finally {
       setIsModelLoading(false);
     }
-  }, [model, config]);
+  }, [model, optimizedConfig]);
   
   // Load model on component mount
   useEffect(() => {
@@ -79,14 +96,21 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       // Close model and free up memory
       if (model) {
         try {
-          // @ts-ignore - accessing internals but it's useful for memory management
-          model.dispose?.();
+          if (model.dispose) {
+            model.dispose();
+          }
           
           // Force garbage collection
           if (tf.env().get('IS_BROWSER')) {
             try {
-              // @ts-ignore - accessing internals but it's useful for memory management
-              tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
+              // Use backend.disposeVariables() if available (newer versions)
+              const backend = tf.getBackend();
+              if (backend === 'webgl' && (tf as any).webgl) {
+                (tf as any).webgl.disposeVariables();
+              }
+              
+              // Try to clear memory more aggressively
+              tf.disposeVariables();
             } catch (e) {
               console.warn("Failed to cleanup memory:", e);
             }

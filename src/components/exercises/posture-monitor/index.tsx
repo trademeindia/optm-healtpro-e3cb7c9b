@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info } from 'lucide-react';
+import { Info, Settings } from 'lucide-react';
 import { FeedbackType } from './types';
 import { useCamera } from './useCamera';
 import { usePoseDetection } from './usePoseDetection';
@@ -11,6 +11,9 @@ import TutorialDialog from './TutorialDialog';
 import PoseRenderer from './PoseRenderer';
 import CameraView from './CameraView';
 import ControlButtons from './ControlButtons';
+import PerformanceSettings from './PerformanceSettings';
+import { PoseDetectionConfig } from './poseDetectionTypes';
+import { getOptimizedConfig } from './utils/configUtils';
 
 interface PostureMonitorProps {
   exerciseId: string | null;
@@ -24,6 +27,8 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   onFinish,
 }) => {
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [customConfig, setCustomConfig] = useState<PoseDetectionConfig>(getOptimizedConfig());
   
   // Initialize camera
   const { 
@@ -45,7 +50,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     }
   });
   
-  // Initialize pose detection
+  // Initialize pose detection with optimized config
   const {
     model,
     isModelLoading,
@@ -57,7 +62,8 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     config
   } = usePoseDetection({
     cameraActive,
-    videoRef
+    videoRef,
+    initialConfig: customConfig
   });
   
   // Override feedback (e.g., for camera permission issues)
@@ -73,7 +79,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     }
   }, [permission]);
   
-  // Auto-start camera when component mounts
+  // Auto-start camera when component mounts with a slight delay
   useEffect(() => {
     // Give browser a moment to initialize
     const timer = setTimeout(() => {
@@ -95,6 +101,14 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   const handleFinish = () => {
     stopCamera();
     onFinish();
+  };
+  
+  // Handle configuration changes from settings
+  const handleConfigChange = (newConfig: Partial<PoseDetectionConfig>) => {
+    setCustomConfig(prev => ({
+      ...prev,
+      ...newConfig
+    }));
   };
   
   // Determine which feedback to show (custom overrides from pose detection)
@@ -122,13 +136,31 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>AI Squat Analyzer: {exerciseName}</CardTitle>
-          <CardDescription>
-            AI-powered squat analysis with real-time feedback
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle>AI Squat Analyzer: {exerciseName}</CardTitle>
+            <CardDescription>
+              AI-powered squat analysis with real-time feedback
+            </CardDescription>
+          </div>
+          <button 
+            onClick={() => setShowSettings(!showSettings)}
+            className="rounded-full p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+            title="Performance Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Performance settings panel */}
+          {showSettings && (
+            <PerformanceSettings 
+              currentConfig={customConfig}
+              onConfigChange={handleConfigChange}
+              onClose={() => setShowSettings(false)}
+            />
+          )}
+          
           {/* Camera display and pose overlay */}
           <CameraView 
             cameraActive={cameraActive}

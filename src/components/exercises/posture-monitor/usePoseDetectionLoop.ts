@@ -28,6 +28,7 @@ export const usePoseDetectionLoop = ({
   const lastDetectionTimeRef = useRef<number>(0);
   const detectionFailuresRef = useRef<number>(0);
   const isDetectingRef = useRef<boolean>(false);
+  const frameCountRef = useRef<number>(0);
   
   // Animation frame reference
   const requestAnimationRef = useRef<number | null>(null);
@@ -66,6 +67,14 @@ export const usePoseDetectionLoop = ({
           requestAnimationRef.current = requestAnimationFrame(detectPose);
           return;
         }
+      }
+      
+      // Performance optimization: implement frame skipping
+      frameCountRef.current = (frameCountRef.current + 1) % (config.frameskip + 1);
+      if (frameCountRef.current !== 0) {
+        // Skip this frame based on frameskip setting
+        requestAnimationRef.current = requestAnimationFrame(detectPose);
+        return;
       }
       
       // Calculate time since last successful detection for performance monitoring
@@ -113,9 +122,11 @@ export const usePoseDetectionLoop = ({
       }
     }
     
-    // Continue the detection loop with adaptive frame rate
-    // If detection is taking too long, we'll slow down the frame rate
-    const frameDelay = Math.max(0, 33 - (performance.now() - lastDetectionTimeRef.current));
+    // Continue the detection loop with adaptive frame rate based on device performance
+    const frameDelay = config.optimizationLevel === 'performance' 
+      ? Math.max(0, 50 - (performance.now() - lastDetectionTimeRef.current)) // Lower frame rate for performance mode
+      : Math.max(0, 33 - (performance.now() - lastDetectionTimeRef.current)); // Higher frame rate otherwise
+      
     requestAnimationRef.current = setTimeout(() => {
       requestAnimationRef.current = requestAnimationFrame(detectPose);
     }, frameDelay) as unknown as number;
@@ -127,6 +138,7 @@ export const usePoseDetectionLoop = ({
       console.log("Starting pose detection...");
       // Start detection
       isDetectingRef.current = true;
+      frameCountRef.current = 0; // Reset frame counter
       requestAnimationRef.current = requestAnimationFrame(detectPose);
     } else if (!cameraActive) {
       // Stop detection if camera is inactive
