@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle } from 'lucide-react';
+import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -12,6 +13,8 @@ import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import PatientReports from '@/components/patient/PatientReports';
+import FitnessIntegrations from '@/components/dashboard/FitnessIntegrations';
+import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +28,13 @@ import {
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { 
+    providers, 
+    fitnessData, 
+    connectProvider, 
+    disconnectProvider, 
+    refreshProviderData 
+  } = useFitnessIntegration();
 
   // Mock data for activity tracking
   const activityData = [
@@ -99,6 +109,103 @@ const PatientDashboard: React.FC = () => {
     });
   };
 
+  // Function to handle sync of all health data
+  const handleSyncAllData = async () => {
+    const connectedProviders = providers.filter(p => p.isConnected);
+    if (connectedProviders.length === 0) {
+      toast({
+        title: "No connected apps",
+        description: "Please connect a health app to sync data.",
+      });
+      return;
+    }
+
+    toast({
+      title: "Syncing data",
+      description: "Syncing data from all connected health apps...",
+    });
+
+    // Sync data from all connected providers
+    for (const provider of connectedProviders) {
+      await refreshProviderData(provider.id);
+    }
+
+    toast({
+      title: "Sync complete",
+      description: "Your health data has been updated.",
+    });
+  };
+
+  // Get health metrics from fitness data or use defaults
+  const getHeartRate = () => {
+    if (fitnessData.heartRate) {
+      return {
+        value: fitnessData.heartRate.value,
+        unit: fitnessData.heartRate.unit,
+        change: fitnessData.heartRate.change || 0,
+        source: fitnessData.heartRate.source,
+        lastSync: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString()
+      };
+    }
+    return { value: 72, unit: 'bpm', change: -3 };
+  };
+
+  const getBloodPressure = () => {
+    if (fitnessData.bloodPressure) {
+      return {
+        value: fitnessData.bloodPressure.value,
+        unit: fitnessData.bloodPressure.unit,
+        change: 0,
+        source: fitnessData.bloodPressure.source,
+        lastSync: new Date(fitnessData.bloodPressure.timestamp).toLocaleTimeString()
+      };
+    }
+    return { value: '120/80', unit: 'mmHg', change: 0 };
+  };
+
+  const getTemperature = () => {
+    if (fitnessData.temperature) {
+      return {
+        value: fitnessData.temperature.value,
+        unit: fitnessData.temperature.unit,
+        change: fitnessData.temperature.change || 0.2,
+        source: fitnessData.temperature.source,
+        lastSync: new Date(fitnessData.temperature.timestamp).toLocaleTimeString()
+      };
+    }
+    return { value: 98.6, unit: '°F', change: 0.2 };
+  };
+
+  const getOxygen = () => {
+    if (fitnessData.oxygenSaturation) {
+      return {
+        value: fitnessData.oxygenSaturation.value,
+        unit: fitnessData.oxygenSaturation.unit,
+        change: fitnessData.oxygenSaturation.change || 1,
+        source: fitnessData.oxygenSaturation.source,
+        lastSync: new Date(fitnessData.oxygenSaturation.timestamp).toLocaleTimeString()
+      };
+    }
+    return { value: 98, unit: '%', change: 1 };
+  };
+
+  const getSteps = () => {
+    return fitnessData.steps ? {
+      data: activityData,
+      currentValue: Number(fitnessData.steps.value),
+      source: fitnessData.steps.source,
+      lastSync: new Date(fitnessData.steps.timestamp).toLocaleTimeString()
+    } : { data: activityData, currentValue: 8152 };
+  };
+
+  const heartRate = getHeartRate();
+  const bloodPressure = getBloodPressure();
+  const temperature = getTemperature();
+  const oxygen = getOxygen();
+  const steps = getSteps();
+  
+  const hasConnectedApps = providers.some(p => p.isConnected);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -117,6 +224,7 @@ const PatientDashboard: React.FC = () => {
           <Tabs defaultValue="dashboard" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="fitness">Health Apps</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
@@ -154,12 +262,14 @@ const PatientDashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Activity Tracker */}
+                  {/* Activity Tracker with fitness data if available */}
                   <ActivityTracker
                     title="Your Activity (Steps)"
-                    data={activityData}
+                    data={steps.data}
                     unit="steps/day"
-                    currentValue={8152}
+                    currentValue={steps.currentValue}
+                    source={steps.source}
+                    lastSync={steps.lastSync}
                   />
                   
                   {/* Upcoming Appointments */}
@@ -211,46 +321,73 @@ const PatientDashboard: React.FC = () => {
                 
                 {/* Middle column - health metrics and treatment */}
                 <div className="lg:col-span-5 space-y-6">
+                  {/* Health Data Sync Button */}
+                  {hasConnectedApps && (
+                    <div className="flex justify-end mb-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs gap-1.5"
+                        onClick={handleSyncAllData}
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Sync Health Data
+                      </Button>
+                    </div>
+                  )}
+                  
                   {/* Health Metrics */}
                   <div className="grid grid-cols-2 gap-4">
                     <HealthMetric
                       title="Heart Rate"
-                      value={72}
-                      unit="bpm"
-                      change={-3}
+                      value={heartRate.value}
+                      unit={heartRate.unit}
+                      change={heartRate.change}
                       changeLabel="vs last week"
                       icon={<Heart className="w-4 h-4" />}
                       color="bg-medical-red/10 text-medical-red"
+                      source={heartRate.source}
+                      lastSync={heartRate.lastSync}
+                      isConnected={!!heartRate.source}
                     />
                     
                     <HealthMetric
                       title="Blood Pressure"
-                      value="120/80"
-                      unit="mmHg"
-                      change={0}
+                      value={bloodPressure.value}
+                      unit={bloodPressure.unit}
+                      change={bloodPressure.change}
                       changeLabel="stable"
                       icon={<Activity className="w-4 h-4" />}
                       color="bg-medical-blue/10 text-medical-blue"
+                      source={bloodPressure.source}
+                      lastSync={bloodPressure.lastSync}
+                      isConnected={!!bloodPressure.source}
                     />
                     
                     <HealthMetric
                       title="Temperature"
-                      value={98.6}
-                      unit="°F"
-                      change={0.2}
+                      value={temperature.value}
+                      unit={temperature.unit}
+                      change={temperature.change}
                       changeLabel="vs yesterday"
                       icon={<Thermometer className="w-4 h-4" />}
                       color="bg-medical-yellow/10 text-medical-yellow"
+                      source={temperature.source}
+                      lastSync={temperature.lastSync}
+                      isConnected={!!temperature.source}
                     />
                     
                     <HealthMetric
                       title="Oxygen"
-                      value={98}
-                      unit="%"
-                      change={1}
+                      value={oxygen.value}
+                      unit={oxygen.unit}
+                      change={oxygen.change}
                       changeLabel="vs last check"
                       icon={<Droplet className="w-4 h-4" />}
                       color="bg-medical-green/10 text-medical-green"
+                      source={oxygen.source}
+                      lastSync={oxygen.lastSync}
+                      isConnected={!!oxygen.source}
                     />
                   </div>
                   
@@ -274,7 +411,7 @@ const PatientDashboard: React.FC = () => {
                   {/* Symptom Tracker */}
                   <SymptomTracker />
                   
-                  {/* Replace PainLocationMap with AnatomicalMap */}
+                  {/* Anatomical Map */}
                   <AnatomicalMap />
                   
                   {/* Medical Documents */}
@@ -314,6 +451,7 @@ const PatientDashboard: React.FC = () => {
                           </svg>
                         </Button>
                       </div>
+                      
                       <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
                         <div className="flex items-center">
                           <div className="bg-primary/10 p-2 rounded-full mr-3">
@@ -342,6 +480,7 @@ const PatientDashboard: React.FC = () => {
                           </svg>
                         </Button>
                       </div>
+                      
                       <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
                         <div className="flex items-center">
                           <div className="bg-primary/10 p-2 rounded-full mr-3">
@@ -391,6 +530,102 @@ const PatientDashboard: React.FC = () => {
                         <span>Send Message</span>
                       </Button>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="fitness">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8">
+                  <FitnessIntegrations 
+                    providers={providers}
+                    onConnect={connectProvider}
+                    onDisconnect={disconnectProvider}
+                    onRefresh={refreshProviderData}
+                  />
+                </div>
+                
+                <div className="lg:col-span-4">
+                  <div className="glass-morphism rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold mb-4">Health Data Privacy</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Your health data is secure and only accessible to you and your healthcare providers. 
+                      We adhere to strict privacy regulations and use encryption to protect your information.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-xs">
+                          <span className="font-medium">End-to-end encryption</span> - Your data is encrypted during transmission and storage
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-xs">
+                          <span className="font-medium">OAuth 2.0</span> - Secure authentication without sharing your passwords
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-xs">
+                          <span className="font-medium">HIPAA compliance</span> - We follow healthcare data protection standards
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-xs">
+                          <span className="font-medium">Data minimization</span> - We only collect what's necessary for your care
+                        </p>
+                      </div>
+                    </div>
+                    <Button className="w-full mt-4" variant="outline" size="sm">
+                      Privacy Settings
+                    </Button>
+                  </div>
+                  
+                  <div className="glass-morphism rounded-2xl p-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Supported Devices</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      We support a wide range of fitness trackers and health monitoring devices.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 border rounded-lg bg-card">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-xs font-medium">Apple</span>
+                        </div>
+                        <p className="text-xs">Apple Watch</p>
+                      </div>
+                      <div className="text-center p-3 border rounded-lg bg-card">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-xs font-medium">Fitbit</span>
+                        </div>
+                        <p className="text-xs">Fitbit Devices</p>
+                      </div>
+                      <div className="text-center p-3 border rounded-lg bg-card">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-xs font-medium">G</span>
+                        </div>
+                        <p className="text-xs">Google Wear OS</p>
+                      </div>
+                      <div className="text-center p-3 border rounded-lg bg-card">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <span className="text-xs font-medium">S</span>
+                        </div>
+                        <p className="text-xs">Samsung Devices</p>
+                      </div>
+                    </div>
+                    <Button className="w-full mt-4" variant="outline" size="sm">
+                      View All Supported Devices
+                    </Button>
                   </div>
                 </div>
               </div>
