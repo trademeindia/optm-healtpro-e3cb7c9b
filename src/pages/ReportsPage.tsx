@@ -4,20 +4,78 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   FileText, File, FilePlus, Upload, Download, Search,
   Filter, ChevronDown, Calendar, Clock, User, 
-  MoreHorizontal, Printer, Share2, Trash2
+  MoreHorizontal, Printer, Share2, Trash2, Pen, AlertTriangle, X
 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+
+interface Report {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  uploadedBy: string;
+  patient: string;
+  patientId: string;
+  size: string;
+  thumbnailUrl: string | null;
+  content?: string;
+}
 
 const ReportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<{
+    name: string;
+    type: string;
+    date: string;
+    patient: string;
+    content?: string;
+  }>({
+    name: '',
+    type: '',
+    date: '',
+    patient: '',
+    content: '',
+  });
   const { toast } = useToast();
 
   // Sample report categories
@@ -30,7 +88,7 @@ const ReportsPage: React.FC = () => {
   ];
   
   // Sample report data
-  const reports = [
+  const [reports, setReports] = useState<Report[]>([
     {
       id: "doc1",
       name: "X-Ray Report - Left Shoulder",
@@ -41,6 +99,7 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1001",
       size: "2.4 MB",
       thumbnailUrl: "/lovable-uploads/d8b182a9-ac94-4497-b6c9-770065e4e760.png",
+      content: "Patient presents with calcification in the left shoulder. Recommend physical therapy and anti-inflammatory medication."
     },
     {
       id: "doc2",
@@ -52,6 +111,7 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1001",
       size: "3.8 MB",
       thumbnailUrl: "/lovable-uploads/d8b182a9-ac94-4497-b6c9-770065e4e760.png",
+      content: "MRI shows minor tear in the rotator cuff. Surgery may be required if conservative treatment fails."
     },
     {
       id: "doc3",
@@ -63,6 +123,7 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1002",
       size: "1.2 MB",
       thumbnailUrl: null,
+      content: "All blood markers within normal range. No signs of inflammation or infection."
     },
     {
       id: "doc4",
@@ -74,6 +135,7 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1003",
       size: "0.8 MB",
       thumbnailUrl: null,
+      content: "6-week rehabilitation program focusing on strengthening exercises and gradual return to sports activities."
     },
     {
       id: "doc5",
@@ -85,6 +147,7 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1002",
       size: "1.5 MB",
       thumbnailUrl: null,
+      content: "Normal sinus rhythm. No abnormalities detected."
     },
     {
       id: "doc6",
@@ -96,22 +159,197 @@ const ReportsPage: React.FC = () => {
       patientId: "PT-1001",
       size: "0.5 MB",
       thumbnailUrl: null,
+      content: "Patient showing good progress. Range of motion has improved by 15 degrees since initial assessment."
     }
-  ];
+  ]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError("File size exceeds 10MB limit");
+        return;
+      }
+      
+      // Check file type
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        setUploadError("File type not supported. Please upload PDF, JPEG, or PNG files");
+        return;
+      }
+      
+      setFileToUpload(file);
+      
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setFilePreview(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // For PDFs, show a generic icon or text
+        setFilePreview(null);
+      }
+    }
+  };
 
   const handleUploadDocument = () => {
+    // Here you would typically upload to a server
+    // For this demo, we'll just add it to our local state
+    
+    const uploadForm = document.getElementById('uploadForm') as HTMLFormElement;
+    const formData = new FormData(uploadForm);
+    
+    const name = formData.get('documentName') as string;
+    const type = formData.get('documentType') as string;
+    const patient = formData.get('patient') as string;
+    const date = formData.get('date') as string;
+    
+    if (!name || !type || !patient || !date || !fileToUpload) {
+      setUploadError("Please fill in all required fields");
+      return;
+    }
+    
+    // Create a new report object
+    const newReport: Report = {
+      id: `doc${reports.length + 1}`,
+      name,
+      type,
+      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      uploadedBy: "Current Doctor", // In a real app, this would be the logged-in user
+      patient,
+      patientId: "PT-1004", // In a real app, this would be looked up
+      size: `${(fileToUpload.size / (1024 * 1024)).toFixed(1)} MB`,
+      thumbnailUrl: filePreview,
+      content: "New document content would be extracted or entered here."
+    };
+    
+    // Add to reports array
+    setReports([...reports, newReport]);
+    
     toast({
       title: "Document Uploaded",
       description: "Your document has been successfully uploaded.",
     });
+    
+    // Reset form state
     setShowUploadDialog(false);
+    setFileToUpload(null);
+    setFilePreview(null);
+    setUploadError(null);
+  };
+
+  const handleEditReport = () => {
+    if (!selectedReport) return;
+    
+    // Update the report in our local state
+    const updatedReports = reports.map(report => {
+      if (report.id === selectedReport.id) {
+        return {
+          ...report,
+          name: editFormData.name,
+          type: editFormData.type,
+          date: editFormData.date,
+          patient: editFormData.patient,
+          content: editFormData.content
+        };
+      }
+      return report;
+    });
+    
+    setReports(updatedReports);
+    
+    toast({
+      title: "Report Updated",
+      description: "The report has been successfully updated.",
+    });
+    
+    // Close dialog and reset form
+    setShowEditDialog(false);
+    setSelectedReport(null);
+  };
+
+  const handleOpenEditDialog = (report: Report) => {
+    setSelectedReport(report);
+    setEditFormData({
+      name: report.name,
+      type: report.type,
+      date: report.date,
+      patient: report.patient,
+      content: report.content || ''
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleOpenDeleteDialog = (report: Report) => {
+    setSelectedReport(report);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteReport = () => {
+    if (!selectedReport) return;
+    
+    // Remove the report from our local state
+    const updatedReports = reports.filter(report => report.id !== selectedReport.id);
+    setReports(updatedReports);
+    
+    toast({
+      title: "Report Deleted",
+      description: `${selectedReport.name} has been deleted`,
+      variant: "destructive"
+    });
+    
+    // Close dialog and reset selection
+    setShowDeleteDialog(false);
+    setSelectedReport(null);
   };
 
   const handleCreateReport = () => {
+    // Get form data from the create report form
+    const createForm = document.getElementById('createReportForm') as HTMLFormElement;
+    const formData = new FormData(createForm);
+    
+    const title = formData.get('reportTitle') as string;
+    const type = formData.get('reportType') as string;
+    const patient = formData.get('patient') as string;
+    const content = formData.get('content') as string;
+    
+    if (!title || !type || !patient || !content) {
+      toast({
+        title: "Incomplete Form",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Create a new report
+    const newReport: Report = {
+      id: `doc${reports.length + 1}`,
+      name: title,
+      type,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      uploadedBy: "Current Doctor", // In a real app, this would be the logged-in user
+      patient,
+      patientId: "PT-1004", // In a real app, this would be looked up
+      size: "0.1 MB",
+      thumbnailUrl: null,
+      content
+    };
+    
+    // Add to reports array
+    setReports([...reports, newReport]);
+    
     toast({
       title: "Report Created",
       description: "Your new report has been created.",
     });
+    
     setShowCreateDialog(false);
   };
 
@@ -133,14 +371,6 @@ const ReportsPage: React.FC = () => {
     toast({
       title: "Share Options",
       description: `Sharing options for ${name}`,
-    });
-  };
-
-  const handleDeleteReport = (id: string, name: string) => {
-    toast({
-      title: "Report Deleted",
-      description: `${name} has been deleted`,
-      variant: "destructive"
     });
   };
 
@@ -296,11 +526,23 @@ const ReportsPage: React.FC = () => {
                                     >
                                       <Share2 className="h-4 w-4" />
                                     </Button>
+                                    
+                                    {/* Edit button */}
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/10"
+                                      onClick={() => handleOpenEditDialog(report)}
+                                    >
+                                      <Pen className="h-4 w-4" />
+                                    </Button>
+                                    
+                                    {/* Delete button */}
                                     <Button 
                                       size="icon" 
                                       variant="ghost" 
                                       className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/10"
-                                      onClick={() => handleDeleteReport(report.id, report.name)}
+                                      onClick={() => handleOpenDeleteDialog(report)}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -319,6 +561,7 @@ const ReportsPage: React.FC = () => {
         </main>
       </div>
       
+      {/* Upload Document Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -329,61 +572,131 @@ const ReportsPage: React.FC = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
-              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm font-medium mb-1">Drag files here or click to upload</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                Supports PDF, JPEG, PNG files up to 10MB
-              </p>
-              <Button size="sm">Select Files</Button>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="text-sm font-medium">Document Details</div>
-              
-              <div className="space-y-2">
-                <label className="text-sm">Document Name</label>
-                <Input placeholder="e.g., X-Ray Report - Left Shoulder" />
+            <form id="uploadForm" className="space-y-4">
+              <div 
+                className={`border-2 border-dashed ${uploadError ? 'border-red-400 bg-red-50' : 'border-gray-200 dark:border-gray-700'} rounded-lg p-6 text-center relative overflow-hidden`}
+              >
+                {filePreview && (
+                  <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
+                    <img src={filePreview} alt="Preview" className="max-h-32 max-w-full object-contain" />
+                    <Button 
+                      size="icon" 
+                      variant="destructive" 
+                      className="absolute top-2 right-2 h-6 w-6 rounded-full"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFilePreview(null);
+                        setFileToUpload(null);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                
+                <div className={filePreview ? 'opacity-0' : ''}>
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium mb-1">Drag files here or click to upload</p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Supports PDF, JPEG, PNG files up to 10MB
+                  </p>
+                  
+                  <label htmlFor="file-upload">
+                    <Button size="sm" className="cursor-pointer" asChild>
+                      <span>Select Files</span>
+                    </Button>
+                    <input 
+                      id="file-upload" 
+                      type="file" 
+                      className="hidden" 
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+                
+                {uploadError && (
+                  <div className="mt-3 text-sm text-red-500 flex items-center justify-center">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    {uploadError}
+                  </div>
+                )}
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm">Document Type</label>
-                <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                  <option>Imaging</option>
-                  <option>Lab Report</option>
-                  <option>Clinical Notes</option>
-                  <option>Diagnostic</option>
-                  <option>Other</option>
-                </select>
+              <div className="space-y-3">
+                <div className="text-sm font-medium">Document Details</div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="documentName">Document Name*</Label>
+                  <Input 
+                    id="documentName"
+                    name="documentName" 
+                    placeholder="e.g., X-Ray Report - Left Shoulder" 
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="documentType">Document Type*</Label>
+                  <select 
+                    id="documentType"
+                    name="documentType" 
+                    className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    required
+                  >
+                    <option value="">Select document type</option>
+                    <option value="imaging">Imaging</option>
+                    <option value="lab">Lab Report</option>
+                    <option value="clinical">Clinical Notes</option>
+                    <option value="diagnostic">Diagnostic</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="patient">Patient*</Label>
+                  <select 
+                    id="patient"
+                    name="patient" 
+                    className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    required
+                  >
+                    <option value="">Select patient</option>
+                    <option value="Nikolas Pascal">Nikolas Pascal</option>
+                    <option value="Emma Rodriguez">Emma Rodriguez</option>
+                    <option value="Marcus Johnson">Marcus Johnson</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date*</Label>
+                  <Input 
+                    id="date"
+                    name="date" 
+                    type="date" 
+                    required
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm">Patient</label>
-                <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                  <option>Nikolas Pascal</option>
-                  <option>Emma Rodriguez</option>
-                  <option>Marcus Johnson</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm">Date</label>
-                <Input type="date" />
-              </div>
-            </div>
+            </form>
           </div>
           
-          <div className="flex justify-between">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleUploadDocument}>
+            <Button 
+              onClick={handleUploadDocument}
+              disabled={!fileToUpload || !!uploadError}
+            >
               Upload Document
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       
+      {/* Create Report Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -394,60 +707,192 @@ const ReportsPage: React.FC = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Report Title</label>
-              <Input placeholder="e.g., Clinical Follow-up Notes" />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Report Type</label>
-              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option>Clinical Notes</option>
-                <option>Diagnostic Report</option>
-                <option>Treatment Plan</option>
-                <option>Progress Notes</option>
-                <option>Discharge Summary</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Patient</label>
-              <select className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option>Nikolas Pascal</option>
-                <option>Emma Rodriguez</option>
-                <option>Marcus Johnson</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Content</label>
-              <textarea 
-                className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[150px]"
-                placeholder="Enter the report content here..."
-              ></textarea>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Attach Files (Optional)</label>
-              <div className="border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
-                <Button size="sm" variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Attach Files
-                </Button>
+            <form id="createReportForm" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reportTitle">Report Title*</Label>
+                <Input 
+                  id="reportTitle"
+                  name="reportTitle"
+                  placeholder="e.g., Clinical Follow-up Notes" 
+                  required
+                />
               </div>
-            </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reportType">Report Type*</Label>
+                <select 
+                  id="reportType"
+                  name="reportType"
+                  className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  required
+                >
+                  <option value="">Select report type</option>
+                  <option value="clinical">Clinical Notes</option>
+                  <option value="diagnostic">Diagnostic Report</option>
+                  <option value="lab">Treatment Plan</option>
+                  <option value="imaging">Progress Notes</option>
+                  <option value="diagnostic">Discharge Summary</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reportPatient">Patient*</Label>
+                <select 
+                  id="reportPatient"
+                  name="patient"
+                  className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  required
+                >
+                  <option value="">Select patient</option>
+                  <option value="Nikolas Pascal">Nikolas Pascal</option>
+                  <option value="Emma Rodriguez">Emma Rodriguez</option>
+                  <option value="Marcus Johnson">Marcus Johnson</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reportContent">Content*</Label>
+                <Textarea 
+                  id="reportContent"
+                  name="content"
+                  className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[150px]"
+                  placeholder="Enter the report content here..."
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="attachments">Attach Files (Optional)</Label>
+                <div className="border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
+                  <Button size="sm" variant="outline" asChild>
+                    <label htmlFor="report-attachments" className="cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Attach Files
+                      <input 
+                        id="report-attachments" 
+                        type="file" 
+                        className="hidden" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                    </label>
+                  </Button>
+                </div>
+              </div>
+            </form>
           </div>
           
-          <div className="flex justify-between">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
             </Button>
             <Button onClick={handleCreateReport}>
               Create Report
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Edit Report Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Report</DialogTitle>
+            <DialogDescription>
+              Update the report information.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editReportName">Report Name</Label>
+              <Input 
+                id="editReportName"
+                value={editFormData.name} 
+                onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editReportType">Report Type</Label>
+              <select 
+                id="editReportType"
+                className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                value={editFormData.type}
+                onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}
+              >
+                <option value="imaging">Imaging</option>
+                <option value="lab">Lab Report</option>
+                <option value="clinical">Clinical Notes</option>
+                <option value="diagnostic">Diagnostic</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editReportPatient">Patient</Label>
+              <select 
+                id="editReportPatient"
+                className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                value={editFormData.patient}
+                onChange={(e) => setEditFormData({...editFormData, patient: e.target.value})}
+              >
+                <option value="Nikolas Pascal">Nikolas Pascal</option>
+                <option value="Emma Rodriguez">Emma Rodriguez</option>
+                <option value="Marcus Johnson">Marcus Johnson</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editReportDate">Date</Label>
+              <Input 
+                id="editReportDate"
+                type="text" 
+                value={editFormData.date}
+                onChange={(e) => setEditFormData({...editFormData, date: e.target.value})}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editReportContent">Content</Label>
+              <Textarea 
+                id="editReportContent"
+                className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[150px]"
+                value={editFormData.content}
+                onChange={(e) => setEditFormData({...editFormData, content: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditReport}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedReport?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteReport}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

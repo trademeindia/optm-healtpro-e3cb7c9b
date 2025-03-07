@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import PatientDashboard from "./pages/PatientDashboard";
-import BiomarkersPage from "./pages/BiomarkersPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
@@ -73,10 +72,9 @@ const AppRoutes = () => {
           <PatientsPage />
         </ProtectedRoute>
       } />
+      {/* Redirect from /biomarkers to /dashboard */}
       <Route path="/biomarkers" element={
-        <ProtectedRoute allowedRoles={['doctor']}>
-          <BiomarkersPage />
-        </ProtectedRoute>
+        <Navigate to="/dashboard" replace />
       } />
       <Route path="/appointments" element={
         <ProtectedRoute allowedRoles={['doctor']}>

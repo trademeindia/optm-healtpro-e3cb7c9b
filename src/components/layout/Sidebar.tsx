@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -58,12 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: '/patients',
       description: 'Manage patient records and information'
     },
-    { 
-      icon: HeartPulse, 
-      label: 'Biomarkers', 
-      path: '/biomarkers',
-      description: 'Track key health indicators and lab results'
-    },
+    // Removed Biomarkers entry
     { 
       icon: Calendar, 
       label: 'Appointments', 
