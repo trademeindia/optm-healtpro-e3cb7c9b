@@ -1,16 +1,10 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
-import { FeedbackType } from '../types';
-
-interface UsePoseDetectionLoopProps {
-  model: posenet.PoseNet | null;
-  cameraActive: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  config: any;
-  onPoseDetected: (pose: posenet.Pose) => void;
-  setFeedback: (message: string | null, type: FeedbackType) => void;
-}
+import { UsePoseDetectionLoopProps } from './types';
+import { useDetectionFailureHandler } from './useDetectionFailureHandler';
+import { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
+import { FeedbackType } from '../../types';
 
 export const usePoseDetectionLoop = ({
   model,
@@ -21,8 +15,17 @@ export const usePoseDetectionLoop = ({
   setFeedback
 }: UsePoseDetectionLoopProps) => {
   const requestAnimationRef = useRef<number | null>(null);
-  const lastDetectionTimeRef = useRef<number>(0);
-  const detectionFailuresRef = useRef<number>(0);
+  
+  // Helpers for detection failures and timing
+  const {
+    detectionStateRef,
+    handleDetectionFailure,
+    resetFailureCounter,
+    updateDetectionTime
+  } = useDetectionFailureHandler(setFeedback);
+  
+  // Helper for frame rate adaptation
+  const { calculateFrameDelay } = useAdaptiveFrameRate();
   
   // Detect pose in video stream
   const detectPose = useCallback(async () => {
@@ -48,17 +51,7 @@ export const usePoseDetectionLoop = ({
           await videoRef.current.play();
         } catch (error) {
           console.error("Failed to play video during pose detection:", error);
-          detectionFailuresRef.current++;
-          
-          if (detectionFailuresRef.current > 5) {
-            setFeedback(
-              "Video stream issues detected. Please try restarting the camera.",
-              FeedbackType.WARNING
-            );
-            
-            // Reset failure counter to avoid repeated warnings
-            detectionFailuresRef.current = 0;
-          }
+          handleDetectionFailure(error);
           
           requestAnimationRef.current = requestAnimationFrame(detectPose);
           return;
@@ -67,7 +60,7 @@ export const usePoseDetectionLoop = ({
       
       // Calculate time since last successful detection for performance monitoring
       const now = performance.now();
-      const timeSinceLastDetection = now - lastDetectionTimeRef.current;
+      const timeSinceLastDetection = now - detectionStateRef.current.lastDetectionTime;
       
       console.log("Estimating pose...");
       // Estimate pose
@@ -76,10 +69,10 @@ export const usePoseDetectionLoop = ({
       });
       
       console.log("Pose detected, score:", detectedPose.score);
-      lastDetectionTimeRef.current = performance.now();
+      updateDetectionTime();
       
       // Reset failure counter on successful detection
-      detectionFailuresRef.current = 0;
+      resetFailureCounter();
       
       // Calculate FPS for monitoring
       const detectionTime = performance.now() - now;
@@ -97,27 +90,27 @@ export const usePoseDetectionLoop = ({
         );
       }
     } catch (error) {
-      console.error('Error estimating pose:', error);
-      detectionFailuresRef.current++;
-      
-      if (detectionFailuresRef.current > 5) {
-        setFeedback(
-          "Error detecting your pose. Please ensure good lighting and that your camera is working properly.",
-          FeedbackType.WARNING
-        );
-        
-        // Reset failure counter to avoid repeated warnings
-        detectionFailuresRef.current = 0;
-      }
+      handleDetectionFailure(error);
     }
     
     // Continue the detection loop with adaptive frame rate
     // If detection is taking too long, we'll slow down the frame rate
-    const frameDelay = Math.max(0, 33 - (performance.now() - lastDetectionTimeRef.current));
+    const frameDelay = calculateFrameDelay(detectionStateRef.current.lastDetectionTime);
     requestAnimationRef.current = setTimeout(() => {
       requestAnimationRef.current = requestAnimationFrame(detectPose);
     }, frameDelay) as unknown as number;
-  }, [model, cameraActive, videoRef, config, onPoseDetected, setFeedback]);
+  }, [
+    model, 
+    cameraActive, 
+    videoRef, 
+    config, 
+    onPoseDetected, 
+    setFeedback, 
+    handleDetectionFailure,
+    resetFailureCounter,
+    updateDetectionTime,
+    calculateFrameDelay
+  ]);
   
   // Start pose detection when camera is active
   useEffect(() => {
