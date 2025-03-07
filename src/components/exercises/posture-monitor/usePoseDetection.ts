@@ -12,6 +12,7 @@ import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
 import { useFeedbackState } from './hooks/useFeedbackState';
 import { usePoseDetectionLoop } from './hooks/usePoseDetectionLoop';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
+import { SquatState } from './types';
 
 export const usePoseDetection = ({ 
   cameraActive, 
