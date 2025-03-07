@@ -207,7 +207,7 @@ const BiomarkersPage: React.FC = () => {
                       unit={biomarker.unit}
                       normalRange={biomarker.normalRange}
                       status={biomarker.status}
-                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                      timestamp={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -227,7 +227,7 @@ const BiomarkersPage: React.FC = () => {
                       unit={biomarker.unit}
                       normalRange={biomarker.normalRange}
                       status={biomarker.status}
-                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                      timestamp={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -247,7 +247,7 @@ const BiomarkersPage: React.FC = () => {
                       unit={biomarker.unit}
                       normalRange={biomarker.normalRange}
                       status={biomarker.status}
-                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                      timestamp={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -267,7 +267,7 @@ const BiomarkersPage: React.FC = () => {
                       unit={biomarker.unit}
                       normalRange={biomarker.normalRange}
                       status={biomarker.status}
-                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                      timestamp={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -287,7 +287,7 @@ const BiomarkersPage: React.FC = () => {
                       unit={biomarker.unit}
                       normalRange={biomarker.normalRange}
                       status={biomarker.status}
-                      lastUpdated={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
+                      timestamp={new Date(biomarker.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
