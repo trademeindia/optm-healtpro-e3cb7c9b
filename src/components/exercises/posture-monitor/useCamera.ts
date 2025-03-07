@@ -34,6 +34,12 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   // Clean up function to stop the camera stream
   const stopCamera = useCallback(() => {
     stopCameraStream({ streamRef, videoRef }, retryTimeoutRef);
+    // After stopping the stream, we need to manually update the refs
+    streamRef.current = null;
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
     setCameraActive(false);
     setCameraError(null);
   }, []);
@@ -105,12 +111,12 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
             
             // If we've had multiple failures, restart the camera
             if (!retryTimeoutRef.current) {
-              retryTimeoutRef.current = window.setTimeout(() => {
+              const timeoutId = window.setTimeout(() => {
                 console.log("Multiple play failures, restarting camera...");
                 stopCamera();
                 toggleCamera();
-                retryTimeoutRef.current = null;
               }, 2000);
+              retryTimeoutRef.current = timeoutId;
             }
           }
         }

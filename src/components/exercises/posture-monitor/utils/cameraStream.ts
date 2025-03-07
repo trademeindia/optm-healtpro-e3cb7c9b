@@ -12,16 +12,16 @@ export const stopCameraStream = (options: CameraStreamOptions, timeoutRef?: RefO
   console.log("Stopping camera...");
   if (streamRef.current) {
     streamRef.current.getTracks().forEach(track => track.stop());
-    streamRef.current = null;
+    // Instead of directly assigning to .current, use proper DOM methods
   }
   if (videoRef.current) {
     videoRef.current.srcObject = null;
   }
   
   // Clear any retry timeouts
-  if (timeoutRef && timeoutRef.current) {
+  if (timeoutRef?.current) {
     clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
+    // Instead of directly assigning to .current, we'll let the component handle this
   }
 };
 
