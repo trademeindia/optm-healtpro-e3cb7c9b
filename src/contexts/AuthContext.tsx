@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getMockUserProfileFromProvider } from '@/utils/oauth';
+import { getMockUserProfileFromProvider, generateOAuthRedirectUrl } from '@/utils/oauth';
 
 type UserRole = 'doctor' | 'patient';
 type AuthProvider = 'email' | 'google' | 'apple' | 'github';
@@ -12,7 +12,7 @@ type User = {
   name: string;
   role: UserRole;
   provider?: AuthProvider;
-  picture?: string; // Added profile picture field
+  picture?: string;
 };
 
 type AuthContextType = {
@@ -21,7 +21,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithSocialProvider: (provider: AuthProvider) => Promise<void>;
-  handleOAuthCallback: (provider: string, code: string) => Promise<void>; // Expected to return Promise<void>
+  handleOAuthCallback: (provider: string, code: string) => Promise<void>;
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
@@ -127,7 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithSocialProvider = async (provider: AuthProvider) => {
-    window.location.href = `/oauth-callback?code=${Math.random().toString(36).substring(2, 15)}&state=mock-state&provider=${provider}`;
+    try {
+      const redirectUrl = generateOAuthRedirectUrl(provider);
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error(`Error redirecting to ${provider}:`, error);
+      toast.error(`Failed to connect with ${provider}`);
+    }
   };
 
   const handleOAuthCallback = async (provider: string, code: string) => {

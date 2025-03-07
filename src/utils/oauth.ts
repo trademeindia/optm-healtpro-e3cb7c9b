@@ -56,12 +56,12 @@ export const getMockUserProfileFromProvider = (provider: string) => {
 // Mock redirect URL generation
 export const generateOAuthRedirectUrl = (provider: string) => {
   const state = storeOAuthState(provider);
-  // In a real app, this would generate a URL to the provider's OAuth endpoint
   
-  // For our mock implementation, we'll just return a URL back to our own app
-  // with params that simulate a completed OAuth flow
+  // For our mock implementation, we'll simulate a redirect to the provider
+  // and then back to our callback URL with proper state parameter
   const redirectUri = `${window.location.origin}/oauth-callback`;
   const mockCode = Math.random().toString(36).substring(2, 15);
   
+  // We'll simulate the OAuth flow by directing to our callback with the required parameters
   return `${redirectUri}?code=${mockCode}&state=${state}&provider=${provider}`;
 };
