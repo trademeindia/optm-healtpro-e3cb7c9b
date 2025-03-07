@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import { SquatState } from './types';
 
@@ -18,38 +18,6 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
   hipAngle,
   currentSquatState
 }) => {
-  // Adjust canvas to match video dimensions
-  const adjustCanvas = useCallback(() => {
-    if (!canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    const parent = canvas.parentElement;
-    if (!parent) return;
-    
-    // Set canvas to match parent dimensions
-    canvas.width = parent.clientWidth;
-    canvas.height = parent.clientHeight;
-    
-    // Clear the canvas after resize
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }, [canvasRef]);
-  
-  // Set up resize observer
-  useEffect(() => {
-    adjustCanvas();
-    
-    // Watch for container resize
-    const resizeObserver = new ResizeObserver(adjustCanvas);
-    if (canvasRef.current?.parentElement) {
-      resizeObserver.observe(canvasRef.current.parentElement);
-    }
-    
-    return () => resizeObserver.disconnect();
-  }, [adjustCanvas, canvasRef]);
-  
   // Draw pose keypoints and skeleton on canvas
   const drawPose = useCallback(() => {
     if (!pose) return;
@@ -63,32 +31,13 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Calculate scale factors for the canvas
-    const videoWidth = 640; // Same as in PoseNet config
-    const videoHeight = 480;
-    const scaleX = canvas.width / videoWidth;
-    const scaleY = canvas.height / videoHeight;
-    
     // Draw keypoints
     pose.keypoints.forEach(keypoint => {
-      if (keypoint.score > 0.3) { // Lower threshold for better visualization
+      if (keypoint.score > 0.5) {
         ctx.beginPath();
-        ctx.arc(
-          keypoint.position.x * scaleX, 
-          keypoint.position.y * scaleY, 
-          6, 0, 2 * Math.PI
-        );
+        ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
         ctx.fillStyle = 'aqua';
         ctx.fill();
-        
-        // Add keypoint label
-        ctx.font = '12px Arial';
-        ctx.fillStyle = 'white';
-        ctx.fillText(
-          keypoint.part, 
-          keypoint.position.x * scaleX + 10, 
-          keypoint.position.y * scaleY
-        );
       }
     });
     
@@ -106,16 +55,16 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     
     // Draw skeleton
     ctx.strokeStyle = 'lime';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     
     adjacentKeyPoints.forEach(([partA, partB]) => {
       const keyPointA = pose.keypoints.find(kp => kp.part === partA);
       const keyPointB = pose.keypoints.find(kp => kp.part === partB);
       
-      if (keyPointA && keyPointB && keyPointA.score > 0.3 && keyPointB.score > 0.3) {
+      if (keyPointA && keyPointB && keyPointA.score > 0.5 && keyPointB.score > 0.5) {
         ctx.beginPath();
-        ctx.moveTo(keyPointA.position.x * scaleX, keyPointA.position.y * scaleY);
-        ctx.lineTo(keyPointB.position.x * scaleX, keyPointB.position.y * scaleY);
+        ctx.moveTo(keyPointA.position.x, keyPointA.position.y);
+        ctx.lineTo(keyPointB.position.x, keyPointB.position.y);
         ctx.stroke();
       }
     });
@@ -123,27 +72,19 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     // Draw angles if available
     if (kneeAngle) {
       const leftKnee = pose.keypoints.find(kp => kp.part === 'leftKnee');
-      if (leftKnee && leftKnee.score > 0.3) {
+      if (leftKnee && leftKnee.score > 0.5) {
         ctx.font = '16px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText(
-          `Knee: ${kneeAngle}°`, 
-          leftKnee.position.x * scaleX + 10, 
-          leftKnee.position.y * scaleY
-        );
+        ctx.fillText(`Knee: ${kneeAngle}°`, leftKnee.position.x + 10, leftKnee.position.y);
       }
     }
     
     if (hipAngle) {
       const leftHip = pose.keypoints.find(kp => kp.part === 'leftHip');
-      if (leftHip && leftHip.score > 0.3) {
+      if (leftHip && leftHip.score > 0.5) {
         ctx.font = '16px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText(
-          `Hip: ${hipAngle}°`, 
-          leftHip.position.x * scaleX + 10, 
-          leftHip.position.y * scaleY
-        );
+        ctx.fillText(`Hip: ${hipAngle}°`, leftHip.position.x + 10, leftHip.position.y);
       }
     }
     
@@ -151,15 +92,10 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
     ctx.font = '20px Arial';
     ctx.fillStyle = 'white';
     ctx.fillText(`State: ${currentSquatState}`, 10, 30);
-    
-    // Draw confidence score
-    ctx.font = '16px Arial';
-    ctx.fillStyle = 'yellow';
-    ctx.fillText(`Confidence: ${Math.round(pose.score * 100)}%`, 10, 60);
   }, [pose, canvasRef, kneeAngle, hipAngle, currentSquatState]);
 
   // Run the drawing effect
-  useEffect(() => {
+  React.useEffect(() => {
     if (pose) {
       drawPose();
     }

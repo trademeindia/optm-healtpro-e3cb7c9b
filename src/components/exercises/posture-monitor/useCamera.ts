@@ -41,7 +41,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }
     
     try {
-      console.log("Requesting camera access...");
       // Request camera permission and turn on camera
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
@@ -51,30 +50,17 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
         } 
       });
       
-      console.log("Camera access granted");
       streamRef.current = stream;
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        
-        // Make sure video metadata is loaded before playing
-        if (videoRef.current.readyState >= 2) {
-          // Metadata already loaded
-          await videoRef.current.play();
-          console.log("Video playing (metadata already loaded)");
-        } else {
-          // Wait for metadata to load
-          videoRef.current.onloadedmetadata = async () => {
-            if (videoRef.current) {
-              try {
-                await videoRef.current.play();
-                console.log("Video playing (after metadata loaded)");
-              } catch (err) {
-                console.error("Error playing video:", err);
-              }
-            }
-          };
-        }
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(err => {
+              console.error("Error playing video:", err);
+            });
+          }
+        };
       }
       
       if (canvasRef.current) {
@@ -84,7 +70,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
           ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         }
         
-        // Set canvas dimensions directly to match video size
         canvasRef.current.width = 640;
         canvasRef.current.height = 480;
       }
