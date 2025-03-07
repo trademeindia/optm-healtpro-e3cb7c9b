@@ -152,7 +152,7 @@ export const usePoseDetectionLoop = ({
       // Estimate pose with higher accuracy settings for stability
       const detectedPose = await model.estimateSinglePose(videoRef.current, {
         flipHorizontal: true,  // Mirror the camera view
-        maxPoseDetections: 1,  // Only detect one person
+        // maxPoseDetections has been removed as it's not part of SinglePersonInterfaceConfig
         scoreThreshold: 0.1,   // Lower threshold to detect more keypoints
         nmsRadius: 30          // Non-maximum suppression radius
       });

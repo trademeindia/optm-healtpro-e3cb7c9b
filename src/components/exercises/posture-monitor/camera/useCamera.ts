@@ -58,8 +58,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }
     setCameraActive(false);
     setCameraError(null);
-    setVideoStatus(prev => ({
-      ...prev,
+    setVideoStatus(prevStatus => ({
+      ...prevStatus,
       isReady: false,
       hasStream: false,
       lastCheckTime: Date.now()
@@ -101,28 +101,28 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       
       const status = checkVideoStatus(videoRef);
       
-      setVideoStatus(prev => ({
-        ...prev,
+      setVideoStatus(prevStatus => ({
+        ...prevStatus,
         isReady: status.isReady,
         hasStream: !!videoRef.current?.srcObject,
         resolution: status.resolution,
         lastCheckTime: Date.now(),
-        errorCount: status.isReady ? 0 : prev.errorCount + 1
+        errorCount: status.isReady ? 0 : prevStatus.errorCount + 1
       }));
       
       // If video has persistent issues, try to recover
       if (!status.isReady && videoRef.current?.srcObject) {
         console.warn("Video element not ready:", status.details);
         
-        if (prev.errorCount > 5) {
+        if (videoStatus.errorCount > 5) {
           console.error("Persistent video issues detected, attempting recovery");
           ensureVideoIsPlaying(videoRef).catch(err => {
             console.error("Failed to recover video:", err);
           });
           
           // Reset error count after recovery attempt
-          setVideoStatus(prev => ({
-            ...prev,
+          setVideoStatus(prevStatus => ({
+            ...prevStatus,
             errorCount: 0
           }));
         }
@@ -130,7 +130,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }, 2000);
     
     return () => clearInterval(checkInterval);
-  }, [cameraActive, checkVideoStatus, ensureVideoIsPlaying]);
+  }, [cameraActive, checkVideoStatus, ensureVideoIsPlaying, videoStatus]);
   
   // Reset camera when there are too many consecutive errors
   useEffect(() => {
@@ -228,8 +228,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       }
       
       // Update video status with stream
-      setVideoStatus(prev => ({
-        ...prev,
+      setVideoStatus(prevStatus => ({
+        ...prevStatus,
         hasStream: true,
         lastCheckTime: Date.now()
       }));
