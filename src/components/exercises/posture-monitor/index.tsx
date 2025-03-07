@@ -33,7 +33,8 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     canvasRef, 
     streamRef, 
     toggleCamera, 
-    stopCamera 
+    stopCamera,
+    cameraError
   } = useCamera({
     onCameraStart: () => {
       // Set initial feedback when camera starts
@@ -52,7 +53,8 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     analysis,
     stats,
     feedback,
-    resetSession
+    resetSession,
+    config
   } = usePoseDetection({
     cameraActive,
     videoRef
@@ -78,6 +80,10 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
       if (!cameraActive && permission !== 'denied') {
         toggleCamera().catch(err => {
           console.error("Failed to auto-start camera:", err);
+          setCustomFeedback({
+            message: "Failed to start camera automatically. Please try the Enable Camera button.",
+            type: FeedbackType.WARNING
+          });
         });
       }
     }, 1000);
@@ -85,6 +91,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     return () => clearTimeout(timer);
   }, [cameraActive, permission, toggleCamera]);
   
+  // Handle finishing the exercise
   const handleFinish = () => {
     stopCamera();
     onFinish();
@@ -128,6 +135,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             isModelLoading={isModelLoading}
             videoRef={videoRef}
             canvasRef={canvasRef}
+            cameraError={cameraError}
           />
           
           {/* Render the pose skeleton on the canvas when pose is detected */}
@@ -138,6 +146,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
               kneeAngle={analysis.kneeAngle}
               hipAngle={analysis.hipAngle}
               currentSquatState={analysis.currentSquatState}
+              config={config}
             />
           )}
           
