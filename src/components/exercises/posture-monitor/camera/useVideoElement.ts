@@ -38,15 +38,23 @@ export const useVideoElement = () => {
           return;
         }
         
+        // Set a timeout in case metadata never loads
+        const timeoutId = setTimeout(() => {
+          console.error("Video metadata load timeout");
+          resolve(false);
+        }, 5000);
+        
         // Handle video loading event
         const onLoadedMetadata = async () => {
           if (!videoRef.current) {
             console.error("Video ref is null in onLoadedMetadata");
+            clearTimeout(timeoutId);
             resolve(false);
             return;
           }
           
           videoRef.current.removeEventListener('loadedmetadata', onLoadedMetadata);
+          clearTimeout(timeoutId);
           
           try {
             // Try to play video
@@ -62,6 +70,7 @@ export const useVideoElement = () => {
         // If metadata already loaded
         if (videoRef.current.readyState >= 2) {
           console.log("Video metadata already loaded, playing now");
+          clearTimeout(timeoutId);
           videoRef.current.play()
             .then(() => {
               console.log("Video playing (metadata already loaded)");

@@ -15,6 +15,7 @@ export const usePoseDetectionLoop = ({
   setFeedback
 }: UsePoseDetectionLoopProps) => {
   const requestAnimationRef = useRef<number | null>(null);
+  const isDetectingRef = useRef(false);
   
   // Helpers for detection failures and timing
   const {
@@ -27,42 +28,44 @@ export const usePoseDetectionLoop = ({
   // Helper for frame rate adaptation
   const { calculateFrameDelay } = useAdaptiveFrameRate();
   
+  // Check if video is ready for detection
+  const isVideoReady = useCallback(() => {
+    if (!videoRef.current) return false;
+    
+    return (
+      videoRef.current.readyState >= 2 && 
+      !videoRef.current.paused && 
+      videoRef.current.videoWidth > 0 &&
+      videoRef.current.videoHeight > 0
+    );
+  }, [videoRef]);
+  
   // Detect pose in video stream
   const detectPose = useCallback(async () => {
+    // Prevent concurrent detection runs
+    if (isDetectingRef.current) return;
+    
     if (!model || !videoRef.current || !cameraActive) {
       if (!model) console.log("Cannot detect pose: missing model");
       if (!videoRef.current) console.log("Cannot detect pose: missing video element");
       if (!cameraActive) console.log("Cannot detect pose: camera inactive");
+      requestAnimationRef.current = requestAnimationFrame(detectPose);
       return;
     }
     
     try {
-      if (videoRef.current.readyState < 2) {
-        // Video not ready yet
+      // Check if video is ready for processing
+      if (!isVideoReady()) {
+        // Video not ready yet, retry soon
         requestAnimationRef.current = requestAnimationFrame(detectPose);
-        console.log("Video not ready for pose detection, waiting... ReadyState:", videoRef.current.readyState);
         return;
       }
       
-      // Ensure video is not paused
-      if (videoRef.current.paused || videoRef.current.ended) {
-        try {
-          console.log("Video is paused/ended during detection, attempting to play...");
-          await videoRef.current.play();
-        } catch (error) {
-          console.error("Failed to play video during pose detection:", error);
-          handleDetectionFailure(error);
-          
-          requestAnimationRef.current = requestAnimationFrame(detectPose);
-          return;
-        }
-      }
+      isDetectingRef.current = true;
       
       // Calculate time since last successful detection for performance monitoring
       const now = performance.now();
-      const timeSinceLastDetection = now - detectionStateRef.current.lastDetectionTime;
       
-      console.log("Estimating pose...");
       // Estimate pose
       const detectedPose = await model.estimateSinglePose(videoRef.current, {
         flipHorizontal: true  // Mirror the camera view
@@ -91,6 +94,8 @@ export const usePoseDetectionLoop = ({
       }
     } catch (error) {
       handleDetectionFailure(error);
+    } finally {
+      isDetectingRef.current = false;
     }
     
     // Continue the detection loop with adaptive frame rate
@@ -109,18 +114,24 @@ export const usePoseDetectionLoop = ({
     handleDetectionFailure,
     resetFailureCounter,
     updateDetectionTime,
-    calculateFrameDelay
+    calculateFrameDelay,
+    isVideoReady
   ]);
   
   // Start pose detection when camera is active
   useEffect(() => {
-    if (cameraActive && model && videoRef.current) {
+    if (cameraActive && model) {
       console.log("Starting pose detection loop...");
-      // Start detection
-      requestAnimationRef.current = requestAnimationFrame(detectPose);
+      
+      // Wait for 1 second before starting detection to make sure video is initialized
+      const startTimeout = setTimeout(() => {
+        requestAnimationRef.current = requestAnimationFrame(detectPose);
+      }, 1000);
       
       return () => {
         // Cleanup animation frame on unmount or dependency change
+        clearTimeout(startTimeout);
+        
         if (requestAnimationRef.current) {
           if (typeof requestAnimationRef.current === 'number') {
             cancelAnimationFrame(requestAnimationRef.current);
@@ -131,7 +142,7 @@ export const usePoseDetectionLoop = ({
         }
       };
     }
-  }, [cameraActive, model, detectPose, videoRef]);
+  }, [cameraActive, model, detectPose]);
   
   // Cleanup on unmount
   useEffect(() => {

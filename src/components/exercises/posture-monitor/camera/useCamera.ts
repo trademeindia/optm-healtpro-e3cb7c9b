@@ -28,8 +28,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const retryTimeoutRef = useRef<number | null>(null);
   const mountedRef = useRef(true); // Track if component is mounted
+  const setupTimeoutRef = useRef<number | null>(null);
   
   const { requestCameraAccess } = useCameraSetup();
   const { setupVideoElement, ensureVideoIsPlaying } = useVideoElement();
@@ -47,11 +47,31 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setCameraActive(false);
     setCameraError(null);
     
-    // Clear any retry timeouts
-    if (retryTimeoutRef.current) {
-      window.clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
+    // Clear any timeouts
+    if (setupTimeoutRef.current) {
+      window.clearTimeout(setupTimeoutRef.current);
+      setupTimeoutRef.current = null;
     }
+  }, []);
+  
+  // Function to check if video element is ready
+  const waitForVideoElement = useCallback(async (): Promise<boolean> => {
+    console.log("Waiting for video element to be available in DOM...");
+    // Try for up to 5 seconds (50 attempts * 100ms)
+    for (let i = 0; i < 50; i++) {
+      if (!mountedRef.current) return false;
+      
+      if (videoRef.current) {
+        console.log("Video element found in DOM");
+        return true;
+      }
+      
+      // Wait a bit and try again
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    console.error("Timed out waiting for video element");
+    return false;
   }, []);
   
   // Main function to toggle camera
@@ -70,6 +90,14 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setCameraError(null);
     
     try {
+      // First, ensure video element exists
+      const videoElementExists = await waitForVideoElement();
+      if (!videoElementExists) {
+        setCameraError("Video element not found. Please reload the page and try again.");
+        setIsInitializing(false);
+        return;
+      }
+      
       // Request camera permission and turn on camera
       const { stream, error, permissionDenied } = await requestCameraAccess() || {};
       
@@ -90,9 +118,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       
       streamRef.current = stream;
       
-      // Wait a moment for the DOM to be updated
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
       // Make sure component is still mounted
       if (!mountedRef.current) {
         console.log("Component unmounted during camera initialization");
@@ -101,10 +126,10 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
         return;
       }
       
-      // Make sure video element exists before proceeding
+      // Double-check video element exists before proceeding
       if (!videoRef.current) {
-        console.error("Video element not found in DOM");
-        setCameraError("Video element not available. Please try again.");
+        console.error("Video element not found in DOM after check");
+        setCameraError("Video element not available. Please reload and try again.");
         stopCamera();
         setIsInitializing(false);
         return;
@@ -121,7 +146,9 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       }
       
       // Wait a bit longer to ensure video is ready
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => {
+        setupTimeoutRef.current = window.setTimeout(resolve, 500) as unknown as number;
+      });
       
       // Double-check component is still mounted
       if (!mountedRef.current) {
@@ -131,7 +158,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       }
       
       // Double-check video state
-      if (!videoRef.current || videoRef.current.paused) {
+      if (videoRef.current?.paused) {
         console.log("Video not playing after setup, trying again");
         
         const playSuccess = await ensureVideoIsPlaying(videoRef);
@@ -166,7 +193,22 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
         setIsInitializing(false);
       }
     }
-  }, [cameraActive, stopCamera, requestCameraAccess, setupVideoElement, ensureVideoIsPlaying, onCameraStart, isInitializing]);
+  }, [cameraActive, stopCamera, requestCameraAccess, setupVideoElement, 
+      ensureVideoIsPlaying, onCameraStart, isInitializing, waitForVideoElement]);
+  
+  // Set up mounted ref
+  useEffect(() => {
+    mountedRef.current = true;
+    
+    return () => {
+      mountedRef.current = false;
+      stopCamera();
+      
+      if (setupTimeoutRef.current) {
+        window.clearTimeout(setupTimeoutRef.current);
+      }
+    };
+  }, [stopCamera]);
   
   // Monitor video state and restart if needed
   useEffect(() => {
@@ -191,15 +233,20 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     return () => clearInterval(checkVideoInterval);
   }, [cameraActive]);
   
-  // Clean up on unmount
+  // Auto-initialize camera
   useEffect(() => {
-    mountedRef.current = true;
+    // Small timeout to let everything render
+    const timer = setTimeout(() => {
+      if (!cameraActive && permission !== 'denied' && !isInitializing) {
+        console.log("Auto-initializing camera...");
+        toggleCamera().catch(err => {
+          console.error("Auto-init camera failed:", err);
+        });
+      }
+    }, 1000);
     
-    return () => {
-      mountedRef.current = false;
-      stopCamera();
-    };
-  }, [stopCamera]);
+    return () => clearTimeout(timer);
+  }, [cameraActive, permission, toggleCamera, isInitializing]);
   
   return {
     cameraActive,

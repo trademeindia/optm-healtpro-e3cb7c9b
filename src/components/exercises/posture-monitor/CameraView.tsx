@@ -70,21 +70,24 @@ const CameraView: React.FC<CameraViewProps> = ({
 
   return (
     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-      {cameraActive ? (
+      {/* Always render the video element, but hide it when inactive */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className={`w-full h-full object-cover absolute inset-0 ${cameraActive ? 'visible' : 'hidden'}`}
+        style={{ transform: 'scaleX(-1)' }}
+      />
+      
+      <canvas 
+        ref={canvasRef}
+        className={`w-full h-full absolute inset-0 z-10 ${cameraActive ? 'visible' : 'hidden'}`}
+        style={{ transform: 'scaleX(-1)' }}
+      />
+      
+      {cameraActive && (
         <>
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover absolute inset-0"
-            style={{ transform: 'scaleX(-1)' }}
-          />
-          <canvas 
-            ref={canvasRef}
-            className="w-full h-full absolute inset-0 z-10"
-            style={{ transform: 'scaleX(-1)' }}
-          />
           <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
             Camera active
           </div>
@@ -96,7 +99,9 @@ const CameraView: React.FC<CameraViewProps> = ({
             </div>
           )}
         </>
-      ) : (
+      )}
+      
+      {!cameraActive && (
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
           <div className="text-center p-4">
             <Camera className="mx-auto h-12 w-12 mb-2 text-muted-foreground/50" />
