@@ -5,19 +5,53 @@ import { cn } from '@/lib/utils';
 import { Calendar, Activity, Plus, Thermometer } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useSymptomContext, SymptomEntry } from '@/contexts/SymptomContext';
+
+// Define the symptom and pain level types
+type SymptomEntry = {
+  id: string;
+  date: Date;
+  symptomName: string;
+  painLevel: number;
+  location: string;
+  notes: string;
+};
 
 interface SymptomTrackerProps {
   className?: string;
 }
 
 const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
-  const { symptoms, addSymptom } = useSymptomContext();
+  const [symptoms, setSymptoms] = useState<SymptomEntry[]>([
+    {
+      id: '1',
+      date: new Date('2023-06-10'),
+      symptomName: 'Shoulder Pain',
+      painLevel: 7,
+      location: 'Right shoulder',
+      notes: 'Pain increases during movement and lifting objects'
+    },
+    {
+      id: '2',
+      date: new Date('2023-06-12'),
+      symptomName: 'Lower Back Pain',
+      painLevel: 5,
+      location: 'Lower back',
+      notes: 'Dull ache that worsens after sitting for long periods'
+    },
+    {
+      id: '3',
+      date: new Date('2023-06-14'),
+      symptomName: 'Headache',
+      painLevel: 3,
+      location: 'Temples and forehead',
+      notes: 'Mild throbbing pain, reduced after medication'
+    }
+  ]);
   
   const [newSymptom, setNewSymptom] = useState<Partial<SymptomEntry>>({
     date: new Date(),
@@ -57,7 +91,7 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
       notes: newSymptom.notes || ''
     };
     
-    addSymptom(symptomEntry);
+    setSymptoms(prev => [symptomEntry, ...prev]);
     setNewSymptom({
       date: new Date(),
       painLevel: 1
@@ -66,7 +100,7 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
     
     toast({
       title: "Symptom Logged",
-      description: "Your symptom has been recorded and added to the anatomical map",
+      description: "Your symptom has been recorded successfully",
     });
   };
 
@@ -103,9 +137,6 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Log a New Symptom</DialogTitle>
-            <DialogDescription>
-              Add details about your symptom. It will appear on your anatomical map.
-            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
@@ -147,7 +178,7 @@ const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
                 name="location" 
                 value={newSymptom.location || ''} 
                 onChange={handleInputChange} 
-                placeholder="Where does it hurt? (e.g., Lower back, Left knee)"
+                placeholder="Where does it hurt?"
               />
             </div>
             

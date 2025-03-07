@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSymptomContext } from '@/contexts/SymptomContext';
 
 interface AnatomicalRegion {
   id: string;
@@ -20,99 +19,28 @@ interface AnatomicalRegion {
   y: number;
 }
 
-// Updated anatomical regions with more accurate coordinates for the anatomical model image
+// Updated anatomical regions with more accurate coordinates based on the specific image
 const anatomicalRegions: Record<string, AnatomicalRegion> = {
-  head: { id: 'region-head', name: 'Head', x: 50, y: 8 },
-  temples: { id: 'region-temples', name: 'Temples and forehead', x: 50, y: 7 },
+  head: { id: 'region-head', name: 'Head', x: 50, y: 9 },
   neck: { id: 'region-neck', name: 'Neck', x: 50, y: 15 },
-  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 31, y: 22 },
-  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 69, y: 22 },
-  chest: { id: 'region-chest', name: 'Chest', x: 50, y: 26 },
-  upperBack: { id: 'region-upper-back', name: 'Upper Back', x: 50, y: 26 },
-  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 25, y: 35 },
-  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 75, y: 35 },
-  abdomen: { id: 'region-abdomen', name: 'Abdomen', x: 50, y: 38 },
-  lowerBack: { id: 'region-lower-back', name: 'Lower back', x: 50, y: 42 },
-  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 22, y: 45 },
-  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 78, y: 45 },
-  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 42, y: 50 },
-  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 58, y: 50 },
-  groin: { id: 'region-groin', name: 'Groin', x: 50, y: 53 },
-  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 42, y: 67 },
-  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 58, y: 67 },
-  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 42, y: 84 },
-  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 58, y: 84 },
-  rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 42, y: 92 },
-  leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 58, y: 92 },
-};
-
-// Helper function to map common symptom locations to anatomical regions
-const mapLocationToRegion = (location: string): string => {
-  const locationMap: Record<string, string> = {
-    // Head regions
-    'head': 'head',
-    'forehead': 'temples',
-    'temples': 'temples',
-    'temple': 'temples',
-    'headache': 'head',
-    'migraine': 'head',
-    
-    // Torso regions
-    'neck': 'neck',
-    'throat': 'neck',
-    'chest': 'chest',
-    'upper back': 'upperBack',
-    'back': 'lowerBack',
-    'lower back': 'lowerBack',
-    'abdomen': 'abdomen',
-    'stomach': 'abdomen',
-    
-    // Arms and shoulders
-    'right shoulder': 'rightShoulder',
-    'left shoulder': 'leftShoulder',
-    'shoulder': 'rightShoulder', // Default to right if not specified
-    'right elbow': 'rightElbow',
-    'left elbow': 'leftElbow',
-    'elbow': 'rightElbow', // Default to right if not specified
-    'right wrist': 'rightWrist',
-    'left wrist': 'leftWrist',
-    'wrist': 'rightWrist', // Default to right if not specified
-    
-    // Hips and legs
-    'right hip': 'rightHip',
-    'left hip': 'leftHip',
-    'hip': 'rightHip', // Default to right if not specified
-    'hip joint': 'rightHip',
-    'groin': 'groin',
-    'right knee': 'rightKnee',
-    'left knee': 'leftKnee',
-    'knee': 'rightKnee', // Default to right if not specified
-    'right ankle': 'rightAnkle',
-    'left ankle': 'leftAnkle',
-    'ankle': 'rightAnkle', // Default to right if not specified
-    'right foot': 'rightFoot',
-    'left foot': 'leftFoot',
-    'foot': 'rightFoot', // Default to right if not specified
-  };
-  
-  // Convert input to lowercase for case-insensitive matching
-  const lowercaseLocation = location.toLowerCase();
-  
-  // Check for exact matches first
-  if (locationMap[lowercaseLocation]) {
-    return locationMap[lowercaseLocation];
-  }
-  
-  // Check for partial matches
-  for (const [key, value] of Object.entries(locationMap)) {
-    if (lowercaseLocation.includes(key)) {
-      return value;
-    }
-  }
-  
-  // Default to abdomen if no match found
-  console.warn(`No anatomical region match found for: ${location}`);
-  return 'abdomen';
+  rightShoulder: { id: 'region-r-shoulder', name: 'Right Shoulder', x: 33, y: 21 },
+  leftShoulder: { id: 'region-l-shoulder', name: 'Left Shoulder', x: 67, y: 21 },
+  chest: { id: 'region-chest', name: 'Chest', x: 50, y: 25 },
+  upperBack: { id: 'region-upper-back', name: 'Upper Back', x: 50, y: 25 },
+  rightElbow: { id: 'region-r-elbow', name: 'Right Elbow', x: 28, y: 35 },
+  leftElbow: { id: 'region-l-elbow', name: 'Left Elbow', x: 72, y: 35 },
+  abdomen: { id: 'region-abdomen', name: 'Abdomen', x: 50, y: 36 },
+  lowerBack: { id: 'region-lower-back', name: 'Lower Back', x: 50, y: 37 },
+  rightWrist: { id: 'region-r-wrist', name: 'Right Wrist', x: 22, y: 44 },
+  leftWrist: { id: 'region-l-wrist', name: 'Left Wrist', x: 78, y: 44 },
+  rightHip: { id: 'region-r-hip', name: 'Right Hip', x: 45, y: 46 },
+  leftHip: { id: 'region-l-hip', name: 'Left Hip', x: 55, y: 46 },
+  rightKnee: { id: 'region-r-knee', name: 'Right Knee', x: 44, y: 67 },
+  leftKnee: { id: 'region-l-knee', name: 'Left Knee', x: 56, y: 67 },
+  rightAnkle: { id: 'region-r-ankle', name: 'Right Ankle', x: 44, y: 84 },
+  leftAnkle: { id: 'region-l-ankle', name: 'Left Ankle', x: 56, y: 84 },
+  rightFoot: { id: 'region-r-foot', name: 'Right Foot', x: 43, y: 91 },
+  leftFoot: { id: 'region-l-foot', name: 'Left Foot', x: 57, y: 91 },
 };
 
 interface HotSpot {
@@ -124,13 +52,66 @@ interface HotSpot {
   description: string;
 }
 
+// Sample hotspots that accurately reference body parts
+const initialHotspots: HotSpot[] = [
+  {
+    id: 'spot1',
+    region: 'neck',
+    size: 20,
+    color: 'rgba(234, 56, 76, 0.8)',
+    label: 'Neck Strain',
+    description: 'Mild tension in the trapezius muscle. Recommended: heat therapy and gentle stretching.'
+  },
+  {
+    id: 'spot2',
+    region: 'lowerBack',
+    size: 25,
+    color: 'rgba(249, 115, 22, 0.7)',
+    label: 'Lower Back Pain',
+    description: 'Lumbar muscle inflammation. Monitoring progress with prescribed anti-inflammatory medication.'
+  },
+  {
+    id: 'spot3',
+    region: 'rightHip',
+    size: 18,
+    color: 'rgba(139, 92, 246, 0.7)',
+    label: 'Hip Joint',
+    description: 'Minor inflammation in the right hip joint. Continuing physical therapy exercises.'
+  },
+  {
+    id: 'spot4',
+    region: 'leftKnee',
+    size: 22,
+    color: 'rgba(249, 115, 22, 0.7)',
+    label: 'Left Knee',
+    description: 'Mild patellofemoral pain syndrome. Responding well to strengthening exercises.'
+  }
+];
+
+// This function would normally come from a context or API call
+// to get new symptoms reported by the patient or added by doctors
+const fetchNewSymptoms = (): HotSpot[] => {
+  // In a real application, this would be an API call
+  // For demonstration, we'll return a hardcoded new symptom
+  return [
+    ...initialHotspots,
+    {
+      id: 'spot5',
+      region: 'leftShoulder',
+      size: 20,
+      color: 'rgba(14, 165, 233, 0.7)', // Ocean Blue
+      label: 'Shoulder Pain',
+      description: 'New symptom: Pain in left shoulder when lifting arm above head.'
+    }
+  ];
+};
+
 const AnatomicalMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
-  const [hotspots, setHotspots] = useState<HotSpot[]>([]);
+  const [hotspots, setHotspots] = useState<HotSpot[]>(initialHotspots);
   const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { symptoms } = useSymptomContext();
   
   const handleZoomIn = () => {
     if (zoom < 2) setZoom(prev => prev + 0.2);
@@ -154,38 +135,19 @@ const AnatomicalMap: React.FC = () => {
     setImageLoaded(true);
   };
 
-  // Convert symptoms from the SymptomContext to hotspots
+  // Simulate fetching new symptoms (in a real app this would be a useEffect with a dependency or websocket)
   useEffect(() => {
-    if (symptoms && symptoms.length > 0) {
-      const mappedHotspots = symptoms.map(symptom => {
-        const region = mapLocationToRegion(symptom.location);
-        const painLevel = symptom.painLevel || 5;
-        
-        // Determine color based on pain level
-        let color = 'rgba(14, 165, 233, 0.7)'; // Default blue
-        if (painLevel <= 3) {
-          color = 'rgba(22, 163, 74, 0.7)'; // Green for low pain
-        } else if (painLevel <= 6) {
-          color = 'rgba(249, 115, 22, 0.7)'; // Orange for medium pain
-        } else {
-          color = 'rgba(234, 56, 76, 0.8)'; // Red for high pain
-        }
-        
-        return {
-          id: symptom.id,
-          region,
-          size: 18 + (painLevel / 10) * 7, // Size varies with pain level
-          color,
-          label: symptom.symptomName,
-          description: symptom.notes || `${symptom.symptomName} in ${symptom.location}`
-        };
-      });
-      
-      setHotspots(mappedHotspots);
-    } else {
-      setHotspots([]);
-    }
-  }, [symptoms]);
+    // Poll for new symptoms every 30 seconds (in a real app, use websockets instead)
+    const intervalId = setInterval(() => {
+      const updatedSymptoms = fetchNewSymptoms();
+      setHotspots(updatedSymptoms);
+    }, 30000);
+    
+    // Initial fetch when component mounts
+    setHotspots(fetchNewSymptoms());
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Get the position for a hotspot based on its anatomical region
   const getHotspotPosition = (region: string) => {
@@ -262,7 +224,7 @@ const AnatomicalMap: React.FC = () => {
           >
             {/* Anatomical model image */}
             <img
-              src="/lovable-uploads/f8fa3f1a-6170-4647-a504-6de89f8cbea4.png"
+              src="/lovable-uploads/1470fab3-8415-4671-8b34-b510f4784781.png"
               alt="Human Anatomy Model"
               className="h-full object-contain max-w-full"
               style={{ maxHeight: '500px' }}
@@ -291,9 +253,6 @@ const AnatomicalMap: React.FC = () => {
                         }}
                         whileHover={{ scale: 1.2 }}
                         onClick={() => handleHotspotClick(hotspot)}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
                       >
                         <Target className="h-3 w-3 text-white" />
                       </motion.div>
