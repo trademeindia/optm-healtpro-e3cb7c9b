@@ -3,6 +3,11 @@ import * as posenet from '@tensorflow-models/posenet';
 import { PoseDetectionConfig } from '../../poseDetectionTypes';
 import { FeedbackType } from '../../types';
 
+export interface DetectionState {
+  lastDetectionTime: number;
+  detectionFailures: number;
+}
+
 export interface UsePoseDetectionLoopProps {
   model: posenet.PoseNet | null;
   cameraActive: boolean;
@@ -21,4 +26,3 @@ export interface DetectionFailureHandlerProps {
   lastPoseTime: React.MutableRefObject<number | null>;
   failureCount: React.MutableRefObject<number>;
 }
-
