@@ -10,23 +10,28 @@ import { usePoseModel } from './usePoseModel';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
 import { useFeedbackState } from './hooks/useFeedbackState';
-import { usePoseDetectionLoop } from './hooks/detection';
+import { usePoseDetectionLoop, DetectionStatus } from './hooks/detection';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
 import { SquatState } from './types';
 
+interface ExtendedUsePoseDetectionProps extends UsePoseDetectionProps {
+  videoReady?: boolean;
+}
+
 export const usePoseDetection = ({ 
   cameraActive, 
-  videoRef 
-}: UsePoseDetectionProps): UsePoseDetectionResult => {
+  videoRef,
+  videoReady = false
+}: ExtendedUsePoseDetectionProps): UsePoseDetectionResult & { detectionStatus: DetectionStatus | null } => {
   // Configuration
   const [config] = useState(DEFAULT_POSE_CONFIG);
-  const videoReadyRef = useRef(false);
   
   // Load the pose model
   const { model, isModelLoading, error: modelError } = usePoseModel(config);
   
   // Pose detection related states
   const [pose, setPose] = useState<posenet.Pose | null>(null);
+  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus | null>(null);
   
   // Squat state tracking
   const { 
@@ -64,43 +69,29 @@ export const usePoseDetection = ({
     setFeedback: setFeedbackMessage
   });
   
-  // Check if video element is ready
-  useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      const checkVideoReady = () => {
-        if (videoRef.current && 
-            videoRef.current.readyState >= 2 && 
-            !videoRef.current.paused) {
-          console.log("Video is ready for pose detection");
-          videoReadyRef.current = true;
-        } else {
-          videoReadyRef.current = false;
-          setTimeout(checkVideoReady, 100);
-        }
-      };
-      
-      checkVideoReady();
-    } else {
-      videoReadyRef.current = false;
-    }
-  }, [cameraActive, videoRef]);
-  
   // Handle pose detection
   const handlePoseDetected = useCallback((detectedPose: posenet.Pose) => {
     setPose(detectedPose);
     analyzePose(detectedPose);
   }, [analyzePose]);
   
-  // Pose detection loop
-  usePoseDetectionLoop({
+  // Pose detection loop with status updates
+  const { isDetectionRunning, detectionStatus: loopStatus } = usePoseDetectionLoop({
     model,
     cameraActive,
     videoRef,
     config,
     onPoseDetected: handlePoseDetected,
     setFeedback: setFeedbackMessage,
-    videoReady: videoReadyRef.current
+    videoReady
   });
+  
+  // Update detection status from loop
+  useEffect(() => {
+    if (loopStatus) {
+      setDetectionStatus(loopStatus);
+    }
+  }, [loopStatus]);
   
   // Reset session function to clear stats and state
   const resetSession = useCallback(() => {
@@ -118,6 +109,7 @@ export const usePoseDetection = ({
     stats,
     feedback,
     resetSession,
-    config
+    config,
+    detectionStatus
   };
 };

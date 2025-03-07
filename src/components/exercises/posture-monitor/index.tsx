@@ -25,7 +25,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
 }) => {
   const [showTutorial, setShowTutorial] = useState(false);
   
-  // Initialize camera
+  // Initialize camera with enhanced detection
   const { 
     cameraActive, 
     permission, 
@@ -34,7 +34,9 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     streamRef, 
     toggleCamera, 
     stopCamera,
-    cameraError
+    cameraError,
+    retryCamera,
+    videoStatus
   } = useCamera({
     onCameraStart: () => {
       // Set initial feedback when camera starts
@@ -54,10 +56,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     stats,
     feedback,
     resetSession,
-    config
+    config,
+    detectionStatus
   } = usePoseDetection({
     cameraActive,
-    videoRef
+    videoRef,
+    videoReady: videoStatus.isReady
   });
   
   // Override feedback (e.g., for camera permission issues)
@@ -90,6 +94,16 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     
     return () => clearTimeout(timer);
   }, [cameraActive, permission, toggleCamera]);
+  
+  // Monitor video status and provide feedback
+  useEffect(() => {
+    if (cameraActive && !videoStatus.isReady && videoStatus.errorCount > 3) {
+      setCustomFeedback({
+        message: "Camera feed issues detected. The video may not be properly initialized.",
+        type: FeedbackType.WARNING
+      });
+    }
+  }, [cameraActive, videoStatus]);
   
   // Handle finishing the exercise
   const handleFinish = () => {
@@ -136,6 +150,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             videoRef={videoRef}
             canvasRef={canvasRef}
             cameraError={cameraError}
+            onRetryCamera={retryCamera}
+            detectionStatus={{
+              isDetecting: detectionStatus?.isDetecting || false,
+              fps: detectionStatus?.fps || null,
+              confidence: pose?.score || null
+            }}
           />
           
           {/* Render the pose skeleton on the canvas when pose is detected */}

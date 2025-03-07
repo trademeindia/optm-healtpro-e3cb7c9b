@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
-import { Camera, AlertCircle } from 'lucide-react';
+import { Camera, AlertCircle, RefreshCw, Wifi, WifiOff, EyeOff, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CameraViewProps {
   cameraActive: boolean;
@@ -8,6 +9,12 @@ interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   cameraError?: string | null;
+  onRetryCamera?: () => void;
+  detectionStatus?: {
+    isDetecting: boolean;
+    fps: number | null;
+    confidence: number | null;
+  };
 }
 
 const CameraView: React.FC<CameraViewProps> = ({
@@ -15,7 +22,9 @@ const CameraView: React.FC<CameraViewProps> = ({
   isModelLoading,
   videoRef,
   canvasRef,
-  cameraError
+  cameraError,
+  onRetryCamera,
+  detectionStatus
 }) => {
   const videoInitializedRef = useRef(false);
   
@@ -70,34 +79,75 @@ const CameraView: React.FC<CameraViewProps> = ({
 
   return (
     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-      {/* Always render the video element, but hide it when inactive */}
+      {/* Always render the video element, but visually hide it when inactive */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className={`w-full h-full object-cover absolute inset-0 ${cameraActive ? 'visible' : 'hidden'}`}
+        className={`w-full h-full object-cover absolute inset-0 ${!cameraActive && 'opacity-0'}`}
         style={{ transform: 'scaleX(-1)' }}
       />
       
       <canvas 
         ref={canvasRef}
-        className={`w-full h-full absolute inset-0 z-10 ${cameraActive ? 'visible' : 'hidden'}`}
+        className={`w-full h-full absolute inset-0 z-10 ${!cameraActive && 'opacity-0'}`}
         style={{ transform: 'scaleX(-1)' }}
       />
       
       {cameraActive && (
         <>
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-            Camera active
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            {detectionStatus?.isDetecting ? (
+              <>
+                <Eye className="h-3 w-3" />
+                <span>
+                  AI Active {detectionStatus.fps ? `(${Math.round(detectionStatus.fps)} FPS)` : ''}
+                </span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3 w-3" />
+                <span>Monitoring inactive</span>
+              </>
+            )}
           </div>
+          
+          {detectionStatus?.confidence !== null && (
+            <div 
+              className={`absolute bottom-2 left-2 px-2 py-1 rounded text-xs ${
+                detectionStatus.confidence > 0.5 
+                  ? 'bg-green-500/70 text-white' 
+                  : detectionStatus.confidence > 0.3 
+                    ? 'bg-yellow-500/70 text-white' 
+                    : 'bg-red-500/70 text-white'
+              }`}
+            >
+              Pose Confidence: {Math.round(detectionStatus.confidence * 100)}%
+            </div>
+          )}
           
           {cameraError && (
             <div className="absolute top-2 left-2 right-2 bg-red-500/80 text-white text-sm px-3 py-2 rounded flex items-center gap-2">
-              <AlertCircle className="h-4 w-4" />
-              <span>{cameraError}</span>
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="flex-1">{cameraError}</span>
+              {onRetryCamera && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs bg-white/20 hover:bg-white/30 text-white"
+                  onClick={onRetryCamera}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Retry
+                </Button>
+              )}
             </div>
           )}
+          
+          <div className="absolute top-2 right-2 bg-black/40 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            {videoRef.current?.srcObject ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          </div>
         </>
       )}
       

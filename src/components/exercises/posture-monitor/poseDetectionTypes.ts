@@ -32,6 +32,7 @@ export interface PoseFeedback {
 export interface UsePoseDetectionProps {
   cameraActive: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
+  videoReady?: boolean;
 }
 
 export interface UsePoseDetectionResult {
@@ -54,4 +55,10 @@ export interface SquatEvaluation {
 export interface FeedbackResult {
   feedback: string;
   feedbackType: FeedbackType;
+}
+
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
 }
