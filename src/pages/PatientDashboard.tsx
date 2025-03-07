@@ -1,238 +1,34 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw, Check } from 'lucide-react';
-
+import React from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import HealthMetric from '@/components/dashboard/HealthMetric';
-import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
-import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
-import PatientReports from '@/components/patient/PatientReports';
 import UpcomingDoctorAppointments from '@/components/patient/UpcomingDoctorAppointments';
 import DoctorMessages from '@/components/patient/DoctorMessages';
-import useFitnessIntegration from '@/hooks/useFitnessIntegration';
-import { Button } from '@/components/ui/button';
+import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { SymptomProvider } from '@/contexts/SymptomContext';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+
+// Import refactored components
+import PersonalInformation from '@/components/patient/dashboard/PersonalInformation';
+import HealthDataSync from '@/components/patient/dashboard/HealthDataSync';
+import HealthMetricsGrid from '@/components/patient/dashboard/HealthMetricsGrid';
+import MedicalDocuments from '@/components/patient/dashboard/MedicalDocuments';
+import MessageYourDoctor from '@/components/patient/dashboard/MessageYourDoctor';
+import SymptomTracker from '@/components/dashboard/SymptomTracker';
+
+// Import custom hooks
+import { useHealthData } from '@/hooks/useHealthData';
+import { useTreatmentPlan } from '@/hooks/useTreatmentPlan';
+import { useDoctorCommunication } from '@/hooks/useDoctorCommunication';
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const { 
-    providers, 
-    fitnessData, 
-    refreshProviderData 
-  } = useFitnessIntegration();
-
-  // Mock data for activity tracking
-  const activityData = [
-    { day: 'Mon', value: 8500 },
-    { day: 'Tue', value: 9200 },
-    { day: 'Wed', value: 7800 },
-    { day: 'Thu', value: 8100 },
-    { day: 'Fri', value: 10200 },
-    { day: 'Sat', value: 6500 },
-    { day: 'Sun', value: 7300 }
-  ];
-
-  // Mock data for treatment tasks
-  const treatmentTasks = [
-    {
-      id: '1',
-      title: 'Heat therapy - 15 minutes',
-      time: '08:00 AM',
-      completed: true
-    },
-    {
-      id: '2',
-      title: 'Stretching exercises - Series A',
-      time: '11:30 AM',
-      completed: true
-    },
-    {
-      id: '3',
-      title: 'Apply anti-inflammatory cream',
-      time: '02:00 PM',
-      completed: false
-    },
-    {
-      id: '4',
-      title: 'Resistance band exercises',
-      time: '05:00 PM',
-      completed: false
-    }
-  ];
-
-  // Mock upcoming appointments
-  const upcomingAppointments = [
-    {
-      id: '1',
-      date: 'June 20, 2023',
-      time: '10:30 AM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Follow-up',
-      isConfirmed: false,
-      isSyncedToCalendar: true
-    },
-    {
-      id: '2',
-      date: 'July 5, 2023',
-      time: '02:00 PM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Physical Therapy',
-      isConfirmed: true,
-      isSyncedToCalendar: false
-    }
-  ];
-
-  // Mock doctor messages
-  const doctorMessages = [
-    {
-      id: 'msg1',
-      sender: 'Dr. Nikolas Pascal',
-      content: "Hi Alex, I've reviewed your latest test results and would like to discuss them at our next appointment.",
-      timestamp: '10:32 AM',
-      isRead: false,
-      isFromDoctor: true
-    },
-    {
-      id: 'msg2',
-      sender: 'Dr. Emma Rodriguez',
-      content: "Your physical therapy exercises look good. Keep up with the daily routine we discussed.",
-      timestamp: '9:15 AM',
-      isRead: true,
-      isFromDoctor: true
-    },
-    {
-      id: 'msg3',
-      sender: 'Nurse Sarah',
-      content: 'Your prescription has been renewed and is ready for pickup at the pharmacy.',
-      timestamp: 'Yesterday',
-      isRead: true,
-      isFromDoctor: true
-    }
-  ];
-
-  // Function to handle appointment confirmation
-  const handleConfirmAppointment = (id: string) => {
-    toast({
-      title: "Appointment Confirmed",
-      description: "Your appointment has been confirmed.",
-    });
-  };
-
-  // Function to handle appointment rescheduling
-  const handleRescheduleAppointment = (id: string) => {
-    toast({
-      title: "Reschedule Requested",
-      description: "Your request to reschedule has been sent.",
-    });
-  };
-
-  // Function to handle viewing all appointments
-  const handleViewAllAppointments = () => {
-    toast({
-      title: "View Appointments",
-      description: "Opening all appointments view.",
-    });
-  };
-
-  // Function to handle message reading
-  const handleReadMessage = (id: string) => {
-    toast({
-      title: "Message Opened",
-      description: "Opening message details.",
-    });
-  };
-
-  // Function to handle viewing all messages
-  const handleViewAllMessages = () => {
-    toast({
-      title: "View Messages",
-      description: "Opening all messages view.",
-    });
-  };
-
-  // Get health metrics from fitness data or use defaults
-  const getHeartRate = () => {
-    if (fitnessData.heartRate) {
-      return {
-        value: fitnessData.heartRate.value,
-        unit: fitnessData.heartRate.unit,
-        change: fitnessData.heartRate.change || 0,
-        source: fitnessData.heartRate.source,
-        lastSync: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: 72, unit: 'bpm', change: -3 };
-  };
-
-  const getBloodPressure = () => {
-    if (fitnessData.bloodPressure) {
-      return {
-        value: fitnessData.bloodPressure.value,
-        unit: fitnessData.bloodPressure.unit,
-        change: 0,
-        source: fitnessData.bloodPressure.source,
-        lastSync: new Date(fitnessData.bloodPressure.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: '120/80', unit: 'mmHg', change: 0 };
-  };
-
-  const getTemperature = () => {
-    if (fitnessData.temperature) {
-      return {
-        value: fitnessData.temperature.value,
-        unit: fitnessData.temperature.unit,
-        change: fitnessData.temperature.change || 0.2,
-        source: fitnessData.temperature.source,
-        lastSync: new Date(fitnessData.temperature.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: 98.6, unit: '°F', change: 0.2 };
-  };
-
-  const getOxygen = () => {
-    if (fitnessData.oxygenSaturation) {
-      return {
-        value: fitnessData.oxygenSaturation.value,
-        unit: fitnessData.oxygenSaturation.unit,
-        change: fitnessData.oxygenSaturation.change || 1,
-        source: fitnessData.oxygenSaturation.source,
-        lastSync: new Date(fitnessData.oxygenSaturation.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: 98, unit: '%', change: 1 };
-  };
-
-  const getSteps = () => {
-    return fitnessData.steps ? {
-      data: activityData,
-      currentValue: Number(fitnessData.steps.value),
-      source: fitnessData.steps.source,
-      lastSync: new Date(fitnessData.steps.timestamp).toLocaleTimeString()
-    } : { data: activityData, currentValue: 8152 };
-  };
-
-  const heartRate = getHeartRate();
-  const bloodPressure = getBloodPressure();
-  const temperature = getTemperature();
-  const oxygen = getOxygen();
-  const steps = getSteps();
-  
-  const hasConnectedApps = providers.some(p => p.isConnected);
+  const { hasConnectedApps, handleSyncAllData, healthMetrics } = useHealthData();
+  const { treatmentTasks, progress } = useTreatmentPlan();
+  const { appointments, messages, handlers } = useDoctorCommunication();
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -254,133 +50,49 @@ const PatientDashboard: React.FC = () => {
               {/* Left column */}
               <div className="lg:col-span-3 space-y-6">
                 {/* Personal Information */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name:</span>
-                      <span className="font-medium">{user?.name || 'Alex Johnson'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Age:</span>
-                      <span className="font-medium">32 years</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Weight:</span>
-                      <span className="font-medium">175 lbs</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Height:</span>
-                      <span className="font-medium">5'10"</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Blood Type:</span>
-                      <span className="font-medium">O+</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Primary Doctor:</span>
-                      <span className="font-medium">Dr. Nikolas Pascal</span>
-                    </div>
-                  </div>
-                </div>
+                <PersonalInformation />
                 
                 {/* Activity Tracker with fitness data if available */}
                 <ActivityTracker
                   title="Your Activity (Steps)"
-                  data={steps.data}
+                  data={healthMetrics.steps.data}
                   unit="steps/day"
-                  currentValue={steps.currentValue}
-                  source={steps.source}
-                  lastSync={steps.lastSync}
+                  currentValue={healthMetrics.steps.currentValue}
+                  source={healthMetrics.steps.source}
+                  lastSync={healthMetrics.steps.lastSync}
                 />
                 
-                {/* Upcoming Doctor Appointments - new component */}
+                {/* Upcoming Doctor Appointments */}
                 <UpcomingDoctorAppointments
-                  appointments={upcomingAppointments}
-                  onViewAll={handleViewAllAppointments}
-                  onConfirm={handleConfirmAppointment}
-                  onReschedule={handleRescheduleAppointment}
+                  appointments={appointments}
+                  onViewAll={handlers.viewAllAppointments}
+                  onConfirm={handlers.confirmAppointment}
+                  onReschedule={handlers.rescheduleAppointment}
                 />
               </div>
               
               {/* Middle column - health metrics and treatment */}
               <div className="lg:col-span-5 space-y-6">
                 {/* Health Data Sync Button */}
-                {hasConnectedApps && (
-                  <div className="flex justify-end mb-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs gap-1.5"
-                      onClick={handleSyncAllData}
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Sync Health Data
-                    </Button>
-                  </div>
-                )}
+                <HealthDataSync 
+                  onSyncData={handleSyncAllData}
+                  hasConnectedApps={hasConnectedApps}
+                />
                 
                 {/* Health Metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <HealthMetric
-                    title="Heart Rate"
-                    value={heartRate.value}
-                    unit={heartRate.unit}
-                    change={heartRate.change}
-                    changeLabel="vs last week"
-                    icon={<Heart className="w-4 h-4" />}
-                    color="bg-medical-red/10 text-medical-red"
-                    source={heartRate.source}
-                    lastSync={heartRate.lastSync}
-                    isConnected={!!heartRate.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Blood Pressure"
-                    value={bloodPressure.value}
-                    unit={bloodPressure.unit}
-                    change={bloodPressure.change}
-                    changeLabel="stable"
-                    icon={<Activity className="w-4 h-4" />}
-                    color="bg-medical-blue/10 text-medical-blue"
-                    source={bloodPressure.source}
-                    lastSync={bloodPressure.lastSync}
-                    isConnected={!!bloodPressure.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Temperature"
-                    value={temperature.value}
-                    unit={temperature.unit}
-                    change={temperature.change}
-                    changeLabel="vs yesterday"
-                    icon={<Thermometer className="w-4 h-4" />}
-                    color="bg-medical-yellow/10 text-medical-yellow"
-                    source={temperature.source}
-                    lastSync={temperature.lastSync}
-                    isConnected={!!temperature.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Oxygen"
-                    value={oxygen.value}
-                    unit={oxygen.unit}
-                    change={oxygen.change}
-                    changeLabel="vs last check"
-                    icon={<Droplet className="w-4 h-4" />}
-                    color="bg-medical-green/10 text-medical-green"
-                    source={oxygen.source}
-                    lastSync={oxygen.lastSync}
-                    isConnected={!!oxygen.source}
-                  />
-                </div>
+                <HealthMetricsGrid
+                  heartRate={healthMetrics.heartRate}
+                  bloodPressure={healthMetrics.bloodPressure}
+                  temperature={healthMetrics.temperature}
+                  oxygen={healthMetrics.oxygen}
+                />
                 
                 {/* Treatment Plan */}
                 <TreatmentPlan
                   title="Today's Treatment Plan"
                   date="Jun 15, 2023"
                   tasks={treatmentTasks}
-                  progress={50}
+                  progress={progress}
                 />
                 
                 {/* PostureAnalysis Component */}
@@ -392,11 +104,11 @@ const PatientDashboard: React.FC = () => {
               
               {/* Right column - symptom tracker, documents, messages */}
               <div className="lg:col-span-4 space-y-6">
-                {/* Doctor Messages - new component */}
+                {/* Doctor Messages */}
                 <DoctorMessages
-                  messages={doctorMessages}
-                  onViewAll={handleViewAllMessages}
-                  onReadMessage={handleReadMessage}
+                  messages={messages}
+                  onViewAll={handlers.viewAllMessages}
+                  onReadMessage={handlers.readMessage}
                 />
                 
                 {/* Symptom Tracker - Now connected via SymptomContext */}
@@ -406,122 +118,10 @@ const PatientDashboard: React.FC = () => {
                 <AnatomicalMap />
                 
                 {/* Medical Documents */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Medical Documents</h3>
-                    <Button variant="ghost" size="sm" className="text-primary">
-                      View All
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium">MRI Results</h4>
-                          <p className="text-xs text-muted-foreground">May 28, 2023</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium">Blood Test Results</h4>
-                          <p className="text-xs text-muted-foreground">Jun 10, 2023</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium">Treatment Plan PDF</h4>
-                          <p className="text-xs text-muted-foreground">Jun 15, 2023</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <MedicalDocuments />
                 
                 {/* Message Your Doctor */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Message Your Doctor</h3>
-                    <Button variant="ghost" size="sm" className="text-primary">
-                      View History
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    <textarea 
-                      className="w-full p-3 h-24 rounded-lg border resize-none bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary" 
-                      placeholder="Type your message here..."
-                    ></textarea>
-                    <Button className="w-full flex items-center justify-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>Send Message</span>
-                    </Button>
-                  </div>
-                </div>
+                <MessageYourDoctor />
               </div>
             </div>
           </SymptomProvider>
