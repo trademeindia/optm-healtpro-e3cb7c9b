@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw } from 'lucide-react';
+import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw, Check } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
