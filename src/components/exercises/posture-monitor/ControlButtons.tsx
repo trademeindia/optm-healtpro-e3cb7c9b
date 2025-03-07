@@ -41,7 +41,12 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         )}
       </Button>
       
-      <Button onClick={onReset} variant="outline" className="gap-2">
+      <Button 
+        onClick={onReset} 
+        variant="outline" 
+        className="gap-2"
+        disabled={!cameraActive}
+      >
         <RotateCcw className="h-4 w-4" />
         <span>Reset</span>
       </Button>

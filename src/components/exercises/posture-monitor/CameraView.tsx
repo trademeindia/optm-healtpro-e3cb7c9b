@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Camera, AlertCircle } from 'lucide-react';
 
 interface CameraViewProps {
@@ -17,10 +17,13 @@ const CameraView: React.FC<CameraViewProps> = ({
   canvasRef,
   cameraError
 }) => {
+  const videoInitializedRef = useRef(false);
+  
   // Force video element update if camera is active
   useEffect(() => {
     if (cameraActive && videoRef.current) {
       const videoElement = videoRef.current;
+      videoInitializedRef.current = true;
       
       // This helps with some browser rendering issues
       const checkVideoPlaying = () => {

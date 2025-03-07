@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useCameraSetup } from './useCameraSetup';
 import { useVideoElement } from './useVideoElement';
+import { toast } from '@/hooks/use-toast';
 
 interface UseCameraProps {
   onCameraStart?: () => void;
@@ -28,6 +29,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
+  const mountedRef = useRef(true); // Track if component is mounted
   
   const { requestCameraAccess } = useCameraSetup();
   const { setupVideoElement, ensureVideoIsPlaying } = useVideoElement();
@@ -47,7 +49,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     
     // Clear any retry timeouts
     if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
+      window.clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = null;
     }
   }, []);
@@ -88,6 +90,17 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       
       streamRef.current = stream;
       
+      // Wait a moment for the DOM to be updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Make sure component is still mounted
+      if (!mountedRef.current) {
+        console.log("Component unmounted during camera initialization");
+        stopCamera();
+        setIsInitializing(false);
+        return;
+      }
+      
       // Make sure video element exists before proceeding
       if (!videoRef.current) {
         console.error("Video element not found in DOM");
@@ -107,13 +120,28 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
         return;
       }
       
-      // Wait a brief moment to ensure video is playing
+      // Wait a bit longer to ensure video is ready
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Double-check component is still mounted
+      if (!mountedRef.current) {
+        stopCamera();
+        setIsInitializing(false);
+        return;
+      }
       
       // Double-check video state
       if (!videoRef.current || videoRef.current.paused) {
-        console.error("Video not playing after setup");
-        await ensureVideoIsPlaying(videoRef);
+        console.log("Video not playing after setup, trying again");
+        
+        const playSuccess = await ensureVideoIsPlaying(videoRef);
+        if (!playSuccess) {
+          console.error("Failed to play video after retry");
+          setCameraError("Could not start video playback. Please try again.");
+          stopCamera();
+          setIsInitializing(false);
+          return;
+        }
       }
       
       // Set camera as active
@@ -123,12 +151,20 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
       if (onCameraStart) {
         onCameraStart();
       }
+      
+      toast({
+        title: "Camera Active",
+        description: "Camera is now active and ready for pose detection.",
+      });
+      
     } catch (err) {
       console.error("Error in toggleCamera:", err);
       setCameraError(`Camera setup failed: ${err}`);
       stopCamera();
     } finally {
-      setIsInitializing(false);
+      if (mountedRef.current) {
+        setIsInitializing(false);
+      }
     }
   }, [cameraActive, stopCamera, requestCameraAccess, setupVideoElement, ensureVideoIsPlaying, onCameraStart, isInitializing]);
   
@@ -137,6 +173,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     if (!cameraActive) return;
     
     const checkVideoInterval = setInterval(() => {
+      if (!mountedRef.current) return;
+      
       if (!videoRef.current || !streamRef.current) return;
       
       const videoEl = videoRef.current;
@@ -155,7 +193,10 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   
   // Clean up on unmount
   useEffect(() => {
+    mountedRef.current = true;
+    
     return () => {
+      mountedRef.current = false;
       stopCamera();
     };
   }, [stopCamera]);
