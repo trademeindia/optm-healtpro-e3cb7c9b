@@ -54,12 +54,6 @@ export const getDoctorMenuItems = (): MenuItem[] => [
 export const getPatientMenuItems = (): MenuItem[] => [
   getDashboardItem(false),
   { 
-    icon: Calendar, 
-    label: 'Appointments', 
-    path: '/appointments',
-    description: 'View and manage your upcoming appointments'
-  },
-  { 
     icon: TestTube, 
     label: 'Biomarkers', 
     path: '/biomarkers',
@@ -82,7 +76,13 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'Exercises', 
     path: '/exercises',
     description: 'View and perform recommended exercises with AI guidance'
-  }
+  },
+  { 
+    icon: Calendar, 
+    label: 'Appointments', 
+    path: '/appointments',
+    description: 'Schedule and manage your appointments'
+  },
 ];
 
 // Bottom menu items used for both doctor and patient
