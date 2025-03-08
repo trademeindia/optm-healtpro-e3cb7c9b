@@ -15,12 +15,14 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
 }) => {
   const location = useLocation();
   
-  // Check if this menu item is active - refactored for cleaner code
+  // Check if this menu item is active - simplified logic
   const isActive = (() => {
     const path = location.pathname;
     
-    // Direct path match for most items
-    if (path === item.path) return true;
+    // Exact path match for most items (including /appointments)
+    if (path === item.path) {
+      return true;
+    }
     
     // Special cases for nested routes
     switch (item.path) {
