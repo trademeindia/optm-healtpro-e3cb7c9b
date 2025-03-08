@@ -7,11 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 interface HealthSyncButtonProps {
   hasConnectedApps: boolean;
   onSyncData: () => Promise<void>;
+  className?: string;
 }
 
 const HealthSyncButton: React.FC<HealthSyncButtonProps> = ({
   hasConnectedApps,
-  onSyncData
+  onSyncData,
+  className
 }) => {
   const { toast } = useToast();
   
@@ -31,7 +33,7 @@ const HealthSyncButton: React.FC<HealthSyncButtonProps> = ({
   };
   
   return (
-    <div className="flex justify-end mb-2">
+    <div className={`flex justify-end mb-2 ${className || ''}`}>
       <Button 
         variant="outline" 
         size="sm" 

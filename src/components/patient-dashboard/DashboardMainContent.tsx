@@ -77,7 +77,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         <HealthSyncButton 
           hasConnectedApps={hasConnectedApps}
           onSyncData={onSyncData}
-          className="w-full"
         />
         
         {/* Health Metrics */}
