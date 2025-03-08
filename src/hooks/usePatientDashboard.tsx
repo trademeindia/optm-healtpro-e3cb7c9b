@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
@@ -129,7 +128,7 @@ export const usePatientDashboard = () => {
   const getBloodPressure = () => {
     if (fitnessData.bloodPressure) {
       return {
-        value: fitnessData.bloodPressure.value,
+        value: String(fitnessData.bloodPressure.value), // Ensure value is a string
         unit: fitnessData.bloodPressure.unit,
         change: 0,
         source: fitnessData.bloodPressure.source,

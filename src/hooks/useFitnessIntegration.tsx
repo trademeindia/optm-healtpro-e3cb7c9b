@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FitnessProvider } from '@/components/dashboard/FitnessIntegrations';
@@ -28,7 +27,6 @@ const useFitnessIntegration = () => {
   const [providers, setProviders] = useState<FitnessProvider[]>([]);
   const [fitnessData, setFitnessData] = useState<FitnessData>({});
 
-  // Mock data for providers
   useEffect(() => {
     const mockProviders: FitnessProvider[] = [
       {
@@ -68,10 +66,8 @@ const useFitnessIntegration = () => {
   const connectProvider = async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Update provider status
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
@@ -84,7 +80,6 @@ const useFitnessIntegration = () => {
         )
       );
 
-      // Simulate fetching data
       if (providerId === 'google_fit') {
         setFitnessData(prev => ({
           ...prev,
@@ -230,10 +225,8 @@ const useFitnessIntegration = () => {
   const disconnectProvider = async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Update provider status
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
@@ -242,11 +235,9 @@ const useFitnessIntegration = () => {
         )
       );
 
-      // Remove data associated with this provider
       const providerName = providers.find(p => p.id === providerId)?.name || '';
       const newFitnessData = { ...fitnessData };
       
-      // Remove metrics sourced from this provider
       Object.keys(newFitnessData).forEach(key => {
         if (newFitnessData[key]?.source === providerName) {
           delete newFitnessData[key];
@@ -267,10 +258,8 @@ const useFitnessIntegration = () => {
   const refreshProviderData = async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Update lastSync time
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
@@ -279,8 +268,6 @@ const useFitnessIntegration = () => {
         )
       );
 
-      // In a real app, we would fetch fresh data here
-      // For this demo, we'll just update the timestamps
       setFitnessData(prev => {
         const updated = { ...prev };
         const providerName = providers.find(p => p.id === providerId)?.name || '';
