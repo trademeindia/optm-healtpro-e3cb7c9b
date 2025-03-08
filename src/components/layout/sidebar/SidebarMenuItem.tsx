@@ -15,25 +15,8 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
 }) => {
   const location = useLocation();
   
-  // Check if this menu item is active - simplified logic
-  const isActive = (() => {
-    const path = location.pathname;
-    
-    // Exact path match for most items (including /appointments)
-    if (path === item.path) {
-      return true;
-    }
-    
-    // Special cases for nested routes
-    switch (item.path) {
-      case '/patients':
-        return path.startsWith('/patient/');
-      case '/health-apps':
-        return path === '/health-apps' || (path.startsWith('/health-apps/') && path !== '/health-apps/');
-      default:
-        return false;
-    }
-  })();
+  // Simple exact path matching for active state
+  const isActive = location.pathname === item.path;
 
   const handleClick = () => {
     onNavigate(item.path);
