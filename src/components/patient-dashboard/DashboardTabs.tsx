@@ -33,7 +33,6 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
   return (
     <Tabs defaultValue={initialTab} className="w-full">
       <TabsList className="mb-6">
-        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="appointments">Appointments</TabsTrigger>
         <TabsTrigger value="progress">Progress</TabsTrigger>
         <TabsTrigger value="records">Medical Records</TabsTrigger>
@@ -46,7 +45,17 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
       <TabsContent value="appointments">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-semibold mb-6">Your Appointments</h2>
-          <h3 className="text-xl font-semibold mb-4">Scheduled Appointments</h3>
+          <AppointmentsDashboard 
+            unreadMessages={3}
+            nextAppointment={{
+              date: 'June 20, 2023',
+              time: '10:30 AM',
+              doctor: 'Dr. Nikolas Pascal',
+              type: 'Follow-up Consultation'
+            }}
+          />
+          
+          <h3 className="text-xl font-semibold mt-10 mb-4">Scheduled Appointments</h3>
           <div className="glass-morphism rounded-2xl p-6">
             <div className="space-y-4">
               {upcomingAppointments && upcomingAppointments.length > 0 ? (
