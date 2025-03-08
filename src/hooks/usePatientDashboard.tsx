@@ -122,6 +122,7 @@ export const usePatientDashboard = () => {
         lastSync: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString()
       };
     }
+    // Make sure we return a number here, not a string
     return { value: 72, unit: 'bpm', change: -3 };
   };
 
