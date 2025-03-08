@@ -83,7 +83,7 @@ const HelpSettings: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="default-view">Default Help Tab</Label>
                   <Select defaultValue="getStarted">
-                    <SelectTrigger id="default-view">
+                    <SelectTrigger id="default-view" className="max-w-xs">
                       <SelectValue placeholder="Select default tab" />
                     </SelectTrigger>
                     <SelectContent>
@@ -98,7 +98,7 @@ const HelpSettings: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="language">Help Content Language</Label>
                   <Select defaultValue="en">
-                    <SelectTrigger id="language">
+                    <SelectTrigger id="language" className="max-w-xs">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
@@ -121,8 +121,8 @@ const HelpSettings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="preferred-channel" className="w-40">Preferred Contact Method</Label>
-                <Select defaultValue="email" className="flex-1 max-w-xs">
-                  <SelectTrigger id="preferred-channel">
+                <Select defaultValue="email">
+                  <SelectTrigger id="preferred-channel" className="flex-1 max-w-xs">
                     <SelectValue placeholder="Select contact method" />
                   </SelectTrigger>
                   <SelectContent>
@@ -136,8 +136,8 @@ const HelpSettings: React.FC = () => {
               
               <div className="flex items-center justify-between">
                 <Label htmlFor="contact-hours" className="w-40">Preferred Contact Hours</Label>
-                <Select defaultValue="business" className="flex-1 max-w-xs">
-                  <SelectTrigger id="contact-hours">
+                <Select defaultValue="business">
+                  <SelectTrigger id="contact-hours" className="flex-1 max-w-xs">
                     <SelectValue placeholder="Select contact hours" />
                   </SelectTrigger>
                   <SelectContent>
