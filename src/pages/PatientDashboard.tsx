@@ -16,17 +16,15 @@ const PatientDashboard: React.FC = () => {
   const {
     activityData,
     treatmentTasks,
-    upcomingAppointments,
     healthMetrics,
     hasConnectedApps,
-    handleConfirmAppointment,
-    handleRescheduleAppointment,
     handleSyncAllData
   } = usePatientDashboard();
 
   // Get current tab from URL or default to dashboard
   const getInitialTab = () => {
-    if (location.hash === '#appointments') return 'appointments';
+    if (location.hash === '#progress') return 'progress';
+    if (location.hash === '#records') return 'records';
     return 'dashboard';
   };
 
@@ -46,17 +44,11 @@ const PatientDashboard: React.FC = () => {
           </div>
           
           <SymptomProvider>
-            <DashboardTabs
-              initialTab={getInitialTab()}
-              upcomingAppointments={upcomingAppointments}
-              onConfirmAppointment={handleConfirmAppointment}
-              onRescheduleAppointment={handleRescheduleAppointment}
-            >
+            <DashboardTabs initialTab={getInitialTab()}>
               <DashboardMainContent
                 healthMetrics={healthMetrics}
                 activityData={activityData}
                 treatmentTasks={treatmentTasks}
-                upcomingAppointments={upcomingAppointments}
                 hasConnectedApps={hasConnectedApps}
                 onSyncData={handleSyncAllData}
               />

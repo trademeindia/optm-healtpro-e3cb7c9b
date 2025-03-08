@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import HealthMetric from '@/components/dashboard/HealthMetric';
@@ -10,7 +9,6 @@ import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PersonalInformation from './PersonalInformation';
-import UpcomingAppointmentsCard from './UpcomingAppointmentsCard';
 import MedicalDocuments from './MedicalDocuments';
 import MessageYourDoctor from './MessageYourDoctor';
 import HealthSyncButton from './HealthSyncButton';
@@ -35,13 +33,6 @@ interface DashboardMainContentProps {
     time: string;
     completed: boolean;
   }[];
-  upcomingAppointments: {
-    id: string;
-    date: string;
-    time: string;
-    doctor: string;
-    type: string;
-  }[];
   hasConnectedApps: boolean;
   onSyncData: () => Promise<void>;
 }
@@ -50,7 +41,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   healthMetrics,
   activityData,
   treatmentTasks,
-  upcomingAppointments,
   hasConnectedApps,
   onSyncData
 }) => {
@@ -68,11 +58,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           currentValue={activityData.currentValue}
           source={activityData.source}
           lastSync={activityData.lastSync}
-        />
-        
-        {/* Upcoming Appointments */}
-        <UpcomingAppointmentsCard 
-          upcomingAppointments={upcomingAppointments}
         />
       </div>
       
