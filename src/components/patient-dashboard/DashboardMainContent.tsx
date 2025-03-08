@@ -55,10 +55,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   onSyncData
 }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left column */}
-      <div className="lg:col-span-3 space-y-4 md:space-y-6">
-        <PersonalInformation className="h-full" />
+      <div className="lg:col-span-3 space-y-6">
+        <PersonalInformation />
         
         {/* Activity Tracker with fitness data if available */}
         <ActivityTracker
@@ -69,19 +69,23 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           source={activityData.source}
           lastSync={activityData.lastSync}
         />
+        
+        {/* Upcoming Appointments */}
+        <UpcomingAppointmentsCard 
+          upcomingAppointments={upcomingAppointments}
+        />
       </div>
       
       {/* Middle column - health metrics and treatment */}
-      <div className="lg:col-span-5 space-y-4 md:space-y-6">
+      <div className="lg:col-span-5 space-y-6">
         {/* Health Data Sync Button */}
         <HealthSyncButton 
           hasConnectedApps={hasConnectedApps}
           onSyncData={onSyncData}
-          className="w-full"
         />
         
         {/* Health Metrics */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <HealthMetric
             title="Heart Rate"
             value={healthMetrics.heartRate.value}
@@ -145,32 +149,26 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         
         {/* PostureAnalysis Component */}
         <PostureAnalysis />
+        
+        {/* Symptom Progress Chart with better integration */}
+        <div className="glass-morphism rounded-2xl p-6">
+          <SymptomProgressChart />
+        </div>
       </div>
       
       {/* Right column - symptom tracker, documents, messages */}
-      <div className="lg:col-span-4 space-y-4 md:space-y-6">
-        {/* Progress Chart */}
-        <div className="glass-morphism rounded-2xl p-4 md:p-6">
-          <SymptomProgressChart />
-        </div>
-        
-        {/* Upcoming Appointments - Moved up for better visibility */}
-        <UpcomingAppointmentsCard 
-          upcomingAppointments={upcomingAppointments}
-          className="h-full"
-        />
-        
-        {/* Medical Documents - Moved below Appointments as requested */}
-        <MedicalDocuments className="h-full" />
-        
-        {/* Symptom Tracker - Connected via SymptomContext */}
+      <div className="lg:col-span-4 space-y-6">
+        {/* Symptom Tracker - Now connected via SymptomContext */}
         <SymptomTracker />
         
-        {/* Anatomical Map - Connected via SymptomContext */}
+        {/* Anatomical Map - Now connected via SymptomContext */}
         <AnatomicalMap />
         
+        {/* Medical Documents */}
+        <MedicalDocuments />
+        
         {/* Message Your Doctor */}
-        <MessageYourDoctor className="h-full" />
+        <MessageYourDoctor />
       </div>
     </div>
   );
