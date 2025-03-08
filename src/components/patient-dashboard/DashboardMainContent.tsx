@@ -19,7 +19,7 @@ import { Heart, Activity, Thermometer, Droplet } from 'lucide-react';
 interface DashboardMainContentProps {
   healthMetrics: {
     heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
+    bloodPressure: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
     temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
     oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
   };
