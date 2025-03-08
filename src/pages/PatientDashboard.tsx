@@ -54,6 +54,8 @@ const PatientDashboard: React.FC = () => {
                 upcomingAppointments={upcomingAppointments || []}
                 hasConnectedApps={hasConnectedApps}
                 onSyncData={handleSyncAllData}
+                handleConfirmAppointment={handleConfirmAppointment}
+                handleRescheduleAppointment={handleRescheduleAppointment}
               />
             </DashboardTabs>
           </SymptomProvider>

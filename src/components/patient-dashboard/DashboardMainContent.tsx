@@ -44,6 +44,8 @@ interface DashboardMainContentProps {
   }[];
   hasConnectedApps: boolean;
   onSyncData: () => Promise<void>;
+  handleConfirmAppointment?: (id: string) => void;
+  handleRescheduleAppointment?: (id: string) => void;
 }
 
 const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
@@ -52,7 +54,9 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   treatmentTasks,
   upcomingAppointments,
   hasConnectedApps,
-  onSyncData
+  onSyncData,
+  handleConfirmAppointment,
+  handleRescheduleAppointment
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -73,6 +77,8 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         {/* Upcoming Appointments */}
         <UpcomingAppointmentsCard 
           upcomingAppointments={upcomingAppointments}
+          onConfirmAppointment={handleConfirmAppointment}
+          onRescheduleAppointment={handleRescheduleAppointment}
         />
         
         {/* Message Your Doctor - Moved to left column */}
