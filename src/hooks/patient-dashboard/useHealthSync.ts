@@ -8,7 +8,7 @@ export const useHealthSync = (
   const { toast } = useToast();
 
   // Function to handle sync of all health data
-  const handleSyncAllData = async () => {
+  const handleSyncAllData = async (): Promise<void> => {
     const connectedProviders = providers.filter(p => p.isConnected);
     if (connectedProviders.length === 0) {
       toast({

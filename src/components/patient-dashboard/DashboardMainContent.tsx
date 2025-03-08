@@ -16,7 +16,7 @@ interface HealthMetric {
   value: string | number;
   unit: string;
   status: 'normal' | 'warning' | 'critical';
-  change?: string;
+  change?: string | number;
   changeType?: 'increase' | 'decrease';
   lastUpdated?: string;
   source?: string;
@@ -54,7 +54,7 @@ interface DashboardMainContentProps {
     type: string;
   }[];
   hasConnectedApps: boolean;
-  onSyncData: () => void;
+  onSyncData: () => Promise<void>;
   onConfirmAppointment: (id: string) => void;
   onRescheduleAppointment: (id: string) => void;
 }
@@ -81,25 +81,51 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       <Grid columns={12} className="gap-4 lg:gap-6">
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
-          metric={healthMetrics.heartRate}
+          title={healthMetrics.heartRate.title}
+          value={healthMetrics.heartRate.value}
+          unit={healthMetrics.heartRate.unit}
+          change={Number(healthMetrics.heartRate.change)}
+          status={healthMetrics.heartRate.status}
+          source={healthMetrics.heartRate.source}
+          lastSync={healthMetrics.heartRate.lastUpdated}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
-          metric={healthMetrics.bloodPressure}
+          title={healthMetrics.bloodPressure.title}
+          value={healthMetrics.bloodPressure.value}
+          unit={healthMetrics.bloodPressure.unit}
+          change={Number(healthMetrics.bloodPressure.change)}
+          status={healthMetrics.bloodPressure.status}
+          source={healthMetrics.bloodPressure.source}
+          lastSync={healthMetrics.bloodPressure.lastUpdated}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
-          metric={healthMetrics.temperature}
+          title={healthMetrics.temperature.title}
+          value={healthMetrics.temperature.value}
+          unit={healthMetrics.temperature.unit}
+          change={Number(healthMetrics.temperature.change)}
+          status={healthMetrics.temperature.status}
+          source={healthMetrics.temperature.source}
+          lastSync={healthMetrics.temperature.lastUpdated}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
-          metric={healthMetrics.oxygen}
+          title={healthMetrics.oxygen.title}
+          value={healthMetrics.oxygen.value}
+          unit={healthMetrics.oxygen.unit}
+          change={Number(healthMetrics.oxygen.change)}
+          status={healthMetrics.oxygen.status}
+          source={healthMetrics.oxygen.source}
+          lastSync={healthMetrics.oxygen.lastUpdated}
         />
       </Grid>
       
       <Grid columns={12} className="gap-6">
         <ActivityTracker
           className="col-span-12 lg:col-span-7 xl:col-span-8"
+          title="Daily Activity"
+          unit="steps/day"
           data={activityData.data}
           currentValue={activityData.currentValue}
           source={activityData.source}
@@ -107,7 +133,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         />
         <TreatmentPlan
           className="col-span-12 lg:col-span-5 xl:col-span-4"
+          title="Treatment Plan"
+          date="Today"
           tasks={treatmentTasks}
+          progress={75}
         />
       </Grid>
       
