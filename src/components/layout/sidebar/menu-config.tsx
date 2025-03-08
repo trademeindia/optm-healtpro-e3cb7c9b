@@ -2,14 +2,14 @@
 import { 
   LayoutDashboard, 
   Users, 
-  Calendar, 
   FileText, 
   BarChart2, 
   Settings, 
   HelpCircle,
   TestTube,
   Smartphone,
-  Dumbbell
+  Dumbbell,
+  Calendar
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -29,12 +29,6 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     label: 'Patients', 
     path: '/patients',
     description: 'Manage patient records and information'
-  },
-  { 
-    icon: Calendar, 
-    label: 'Appointments', 
-    path: '/appointments',
-    description: 'Schedule and manage patient appointments'
   },
   { 
     icon: FileText, 
@@ -66,6 +60,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     description: 'View your medical reports and documents'
   },
   { 
+    icon: Calendar, 
+    label: 'Appointments', 
+    path: '/appointments',
+    description: 'View and manage your appointments'
+  },
+  { 
     icon: Smartphone, 
     label: 'Health Apps', 
     path: '/health-apps',
@@ -76,12 +76,6 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'Exercises', 
     path: '/exercises',
     description: 'View and perform recommended exercises with AI guidance'
-  },
-  { 
-    icon: Calendar, 
-    label: 'Appointments', 
-    path: '/appointments',
-    description: 'View and manage your appointments'
   },
 ];
 
