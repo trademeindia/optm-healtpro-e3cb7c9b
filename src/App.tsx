@@ -15,6 +15,7 @@ import HealthAppsPage from "./pages/HealthAppsPage";
 import ExercisePage from "./pages/exercises";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import SettingsPage from "./pages/SettingsPage";
+import HelpPage from "./pages/HelpPage";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PatientReportsPage } from "./pages/PatientReportsPage";
@@ -124,7 +125,7 @@ const AppRoutes = () => {
       } />
       <Route path="/help" element={
         <ProtectedRoute>
-          {user?.role === 'doctor' ? <Dashboard /> : <PatientDashboard />}
+          <HelpPage />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />
