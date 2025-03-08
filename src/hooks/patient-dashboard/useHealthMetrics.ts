@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
 import { Heart, Activity, Thermometer, Wind } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export const getHeartRate = (fitnessData: FitnessData) => {
       change: fitnessData.heartRate.change || 0,
       source: fitnessData.heartRate.source,
       lastUpdated: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString(),
-      icon: Heart
+      icon: React.createElement(Heart, { size: 16 })
     };
   }
   return { 
@@ -22,7 +23,7 @@ export const getHeartRate = (fitnessData: FitnessData) => {
     unit: 'bpm', 
     status: 'normal' as const, 
     change: -3,
-    icon: Heart
+    icon: React.createElement(Heart, { size: 16 })
   };
 };
 
@@ -36,7 +37,7 @@ export const getBloodPressure = (fitnessData: FitnessData) => {
       change: 0,
       source: fitnessData.bloodPressure.source,
       lastUpdated: new Date(fitnessData.bloodPressure.timestamp).toLocaleTimeString(),
-      icon: Activity
+      icon: React.createElement(Activity, { size: 16 })
     };
   }
   return { 
@@ -45,7 +46,7 @@ export const getBloodPressure = (fitnessData: FitnessData) => {
     unit: 'mmHg', 
     status: 'normal' as const, 
     change: 0,
-    icon: Activity
+    icon: React.createElement(Activity, { size: 16 })
   };
 };
 
@@ -59,7 +60,7 @@ export const getTemperature = (fitnessData: FitnessData) => {
       change: fitnessData.temperature.change || 0.2,
       source: fitnessData.temperature.source,
       lastUpdated: new Date(fitnessData.temperature.timestamp).toLocaleTimeString(),
-      icon: Thermometer
+      icon: React.createElement(Thermometer, { size: 16 })
     };
   }
   return { 
@@ -68,7 +69,7 @@ export const getTemperature = (fitnessData: FitnessData) => {
     unit: '°F', 
     status: 'normal' as const, 
     change: 0.2,
-    icon: Thermometer
+    icon: React.createElement(Thermometer, { size: 16 })
   };
 };
 
@@ -82,7 +83,7 @@ export const getOxygen = (fitnessData: FitnessData) => {
       change: fitnessData.oxygenSaturation.change || 1,
       source: fitnessData.oxygenSaturation.source,
       lastUpdated: new Date(fitnessData.oxygenSaturation.timestamp).toLocaleTimeString(),
-      icon: Wind
+      icon: React.createElement(Wind, { size: 16 })
     };
   }
   return { 
@@ -91,6 +92,6 @@ export const getOxygen = (fitnessData: FitnessData) => {
     unit: '%', 
     status: 'normal' as const, 
     change: 1,
-    icon: Wind
+    icon: React.createElement(Wind, { size: 16 })
   };
 };

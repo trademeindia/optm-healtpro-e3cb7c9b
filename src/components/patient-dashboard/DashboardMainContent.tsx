@@ -16,10 +16,9 @@ interface HealthMetric {
   value: string | number;
   unit: string;
   status: 'normal' | 'warning' | 'critical';
-  change?: string | number;
-  changeType?: 'increase' | 'decrease';
-  lastUpdated?: string;
+  change?: number;
   source?: string;
+  lastUpdated?: string;
   icon?: React.ReactNode;
 }
 
@@ -85,9 +84,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           value={healthMetrics.heartRate.value}
           unit={healthMetrics.heartRate.unit}
           change={Number(healthMetrics.heartRate.change)}
-          status={healthMetrics.heartRate.status}
+          icon={healthMetrics.heartRate.icon}
           source={healthMetrics.heartRate.source}
           lastSync={healthMetrics.heartRate.lastUpdated}
+          status={healthMetrics.heartRate.status}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
@@ -95,9 +95,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           value={healthMetrics.bloodPressure.value}
           unit={healthMetrics.bloodPressure.unit}
           change={Number(healthMetrics.bloodPressure.change)}
-          status={healthMetrics.bloodPressure.status}
+          icon={healthMetrics.bloodPressure.icon}
           source={healthMetrics.bloodPressure.source}
           lastSync={healthMetrics.bloodPressure.lastUpdated}
+          status={healthMetrics.bloodPressure.status}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
@@ -105,9 +106,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           value={healthMetrics.temperature.value}
           unit={healthMetrics.temperature.unit}
           change={Number(healthMetrics.temperature.change)}
-          status={healthMetrics.temperature.status}
+          icon={healthMetrics.temperature.icon}
           source={healthMetrics.temperature.source}
           lastSync={healthMetrics.temperature.lastUpdated}
+          status={healthMetrics.temperature.status}
         />
         <HealthMetric
           className="col-span-12 sm:col-span-6 lg:col-span-3"
@@ -115,9 +117,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           value={healthMetrics.oxygen.value}
           unit={healthMetrics.oxygen.unit}
           change={Number(healthMetrics.oxygen.change)}
-          status={healthMetrics.oxygen.status}
+          icon={healthMetrics.oxygen.icon}
           source={healthMetrics.oxygen.source}
           lastSync={healthMetrics.oxygen.lastUpdated}
+          status={healthMetrics.oxygen.status}
         />
       </Grid>
       

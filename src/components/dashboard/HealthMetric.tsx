@@ -16,6 +16,7 @@ interface HealthMetricProps {
   source?: string;
   lastSync?: string;
   isConnected?: boolean;
+  status?: 'normal' | 'warning' | 'critical';
 }
 
 const HealthMetric: React.FC<HealthMetricProps> = ({
@@ -30,6 +31,7 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
   source,
   lastSync,
   isConnected = false,
+  status,
 }) => {
   const getChangeIcon = () => {
     if (!change) return <Minus className="w-3 h-3" />;
