@@ -1,40 +1,51 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import ActivityTracker from '@/components/dashboard/ActivityTracker';
+import { Grid } from '@/components/ui/grid';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
-import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
+import UpcomingAppointmentsCard from '@/components/patient-dashboard/UpcomingAppointmentsCard';
+import HealthSyncButton from '@/components/patient-dashboard/HealthSyncButton';
+import PainLocationMap from '@/components/dashboard/PainLocationMap';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
-import AnatomicalMap from '@/components/patient/AnatomicalMap';
-import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
-import PersonalInformation from './PersonalInformation';
-import UpcomingAppointmentsCard from './UpcomingAppointmentsCard';
-import MedicalDocuments from './MedicalDocuments';
-import MessageYourDoctor from './MessageYourDoctor';
-import HealthSyncButton from './HealthSyncButton';
-import { Heart, Activity, Thermometer, Droplet } from 'lucide-react';
+import MessageYourDoctor from '@/components/patient-dashboard/MessageYourDoctor';
+import MedicalDocuments from '@/components/patient-dashboard/MedicalDocuments';
+import ActivityTracker from '@/components/dashboard/ActivityTracker';
+
+interface HealthMetric {
+  title: string;
+  value: string | number;
+  unit: string;
+  status: 'normal' | 'warning' | 'critical';
+  change?: string;
+  changeType?: 'increase' | 'decrease';
+  lastUpdated?: string;
+  source?: string;
+  icon?: React.ReactNode;
+}
+
+interface Activity {
+  data: { day: string; value: number }[];
+  currentValue: number;
+  source?: string;
+  lastSync?: string;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  time: string;
+  completed: boolean;
+}
 
 interface DashboardMainContentProps {
   healthMetrics: {
-    heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    bloodPressure: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    heartRate: HealthMetric;
+    bloodPressure: HealthMetric;
+    temperature: HealthMetric;
+    oxygen: HealthMetric;
   };
-  activityData: {
-    data: { day: string; value: number }[];
-    currentValue: number;
-    source?: string;
-    lastSync?: string;
-  };
-  treatmentTasks: {
-    id: string;
-    title: string;
-    time: string;
-    completed: boolean;
-  }[];
+  activityData: Activity;
+  treatmentTasks: Task[];
   upcomingAppointments: {
     id: string;
     date: string;
@@ -43,7 +54,9 @@ interface DashboardMainContentProps {
     type: string;
   }[];
   hasConnectedApps: boolean;
-  onSyncData: () => Promise<void>;
+  onSyncData: () => void;
+  onConfirmAppointment: (id: string) => void;
+  onRescheduleAppointment: (id: string) => void;
 }
 
 const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
@@ -52,124 +65,75 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   treatmentTasks,
   upcomingAppointments,
   hasConnectedApps,
-  onSyncData
+  onSyncData,
+  onConfirmAppointment,
+  onRescheduleAppointment
 }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      {/* Left column */}
-      <div className="lg:col-span-3 space-y-6">
-        <PersonalInformation />
-        
-        {/* Activity Tracker with fitness data if available */}
+    <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full justify-end">
+        <HealthSyncButton
+          hasConnectedApps={hasConnectedApps}
+          onSyncData={onSyncData}
+        />
+      </div>
+      
+      <Grid columns={12} className="gap-4 lg:gap-6">
+        <HealthMetric
+          className="col-span-12 sm:col-span-6 lg:col-span-3"
+          metric={healthMetrics.heartRate}
+        />
+        <HealthMetric
+          className="col-span-12 sm:col-span-6 lg:col-span-3"
+          metric={healthMetrics.bloodPressure}
+        />
+        <HealthMetric
+          className="col-span-12 sm:col-span-6 lg:col-span-3"
+          metric={healthMetrics.temperature}
+        />
+        <HealthMetric
+          className="col-span-12 sm:col-span-6 lg:col-span-3"
+          metric={healthMetrics.oxygen}
+        />
+      </Grid>
+      
+      <Grid columns={12} className="gap-6">
         <ActivityTracker
-          title="Your Activity (Steps)"
+          className="col-span-12 lg:col-span-7 xl:col-span-8"
           data={activityData.data}
-          unit="steps/day"
           currentValue={activityData.currentValue}
           source={activityData.source}
           lastSync={activityData.lastSync}
         />
-        
-        {/* Upcoming Appointments */}
-        <UpcomingAppointmentsCard 
-          upcomingAppointments={upcomingAppointments}
-        />
-      </div>
-      
-      {/* Middle column - health metrics and treatment */}
-      <div className="lg:col-span-5 space-y-6">
-        {/* Health Data Sync Button */}
-        <HealthSyncButton 
-          hasConnectedApps={hasConnectedApps}
-          onSyncData={onSyncData}
-        />
-        
-        {/* Health Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          <HealthMetric
-            title="Heart Rate"
-            value={healthMetrics.heartRate.value}
-            unit={healthMetrics.heartRate.unit}
-            change={healthMetrics.heartRate.change}
-            changeLabel="vs last week"
-            icon={<Heart className="w-4 h-4" />}
-            color="bg-medical-red/10 text-medical-red"
-            source={healthMetrics.heartRate.source}
-            lastSync={healthMetrics.heartRate.lastSync}
-            isConnected={!!healthMetrics.heartRate.source}
-          />
-          
-          <HealthMetric
-            title="Blood Pressure"
-            value={healthMetrics.bloodPressure.value}
-            unit={healthMetrics.bloodPressure.unit}
-            change={healthMetrics.bloodPressure.change}
-            changeLabel="stable"
-            icon={<Activity className="w-4 h-4" />}
-            color="bg-medical-blue/10 text-medical-blue"
-            source={healthMetrics.bloodPressure.source}
-            lastSync={healthMetrics.bloodPressure.lastSync}
-            isConnected={!!healthMetrics.bloodPressure.source}
-          />
-          
-          <HealthMetric
-            title="Temperature"
-            value={healthMetrics.temperature.value}
-            unit={healthMetrics.temperature.unit}
-            change={healthMetrics.temperature.change}
-            changeLabel="vs yesterday"
-            icon={<Thermometer className="w-4 h-4" />}
-            color="bg-medical-yellow/10 text-medical-yellow"
-            source={healthMetrics.temperature.source}
-            lastSync={healthMetrics.temperature.lastSync}
-            isConnected={!!healthMetrics.temperature.source}
-          />
-          
-          <HealthMetric
-            title="Oxygen"
-            value={healthMetrics.oxygen.value}
-            unit={healthMetrics.oxygen.unit}
-            change={healthMetrics.oxygen.change}
-            changeLabel="vs last check"
-            icon={<Droplet className="w-4 h-4" />}
-            color="bg-medical-green/10 text-medical-green"
-            source={healthMetrics.oxygen.source}
-            lastSync={healthMetrics.oxygen.lastSync}
-            isConnected={!!healthMetrics.oxygen.source}
-          />
-        </div>
-        
-        {/* Treatment Plan */}
         <TreatmentPlan
-          title="Today's Treatment Plan"
-          date="Jun 15, 2023"
+          className="col-span-12 lg:col-span-5 xl:col-span-4"
           tasks={treatmentTasks}
-          progress={50}
         />
-        
-        {/* PostureAnalysis Component */}
-        <PostureAnalysis />
-        
-        {/* Symptom Progress Chart with better integration */}
-        <div className="glass-morphism rounded-2xl p-6">
-          <SymptomProgressChart />
-        </div>
-      </div>
+      </Grid>
       
-      {/* Right column - symptom tracker, documents, messages */}
-      <div className="lg:col-span-4 space-y-6">
-        {/* Symptom Tracker - Now connected via SymptomContext */}
-        <SymptomTracker />
-        
-        {/* Anatomical Map - Now connected via SymptomContext */}
-        <AnatomicalMap />
-        
-        {/* Medical Documents */}
-        <MedicalDocuments />
-        
-        {/* Message Your Doctor */}
-        <MessageYourDoctor />
-      </div>
+      <Grid columns={12} className="gap-6">
+        <UpcomingAppointmentsCard
+          className="col-span-12 md:col-span-6 xl:col-span-4"
+          upcomingAppointments={upcomingAppointments}
+          onConfirmAppointment={onConfirmAppointment}
+          onRescheduleAppointment={onRescheduleAppointment}
+        />
+        <PainLocationMap 
+          className="col-span-12 md:col-span-6 xl:col-span-4"
+        />
+        <SymptomTracker 
+          className="col-span-12 xl:col-span-4"
+        />
+      </Grid>
+      
+      <Grid columns={12} className="gap-6">
+        <MessageYourDoctor
+          className="col-span-12 md:col-span-6"
+        />
+        <MedicalDocuments
+          className="col-span-12 md:col-span-6"
+        />
+      </Grid>
     </div>
   );
 };

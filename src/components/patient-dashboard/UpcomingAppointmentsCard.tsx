@@ -15,30 +15,16 @@ interface Appointment {
 interface UpcomingAppointmentsCardProps {
   upcomingAppointments: Appointment[];
   className?: string;
+  onConfirmAppointment: (id: string) => void;
+  onRescheduleAppointment: (id: string) => void;
 }
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   upcomingAppointments,
-  className
+  className,
+  onConfirmAppointment,
+  onRescheduleAppointment
 }) => {
-  const { toast } = useToast();
-
-  // Function to handle appointment confirmation
-  const handleConfirmAppointment = (id: string) => {
-    toast({
-      title: "Appointment Confirmed",
-      description: "Your appointment has been confirmed.",
-    });
-  };
-
-  // Function to handle appointment rescheduling
-  const handleRescheduleAppointment = (id: string) => {
-    toast({
-      title: "Reschedule Requested",
-      description: "Your request to reschedule has been sent.",
-    });
-  };
-
   return (
     <div className={`glass-morphism rounded-2xl p-6 ${className}`}>
       <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
@@ -64,7 +50,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                 variant="outline" 
                 size="sm" 
                 className="text-xs flex-1"
-                onClick={() => handleConfirmAppointment(appointment.id)}
+                onClick={() => onConfirmAppointment(appointment.id)}
               >
                 Confirm
               </Button>
@@ -72,7 +58,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                 variant="ghost" 
                 size="sm" 
                 className="text-xs flex-1"
-                onClick={() => handleRescheduleAppointment(appointment.id)}
+                onClick={() => onRescheduleAppointment(appointment.id)}
               >
                 Reschedule
               </Button>
