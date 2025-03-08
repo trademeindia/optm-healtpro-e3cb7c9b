@@ -3,6 +3,9 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
+import PatientReports from '@/components/patient/PatientReports';
+import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 
 interface DashboardTabsProps {
   initialTab: string;
@@ -32,6 +35,8 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
       <TabsList className="mb-6">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="appointments">Appointments</TabsTrigger>
+        <TabsTrigger value="progress">Progress</TabsTrigger>
+        <TabsTrigger value="records">Medical Records</TabsTrigger>
       </TabsList>
       
       <TabsContent value="dashboard">
@@ -41,6 +46,15 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
       <TabsContent value="appointments">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-semibold mb-6">Your Appointments</h2>
+          <AppointmentsDashboard 
+            unreadMessages={3}
+            nextAppointment={{
+              date: 'June 20, 2023',
+              time: '10:30 AM',
+              doctor: 'Dr. Nikolas Pascal',
+              type: 'Follow-up Consultation'
+            }}
+          />
           
           <h3 className="text-xl font-semibold mt-10 mb-4">Scheduled Appointments</h3>
           <div className="glass-morphism rounded-2xl p-6">
@@ -80,6 +94,24 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="progress">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-semibold mb-6">Your Progress</h2>
+          <div className="glass-morphism rounded-2xl p-6">
+            <SymptomProgressChart />
+          </div>
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="records">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-semibold mb-6">Medical Records</h2>
+          <div className="glass-morphism rounded-2xl p-6">
+            <PatientReports />
           </div>
         </div>
       </TabsContent>

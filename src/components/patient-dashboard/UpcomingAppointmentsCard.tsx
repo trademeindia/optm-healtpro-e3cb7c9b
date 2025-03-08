@@ -2,6 +2,7 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface Appointment {
   id: string;
@@ -13,17 +14,31 @@ interface Appointment {
 
 interface UpcomingAppointmentsCardProps {
   upcomingAppointments: Appointment[];
-  onConfirmAppointment: (id: string) => void;
-  onRescheduleAppointment: (id: string) => void;
   className?: string;
 }
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   upcomingAppointments,
-  onConfirmAppointment,
-  onRescheduleAppointment,
   className
 }) => {
+  const { toast } = useToast();
+
+  // Function to handle appointment confirmation
+  const handleConfirmAppointment = (id: string) => {
+    toast({
+      title: "Appointment Confirmed",
+      description: "Your appointment has been confirmed.",
+    });
+  };
+
+  // Function to handle appointment rescheduling
+  const handleRescheduleAppointment = (id: string) => {
+    toast({
+      title: "Reschedule Requested",
+      description: "Your request to reschedule has been sent.",
+    });
+  };
+
   return (
     <div className={`glass-morphism rounded-2xl p-6 ${className}`}>
       <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
@@ -49,7 +64,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                 variant="outline" 
                 size="sm" 
                 className="text-xs flex-1"
-                onClick={() => onConfirmAppointment(appointment.id)}
+                onClick={() => handleConfirmAppointment(appointment.id)}
               >
                 Confirm
               </Button>
@@ -57,7 +72,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                 variant="ghost" 
                 size="sm" 
                 className="text-xs flex-1"
-                onClick={() => onRescheduleAppointment(appointment.id)}
+                onClick={() => handleRescheduleAppointment(appointment.id)}
               >
                 Reschedule
               </Button>
