@@ -2,7 +2,6 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PatientReports from '@/components/patient/PatientReports';
-import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 
 interface DashboardTabsProps {
   initialTab: string;
@@ -31,21 +30,11 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
     <Tabs defaultValue={initialTab} className="w-full">
       <TabsList className="mb-6">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-        <TabsTrigger value="progress">Progress</TabsTrigger>
         <TabsTrigger value="records">Medical Records</TabsTrigger>
       </TabsList>
       
       <TabsContent value="dashboard">
         {children}
-      </TabsContent>
-      
-      <TabsContent value="progress">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-6">Your Progress</h2>
-          <div className="glass-morphism rounded-2xl p-6">
-            <SymptomProgressChart />
-          </div>
-        </div>
       </TabsContent>
       
       <TabsContent value="records">

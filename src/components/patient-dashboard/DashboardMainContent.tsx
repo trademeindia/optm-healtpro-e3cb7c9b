@@ -149,15 +149,15 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         
         {/* PostureAnalysis Component */}
         <PostureAnalysis />
-        
-        {/* Symptom Progress Chart with better integration */}
-        <div className="glass-morphism rounded-2xl p-6">
-          <SymptomProgressChart />
-        </div>
       </div>
       
       {/* Right column - symptom tracker, documents, messages */}
       <div className="lg:col-span-4 space-y-6">
+        {/* Progress Chart (moved from tabs to right panel) */}
+        <div className="glass-morphism rounded-2xl p-6">
+          <SymptomProgressChart />
+        </div>
+        
         {/* Symptom Tracker - Now connected via SymptomContext */}
         <SymptomTracker />
         
