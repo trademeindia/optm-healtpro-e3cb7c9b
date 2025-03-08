@@ -1,5 +1,5 @@
 
-import { ChartData } from './types';
+import { ChartData, TrendData } from './types';
 
 /**
  * Calculates the average pain reduction percentage across all symptoms
@@ -40,4 +40,56 @@ export const prepareChartData = (symptoms: ChartData[]) => {
     });
     return dataPoint;
   });
+};
+
+/**
+ * Calculates weekly and monthly trends for a symptom
+ * @param symptom The symptom data to analyze
+ * @returns Object containing weekly and monthly change percentages
+ */
+export const calculateTrend = (symptom: ChartData): TrendData => {
+  if (!symptom.data.length) {
+    return { weeklyChange: 0, monthlyChange: 0 };
+  }
+  
+  const data = symptom.data;
+  const lastValue = data[data.length - 1].value;
+  
+  // Weekly trend (last 7 entries or less if not available)
+  const weeklyData = data.length >= 7 ? data.slice(-7) : data;
+  const weekStartValue = weeklyData[0].value;
+  const weeklyChange = weekStartValue === 0 ? 0 : 
+    ((lastValue - weekStartValue) / weekStartValue) * 100;
+  
+  // Monthly trend (last 30 entries or less if not available)
+  const monthlyData = data.length >= 30 ? data.slice(-30) : data;
+  const monthStartValue = monthlyData[0].value;
+  const monthlyChange = monthStartValue === 0 ? 0 : 
+    ((lastValue - monthStartValue) / monthStartValue) * 100;
+  
+  return {
+    weeklyChange: Math.round(weeklyChange),
+    monthlyChange: Math.round(monthlyChange)
+  };
+};
+
+/**
+ * Gets a color based on the pain level
+ * @param painLevel Pain level from 0-10
+ * @returns Appropriate color for the pain level
+ */
+export const getPainLevelColor = (painLevel: number): string => {
+  if (painLevel <= 3) return 'text-medical-green';
+  if (painLevel <= 6) return 'text-medical-yellow';
+  return 'text-medical-red';
+};
+
+/**
+ * Creates a formatted display string for a date
+ * @param dateString Date string to format
+ * @returns Formatted date string
+ */
+export const formatDateForDisplay = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };

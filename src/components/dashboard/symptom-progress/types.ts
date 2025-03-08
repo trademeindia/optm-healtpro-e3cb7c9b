@@ -28,3 +28,13 @@ export interface ChartContainerProps {
 export interface PainReductionProps {
   painReduction: number;
 }
+
+export interface TrendData {
+  weeklyChange: number;
+  monthlyChange: number;
+}
+
+export interface SymptomTrendProps {
+  symptom: ChartData;
+  trend: TrendData;
+}

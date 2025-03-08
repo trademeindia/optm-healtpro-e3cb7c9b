@@ -1,17 +1,31 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Activity } from 'lucide-react';
+import { Activity, Calendar, TrendingDown } from 'lucide-react';
 import PainReductionCard from './symptom-progress/PainReductionCard';
 import SymptomChart from './symptom-progress/SymptomChart';
 import SymptomCardsContainer from './symptom-progress/SymptomCardsContainer';
 import { useSymptomProgress } from './symptom-progress/useSymptomProgress';
 import { SymptomProgressChartProps } from './symptom-progress/types';
+import { format } from 'date-fns';
 
 const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({
   className
 }) => {
   const { symptoms, chartData, painReduction } = useSymptomProgress();
+  
+  // Get the range of dates for the chart
+  const getDateRange = () => {
+    if (!symptoms.length || !symptoms[0].data.length) {
+      return 'No data available';
+    }
+    
+    const firstData = symptoms[0].data;
+    const startDate = new Date(firstData[0].date);
+    const endDate = new Date(firstData[firstData.length - 1].date);
+    
+    return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+  };
   
   return (
     <motion.div 
@@ -38,6 +52,20 @@ const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({
       </div>
       
       <PainReductionCard painReduction={painReduction} />
+      
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm flex items-center text-muted-foreground">
+          <Calendar className="w-4 h-4 mr-1" />
+          {getDateRange()}
+        </div>
+        
+        {painReduction > 0 && (
+          <div className="text-xs bg-medical-green/10 text-medical-green px-2 py-1 rounded-full flex items-center">
+            <TrendingDown className="w-3 h-3 mr-1" />
+            Showing improvement
+          </div>
+        )}
+      </div>
       
       <SymptomChart symptoms={symptoms} chartData={chartData} />
       
