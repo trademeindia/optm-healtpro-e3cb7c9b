@@ -11,7 +11,6 @@ import usePatientDashboard from '@/hooks/usePatientDashboard';
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
-  const location = useLocation();
   
   const {
     activityData,
@@ -24,11 +23,8 @@ const PatientDashboard: React.FC = () => {
     handleSyncAllData
   } = usePatientDashboard();
 
-  // Get current tab from URL or default to dashboard
-  const getInitialTab = () => {
-    if (location.hash === '#appointments') return 'appointments';
-    return 'dashboard';
-  };
+  // Always default to dashboard tab, no special URL hash handling
+  const initialTab = 'dashboard';
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -47,7 +43,7 @@ const PatientDashboard: React.FC = () => {
           
           <SymptomProvider>
             <DashboardTabs
-              initialTab={getInitialTab()}
+              initialTab={initialTab}
               upcomingAppointments={upcomingAppointments || []}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}

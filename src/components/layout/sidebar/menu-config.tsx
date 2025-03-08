@@ -81,7 +81,7 @@ export const getPatientMenuItems = (): MenuItem[] => [
     icon: Calendar, 
     label: 'Appointments', 
     path: '/appointments',
-    description: 'Schedule and manage your appointments'
+    description: 'View and manage your appointments'
   },
 ];
 

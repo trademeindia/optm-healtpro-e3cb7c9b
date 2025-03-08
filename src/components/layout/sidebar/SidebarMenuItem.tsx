@@ -21,7 +21,7 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     const hash = location.hash;
     
     // Special case for appointments - check both path and hash
-    if (item.path === '/appointments' && (path === '/appointments' || hash === '#appointments')) {
+    if (item.path === '/appointments' && path === '/appointments') {
       return true;
     }
     
@@ -48,13 +48,8 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
   })();
 
   const handleClick = () => {
-    if (item.path === '/appointments' && location.pathname === '/patient-dashboard') {
-      // Special case: If we're on the dashboard and clicking appointments,
-      // navigate to the dashboard with appointments hash
-      onNavigate('/patient-dashboard#appointments');
-    } else {
-      onNavigate(item.path);
-    }
+    // Always navigate directly to the actual path, no more special cases for patient-dashboard#appointments
+    onNavigate(item.path);
   };
 
   return (
