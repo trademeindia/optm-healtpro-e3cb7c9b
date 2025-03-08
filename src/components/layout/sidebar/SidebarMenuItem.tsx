@@ -18,6 +18,12 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
   // Check if this menu item is active - refactored for cleaner code
   const isActive = (() => {
     const path = location.pathname;
+    const hash = location.hash;
+    
+    // Special case for appointments - check both path and hash
+    if (item.path === '/appointments' && (path === '/appointments' || hash === '#appointments')) {
+      return true;
+    }
     
     // Direct path match
     if (path === item.path) return true;
@@ -33,7 +39,6 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
       case '/biomarkers':
       case '/exercises':
       case '/patient-reports':
-      case '/appointments':
       case '/settings':
       case '/help':
         return path === item.path;
@@ -42,10 +47,20 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     }
   })();
 
+  const handleClick = () => {
+    if (item.path === '/appointments' && location.pathname === '/patient-dashboard') {
+      // Special case: If we're on the dashboard and clicking appointments,
+      // navigate to the dashboard with appointments hash
+      onNavigate('/patient-dashboard#appointments');
+    } else {
+      onNavigate(item.path);
+    }
+  };
+
   return (
     <li>
       <button
-        onClick={() => onNavigate(item.path)}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group relative w-full text-left",
           isActive
@@ -58,6 +73,11 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
           isActive ? "text-primary" : "text-foreground/70"
         )} />
         {item.label}
+        
+        {/* Active indicator */}
+        {isActive && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 bg-primary rounded-r-full" />
+        )}
         
         {/* Tooltip for description - only shown on desktop */}
         <div className="absolute left-full ml-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-xs rounded p-2 w-48 z-50 pointer-events-none shadow-md">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Activity, Thermometer, Droplet, Calendar, FileText, MessageCircle, RefreshCw } from 'lucide-react';
@@ -13,15 +12,20 @@ import AnatomicalMap from '@/components/patient/AnatomicalMap';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import PatientReports from '@/components/patient/PatientReports';
+import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { SymptomProvider } from '@/contexts/SymptomContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLocation } from 'react-router-dom';
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+  
   const { 
     providers, 
     fitnessData, 
@@ -198,6 +202,12 @@ const PatientDashboard: React.FC = () => {
   
   const hasConnectedApps = providers.some(p => p.isConnected);
 
+  // Get current tab from URL or default to dashboard
+  const getInitialTab = () => {
+    if (location.hash === '#appointments') return 'appointments';
+    return 'dashboard';
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -214,313 +224,397 @@ const PatientDashboard: React.FC = () => {
           </div>
           
           <SymptomProvider>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left column */}
-              <div className="lg:col-span-3 space-y-6">
-                {/* Personal Information */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name:</span>
-                      <span className="font-medium">{user?.name || 'Alex Johnson'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Age:</span>
-                      <span className="font-medium">32 years</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Weight:</span>
-                      <span className="font-medium">175 lbs</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Height:</span>
-                      <span className="font-medium">5'10"</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Blood Type:</span>
-                      <span className="font-medium">O+</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Primary Doctor:</span>
-                      <span className="font-medium">Dr. Nikolas Pascal</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Activity Tracker with fitness data if available */}
-                <ActivityTracker
-                  title="Your Activity (Steps)"
-                  data={steps.data}
-                  unit="steps/day"
-                  currentValue={steps.currentValue}
-                  source={steps.source}
-                  lastSync={steps.lastSync}
-                />
-                
-                {/* Upcoming Appointments */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
-                  <div className="space-y-4">
-                    {upcomingAppointments.map(appointment => (
-                      <div key={appointment.id} className="p-3 border rounded-lg bg-card">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-medium">{appointment.type}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {appointment.date} at {appointment.time}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {appointment.doctor}
-                            </p>
-                          </div>
-                          <div className="bg-primary/10 text-primary p-2 rounded-full">
-                            <Calendar className="h-4 w-4" />
-                          </div>
+            <Tabs defaultValue={getInitialTab()} className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="appointments">Appointments</TabsTrigger>
+                <TabsTrigger value="progress">Progress</TabsTrigger>
+                <TabsTrigger value="records">Medical Records</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="dashboard">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left column */}
+                  <div className="lg:col-span-3 space-y-6">
+                    {/* Personal Information */}
+                    <div className="glass-morphism rounded-2xl p-6">
+                      <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Name:</span>
+                          <span className="font-medium">{user?.name || 'Alex Johnson'}</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-xs flex-1"
-                            onClick={() => handleConfirmAppointment(appointment.id)}
-                          >
-                            Confirm
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-xs flex-1"
-                            onClick={() => handleRescheduleAppointment(appointment.id)}
-                          >
-                            Reschedule
-                          </Button>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Age:</span>
+                          <span className="font-medium">32 years</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Weight:</span>
+                          <span className="font-medium">175 lbs</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Height:</span>
+                          <span className="font-medium">5'10"</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Blood Type:</span>
+                          <span className="font-medium">O+</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Primary Doctor:</span>
+                          <span className="font-medium">Dr. Nikolas Pascal</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  <Button variant="ghost" className="w-full mt-3 text-sm">
-                    View All Appointments
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Middle column - health metrics and treatment */}
-              <div className="lg:col-span-5 space-y-6">
-                {/* Health Data Sync Button */}
-                {hasConnectedApps && (
-                  <div className="flex justify-end mb-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs gap-1.5"
-                      onClick={handleSyncAllData}
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Sync Health Data
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Health Metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <HealthMetric
-                    title="Heart Rate"
-                    value={heartRate.value}
-                    unit={heartRate.unit}
-                    change={heartRate.change}
-                    changeLabel="vs last week"
-                    icon={<Heart className="w-4 h-4" />}
-                    color="bg-medical-red/10 text-medical-red"
-                    source={heartRate.source}
-                    lastSync={heartRate.lastSync}
-                    isConnected={!!heartRate.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Blood Pressure"
-                    value={bloodPressure.value}
-                    unit={bloodPressure.unit}
-                    change={bloodPressure.change}
-                    changeLabel="stable"
-                    icon={<Activity className="w-4 h-4" />}
-                    color="bg-medical-blue/10 text-medical-blue"
-                    source={bloodPressure.source}
-                    lastSync={bloodPressure.lastSync}
-                    isConnected={!!bloodPressure.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Temperature"
-                    value={temperature.value}
-                    unit={temperature.unit}
-                    change={temperature.change}
-                    changeLabel="vs yesterday"
-                    icon={<Thermometer className="w-4 h-4" />}
-                    color="bg-medical-yellow/10 text-medical-yellow"
-                    source={temperature.source}
-                    lastSync={temperature.lastSync}
-                    isConnected={!!temperature.source}
-                  />
-                  
-                  <HealthMetric
-                    title="Oxygen"
-                    value={oxygen.value}
-                    unit={oxygen.unit}
-                    change={oxygen.change}
-                    changeLabel="vs last check"
-                    icon={<Droplet className="w-4 h-4" />}
-                    color="bg-medical-green/10 text-medical-green"
-                    source={oxygen.source}
-                    lastSync={oxygen.lastSync}
-                    isConnected={!!oxygen.source}
-                  />
-                </div>
-                
-                {/* Treatment Plan */}
-                <TreatmentPlan
-                  title="Today's Treatment Plan"
-                  date="Jun 15, 2023"
-                  tasks={treatmentTasks}
-                  progress={50}
-                />
-                
-                {/* PostureAnalysis Component */}
-                <PostureAnalysis />
-                
-                {/* Symptom Progress Chart with better integration */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <SymptomProgressChart />
-                </div>
-              </div>
-              
-              {/* Right column - symptom tracker, documents, messages */}
-              <div className="lg:col-span-4 space-y-6">
-                {/* Symptom Tracker - Now connected via SymptomContext */}
-                <SymptomTracker />
-                
-                {/* Anatomical Map - Now connected via SymptomContext */}
-                <AnatomicalMap />
-                
-                {/* Medical Documents */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Medical Documents</h3>
-                    <Button variant="ghost" size="sm" className="text-primary">
-                      View All
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium">MRI Results</h4>
-                          <p className="text-xs text-muted-foreground">May 28, 2023</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
-                      </Button>
                     </div>
                     
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium">Blood Test Results</h4>
-                          <p className="text-xs text-muted-foreground">Jun 10, 2023</p>
-                        </div>
+                    {/* Activity Tracker with fitness data if available */}
+                    <ActivityTracker
+                      title="Your Activity (Steps)"
+                      data={steps.data}
+                      unit="steps/day"
+                      currentValue={steps.currentValue}
+                      source={steps.source}
+                      lastSync={steps.lastSync}
+                    />
+                    
+                    {/* Upcoming Appointments */}
+                    <div className="glass-morphism rounded-2xl p-6">
+                      <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
+                      <div className="space-y-4">
+                        {upcomingAppointments.map(appointment => (
+                          <div key={appointment.id} className="p-3 border rounded-lg bg-card">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium">{appointment.type}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {appointment.date} at {appointment.time}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {appointment.doctor}
+                                </p>
+                              </div>
+                              <div className="bg-primary/10 text-primary p-2 rounded-full">
+                                <Calendar className="h-4 w-4" />
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-xs flex-1"
+                                onClick={() => handleConfirmAppointment(appointment.id)}
+                              >
+                                Confirm
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-xs flex-1"
+                                onClick={() => handleRescheduleAppointment(appointment.id)}
+                              >
+                                Reschedule
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
+                      <Button variant="ghost" className="w-full mt-3 text-sm">
+                        View All Appointments
                       </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Middle column - health metrics and treatment */}
+                  <div className="lg:col-span-5 space-y-6">
+                    {/* Health Data Sync Button */}
+                    {hasConnectedApps && (
+                      <div className="flex justify-end mb-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-xs gap-1.5"
+                          onClick={handleSyncAllData}
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Sync Health Data
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Health Metrics */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <HealthMetric
+                        title="Heart Rate"
+                        value={heartRate.value}
+                        unit={heartRate.unit}
+                        change={heartRate.change}
+                        changeLabel="vs last week"
+                        icon={<Heart className="w-4 h-4" />}
+                        color="bg-medical-red/10 text-medical-red"
+                        source={heartRate.source}
+                        lastSync={heartRate.lastSync}
+                        isConnected={!!heartRate.source}
+                      />
+                      
+                      <HealthMetric
+                        title="Blood Pressure"
+                        value={bloodPressure.value}
+                        unit={bloodPressure.unit}
+                        change={bloodPressure.change}
+                        changeLabel="stable"
+                        icon={<Activity className="w-4 h-4" />}
+                        color="bg-medical-blue/10 text-medical-blue"
+                        source={bloodPressure.source}
+                        lastSync={bloodPressure.lastSync}
+                        isConnected={!!bloodPressure.source}
+                      />
+                      
+                      <HealthMetric
+                        title="Temperature"
+                        value={temperature.value}
+                        unit={temperature.unit}
+                        change={temperature.change}
+                        changeLabel="vs yesterday"
+                        icon={<Thermometer className="w-4 h-4" />}
+                        color="bg-medical-yellow/10 text-medical-yellow"
+                        source={temperature.source}
+                        lastSync={temperature.lastSync}
+                        isConnected={!!temperature.source}
+                      />
+                      
+                      <HealthMetric
+                        title="Oxygen"
+                        value={oxygen.value}
+                        unit={oxygen.unit}
+                        change={oxygen.change}
+                        changeLabel="vs last check"
+                        icon={<Droplet className="w-4 h-4" />}
+                        color="bg-medical-green/10 text-medical-green"
+                        source={oxygen.source}
+                        lastSync={oxygen.lastSync}
+                        isConnected={!!oxygen.source}
+                      />
                     </div>
                     
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <FileText className="h-4 w-4 text-primary" />
+                    {/* Treatment Plan */}
+                    <TreatmentPlan
+                      title="Today's Treatment Plan"
+                      date="Jun 15, 2023"
+                      tasks={treatmentTasks}
+                      progress={50}
+                    />
+                    
+                    {/* PostureAnalysis Component */}
+                    <PostureAnalysis />
+                    
+                    {/* Symptom Progress Chart with better integration */}
+                    <div className="glass-morphism rounded-2xl p-6">
+                      <SymptomProgressChart />
+                    </div>
+                  </div>
+                  
+                  {/* Right column - symptom tracker, documents, messages */}
+                  <div className="lg:col-span-4 space-y-6">
+                    {/* Symptom Tracker - Now connected via SymptomContext */}
+                    <SymptomTracker />
+                    
+                    {/* Anatomical Map - Now connected via SymptomContext */}
+                    <AnatomicalMap />
+                    
+                    {/* Medical Documents */}
+                    <div className="glass-morphism rounded-2xl p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">Medical Documents</h3>
+                        <Button variant="ghost" size="sm" className="text-primary">
+                          View All
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                          <div className="flex items-center">
+                            <div className="bg-primary/10 p-2 rounded-full mr-3">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium">MRI Results</h4>
+                              <p className="text-xs text-muted-foreground">May 28, 2023</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 3v13"></path>
+                              <path d="m17 11-5 5-5-5"></path>
+                              <path d="M5 21h14"></path>
+                            </svg>
+                          </Button>
                         </div>
-                        <div>
-                          <h4 className="text-sm font-medium">Treatment Plan PDF</h4>
-                          <p className="text-xs text-muted-foreground">Jun 15, 2023</p>
+                        
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                          <div className="flex items-center">
+                            <div className="bg-primary/10 p-2 rounded-full mr-3">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium">Blood Test Results</h4>
+                              <p className="text-xs text-muted-foreground">Jun 10, 2023</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 3v13"></path>
+                              <path d="m17 11-5 5-5-5"></path>
+                              <path d="M5 21h14"></path>
+                            </svg>
+                          </Button>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                          <div className="flex items-center">
+                            <div className="bg-primary/10 p-2 rounded-full mr-3">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium">Treatment Plan PDF</h4>
+                              <p className="text-xs text-muted-foreground">Jun 15, 2023</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 3v13"></path>
+                              <path d="m17 11-5 5-5-5"></path>
+                              <path d="M5 21h14"></path>
+                            </svg>
+                          </Button>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 3v13"></path>
-                          <path d="m17 11-5 5-5-5"></path>
-                          <path d="M5 21h14"></path>
-                        </svg>
-                      </Button>
+                    </div>
+                    
+                    {/* Message Your Doctor */}
+                    <div className="glass-morphism rounded-2xl p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">Message Your Doctor</h3>
+                        <Button variant="ghost" size="sm" className="text-primary">
+                          View History
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        <textarea 
+                          className="w-full p-3 h-24 rounded-lg border resize-none bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary" 
+                          placeholder="Type your message here..."
+                        ></textarea>
+                        <Button className="w-full flex items-center justify-center gap-2">
+                          <MessageCircle className="h-4 w-4" />
+                          <span>Send Message</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                
-                {/* Message Your Doctor */}
-                <div className="glass-morphism rounded-2xl p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Message Your Doctor</h3>
-                    <Button variant="ghost" size="sm" className="text-primary">
-                      View History
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    <textarea 
-                      className="w-full p-3 h-24 rounded-lg border resize-none bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary" 
-                      placeholder="Type your message here..."
-                    ></textarea>
-                    <Button className="w-full flex items-center justify-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>Send Message</span>
-                    </Button>
+              </TabsContent>
+              
+              <TabsContent value="appointments">
+                <div className="max-w-7xl mx-auto">
+                  <h2 className="text-2xl font-semibold mb-6">Your Appointments</h2>
+                  <AppointmentsDashboard 
+                    unreadMessages={3}
+                    nextAppointment={{
+                      date: 'June 20, 2023',
+                      time: '10:30 AM',
+                      doctor: 'Dr. Nikolas Pascal',
+                      type: 'Follow-up Consultation'
+                    }}
+                  />
+                  
+                  <h3 className="text-xl font-semibold mt-10 mb-4">Scheduled Appointments</h3>
+                  <div className="glass-morphism rounded-2xl p-6">
+                    <div className="space-y-4">
+                      {upcomingAppointments.map(appointment => (
+                        <div key={appointment.id} className="p-4 border rounded-lg bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className="bg-primary/10 p-3 rounded-full">
+                              <Calendar className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-base">{appointment.type}</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {appointment.date} at {appointment.time}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {appointment.doctor}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 self-end md:self-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleConfirmAppointment(appointment.id)}
+                            >
+                              Confirm
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleRescheduleAppointment(appointment.id)}
+                            >
+                              Reschedule
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </TabsContent>
+              
+              <TabsContent value="progress">
+                <div className="max-w-7xl mx-auto">
+                  <h2 className="text-2xl font-semibold mb-6">Your Progress</h2>
+                  <div className="glass-morphism rounded-2xl p-6">
+                    <SymptomProgressChart />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="records">
+                <div className="max-w-7xl mx-auto">
+                  <h2 className="text-2xl font-semibold mb-6">Medical Records</h2>
+                  <div className="glass-morphism rounded-2xl p-6">
+                    <PatientReports />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </SymptomProvider>
         </main>
       </div>
