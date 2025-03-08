@@ -8,7 +8,8 @@ import {
   HelpCircle,
   TestTube,
   Smartphone,
-  Dumbbell
+  Dumbbell,
+  Calendar
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -57,6 +58,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'My Reports', 
     path: '/patient-reports',
     description: 'View your medical reports and documents'
+  },
+  { 
+    icon: Calendar, 
+    label: 'Appointments', 
+    path: '/appointments',
+    description: 'View and manage your appointments'
   },
   { 
     icon: Smartphone, 
