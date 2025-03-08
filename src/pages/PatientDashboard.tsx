@@ -26,7 +26,7 @@ const PatientDashboard: React.FC = () => {
 
   // Get current tab from URL or default to dashboard
   const getInitialTab = () => {
-    if (location.hash === '#appointments') return 'appointments';
+    // We no longer use the hash for tab navigation
     return 'dashboard';
   };
 
