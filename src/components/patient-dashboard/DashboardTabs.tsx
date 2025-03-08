@@ -33,7 +33,6 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
   return (
     <Tabs defaultValue={initialTab} className="w-full">
       <TabsList className="mb-6">
-        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="appointments">Appointments</TabsTrigger>
         <TabsTrigger value="progress">Progress</TabsTrigger>
         <TabsTrigger value="records">Medical Records</TabsTrigger>
