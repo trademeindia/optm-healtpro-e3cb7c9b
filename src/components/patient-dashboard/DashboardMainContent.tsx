@@ -74,6 +74,9 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         <UpcomingAppointmentsCard 
           upcomingAppointments={upcomingAppointments}
         />
+        
+        {/* Message Your Doctor - Moved to left column */}
+        <MessageYourDoctor />
       </div>
       
       {/* Middle column - health metrics and treatment */}
@@ -166,9 +169,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         
         {/* Medical Documents */}
         <MedicalDocuments />
-        
-        {/* Message Your Doctor */}
-        <MessageYourDoctor />
       </div>
     </div>
   );
