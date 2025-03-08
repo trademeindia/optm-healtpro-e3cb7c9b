@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
