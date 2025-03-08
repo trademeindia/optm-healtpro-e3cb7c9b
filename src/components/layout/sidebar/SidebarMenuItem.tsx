@@ -18,14 +18,8 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
   // Check if this menu item is active - refactored for cleaner code
   const isActive = (() => {
     const path = location.pathname;
-    const hash = location.hash;
     
-    // Special case for appointments - check both path and hash
-    if (item.path === '/appointments' && path === '/appointments') {
-      return true;
-    }
-    
-    // Direct path match
+    // Direct path match for most items
     if (path === item.path) return true;
     
     // Special cases for nested routes
@@ -34,21 +28,12 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
         return path.startsWith('/patient/');
       case '/health-apps':
         return path === '/health-apps' || (path.startsWith('/health-apps/') && path !== '/health-apps/');
-      case '/dashboard':
-      case '/patient-dashboard':
-      case '/biomarkers':
-      case '/exercises':
-      case '/patient-reports':
-      case '/settings':
-      case '/help':
-        return path === item.path;
       default:
         return false;
     }
   })();
 
   const handleClick = () => {
-    // Always navigate directly to the actual path, no more special cases for patient-dashboard#appointments
     onNavigate(item.path);
   };
 
