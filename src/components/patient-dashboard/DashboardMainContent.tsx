@@ -15,6 +15,7 @@ import MedicalDocuments from './MedicalDocuments';
 import MessageYourDoctor from './MessageYourDoctor';
 import HealthSyncButton from './HealthSyncButton';
 import { Heart, Activity, Thermometer, Droplet } from 'lucide-react';
+import { useAppointments } from '@/hooks/patient-dashboard/useAppointments';
 
 interface DashboardMainContentProps {
   healthMetrics: {
@@ -54,6 +55,9 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   hasConnectedApps,
   onSyncData
 }) => {
+  // Get appointment handlers from the hook
+  const { handleConfirmAppointment, handleRescheduleAppointment } = useAppointments();
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left column */}
@@ -70,9 +74,11 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           lastSync={activityData.lastSync}
         />
         
-        {/* Upcoming Appointments */}
+        {/* Upcoming Appointments - now with required handlers */}
         <UpcomingAppointmentsCard 
           upcomingAppointments={upcomingAppointments}
+          onConfirmAppointment={handleConfirmAppointment}
+          onRescheduleAppointment={handleRescheduleAppointment}
         />
       </div>
       
