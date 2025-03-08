@@ -13,7 +13,7 @@ export const getHeartRate = (fitnessData: FitnessData) => {
       change: fitnessData.heartRate.change || 0,
       source: fitnessData.heartRate.source,
       lastUpdated: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString(),
-      icon: <Heart className="h-4 w-4" />
+      icon: Heart
     };
   }
   return { 
@@ -22,7 +22,7 @@ export const getHeartRate = (fitnessData: FitnessData) => {
     unit: 'bpm', 
     status: 'normal' as const, 
     change: -3,
-    icon: <Heart className="h-4 w-4" />
+    icon: Heart
   };
 };
 
@@ -36,7 +36,7 @@ export const getBloodPressure = (fitnessData: FitnessData) => {
       change: 0,
       source: fitnessData.bloodPressure.source,
       lastUpdated: new Date(fitnessData.bloodPressure.timestamp).toLocaleTimeString(),
-      icon: <Activity className="h-4 w-4" />
+      icon: Activity
     };
   }
   return { 
@@ -45,7 +45,7 @@ export const getBloodPressure = (fitnessData: FitnessData) => {
     unit: 'mmHg', 
     status: 'normal' as const, 
     change: 0,
-    icon: <Activity className="h-4 w-4" />
+    icon: Activity
   };
 };
 
@@ -59,7 +59,7 @@ export const getTemperature = (fitnessData: FitnessData) => {
       change: fitnessData.temperature.change || 0.2,
       source: fitnessData.temperature.source,
       lastUpdated: new Date(fitnessData.temperature.timestamp).toLocaleTimeString(),
-      icon: <Thermometer className="h-4 w-4" />
+      icon: Thermometer
     };
   }
   return { 
@@ -68,7 +68,7 @@ export const getTemperature = (fitnessData: FitnessData) => {
     unit: '°F', 
     status: 'normal' as const, 
     change: 0.2,
-    icon: <Thermometer className="h-4 w-4" />
+    icon: Thermometer
   };
 };
 
@@ -82,7 +82,7 @@ export const getOxygen = (fitnessData: FitnessData) => {
       change: fitnessData.oxygenSaturation.change || 1,
       source: fitnessData.oxygenSaturation.source,
       lastUpdated: new Date(fitnessData.oxygenSaturation.timestamp).toLocaleTimeString(),
-      icon: <Wind className="h-4 w-4" />
+      icon: Wind
     };
   }
   return { 
@@ -91,6 +91,6 @@ export const getOxygen = (fitnessData: FitnessData) => {
     unit: '%', 
     status: 'normal' as const, 
     change: 1,
-    icon: <Wind className="h-4 w-4" />
+    icon: Wind
   };
 };

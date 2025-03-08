@@ -9,8 +9,11 @@ interface GridProps {
 }
 
 const Grid: React.FC<GridProps> = ({ children, columns, className }) => {
+  // Dynamic class generation based on column count
+  const gridColumnsClass = `grid-cols-${columns}`;
+  
   return (
-    <div className={cn(`grid grid-cols-${columns}`, className)}>
+    <div className={cn(`grid ${gridColumnsClass}`, className)}>
       {children}
     </div>
   );
