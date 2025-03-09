@@ -1,14 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import { mockBiomarkers } from '@/data/mockBiomarkerData';
+import { mockBiomarkers, Biomarker } from '@/data/mockBiomarkerData';
 import BiomarkerDisplay from '@/components/dashboard/BiomarkerDisplay';
 import BiomarkerUpload from '@/components/biomarkers/BiomarkerUpload';
 import BiomarkerHowItWorks from '@/components/biomarkers/BiomarkerHowItWorks';
 
 const BiomarkersPage: React.FC = () => {
+  const [userBiomarkers, setUserBiomarkers] = useState<Biomarker[]>(mockBiomarkers);
+
+  const handleProcessComplete = (newBiomarker: Biomarker) => {
+    setUserBiomarkers(prev => [...prev, newBiomarker]);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -29,12 +35,8 @@ const BiomarkersPage: React.FC = () => {
             
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Removed the BiologicalAge component from here */}
-                
                 {/* Display the first three biomarkers in the overview tab */}
-                {mockBiomarkers.slice(0, 3).map(biomarker => (
-                  <BiomarkerDisplay key={biomarker.id} biomarker={biomarker} />
-                ))}
+                <BiomarkerDisplay biomarkers={mockBiomarkers.slice(0, 3)} />
               </div>
               
               <BiomarkerHowItWorks />
@@ -42,14 +44,12 @@ const BiomarkersPage: React.FC = () => {
             
             <TabsContent value="bloodwork" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockBiomarkers.map(biomarker => (
-                  <BiomarkerDisplay key={biomarker.id} biomarker={biomarker} />
-                ))}
+                <BiomarkerDisplay biomarkers={userBiomarkers} />
               </div>
             </TabsContent>
             
             <TabsContent value="upload">
-              <BiomarkerUpload />
+              <BiomarkerUpload onProcessComplete={handleProcessComplete} />
             </TabsContent>
             
             <TabsContent value="history">

@@ -4,21 +4,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { InfoIcon, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
+import { Biomarker } from '@/data/mockBiomarkerData';
 
-interface Biomarker {
-  id: string;
-  name: string;
-  value: number;
-  unit: string;
-  normalRange: string;
-  status: 'normal' | 'elevated' | 'low' | 'critical';
-  timestamp: string;
-  percentage?: number;
-  trend?: 'up' | 'down' | 'stable';
-  description?: string;
-}
-
-interface BiomarkerDisplayProps {
+export interface BiomarkerDisplayProps {
   biomarkers: Biomarker[];
 }
 
