@@ -11,6 +11,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
 import BiomarkersPage from "./pages/BiomarkersPage";
+import AIAnalysisPage from "./pages/AIAnalysisPage";
 import HealthAppsPage from "./pages/HealthAppsPage";
 import ExercisePage from "./pages/exercises";
 import AppointmentsPage from "./pages/AppointmentsPage";
@@ -95,6 +96,11 @@ const AppRoutes = () => {
       <Route path="/biomarkers" element={
         <ProtectedRoute allowedRoles={['patient']}>
           <BiomarkersPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/ai-analysis" element={
+        <ProtectedRoute allowedRoles={['patient']}>
+          <AIAnalysisPage />
         </ProtectedRoute>
       } />
       <Route path="/patient-reports" element={

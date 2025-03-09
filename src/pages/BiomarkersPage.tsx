@@ -6,11 +6,10 @@ import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
-import { ReportAnalysis } from '@/components/biomarkers/types';
-import { mockBiomarkers, Biomarker } from '@/data/mockBiomarkerData';
+import { Biomarker } from '@/data/mockBiomarkerData';
+import { mockBiomarkers } from '@/data/mockBiomarkerData';
 import ViewBiomarkersTab from '@/components/biomarkers/tabs/ViewBiomarkersTab';
 import UploadResultsTab from '@/components/biomarkers/tabs/UploadResultsTab';
-import AIAnalysisTab from '@/components/biomarkers/tabs/AIAnalysisTab';
 import { Button } from '@/components/ui/button';
 import { Download, Upload, RefreshCw } from 'lucide-react';
 
@@ -55,17 +54,6 @@ const BiomarkersPage: React.FC = () => {
     toast({
       title: "New Biomarker Added",
       description: `${newBiomarker.name} has been added to your profile`,
-    });
-  };
-
-  const handleReportAnalysisComplete = (analysis: ReportAnalysis) => {
-    // In a real application, you might want to store this analysis result
-    // or update the UI based on it
-    console.log("Report analysis completed:", analysis);
-    
-    toast({
-      title: "Analysis Saved",
-      description: "Your medical report analysis has been saved to your profile",
     });
   };
   
@@ -161,7 +149,6 @@ const BiomarkersPage: React.FC = () => {
             <TabsList className="mb-6">
               <TabsTrigger value="view">View Biomarkers</TabsTrigger>
               <TabsTrigger value="upload">Upload Test Results</TabsTrigger>
-              <TabsTrigger value="ai-analysis">AI Report Analysis</TabsTrigger>
             </TabsList>
             
             <TabsContent value="view">
@@ -170,10 +157,6 @@ const BiomarkersPage: React.FC = () => {
             
             <TabsContent value="upload">
               <UploadResultsTab onProcessComplete={handleProcessComplete} />
-            </TabsContent>
-            
-            <TabsContent value="ai-analysis">
-              <AIAnalysisTab onAnalysisComplete={handleReportAnalysisComplete} />
             </TabsContent>
           </Tabs>
         </main>
