@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Upload, Zap, FileText, Info } from 'lucide-react';
+import { Upload, Zap, FileText, Info, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   const [processingProgress, setProcessingProgress] = useState(0);
   const [analysis, setAnalysis] = useState<ReportAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState('upload');
+  const [textInput, setTextInput] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -40,7 +41,11 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
     }
   };
 
-  const simulateProcessing = () => {
+  const handleTextInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTextInput(e.target.value);
+  };
+
+  const simulateProcessing = (isFileUpload: boolean) => {
     setIsProcessing(true);
     setProcessingProgress(0);
     
@@ -54,7 +59,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
           const mockAnalysis: ReportAnalysis = {
             id: `report-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            reportType: 'Blood Test',
+            reportType: isFileUpload ? 'Blood Test' : 'Manual Input Analysis',
             summary: 'Overall, your blood test results are within normal ranges with a few minor exceptions that require monitoring.',
             keyFindings: [
               'Cholesterol levels are slightly elevated but not at concerning levels',
@@ -98,11 +103,23 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
 
   const handleProcessFile = () => {
     if (file) {
-      simulateProcessing();
+      simulateProcessing(true);
     } else {
       toast({
         title: "No File Selected",
         description: "Please upload a medical report to analyze",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleProcessText = () => {
+    if (textInput.trim()) {
+      simulateProcessing(false);
+    } else {
+      toast({
+        title: "No Text Input",
+        description: "Please enter medical report text to analyze",
         variant: "destructive",
       });
     }
@@ -125,17 +142,18 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+          <Brain className="h-5 w-5 text-primary" />
           AI Medical Report Analysis
         </CardTitle>
         <CardDescription>
-          Upload your medical report for AI-powered analysis and explanation
+          Upload your medical report or paste its content for AI-powered analysis and explanation
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="upload">Upload Report</TabsTrigger>
+            <TabsTrigger value="text-input">Text Input</TabsTrigger>
             <TabsTrigger value="analysis" disabled={!analysis}>Analysis Results</TabsTrigger>
           </TabsList>
           
@@ -191,6 +209,39 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
                 >
                   <Zap className="mr-2 h-4 w-4" />
                   Analyze Report
+                </Button>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="text-input">
+            <div className="space-y-4">
+              <Textarea 
+                placeholder="Paste your medical report text here (e.g., 'Cholesterol: 210 mg/dL, HDL: 65 mg/dL, LDL: 130 mg/dL...')"
+                className="min-h-[200px]"
+                value={textInput}
+                onChange={handleTextInputChange}
+              />
+              
+              {isProcessing ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Analyzing your report...</span>
+                    <span>{Math.round(processingProgress)}%</span>
+                  </div>
+                  <Progress value={processingProgress} />
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Our AI is examining your medical data and preparing an easy-to-understand explanation
+                  </div>
+                </div>
+              ) : (
+                <Button 
+                  className="w-full" 
+                  onClick={handleProcessText}
+                  disabled={!textInput.trim()}
+                >
+                  <Zap className="mr-2 h-4 w-4" />
+                  Analyze Text
                 </Button>
               )}
             </div>
