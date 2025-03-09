@@ -1,4 +1,3 @@
-
 /**
  * Shared data types for medical data synchronization
  */
@@ -81,4 +80,19 @@ export interface Patient {
   anatomicalMappings: AnatomicalMapping[];
   reports: MedicalReport[];
   analyses: MedicalAnalysis[];
+}
+
+export interface FitnessData {
+  steps?: {
+    value: string;
+    source?: string;
+    timestamp: number;
+  };
+}
+
+export interface FitnessProvider {
+  id: string;
+  name: string;
+  isConnected: boolean;
+  lastSync?: string;
 }

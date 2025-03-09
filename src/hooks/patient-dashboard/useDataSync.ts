@@ -26,7 +26,11 @@ export const useDataSync = (
 
     // Sync data from all connected providers
     for (const provider of connectedProviders) {
-      await refreshProviderData(provider.id);
+      try {
+        await refreshProviderData(provider.id);
+      } catch (error) {
+        console.error(`Error syncing data from provider ${provider.id}:`, error);
+      }
     }
 
     toast({

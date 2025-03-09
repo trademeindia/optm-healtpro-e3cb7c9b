@@ -1,7 +1,5 @@
-
 import { Appointment, GoogleCalendarService } from './googleCalendarService';
 import { storeInLocalStorage, getFromLocalStorage } from '../storage/localStorageService';
-import { useToast } from '@/hooks/use-toast';
 
 /**
  * Service to handle appointment operations
