@@ -14,21 +14,57 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingFile, setProcessingFile] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    
     if (e.target.files && e.target.files[0]) {
-      setUploadedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      
+      // Validate file type (only accept PDFs and images for medical reports)
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/tiff'];
+      if (!validTypes.includes(file.type)) {
+        setFileError('Please upload a PDF or image file (JPEG, PNG, TIFF)');
+        setUploadedFile(null);
+        
+        // Reset the file input
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        
+        return;
+      }
+      
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        setFileError('File size exceeds 10MB limit');
+        setUploadedFile(null);
+        
+        // Reset the file input
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        
+        return;
+      }
+      
+      setUploadedFile(file);
       
       // Give immediate feedback that the file was selected
       toast({
         title: "File selected",
-        description: `${e.target.files[0].name} is ready for processing`,
+        description: `${file.name} is ready for processing`,
       });
     }
   };
 
   const removeFile = () => {
     setUploadedFile(null);
+    setFileError(null);
     const fileInput = document.getElementById('file-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -46,6 +82,7 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
     }
 
     setIsUploading(true);
+    setFileError(null);
     
     // Simulate upload progress - more realistic speeds
     let progress = 0;
@@ -75,25 +112,36 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
     const processingTime = Math.random() * 2000 + 1000;
     
     setTimeout(() => {
-      setProcessingFile(false);
-      
-      // Generate a new biomarker with data that looks like it was extracted from the file
-      const newBiomarker = generateBiomarker();
-      
-      // Call the callback to add the biomarker to the state in the parent component
-      onProcessComplete(newBiomarker);
-      
-      // Reset the form
-      setUploadedFile(null);
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
+      try {
+        setProcessingFile(false);
+        
+        // Generate a new biomarker with data that looks like it was extracted from the file
+        // Pass the filename to help generate relevant biomarker type
+        const newBiomarker = generateBiomarker(uploadedFile?.name);
+        
+        // Call the callback to add the biomarker to the state in the parent component
+        onProcessComplete(newBiomarker);
+        
+        // Reset the form
+        setUploadedFile(null);
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        
+        toast({
+          title: "Analysis complete",
+          description: `New ${newBiomarker.name} data has been extracted and added to your profile`,
+        });
+      } catch (error) {
+        console.error('Error processing biomarker data:', error);
+        setFileError('Failed to process biomarker data. Please try again.');
+        toast({
+          title: "Processing failed",
+          description: "There was an error analyzing your medical report. Please try again.",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "Analysis complete",
-        description: `New ${newBiomarker.name} data has been extracted and added to your profile`,
-      });
     }, processingTime);
   };
 
@@ -102,6 +150,7 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
     uploadProgress,
     processingFile,
     uploadedFile,
+    fileError,
     handleFileChange,
     removeFile,
     uploadFile

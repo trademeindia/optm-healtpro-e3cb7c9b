@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { InfoIcon, TrendingDown, TrendingUp, Minus, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
+import { InfoIcon, TrendingDown, TrendingUp, Minus, ChevronRight, Calendar, AlertCircle, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 
 interface Biomarker {
   id: string;
@@ -18,6 +19,8 @@ interface Biomarker {
   percentage?: number;
   trend?: 'up' | 'down' | 'stable';
   description?: string;
+  possibleCauses?: string[];
+  recommendations?: string[];
 }
 
 interface BiomarkerDisplayProps {
@@ -89,11 +92,48 @@ const BiomarkerDisplay: React.FC<BiomarkerDisplayProps> = ({ biomarkers }) => {
       return <Minus className="w-4 h-4 mr-1 text-muted-foreground" />;
     }
     
+    // For normal status, up is good for some biomarkers (like HDL), but for others any deviation is not ideal
+    // For others, context matters (e.g., "up" for LDL is bad)
     if (trend === 'up') {
-      return <TrendingUp className={`w-4 h-4 mr-1 ${status === 'normal' ? 'text-green-500' : 'text-red-500'}`} />;
+      if (status === 'low') {
+        return <TrendingUp className="w-4 h-4 mr-1 text-green-500" />; // going up from low is good
+      } else if (status === 'elevated' || status === 'critical') {
+        return <TrendingUp className="w-4 h-4 mr-1 text-red-500" />; // going up from elevated is bad
+      }
+      return <TrendingUp className="w-4 h-4 mr-1 text-yellow-500" />; // neutral context
     }
     
-    return <TrendingDown className={`w-4 h-4 mr-1 ${status === 'normal' ? 'text-green-500' : 'text-blue-500'}`} />;
+    // Down trend
+    if (status === 'elevated' || status === 'critical') {
+      return <TrendingDown className="w-4 h-4 mr-1 text-green-500" />; // going down from elevated is good
+    } else if (status === 'low') {
+      return <TrendingDown className="w-4 h-4 mr-1 text-red-500" />; // going down from low is bad
+    }
+    return <TrendingDown className="w-4 h-4 mr-1 text-yellow-500" />; // neutral context
+  };
+
+  const getTrendDescription = (trend?: 'up' | 'down' | 'stable', status?: 'normal' | 'elevated' | 'low' | 'critical') => {
+    if (!trend || trend === 'stable') {
+      return 'Your levels have been stable since your last measurement.';
+    }
+    
+    if (trend === 'up') {
+      if (status === 'low') {
+        return 'Your levels are improving, moving toward the normal range.';
+      } else if (status === 'elevated' || status === 'critical') {
+        return 'Your levels are increasing, moving further from the normal range.';
+      } else {
+        return 'Your levels are rising, but still within normal range.';
+      }
+    } else { // down
+      if (status === 'elevated' || status === 'critical') {
+        return 'Your levels are improving, moving toward the normal range.';
+      } else if (status === 'low') {
+        return 'Your levels are decreasing, moving further from the normal range.';
+      } else {
+        return 'Your levels are declining, but still within normal range.';
+      }
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -257,29 +297,62 @@ const BiomarkerDisplay: React.FC<BiomarkerDisplayProps> = ({ biomarkers }) => {
                       <p className="text-sm">{selectedBiomarker.description}</p>
                     </div>
                   )}
+                  <div className="mt-2">
+                    <h4 className="font-medium mb-1">Trend analysis</h4>
+                    <p className="text-sm">{getTrendDescription(selectedBiomarker.trend, selectedBiomarker.status)}</p>
+                  </div>
                 </div>
+
+                {selectedBiomarker.possibleCauses && selectedBiomarker.possibleCauses.length > 0 && (
+                  <div className="bg-muted/70 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <Activity className="w-4 h-4 mr-2" />
+                      Possible Causes
+                    </h4>
+                    <ul className="list-disc ml-4 space-y-1 text-sm">
+                      {selectedBiomarker.possibleCauses.map((cause, index) => (
+                        <li key={index}>{cause}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Recommendations</h4>
                   <div className="text-sm">
-                    {selectedBiomarker.status === 'normal' ? (
-                      <p>Your levels are in the normal range. Continue with current lifestyle and diet.</p>
-                    ) : selectedBiomarker.status === 'elevated' ? (
+                    {selectedBiomarker.recommendations && selectedBiomarker.recommendations.length > 0 ? (
                       <ul className="list-disc ml-4 space-y-1">
-                        <li>Consider discussing with your healthcare provider</li>
-                        <li>Review your diet and lifestyle factors</li>
-                        <li>Schedule a follow-up test in 3-6 months</li>
-                      </ul>
-                    ) : selectedBiomarker.status === 'low' ? (
-                      <ul className="list-disc ml-4 space-y-1">
-                        <li>Consult with your healthcare provider</li>
-                        <li>You may need dietary supplements</li>
-                        <li>Consider follow-up testing within 2-3 months</li>
+                        {selectedBiomarker.recommendations.map((rec, index) => (
+                          <li key={index}>{rec}</li>
+                        ))}
                       </ul>
                     ) : (
-                      <p className="text-red-500 font-medium">Contact your healthcare provider immediately for guidance.</p>
+                      selectedBiomarker.status === 'normal' ? (
+                        <p>Your levels are in the normal range. Continue with current lifestyle and diet.</p>
+                      ) : selectedBiomarker.status === 'elevated' ? (
+                        <ul className="list-disc ml-4 space-y-1">
+                          <li>Consider discussing with your healthcare provider</li>
+                          <li>Review your diet and lifestyle factors</li>
+                          <li>Schedule a follow-up test in 3-6 months</li>
+                        </ul>
+                      ) : selectedBiomarker.status === 'low' ? (
+                        <ul className="list-disc ml-4 space-y-1">
+                          <li>Consult with your healthcare provider</li>
+                          <li>You may need dietary supplements</li>
+                          <li>Consider follow-up testing within 2-3 months</li>
+                        </ul>
+                      ) : (
+                        <p className="text-red-500 font-medium">Contact your healthcare provider immediately for guidance.</p>
+                      )
                     )}
                   </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="text-xs text-muted-foreground">
+                  <p className="font-medium mb-1">Important Note:</p>
+                  <p>This information is for educational purposes only and should not replace professional medical advice. Always consult with your healthcare provider about your test results and before making any changes to your health routine.</p>
                 </div>
               </div>
             </>
