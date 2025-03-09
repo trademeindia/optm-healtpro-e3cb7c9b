@@ -16,14 +16,19 @@
 /* Additional responsive utilities for anatomy model */
 @media (max-width: 640px) {
   .anatomy-model-container {
-    height: 350px !important;
+    height: 400px !important;
+    width: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .anatomy-model-container img {
-    max-height: 320px;
-    max-width: 95%;
+    max-height: 380px;
+    max-width: 90%;
     object-fit: contain;
     object-position: center;
+    margin: 0 auto;
   }
   
   .text-xs-mobile {
@@ -41,27 +46,37 @@
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .anatomy-model-container {
-    height: 500px !important;
+    height: 550px !important;
+    width: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .anatomy-model-container img {
-    max-height: 450px;
-    max-width: 95%;
+    max-height: 500px;
+    max-width: 90%;
     object-fit: contain;
     object-position: center;
+    margin: 0 auto;
   }
 }
 
 @media (min-width: 1025px) {
   .anatomy-model-container {
-    height: 650px !important;
+    height: 700px !important;
+    width: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .anatomy-model-container img {
-    max-height: 600px;
-    max-width: 95%;
+    max-height: 650px;
+    max-width: 90%;
     object-fit: contain;
     object-position: center;
+    margin: 0 auto;
   }
 }
 

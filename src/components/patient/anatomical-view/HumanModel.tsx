@@ -34,7 +34,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
   const getSystemImage = () => {
     switch(activeSystem) {
       case 'muscular':
-        return "/lovable-uploads/65ad9288-f18e-468c-bfe6-f52ba43bc0b9.png";
+        return "/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png";
       case 'skeletal':
         return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
       default:
@@ -50,7 +50,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
         rotation={[0, 0, 0]}
         center
         sprite
-        scale={[1.8, 1.8, 1.8]} // Adjusted scale to prevent over-zooming
+        scale={[1.5, 1.5, 1.5]} // Further reduced scale to ensure full visibility
         distanceFactor={10}
       >
         <div className="flex items-center justify-center anatomy-model-container" style={{ width: '100%', height: '100%' }}>
