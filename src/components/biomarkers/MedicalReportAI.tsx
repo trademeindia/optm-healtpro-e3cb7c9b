@@ -72,8 +72,8 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   };
 
   return (
-    <Card className="w-full shadow-lg border border-primary/20 transition-all duration-300 hover:shadow-xl overflow-hidden">
-      <CardHeader className="bg-primary/5 pb-4 space-y-2">
+    <Card className="w-full shadow-lg border-0 rounded-lg transition-all duration-300 hover:shadow-xl overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 pb-4 space-y-2">
         <CardTitle className="flex items-center gap-2 text-xl md:text-2xl font-bold">
           <Brain className="h-6 w-6 text-primary" />
           AI Medical Report Analysis
@@ -84,23 +84,23 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
       </CardHeader>
       <CardContent className="p-4 md:p-6 pt-5">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-5 w-full grid grid-cols-3 bg-muted/30 rounded-lg p-1">
+          <TabsList className="mb-5 w-full grid grid-cols-3 bg-muted/30 rounded-xl p-1">
             <TabsTrigger 
               value="upload" 
-              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               Upload Report
             </TabsTrigger>
             <TabsTrigger 
               value="text-input"
-              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               Text Input
             </TabsTrigger>
             <TabsTrigger 
               value="analysis" 
               disabled={!analysis}
-              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               Results
             </TabsTrigger>
@@ -133,7 +133,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
           </div>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex flex-col items-start text-xs bg-muted/10 px-4 md:px-6 py-3 border-t border-border/30">
+      <CardFooter className="flex flex-col items-start text-xs bg-gray-50 dark:bg-gray-900/10 px-4 md:px-6 py-3 border-t border-border/30">
         <p className="text-muted-foreground">Note: This AI analysis is not a substitute for professional medical advice. Always consult with your healthcare provider about your test results.</p>
       </CardFooter>
     </Card>
