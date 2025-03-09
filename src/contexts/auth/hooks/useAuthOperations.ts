@@ -88,7 +88,8 @@ export const useAuthOperations = () => {
         return;
       }
       
-      // Set up the redirect URL carefully
+      // Set up the redirect URL carefully - Use current origin for local development
+      // and production environments will correctly set their own URLs
       const redirectTo = `${window.location.origin}/oauth-callback`;
       console.log(`OAuth redirect URL: ${redirectTo}`);
       
@@ -97,7 +98,11 @@ export const useAuthOperations = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo
+          redirectTo,
+          // Include the provider in the URL to help with debugging
+          queryParams: {
+            provider: provider
+          }
         }
       });
 
@@ -105,12 +110,12 @@ export const useAuthOperations = () => {
         // Enhanced error diagnostics
         if (error.message.includes('provider is not enabled')) {
           toast.error(`${provider} login is not available. Please contact support.`);
-          console.error(`Error: ${provider} provider is not enabled in Supabase Authentication > Providers. Project ID: ${process.env.SUPABASE_PROJECT_ID || 'ukwslzgyaqsnhgpfhpvl'}`);
+          console.error(`Error: ${provider} provider is not enabled in Supabase Authentication > Providers.`);
         } else if (error.message.includes('missing OAuth secret')) {
           toast.error(`${provider} login configuration is incomplete.`);
           console.error(`Error: ${provider} provider is missing OAuth Client ID or Client Secret in Supabase Authentication > Providers.`);
         } else if (error.message.includes('requested url is invalid')) {
-          toast.error(`Authentication configuration error. Please contact support.`);
+          toast.error(`Authentication configuration error. Invalid redirect URL.`);
           console.error(`Error: Your Supabase project needs Site URL and Redirect URLs configured in Authentication > URL Configuration. Check that ${redirectTo} is added as a valid redirect URL.`);
         } else {
           toast.error(`${provider} authentication failed: ${error.message}`);
