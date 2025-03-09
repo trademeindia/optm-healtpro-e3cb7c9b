@@ -30,25 +30,25 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onAssignTests 
       label: 'FBS • Elevated', 
       value: '116', 
       unit: 'mg/dL',
-      status: 'warning',
+      status: 'warning' as const,
     },
     { 
       label: 'BP • Normal range', 
       value: '120/80', 
       unit: 'mmHg',
-      status: 'normal',
+      status: 'normal' as const,
     },
     { 
       label: 'HR • Stable', 
       value: '72', 
       unit: 'bpm',
-      status: 'normal',
+      status: 'normal' as const,
     },
     { 
       label: 'HbA1c • Good control', 
       value: '5.5', 
       unit: '%',
-      status: 'normal',
+      status: 'normal' as const,
     }
   ];
 
