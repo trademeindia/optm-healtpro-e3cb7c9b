@@ -79,6 +79,10 @@ export const useAuthOperations = () => {
 
   const loginWithSocialProvider = async (provider: Provider): Promise<void> => {
     try {
+      // First, check if the provider is supported and enabled in the current environment
+      // This is a client-side validation before making the API call
+      toast.info(`Attempting to sign in with ${provider}...`);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -86,12 +90,21 @@ export const useAuthOperations = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle the specific provider not enabled error
+        if (error.message.includes('provider is not enabled')) {
+          toast.error(`${provider} login is not enabled. Please configure it in Supabase first.`);
+          console.error(`Error: ${provider} provider is not enabled in Supabase. Enable it in Authentication > Providers.`);
+        } else {
+          toast.error(`Failed to connect with ${provider}: ${error.message}`);
+        }
+        throw error;
+      }
       
       // The redirect happens automatically by Supabase
     } catch (error: any) {
       console.error(`Error redirecting to ${provider}:`, error);
-      toast.error(`Failed to connect with ${provider}`);
+      // Error is already handled above, no need for another toast
     }
   };
 
