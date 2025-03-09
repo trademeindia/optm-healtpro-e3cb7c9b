@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import BiomarkerDisplay from '@/components/dashboard/BiomarkerDisplay';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Biomarker } from '@/data/mockBiomarkerData';
+import { Biomarker } from '@/components/dashboard/biomarker-display/types';
 import BiomarkerSort from './biomarker-view/BiomarkerSort';
 import BiomarkerHeader from './biomarker-view/BiomarkerHeader';
 import BiomarkerInfo from './biomarker-view/BiomarkerInfo';

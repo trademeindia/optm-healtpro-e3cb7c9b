@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { InfoIcon, Calendar, ChevronRight } from 'lucide-react';
@@ -6,12 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import TrendIndicator from './TrendIndicator';
-import { Biomarker, getStatusBgColor, getStatusColor, formatDate } from './biomarkerUtils';
-
-interface BiomarkerCardProps {
-  biomarker: Biomarker;
-  onSelectBiomarker: (biomarker: Biomarker) => void;
-}
+import { BiomarkerCardProps } from './types';
+import { getStatusBgColor, getStatusColor, formatDate } from './biomarkerUtils';
 
 const BiomarkerCard: React.FC<BiomarkerCardProps> = ({ biomarker, onSelectBiomarker }) => {
   return (

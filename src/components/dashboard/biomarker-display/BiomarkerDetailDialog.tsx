@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Activity, Dumbbell } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import TrendIndicator from './TrendIndicator';
+import { BiomarkerDetailDialogProps } from './types';
 import { 
-  Biomarker, 
   getStatusColor, 
   getStatusBgColor, 
   getStatusDescription, 
@@ -13,12 +12,6 @@ import {
   formatDate,
   getAffectedMuscles
 } from './biomarkerUtils';
-
-interface BiomarkerDetailDialogProps {
-  biomarker: Biomarker | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
 
 const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({ 
   biomarker, 

@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { Biomarker } from '@/data/mockBiomarkerData';
+import { Biomarker } from '@/components/dashboard/biomarker-display/types';
 
 export const useBiomarkerData = (biomarkers: Biomarker[]) => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
