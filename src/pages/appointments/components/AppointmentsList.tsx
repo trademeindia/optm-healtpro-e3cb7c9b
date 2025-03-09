@@ -1,16 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Appointment } from '@/services/calendar/googleCalendarService';
 import { useToast } from '@/hooks/use-toast';
+import RescheduleModal from './RescheduleModal';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
   isLoading: boolean;
   calendarConnected: boolean;
   onConfirmAppointment: (id: string) => void;
-  onRescheduleAppointment: (id: string) => void;
+  onRescheduleAppointment: (id: string, date: string, time: string) => Promise<void>;
 }
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
@@ -21,6 +22,18 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   onRescheduleAppointment
 }) => {
   const { toast } = useToast();
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+
+  const handleRescheduleClick = (id: string) => {
+    setSelectedAppointmentId(id);
+    setIsRescheduleModalOpen(true);
+  };
+
+  const closeRescheduleModal = () => {
+    setIsRescheduleModalOpen(false);
+    setSelectedAppointmentId(null);
+  };
 
   return (
     <>
@@ -76,7 +89,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onRescheduleAppointment(appointment.id)}
+                    onClick={() => handleRescheduleClick(appointment.id)}
                   >
                     Reschedule
                   </Button>
@@ -101,6 +114,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           Your appointments are being synced with Google Calendar
         </div>
       )}
+
+      <RescheduleModal
+        appointmentId={selectedAppointmentId}
+        isOpen={isRescheduleModalOpen}
+        onClose={closeRescheduleModal}
+        onReschedule={onRescheduleAppointment}
+      />
     </>
   );
 };

@@ -59,12 +59,37 @@ export const useAppointments = () => {
   };
 
   // Function to handle appointment rescheduling
-  const handleRescheduleAppointment = async (id: string) => {
-    toast({
-      title: "Reschedule Requested",
-      description: "Your request to reschedule has been sent.",
-    });
-    // In a real app, this would open a modal to select a new date/time
+  const handleRescheduleAppointment = async (id: string, newDate?: string, newTime?: string) => {
+    try {
+      if (newDate && newTime) {
+        // If we have a new date and time, actually reschedule the appointment
+        const success = await AppointmentService.rescheduleAppointment(id, newDate, newTime);
+        if (success) {
+          toast({
+            title: "Appointment Rescheduled",
+            description: `Your appointment has been rescheduled to ${newDate} at ${newTime}.`,
+          });
+          await loadAppointments();
+          return;
+        } else {
+          throw new Error("Failed to reschedule appointment");
+        }
+      } else {
+        // This is the old behavior, kept for backward compatibility
+        toast({
+          title: "Reschedule Requested",
+          description: "Your request to reschedule has been sent.",
+        });
+      }
+    } catch (error) {
+      console.error('Error rescheduling appointment:', error);
+      toast({
+        title: "Rescheduling Failed",
+        description: "There was a problem rescheduling your appointment.",
+        variant: "destructive"
+      });
+      throw error; // Rethrow to let the calling component know there was an error
+    }
   };
   
   // Function to connect to Google Calendar
