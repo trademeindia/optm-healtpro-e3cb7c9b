@@ -56,15 +56,21 @@ export const usePatientDashboard = () => {
       id: '1',
       date: 'June 20, 2023',
       time: '10:30 AM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Follow-up'
+      doctorName: 'Dr. Nikolas Pascal',
+      type: 'Follow-up',
+      patientId: '101',
+      patientName: 'John Doe',
+      status: 'scheduled' as const
     },
     {
       id: '2',
       date: 'July 5, 2023',
       time: '02:00 PM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Physical Therapy'
+      doctorName: 'Dr. Nikolas Pascal',
+      type: 'Physical Therapy',
+      patientId: '101',
+      patientName: 'John Doe',
+      status: 'scheduled' as const
     }
   ];
 

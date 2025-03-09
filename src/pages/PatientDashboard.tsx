@@ -45,7 +45,7 @@ const PatientDashboard: React.FC = () => {
           <SymptomProvider>
             <DashboardTabs
               initialTab={initialTab}
-              upcomingAppointments={upcomingAppointments || []}
+              appointments={upcomingAppointments || []}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
             >

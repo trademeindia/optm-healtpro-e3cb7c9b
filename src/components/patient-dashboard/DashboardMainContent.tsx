@@ -40,7 +40,7 @@ interface DashboardMainContentProps {
     id: string;
     date: string;
     time: string;
-    doctor: string;
+    doctorName: string;
     type: string;
   }[];
   biologicalAge: number;
@@ -81,7 +81,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         
         {/* Upcoming Appointments */}
         <UpcomingAppointmentsCard 
-          upcomingAppointments={upcomingAppointments}
+          appointments={upcomingAppointments}
           onConfirmAppointment={handleConfirmAppointment}
           onRescheduleAppointment={handleRescheduleAppointment}
         />

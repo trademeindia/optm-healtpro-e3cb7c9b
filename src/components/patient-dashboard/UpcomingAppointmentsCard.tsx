@@ -7,9 +7,15 @@ import { Appointment } from '@/services/calendar/googleCalendarService';
 
 interface UpcomingAppointmentsCardProps {
   appointments: Appointment[];
+  onConfirmAppointment?: (id: string) => void;
+  onRescheduleAppointment?: (id: string) => void;
 }
 
-const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({ appointments }) => {
+const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({ 
+  appointments,
+  onConfirmAppointment,
+  onRescheduleAppointment
+}) => {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -36,9 +42,37 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({ app
                     Dr. {appointment.doctorName}
                   </p>
                 </div>
-                <Button variant="outline" size="auto" className="text-xs sm:text-sm whitespace-nowrap">
-                  View Details
-                </Button>
+                <div className="flex gap-2">
+                  {onConfirmAppointment && (
+                    <Button 
+                      variant="outline" 
+                      size="auto" 
+                      className="text-xs sm:text-sm whitespace-nowrap"
+                      onClick={() => onConfirmAppointment(appointment.id)}
+                    >
+                      Confirm
+                    </Button>
+                  )}
+                  {onRescheduleAppointment && (
+                    <Button 
+                      variant="outline" 
+                      size="auto" 
+                      className="text-xs sm:text-sm whitespace-nowrap"
+                      onClick={() => onRescheduleAppointment(appointment.id)}
+                    >
+                      Reschedule
+                    </Button>
+                  )}
+                  {!onConfirmAppointment && !onRescheduleAppointment && (
+                    <Button 
+                      variant="outline" 
+                      size="auto" 
+                      className="text-xs sm:text-sm whitespace-nowrap"
+                    >
+                      View Details
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
