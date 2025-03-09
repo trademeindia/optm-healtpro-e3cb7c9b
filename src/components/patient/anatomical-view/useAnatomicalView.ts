@@ -27,7 +27,7 @@ export const useAnatomicalView = (
 ) => {
   const [activeSystem, setActiveSystem] = useState('muscular');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 3]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 2.8]);
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const { symptoms } = useSymptoms();
 
@@ -42,15 +42,15 @@ export const useAnatomicalView = (
   }));
   
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 1.5)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.3, 1.5)]);
   };
   
   const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 7)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.3, 8)]);
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 3]);
+    setCameraPosition([0, 0, 2.8]);
     setIsRotating(false);
   };
   

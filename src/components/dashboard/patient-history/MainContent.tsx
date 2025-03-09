@@ -20,7 +20,7 @@ const MainContent: React.FC<MainContentProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left panel - Anatomical view */}
       <div className="lg:col-span-7 xl:col-span-8">
-        <div className="h-[600px]">
+        <div className="h-[80vh]">
           <AnatomicalView 
             selectedRegion={selectedRegion}
             onSelectRegion={onSelectRegion}
