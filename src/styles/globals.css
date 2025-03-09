@@ -1,0 +1,61 @@
+
+/* Glass morphism styles */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+/* Medical color variables */
+:root {
+  --medical-red: #ea384c;
+  --medical-green: #22c55e;
+  --medical-blue: #3b82f6;
+  --medical-yellow: #eab308;
+  --medical-purple: #a855f7;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Add to your existing app CSS file */
+.bg-medical-red {
+  background-color: var(--medical-red);
+}
+
+.text-medical-red {
+  color: var(--medical-red);
+}
+
+.bg-medical-red\/10 {
+  background-color: rgba(234, 56, 76, 0.1);
+}
+
+.bg-medical-green {
+  background-color: var(--medical-green);
+}
+
+.text-medical-green {
+  color: var(--medical-green);
+}
+
+.bg-medical-green\/10 {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.bg-medical-blue {
+  background-color: var(--medical-blue);
+}
+
+.text-medical-blue {
+  color: var(--medical-blue);
+}
+
+.bg-medical-blue\/10 {
+  background-color: rgba(59, 130, 246, 0.1);
+}
