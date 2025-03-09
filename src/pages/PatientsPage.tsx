@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { PatientRecords } from '@/components/dashboard/PatientRecords';
-import { PatientHistory } from '@/components/dashboard/PatientHistory';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import PatientHistory from '@/components/dashboard/PatientHistory';
 
 // Sample patient data with adjusted biomarker properties to match the Biomarker interface
 const samplePatients = [

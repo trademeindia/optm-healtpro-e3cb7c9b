@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/auth";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from './pages/dashboard/DashboardPage';
 import PatientDashboard from "./pages/PatientDashboard";
 import ReportsPage from "./pages/ReportsPage";
 import PatientsPage from "./pages/PatientsPage";
