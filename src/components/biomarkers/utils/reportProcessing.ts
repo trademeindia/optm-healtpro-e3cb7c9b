@@ -27,6 +27,9 @@ export const simulateProcessing = (
   setProcessingProgress(0);
   
   const mockAnalysis: ReportAnalysis = {
+    id: "report-" + Date.now(),
+    timestamp: new Date().toISOString(),
+    reportType: isFileUpload ? "File Upload" : "Text Input",
     summary: "Your blood test results are generally within normal ranges with a few areas that may need attention. Your lipid panel shows slightly elevated LDL cholesterol, which should be monitored. All other metrics are within healthy ranges.",
     keyFindings: [
       "LDL Cholesterol is slightly elevated at 130 mg/dL (optimal is <100 mg/dL)",
@@ -60,7 +63,7 @@ export const simulateProcessing = (
     progress += Math.random() * 10;
     if (progress > 100) progress = 100;
     
-    setProcessingProgress(progress);
+    setProcessingProgress(Math.round(progress));
     
     if (progress === 100) {
       clearInterval(progressInterval);
