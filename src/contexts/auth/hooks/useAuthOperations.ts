@@ -79,8 +79,16 @@ export const useAuthOperations = () => {
 
   const loginWithSocialProvider = async (provider: Provider): Promise<void> => {
     try {
-      // First, check if the provider is supported and enabled in the current environment
-      // This is a client-side validation before making the API call
+      // First check Supabase connection
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Supabase connection error:', sessionError);
+        toast.error('Unable to connect to authentication service. Please try again later.');
+        return;
+      }
+      
+      // If connected, proceed with OAuth
       toast.info(`Attempting to sign in with ${provider}...`);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -91,13 +99,16 @@ export const useAuthOperations = () => {
       });
 
       if (error) {
-        // Handle different OAuth errors
+        // Enhanced error handling for OAuth issues
         if (error.message.includes('provider is not enabled')) {
-          toast.error(`${provider} login is not enabled. Please configure it in Supabase first.`);
+          toast.error(`${provider} login is not enabled. Please configure it in Supabase Authentication settings.`);
           console.error(`Error: ${provider} provider is not enabled in Supabase. Enable it in Authentication > Providers.`);
         } else if (error.message.includes('missing OAuth secret')) {
           toast.error(`${provider} login is not properly configured. Missing OAuth client secret.`);
           console.error(`Error: ${provider} provider is missing OAuth secrets. Add them in Supabase Authentication > Providers.`);
+        } else if (error.message.includes('requested url is invalid')) {
+          toast.error(`Invalid redirect URL. Please check your Supabase URL configuration.`);
+          console.error(`Error: Your Supabase project's Site URL and Redirect URLs need to be configured in Authentication > URL Configuration.`);
         } else {
           toast.error(`Failed to connect with ${provider}: ${error.message}`);
         }
@@ -106,7 +117,7 @@ export const useAuthOperations = () => {
       
       // The redirect happens automatically by Supabase
     } catch (error: any) {
-      console.error(`Error redirecting to ${provider}:`, error);
+      console.error(`Error with ${provider} authentication:`, error);
       // Error is already handled above, no need for another toast
     }
   };
