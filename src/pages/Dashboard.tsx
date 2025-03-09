@@ -1,14 +1,12 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Search, SplitSquareVertical, ViewVertical, RotateCcw } from 'lucide-react';
+import { Search, SplitSquareVertical, MoveVertical, RotateCcw } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-// Import our new components
 import PatientProfileCard from '@/components/dashboard/PatientProfileCard';
 import AnatomicalViewer from '@/components/dashboard/AnatomicalViewer';
 import MedicalRecordsTabs from '@/components/dashboard/MedicalRecordsTabs';
@@ -55,7 +53,6 @@ const Dashboard: React.FC = () => {
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
           <div className="mb-6 max-w-[1600px] mx-auto">
-            {/* Top Bar with Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">Patient Details</h1>
@@ -78,7 +75,7 @@ const Dashboard: React.FC = () => {
                     <SplitSquareVertical className="h-4 w-4" />
                   </ToggleGroupItem>
                   <ToggleGroupItem value="vertical" aria-label="Vertical View">
-                    <ViewVertical className="h-4 w-4" />
+                    <MoveVertical className="h-4 w-4" />
                   </ToggleGroupItem>
                 </ToggleGroup>
                 
@@ -88,7 +85,6 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             
-            {/* Main Content with Anatomical Viewer, Patient Profile, and Medical Records */}
             <div className={`grid gap-6 ${viewMode === 'split' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
               <div className={viewMode === 'split' ? 'lg:col-span-2' : ''}>
                 <AnatomicalViewer onSelectBodyPart={handleSelectBodyPart} />
