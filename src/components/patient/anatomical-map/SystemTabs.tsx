@@ -15,46 +15,46 @@ const SystemTabs: React.FC<SystemTabsProps> = ({ activeSystem, onSystemChange })
       onValueChange={onSystemChange}
       className="w-full mt-4"
     >
-      <TabsList className="grid grid-cols-7 w-full md:gap-1 tabs-container">
+      <TabsList className="flex w-full overflow-x-auto space-x-1 p-1 tabs-container">
         <TabsTrigger 
           value="full-body" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Full body
         </TabsTrigger>
         <TabsTrigger 
           value="skin" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Skin
         </TabsTrigger>
         <TabsTrigger 
           value="muscular" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Muscular
         </TabsTrigger>
         <TabsTrigger 
           value="skeletal" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Skeletal
         </TabsTrigger>
         <TabsTrigger 
           value="organs" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Organs
         </TabsTrigger>
         <TabsTrigger 
           value="vascular" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Vascular
         </TabsTrigger>
         <TabsTrigger 
           value="nervous" 
-          className="text-xs sm:text-sm py-2 px-2 h-auto min-h-9 whitespace-normal"
+          className="flex-shrink-0 text-xs sm:text-sm py-2 px-3 h-auto min-h-9 whitespace-nowrap"
         >
           Nervous
         </TabsTrigger>
