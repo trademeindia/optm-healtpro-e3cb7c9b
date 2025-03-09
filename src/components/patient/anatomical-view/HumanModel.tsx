@@ -50,14 +50,14 @@ const HumanModel: React.FC<HumanModelProps> = ({
         rotation={[0, 0, 0]}
         center
         sprite
-        scale={[1.5, 1.5, 1.5]} // Further reduced scale to ensure full visibility
+        scale={[1.35, 1.35, 1.35]} // Adjusted scale to fit better
         distanceFactor={10}
       >
         <div className="flex items-center justify-center anatomy-model-container" style={{ width: '100%', height: '100%' }}>
           <img 
             src={getSystemImage()}
             alt={`Human Anatomy ${activeSystem.charAt(0).toUpperCase() + activeSystem.slice(1)} System`}
-            className="h-auto w-auto object-contain"
+            className="h-auto w-auto object-contain model-image"
             style={{ 
               pointerEvents: 'none',
               maxHeight: '100%',

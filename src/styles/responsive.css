@@ -13,7 +13,19 @@
   }
 }
 
-/* Additional responsive utilities for anatomy model */
+/* Improved responsive utilities for anatomy model */
+.anatomy-canvas-container {
+  min-height: 550px;
+  width: 100%;
+  height: 100%;
+}
+
+.model-image {
+  object-fit: contain !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
 @media (max-width: 640px) {
   .anatomy-model-container {
     height: 400px !important;
@@ -23,9 +35,13 @@
     justify-content: center;
   }
   
+  .anatomy-canvas-container {
+    min-height: 400px;
+  }
+  
   .anatomy-model-container img {
     max-height: 380px;
-    max-width: 90%;
+    max-width: 95%;
     object-fit: contain;
     object-position: center;
     margin: 0 auto;
@@ -53,9 +69,13 @@
     justify-content: center;
   }
   
+  .anatomy-canvas-container {
+    min-height: 550px;
+  }
+  
   .anatomy-model-container img {
-    max-height: 500px;
-    max-width: 90%;
+    max-height: 520px;
+    max-width: 95%;
     object-fit: contain;
     object-position: center;
     margin: 0 auto;
@@ -71,9 +91,13 @@
     justify-content: center;
   }
   
+  .anatomy-canvas-container {
+    min-height: 700px;
+  }
+  
   .anatomy-model-container img {
     max-height: 650px;
-    max-width: 90%;
+    max-width: 98%;
     object-fit: contain;
     object-position: center;
     margin: 0 auto;
