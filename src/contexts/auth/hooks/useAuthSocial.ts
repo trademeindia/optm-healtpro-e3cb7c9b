@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,21 +33,12 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       // Enhanced configuration for OAuth
       const options = {
         redirectTo,
-        queryParams: {
-          // Add provider in query param for better tracking
-          provider
-        },
       };
       
       // Special handling for Google to ensure proper scopes
       if (provider === 'google') {
-        options.queryParams = {
-          ...options.queryParams,
-          // These scopes ensure we get enough profile information
-          access_type: 'offline',
-          prompt: 'consent',
-          scope: 'openid email profile',
-        };
+        // For Google, we need to use the scopes property properly
+        options.scopes = 'openid email profile';
       }
       
       // Log the full OAuth configuration for debugging
