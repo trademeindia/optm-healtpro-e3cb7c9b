@@ -3,7 +3,7 @@ import React from 'react';
 import PainReductionCard from '../PainReductionCard';
 import { PainReductionProps } from '../types';
 
-interface PainReductionSummaryProps {
+export interface PainReductionSummaryProps {
   painReduction: number;
 }
 

@@ -52,7 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Wrap handleOAuthCallback to include the current user
   const handleOAuthCallback = async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code, hasUser: !!user });
-    return handleOAuthCallbackBase(provider, code);
+    // The issue is here - we need to pass the user object as the third argument
+    return handleOAuthCallbackBase(provider, code, user);
   };
 
   return (

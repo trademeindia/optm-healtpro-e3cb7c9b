@@ -3,7 +3,7 @@ import React from 'react';
 import SymptomChart from '../SymptomChart';
 import { ChartData } from '../types';
 
-interface ChartSectionProps {
+export interface ChartSectionProps {
   symptoms: ChartData[];
   chartData: any[];
 }
