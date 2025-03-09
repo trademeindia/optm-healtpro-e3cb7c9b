@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session, Provider } from '@supabase/supabase-js';
 
 type UserRole = 'doctor' | 'patient';
 type AuthProvider = 'email' | 'google' | 'apple' | 'github';
@@ -190,8 +190,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithSocialProvider = async (provider: AuthProvider) => {
     try {
+      const providerKey = provider as Provider;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
+        provider: providerKey,
         options: {
           redirectTo: `${window.location.origin}/oauth-callback?provider=${provider}`
         }
