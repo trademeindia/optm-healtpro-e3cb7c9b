@@ -1,87 +1,113 @@
 
-import { MedicalAnalysis } from '@/types/medicalData';
-import { openai } from './openaiClient';
+import { MedicalAnalysis, ExtractedBiomarker } from '@/types/medicalData';
 import { normalizeStatus } from './statusUtils';
-import { ParsedResponse } from './types';
+import { getOpenAIClient } from './openaiClient';
 
+// Process and extract medical information from a report
 const extractReportAnalysis = async (reportContent: string): Promise<MedicalAnalysis> => {
   try {
-    const prompt = `Analyze the following medical report and extract key information:
-  
-  ${reportContent}
-  
-  Provide a concise summary, list the key findings, suggest recommendations, and extract specific biomarker values with their units, normal ranges, and status.
-  
-  The response should be in JSON format:
-  
-  \`\`\`json
-  {
-  "summary": "A brief summary of the report's overall findings.",
-  "keyFindings": ["Finding 1", "Finding 2", ...],
-  "recommendations": ["Recommendation 1", "Recommendation 2", ...],
-  "extractedBiomarkers": [
-  {
-  "name": "Biomarker Name",
-  "value": "Value",
-  "unit": "Unit",
-  "normalRange": "Normal Range",
-  "status": "normal | elevated | low | critical"
-  },
-  ...
-  ]
-  }
-  \`\`\`
-  `;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+    // Initialize OpenAI client
+    const openai = getOpenAIClient();
+    
+    console.log("Processing report for AI analysis...");
+    
+    // Create a prompt to analyze the medical report
+    const analysisPrompt = `
+      You are a medical AI assistant specialized in analyzing medical reports.
+      Analyze the following medical report text and extract key information.
+      Be precise and only extract factual information present in the report.
+      
+      Medical Report:
+      ${reportContent}
+      
+      Extract and organize information in the following JSON structure:
+      {
+        "summary": "A brief 2-3 sentence summary of the report",
+        "keyFindings": ["List of key medical findings", "Maximum 5 items"],
+        "recommendations": ["List of medical recommendations or next steps", "Maximum 3 items"],
+        "extractedBiomarkers": [
+          {
+            "name": "Biomarker name (e.g., 'Glucose', 'HDL Cholesterol')",
+            "value": "Numeric value or text value as appears in report",
+            "unit": "Unit of measurement (e.g., 'mg/dL')",
+            "normalRange": "Normal reference range from report if available",
+            "status": "normal, elevated, low, or critical based on reference ranges"
+          }
+        ],
+        "suggestedDiagnoses": ["Possible diagnoses mentioned in the report", "Maximum 3 items"]
+      }
+      
+      Only include information explicitly stated in the report. If a field has no relevant information, use an empty array or null.
+    `;
+    
+    // Call OpenAI API with the analysis prompt
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are an AI assistant specialized in analyzing medical reports and extracting relevant information." },
-        { role: "user", content: prompt }
+        { 
+          role: "system", 
+          content: "You are a medical analysis assistant that extracts structured data from medical reports and returns it in JSON format only." 
+        },
+        { 
+          role: "user", 
+          content: analysisPrompt 
+        }
       ],
-      response_format: { type: "json_object" },
+      temperature: 0.3, // Lower temperature for more factual responses
+      response_format: { type: "json_object" }
     });
-
-    const content = completion.choices[0].message?.content;
-
-    if (!content) {
-      throw new Error("No content returned from OpenAI.");
-    }
-
-    let parsedResponse: ParsedResponse;
+    
+    // Parse the response
+    const responseText = response.choices[0].message.content || '';
+    let analysisData;
+    
     try {
-      parsedResponse = JSON.parse(content) as ParsedResponse;
+      analysisData = JSON.parse(responseText);
     } catch (error) {
-      console.error("Failed to parse JSON response:", error);
-      console.error("Raw content from OpenAI:", content);
-      throw new Error("Failed to parse JSON response from OpenAI.");
+      console.error("Failed to parse AI response as JSON:", error);
+      throw new Error("Invalid AI response format");
     }
-
-    // Map the response to our interface
-    const analysis: Partial<MedicalAnalysis> = {
-      summary: parsedResponse.summary,
-      keyFindings: parsedResponse.keyFindings,
-      recommendations: parsedResponse.recommendations,
-      extractedBiomarkers: parsedResponse.extractedBiomarkers.map(biomarker => ({
-        name: biomarker.name,
-        value: biomarker.value,
-        unit: biomarker.unit,
-        normalRange: biomarker.normalRange,
+    
+    // Validate and normalize the extracted biomarkers
+    const normalizedBiomarkers = (analysisData.extractedBiomarkers || []).map((biomarker: any): ExtractedBiomarker => {
+      return {
+        name: biomarker.name || "Unknown",
+        value: biomarker.value || "",
+        unit: biomarker.unit || "",
+        normalRange: biomarker.normalRange || "",
         status: normalizeStatus(biomarker.status)
-      }))
+      };
+    });
+    
+    // Construct the final analysis object
+    const analysis: MedicalAnalysis = {
+      id: "", // Will be set by the calling function
+      reportId: "", // Will be set by the calling function
+      timestamp: new Date().toISOString(),
+      summary: analysisData.summary || "No summary available",
+      keyFindings: analysisData.keyFindings || [],
+      recommendations: analysisData.recommendations || [],
+      extractedBiomarkers: normalizedBiomarkers,
+      suggestedDiagnoses: analysisData.suggestedDiagnoses || []
     };
-
-    // Validate that required fields are present
-    if (!analysis.summary || !analysis.keyFindings || !analysis.recommendations || !analysis.extractedBiomarkers) {
-      console.error("Incomplete analysis data:", analysis);
-      throw new Error("Incomplete analysis data received from OpenAI.");
-    }
-
-    return analysis as MedicalAnalysis;
-
+    
+    console.log("AI analysis complete");
+    return analysis;
+    
   } catch (error) {
-    console.error("Error in OpenAI Service:", error);
-    throw error;
+    console.error("Error in extractReportAnalysis:", error);
+    
+    // Return a basic fallback analysis object in case of error
+    return {
+      id: "",
+      reportId: "",
+      timestamp: new Date().toISOString(),
+      summary: "Failed to analyze report due to technical issues.",
+      keyFindings: ["Analysis failed - please try again later"],
+      recommendations: ["Consult with healthcare provider for accurate interpretation"],
+      extractedBiomarkers: [],
+      suggestedDiagnoses: []
+    };
   }
 };
 
