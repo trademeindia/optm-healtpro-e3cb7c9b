@@ -12,7 +12,7 @@ interface MedicalReportAIProps {
   onAnalysisComplete?: (analysisResult: ReportAnalysis) => void;
 }
 
-interface ReportAnalysis {
+export interface ReportAnalysis {
   id: string;
   timestamp: string;
   reportType: string;

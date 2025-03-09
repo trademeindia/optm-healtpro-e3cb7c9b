@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import BiomarkerUpload from '@/components/biomarkers/BiomarkerUpload';
 import BiomarkerHowItWorks from '@/components/biomarkers/BiomarkerHowItWorks';
-import MedicalReportAI from '@/components/biomarkers/MedicalReportAI';
+import MedicalReportAI, { ReportAnalysis } from '@/components/biomarkers/MedicalReportAI';
 import { mockBiomarkers, Biomarker } from '@/data/mockBiomarkerData';
 
 const BiomarkersPage: React.FC = () => {
@@ -22,6 +22,17 @@ const BiomarkersPage: React.FC = () => {
   
   const handleProcessComplete = (newBiomarker: Biomarker) => {
     setBiomarkers((prevBiomarkers) => [...prevBiomarkers, newBiomarker]);
+  };
+
+  const handleReportAnalysisComplete = (analysis: ReportAnalysis) => {
+    // In a real application, you might want to store this analysis result
+    // or update the UI based on it
+    console.log("Report analysis completed:", analysis);
+    
+    toast({
+      title: "Analysis Saved",
+      description: "Your medical report analysis has been saved to your profile",
+    });
   };
 
   return (
@@ -92,7 +103,7 @@ const BiomarkersPage: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <MedicalReportAI />
+                  <MedicalReportAI onAnalysisComplete={handleReportAnalysisComplete} />
                   <div className="space-y-6">
                     <Card>
                       <CardHeader>
