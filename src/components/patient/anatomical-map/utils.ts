@@ -25,7 +25,7 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
 export const getSystemImage = (activeSystem: string): string => {
   switch (activeSystem) {
     case 'muscular':
-      return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
+      return "/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png";
     case 'skeletal':
       return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
     case 'skin':
@@ -38,6 +38,6 @@ export const getSystemImage = (activeSystem: string): string => {
     case 'full-body':
       return "/lovable-uploads/2f92810e-f197-4554-81aa-25c65d85b001.png";
     default:
-      return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
+      return "/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png";
   }
 };

@@ -1,10 +1,21 @@
 
 import React from 'react';
 import VitalSignCard from './VitalSignCard';
-import { Heart, Lungs, Activity, Thermometer } from 'lucide-react';
+import { Heart, Activity, Thermometer } from 'lucide-react';
+import { LuLungs } from 'react-icons/lu';
 
-const VitalSigns: React.FC = () => {
-  const vitals = [
+interface VitalSignsProps {
+  vitalSigns?: Array<{
+    label: string;
+    value: string;
+    unit: string;
+    status: 'normal' | 'warning' | 'critical';
+    icon?: React.ReactNode;
+  }>;
+}
+
+const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
+  const defaultVitals = [
     {
       label: 'Heart Rate',
       value: '72',
@@ -31,9 +42,11 @@ const VitalSigns: React.FC = () => {
       value: '16',
       unit: 'bpm',
       status: 'normal' as const,
-      icon: <Lungs className="h-4 w-4 text-muted-foreground" />
+      icon: <LuLungs className="h-4 w-4 text-muted-foreground" />
     }
   ];
+
+  const vitals = vitalSigns || defaultVitals;
 
   return (
     <div>
