@@ -13,6 +13,37 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
   const login = async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
     try {
+      console.log(`Attempting to log in with email: ${email}`);
+      
+      // Check if using demo credentials
+      const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
+      const isDemoPatient = email === 'patient@example.com' && password === 'password123';
+      
+      if (isDemoDoctor || isDemoPatient) {
+        console.log('Using demo account login');
+        
+        // Create a demo user without actually authenticating
+        const demoUser: User = {
+          id: isDemoDoctor ? 'demo-doctor-id' : 'demo-patient-id',
+          email: email,
+          name: isDemoDoctor ? 'Demo Doctor' : 'Demo Patient',
+          role: isDemoDoctor ? 'doctor' : 'patient',
+          provider: 'email',
+          picture: ''
+        };
+        
+        toast.success('Demo login successful');
+        
+        if (demoUser.role === 'doctor') {
+          navigate('/dashboard');
+        } else {
+          navigate('/patient-dashboard');
+        }
+        
+        return demoUser;
+      }
+      
+      // Regular authentication flow for non-demo users
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -33,6 +64,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       
       return formattedUser;
     } catch (error: any) {
+      console.error('Login failed:', error);
       toast.error(error.message || 'Login failed');
       throw error;
     } finally {
