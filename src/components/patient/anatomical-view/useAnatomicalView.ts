@@ -1,13 +1,24 @@
 
 import { useState, useEffect } from 'react';
 import { useSymptoms } from '@/contexts/SymptomContext';
-import { Hotspot } from './types';
+import { Hotspot, BodySystem } from './types';
 import { 
   getHotspotPosition, 
   getSeverityColor, 
-  getSeverityLevel, 
-  BODY_SYSTEMS 
+  getSeverityLevel
 } from './utils';
+
+// Define the body systems with additional ones from screenshot
+export const BODY_SYSTEMS: BodySystem[] = [
+  { id: 'full-body', label: 'Full body' },
+  { id: 'skin', label: 'Skin' },
+  { id: 'muscular', label: 'Muscular' },
+  { id: 'skeletal', label: 'Skeletal' },
+  { id: 'organs', label: 'Organs' },
+  { id: 'vascular', label: 'Vascular' },
+  { id: 'nervous', label: 'Nervous' },
+  { id: 'lymphatic', label: 'Lymphatic' }
+];
 
 export const useAnatomicalView = (
   selectedRegion?: string, 
@@ -16,7 +27,7 @@ export const useAnatomicalView = (
 ) => {
   const [activeSystem, setActiveSystem] = useState('muscular');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 5]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 3]);
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const { symptoms } = useSymptoms();
 
@@ -31,15 +42,15 @@ export const useAnatomicalView = (
   }));
   
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], prev[2] - 1]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 1.5)]);
   };
   
   const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], prev[2] + 1]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 7)]);
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 5]);
+    setCameraPosition([0, 0, 3]);
     setIsRotating(false);
   };
   

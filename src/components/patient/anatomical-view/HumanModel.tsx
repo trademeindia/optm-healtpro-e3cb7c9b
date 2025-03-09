@@ -29,6 +29,18 @@ const HumanModel: React.FC<HumanModelProps> = ({
       </Html>
     );
   }
+
+  // Select the appropriate image based on active system
+  const getSystemImage = () => {
+    switch(activeSystem) {
+      case 'muscular':
+        return "/lovable-uploads/65ad9288-f18e-468c-bfe6-f52ba43bc0b9.png";
+      case 'skeletal':
+        return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
+      default:
+        return "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png";
+    }
+  };
   
   return (
     <group>
@@ -38,17 +50,18 @@ const HumanModel: React.FC<HumanModelProps> = ({
         rotation={[0, 0, 0]}
         center
         sprite
+        scale={[3, 3, 3]} // Scaled up to be more visible
+        distanceFactor={10}
       >
-        <div className="absolute inset-0 flex items-center justify-center" style={{ width: '100%', height: '100%' }}>
+        <div className="flex items-center justify-center" style={{ width: '300px', height: '600px' }}>
           <img 
-            src={activeSystem === 'muscular' ? 
-              "/lovable-uploads/629b68ae-fc38-455a-aee4-ec5b7619590f.png" : 
-              "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png"}
-            alt="Human Anatomy Muscular System" 
-            className="max-h-[70vh] max-w-full h-auto w-auto object-contain"
+            src={getSystemImage()}
+            alt={`Human Anatomy ${activeSystem.charAt(0).toUpperCase() + activeSystem.slice(1)} System`}
+            className="h-auto w-full object-contain"
             style={{ 
               pointerEvents: 'none',
-              opacity: 1
+              maxHeight: '600px',
+              transform: 'scale(1.2)' // Slightly bigger for better visibility
             }}
           />
         </div>

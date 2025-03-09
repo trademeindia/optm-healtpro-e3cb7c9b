@@ -31,21 +31,21 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   handleHotspotClick
 }) => {
   return (
-    <div className="w-full h-full absolute inset-0 flex items-center justify-center">
+    <div className="w-full h-full relative flex items-center justify-center" style={{ minHeight: '650px' }}>
       <Canvas 
-        style={{ width: '100%', height: '100%', minHeight: '600px' }}
-        camera={{ position: [0, 0, 4.5], fov: 45 }}
+        style={{ width: '100%', height: '100%' }}
+        camera={{ position: [0, 0, 3], fov: 30 }} // Reduced FOV for better viewing
       >
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={cameraPosition} />
-          <ambientLight intensity={0.5} />
+          <ambientLight intensity={0.8} /> {/* Increased light intensity */}
           <pointLight position={[10, 10, 10]} intensity={0.8} />
           <OrbitControls 
             enableZoom={true} 
             enablePan={true}
             enableRotate={!isRotating}
-            minDistance={2}
-            maxDistance={10}
+            minDistance={1.5}
+            maxDistance={7}
           />
           <HumanModel 
             activeSystem={activeSystem} 
