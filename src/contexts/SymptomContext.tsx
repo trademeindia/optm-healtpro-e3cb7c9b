@@ -15,6 +15,7 @@ export type SymptomEntry = {
 type SymptomContextType = {
   symptoms: SymptomEntry[];
   addSymptom: (symptom: SymptomEntry) => void;
+  updateSymptom: (id: string, updates: Partial<SymptomEntry>) => void;
   loadPatientSymptoms: (patientId: number) => void;
   currentPatientId: number | null;
 };
@@ -139,6 +140,14 @@ export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ childre
     setSymptoms(prev => [symptom, ...prev]);
   };
 
+  const updateSymptom = (id: string, updates: Partial<SymptomEntry>) => {
+    setSymptoms(prev => 
+      prev.map(symptom => 
+        symptom.id === id ? { ...symptom, ...updates } : symptom
+      )
+    );
+  };
+
   const loadPatientSymptoms = (patientId: number) => {
     console.log(`Loading symptoms for patient ${patientId}`);
     setCurrentPatientId(patientId);
@@ -161,7 +170,7 @@ export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ childre
   }, [currentPatientId]);
 
   return (
-    <SymptomContext.Provider value={{ symptoms, addSymptom, loadPatientSymptoms, currentPatientId }}>
+    <SymptomContext.Provider value={{ symptoms, addSymptom, updateSymptom, loadPatientSymptoms, currentPatientId }}>
       {children}
     </SymptomContext.Provider>
   );
