@@ -9,8 +9,8 @@ const PainReductionCard: React.FC<PainReductionProps> = ({ painReduction }) => {
   const isPositive = painReduction > 0;
   
   return (
-    <div className="bg-white/50 dark:bg-white/5 rounded-lg border border-border p-3 mb-4">
-      <h4 className="text-sm font-medium mb-1">Pain Reduction</h4>
+    <div className="bg-white/50 dark:bg-white/5 rounded-lg border border-border p-4 shadow-sm">
+      <h4 className="text-sm font-medium mb-2">Pain Reduction</h4>
       
       <div className="flex items-baseline gap-2">
         <span className={cn(
@@ -35,7 +35,7 @@ const PainReductionCard: React.FC<PainReductionProps> = ({ painReduction }) => {
         </div>
       </div>
       
-      <p className="text-xs text-muted-foreground mt-1">
+      <p className="text-xs text-muted-foreground mt-2">
         {isPositive 
           ? "Average reduction in pain levels since first record" 
           : "Start tracking your symptoms to see progress over time"}
