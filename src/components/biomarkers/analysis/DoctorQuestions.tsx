@@ -98,9 +98,45 @@ const DoctorQuestions: React.FC = () => {
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg border border-border/50">
       <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Questions for Your Doctor</h3>
-          {!isAdding && (
+        <h3 className="text-xl font-semibold text-center">Questions for Your Doctor</h3>
+        
+        {/* AI Search - Prominently placed at the top */}
+        <Card className="bg-primary/5 border border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5 text-primary" />
+              Ask Us Any Question
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSearch} className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search medical questions or ask something new..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-background"
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90">
+                  <BrainCircuit className="h-4 w-4 mr-1" />
+                  Get AI Answer
+                </Button>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Phone className="h-3 w-3 mr-1 text-primary" />
+                  For expert assistance, call +91-9555-9555
+                </div>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+        
+        {/* Add question button (only shown when not adding) */}
+        {!isAdding && (
+          <div className="flex justify-end">
             <Button 
               onClick={() => setIsAdding(true)} 
               variant="outline" 
@@ -110,169 +146,143 @@ const DoctorQuestions: React.FC = () => {
               <Plus className="h-4 w-4 mr-1" />
               Add Question
             </Button>
-          )}
-        </div>
-        
-        {/* Search bar */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search medical questions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Button type="submit" size="sm" variant="secondary">
-            Search
-          </Button>
-        </form>
-      </div>
-      
-      {/* Expert assistance card */}
-      <Card className="bg-primary/5 border border-primary/20">
-        <CardContent className="p-4 flex items-start gap-3">
-          <div className="bg-primary/10 text-primary rounded-full p-2 mt-0.5">
-            <HelpCircle className="h-5 w-5" />
-          </div>
-          <div>
-            <h4 className="font-medium text-sm mb-1">Need Expert Assistance?</h4>
-            <p className="text-xs text-muted-foreground mb-2">
-              For immediate medical questions or concerns, please contact our healthcare team.
-            </p>
-            <div className="flex items-center">
-              <Phone className="h-4 w-4 text-primary mr-1" />
-              <span className="text-sm font-medium">+91-9555-9555</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <div className="space-y-3">
-        {questions.map((question, index) => (
-          <Card key={index} className="overflow-hidden border border-border/50">
-            <CardContent className="p-0">
-              <div className="flex items-start gap-2 p-3 bg-muted/30">
-                <div className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{question.text}</p>
-                  {!question.answer && (
-                    <Button 
-                      onClick={() => handleAskExisting(index)} 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mt-1 h-7 text-xs"
-                      disabled={isGeneratingAnswer}
-                    >
-                      {isGeneratingAnswer ? (
-                        <>
-                          <Spinner className="h-3 w-3 mr-1" />
-                          Generating answer...
-                        </>
-                      ) : (
-                        <>
-                          <BrainCircuit className="h-3 w-3 mr-1" />
-                          Get AI Answer
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              {question.answer && (
-                <div className="p-3 border-t border-border/30 bg-background/80">
-                  <div className="flex items-start gap-2">
-                    <Badge variant="outline" className="shrink-0 mt-0.5 bg-primary/5 text-primary text-xs">
-                      <BrainCircuit className="h-3 w-3 mr-1" />
-                      AI
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-xs text-muted-foreground mb-2">{question.answer}</p>
-                      
-                      {question.sources && question.sources.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-[11px] text-muted-foreground/70 font-medium">Sources:</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {question.sources.map((source, i) => (
-                              <Badge key={i} variant="secondary" className="text-[10px]">
-                                {source}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-start gap-1 mt-3 pt-2 border-t border-border/20">
-                        <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-[10px] italic text-muted-foreground/70">
-                          This is an AI-generated response for informational purposes only. 
-                          Please verify with your healthcare provider or call +91-9555-9555 for expert assistance.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        
-        {isAdding && (
-          <div className="space-y-2 p-3 border rounded-md bg-muted/20">
-            <Textarea
-              placeholder="Type your medical question here..."
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              className="resize-none min-h-[80px]"
-            />
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleAddQuestion} 
-                size="sm" 
-                className="shrink-0"
-                disabled={!newQuestion.trim() || isGeneratingAnswer}
-              >
-                {isGeneratingAnswer ? (
-                  <>
-                    <Spinner className="h-4 w-4 mr-1" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <BrainCircuit className="h-4 w-4 mr-1" />
-                    Ask & Save
-                  </>
-                )}
-              </Button>
-              <Button 
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewQuestion('');
-                }} 
-                variant="ghost" 
-                size="sm"
-                className="shrink-0"
-              >
-                Cancel
-              </Button>
-            </div>
           </div>
         )}
       </div>
       
+      {/* Question editor (shown when adding) */}
+      {isAdding && (
+        <div className="space-y-2 p-3 border rounded-md bg-muted/20">
+          <Textarea
+            placeholder="Type your medical question here..."
+            value={newQuestion}
+            onChange={(e) => setNewQuestion(e.target.value)}
+            className="resize-none min-h-[80px]"
+          />
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleAddQuestion} 
+              size="sm" 
+              className="shrink-0"
+              disabled={!newQuestion.trim() || isGeneratingAnswer}
+            >
+              {isGeneratingAnswer ? (
+                <>
+                  <Spinner className="h-4 w-4 mr-1" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <BrainCircuit className="h-4 w-4 mr-1" />
+                  Ask & Save
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAdding(false);
+                setNewQuestion('');
+              }} 
+              variant="ghost" 
+              size="sm"
+              className="shrink-0"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Previously asked questions */}
+      {questions.length > 0 && (
+        <div>
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Previously Asked Questions</h4>
+          <div className="space-y-3">
+            {questions.map((question, index) => (
+              <Card key={index} className="overflow-hidden border border-border/50">
+                <CardContent className="p-0">
+                  <div className="flex items-start gap-2 p-3 bg-muted/30">
+                    <div className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{question.text}</p>
+                      {!question.answer && (
+                        <Button 
+                          onClick={() => handleAskExisting(index)} 
+                          variant="ghost" 
+                          size="sm" 
+                          className="mt-1 h-7 text-xs"
+                          disabled={isGeneratingAnswer}
+                        >
+                          {isGeneratingAnswer ? (
+                            <>
+                              <Spinner className="h-3 w-3 mr-1" />
+                              Generating answer...
+                            </>
+                          ) : (
+                            <>
+                              <BrainCircuit className="h-3 w-3 mr-1" />
+                              Get AI Answer
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {question.answer && (
+                    <div className="p-3 border-t border-border/30 bg-background/80">
+                      <div className="flex items-start gap-2">
+                        <Badge variant="outline" className="shrink-0 mt-0.5 bg-primary/5 text-primary text-xs">
+                          <BrainCircuit className="h-3 w-3 mr-1" />
+                          AI
+                        </Badge>
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground mb-2">{question.answer}</p>
+                          
+                          {question.sources && question.sources.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-[11px] text-muted-foreground/70 font-medium">Sources:</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {question.sources.map((source, i) => (
+                                  <Badge key={i} variant="secondary" className="text-[10px]">
+                                    {source}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-start gap-1 mt-3 pt-2 border-t border-border/20">
+                            <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] italic text-muted-foreground/70">
+                              This is an AI-generated response for informational purposes only. 
+                              Please verify with your healthcare provider or call +91-9555-9555 for expert assistance.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+      
       <Separator className="my-2" />
       
+      {/* Expert assistance information */}
       <div className="flex items-start gap-2 p-2 bg-muted/10 rounded-md">
-        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground">
-          AI responses are for informational purposes only and do not replace professional medical advice. 
-          Always discuss these questions with your healthcare provider or call +91-9555-9555 for expert assistance.
-        </p>
+        <HelpCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <div>
+          <p className="text-xs font-medium mb-1">Need Expert Assistance?</p>
+          <p className="text-xs text-muted-foreground">
+            For immediate medical questions or concerns, please call our healthcare team at +91-9555-9555.
+          </p>
+        </div>
       </div>
     </div>
   );
