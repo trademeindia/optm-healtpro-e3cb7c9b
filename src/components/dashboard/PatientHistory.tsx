@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, ChevronLeft, Plus, Trash2 } from 'lucide-react';
@@ -40,7 +39,6 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   };
 
   const handleRecordSubmit = () => {
-    // Handle the record submission logic here
     toast({
       title: "Record Added",
       description: `${recordForm.name} has been added to the patient's records.`,
@@ -111,18 +109,11 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         {/* Left panel - Anatomical view */}
         <div className="lg:col-span-7 xl:col-span-8">
           <div className="h-[600px]">
-            {/* We'll use our custom 3D model component for larger screens */}
-            <div className="hidden md:block h-full">
-              <AnatomicalView 
-                selectedRegion={selectedRegion}
-                onSelectRegion={handleRegionSelect}
-              />
-            </div>
-            
-            {/* For mobile screens, use a simpler 2D anatomical map */}
-            <div className="md:hidden h-full">
-              <AnatomicalMap />
-            </div>
+            <AnatomicalView 
+              selectedRegion={selectedRegion}
+              onSelectRegion={handleRegionSelect}
+              patientId={patient.id}
+            />
           </div>
         </div>
 

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PatientRecords } from '@/components/dashboard/PatientRecords';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import PatientHistory from '@/components/dashboard/PatientHistory';
+import { useSymptoms } from '@/contexts/SymptomContext';
 
-// Sample patient data with adjusted biomarker properties to match the Biomarker interface
 const samplePatients = [
   {
     id: 1,
@@ -164,11 +164,13 @@ const samplePatients = [
 const PatientsPage: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
   const [patients] = useState(samplePatients);
+  const { loadPatientSymptoms } = useSymptoms();
   
   const selectedPatient = patients.find(p => p.id === selectedPatientId);
   
   const handleViewPatient = (patientId: number) => {
     setSelectedPatientId(patientId);
+    loadPatientSymptoms(patientId);
   };
   
   const handleClosePatientHistory = () => {
@@ -179,6 +181,12 @@ const PatientsPage: React.FC = () => {
     // In a real app, this would update the patient data in your state or backend
     console.log("Patient updated:", updatedPatient);
   };
+  
+  useEffect(() => {
+    if (selectedPatientId) {
+      loadPatientSymptoms(selectedPatientId);
+    }
+  }, [selectedPatientId, loadPatientSymptoms]);
   
   return (
     <div className="flex h-screen bg-background">
