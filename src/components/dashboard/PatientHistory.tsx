@@ -1,23 +1,63 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit, X, Save, Plus } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Upload, Trash2, Edit, X, Save, Plus, TestTube, FileText } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import BiomarkerDisplay from './BiomarkerDisplay';
-import { PatientHistoryProps, MedicalRecord, Biomarker } from './patient-history/types';
-import PatientProfileCard from './patient-history/PatientProfileCard';
-import MedicalRecordsTab from './patient-history/MedicalRecordsTab';
-import RecordDialog from './patient-history/RecordDialog';
-import BiomarkerDialog from './patient-history/BiomarkerDialog';
-import DeleteConfirmationDialog from './patient-history/DeleteConfirmationDialog';
+
+interface MedicalRecord {
+  id: string;
+  type: 'xray' | 'bloodTest' | 'medication' | 'notes';
+  title: string;
+  date: string;
+  details: string;
+  fileUrl?: string;
+  fileSize?: string;
+}
+
+interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  status: 'low' | 'normal' | 'elevated' | 'critical';
+  timestamp: string;
+}
+
+interface PatientData {
+  id: number;
+  name: string;
+  age: number;
+  gender: string;
+  address: string;
+  phone: string;
+  email: string;
+  condition: string;
+  icdCode: string;
+  lastVisit: string;
+  nextVisit: string;
+  medicalRecords?: MedicalRecord[];
+  biomarkers?: Biomarker[];
+}
+
+interface PatientHistoryProps {
+  patient: PatientData;
+  onClose: () => void;
+  onUpdate: (updatedPatient: PatientData) => void;
+}
 
 const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpdate }) => {
   const [editMode, setEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("xray");
+  const [activeTab, setActiveTab] = useState("overview");
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadType, setUploadType] = useState<'xray' | 'bloodTest' | 'medication' | 'notes'>('xray');
-  const [editedPatient, setEditedPatient] = useState<typeof patient>({ ...patient });
+  const [editedPatient, setEditedPatient] = useState<PatientData>({ ...patient });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null);
   const [biomarkerToDelete, setBiomarkerToDelete] = useState<Biomarker | null>(null);
@@ -287,13 +327,165 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
             {editMode ? "Edit patient details below" : "Detailed patient information and medical history"}
           </CardDescription>
         </CardHeader>
-        <PatientProfileCard 
-          patient={patient}
-          editedPatient={editedPatient}
-          editMode={editMode}
-          handleInputChange={handleInputChange}
-          setEditedPatient={setEditedPatient}
-        />
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Patient Name</Label>
+                {editMode ? (
+                  <Input 
+                    id="name"
+                    name="name"
+                    value={editedPatient.name}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="text-lg font-medium mt-1">{patient.name}</div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  {editMode ? (
+                    <Input 
+                      id="age"
+                      name="age"
+                      type="number"
+                      value={editedPatient.age}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    <div className="mt-1">{patient.age} years</div>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="gender">Gender</Label>
+                  {editMode ? (
+                    <select 
+                      id="gender"
+                      name="gender"
+                      className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                      value={editedPatient.gender}
+                      onChange={(e) => setEditedPatient(prev => ({...prev, gender: e.target.value}))}
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  ) : (
+                    <div className="mt-1">{patient.gender}</div>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="condition">Medical Condition</Label>
+                {editMode ? (
+                  <Input 
+                    id="condition"
+                    name="condition"
+                    value={editedPatient.condition}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="mt-1">{patient.condition}</div>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="icdCode">ICD Code</Label>
+                {editMode ? (
+                  <Input 
+                    id="icdCode"
+                    name="icdCode"
+                    value={editedPatient.icdCode}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="mt-1 font-mono">{patient.icdCode}</div>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="address">Address</Label>
+                {editMode ? (
+                  <Textarea 
+                    id="address"
+                    name="address"
+                    value={editedPatient.address}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="mt-1">{patient.address}</div>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                {editMode ? (
+                  <Input 
+                    id="phone"
+                    name="phone"
+                    value={editedPatient.phone}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="mt-1">{patient.phone}</div>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="email">Email</Label>
+                {editMode ? (
+                  <Input 
+                    id="email"
+                    name="email"
+                    value={editedPatient.email}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="mt-1">{patient.email}</div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="lastVisit">Last Visit</Label>
+                  {editMode ? (
+                    <Input 
+                      id="lastVisit"
+                      name="lastVisit"
+                      type="date"
+                      value={editedPatient.lastVisit}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    <div className="mt-1">{patient.lastVisit}</div>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="nextVisit">Next Appointment</Label>
+                  {editMode ? (
+                    <Input 
+                      id="nextVisit"
+                      name="nextVisit"
+                      type="date"
+                      value={editedPatient.nextVisit}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    <div className="mt-1">{patient.nextVisit}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       <Tabs defaultValue="xray" className="w-full">
@@ -307,12 +499,64 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         
         {['xray', 'bloodTest', 'medication', 'notes'].map((type) => (
           <TabsContent key={type} value={type}>
-            <MedicalRecordsTab 
-              type={type as 'xray' | 'bloodTest' | 'medication' | 'notes'} 
-              records={filteredRecords(type)}
-              handleUploadClick={handleUploadClick}
-              confirmDelete={confirmDelete}
-            />
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>
+                    {type === 'xray' && 'X-Rays & Scan Reports'}
+                    {type === 'bloodTest' && 'Blood Test Results'}
+                    {type === 'medication' && 'Prescribed Medications'}
+                    {type === 'notes' && 'Clinical Notes'}
+                  </CardTitle>
+                  <CardDescription>
+                    {type === 'xray' && 'All imaging studies for this patient'}
+                    {type === 'bloodTest' && 'Laboratory test results'}
+                    {type === 'medication' && 'Current and past medications'}
+                    {type === 'notes' && 'Doctor notes and observations'}
+                  </CardDescription>
+                </div>
+                <Button onClick={() => handleUploadClick(type as any)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {type === 'notes' ? 'Add Note' : 'Add Record'}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredRecords(type).length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No {type === 'xray' ? 'X-Ray or scan' : type === 'bloodTest' ? 'blood test' : type === 'medication' ? 'medication' : 'clinical note'} records found
+                    </div>
+                  ) : (
+                    filteredRecords(type).map((record) => (
+                      <div key={record.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium">{record.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">Date: {record.date}</p>
+                            <p className="text-sm mb-2">{record.details}</p>
+                            {record.fileUrl && record.fileSize && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>File size: {record.fileSize}</span>
+                                <Button variant="link" size="sm" className="h-auto p-0">View File</Button>
+                                <Button variant="link" size="sm" className="h-auto p-0">Download</Button>
+                              </div>
+                            )}
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => confirmDelete(record)}
+                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         ))}
 
@@ -337,34 +581,229 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
         </TabsContent>
       </Tabs>
 
-      <RecordDialog 
-        showDialog={showUploadDialog}
-        setShowDialog={setShowUploadDialog}
-        uploadType={uploadType}
-        newRecord={newRecord as any}
-        setNewRecord={setNewRecord as any}
-        handleAddRecord={handleAddRecord}
-      />
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {uploadType === 'xray' && 'Add X-Ray or Scan Report'}
+              {uploadType === 'bloodTest' && 'Add Blood Test Result'}
+              {uploadType === 'medication' && 'Add Medication'}
+              {uploadType === 'notes' && 'Add Clinical Note'}
+            </DialogTitle>
+            <DialogDescription>
+              {uploadType === 'notes' 
+                ? "Add clinical observations or treatment notes" 
+                : "Upload medical documents or add details manually"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {uploadType !== 'notes' && (
+              <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
+                <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm font-medium mb-1">Drag files here or click to upload</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Supports PDF, JPEG, PNG files up to 10MB
+                </p>
+                <Button size="sm">Select Files</Button>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              <div className="text-sm font-medium">Record Details</div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">
+                  {uploadType === 'xray' && 'Image/Scan Name'}
+                  {uploadType === 'bloodTest' && 'Test Name'}
+                  {uploadType === 'medication' && 'Medication Name'}
+                  {uploadType === 'notes' && 'Note Title'}
+                </label>
+                <Input 
+                  placeholder={
+                    uploadType === 'xray' ? "e.g., Chest X-Ray" : 
+                    uploadType === 'bloodTest' ? "e.g., Complete Blood Count" :
+                    uploadType === 'medication' ? "e.g., Ibuprofen 400mg" :
+                    "e.g., Initial Assessment"
+                  }
+                  value={newRecord.title}
+                  onChange={(e) => setNewRecord({...newRecord, title: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Date</label>
+                <Input 
+                  type="date" 
+                  value={newRecord.date}
+                  onChange={(e) => setNewRecord({...newRecord, date: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">
+                  {uploadType === 'xray' && 'Findings/Results'}
+                  {uploadType === 'bloodTest' && 'Results/Values'}
+                  {uploadType === 'medication' && 'Dosage & Instructions'}
+                  {uploadType === 'notes' && 'Note Content'}
+                </label>
+                <Textarea 
+                  placeholder={
+                    uploadType === 'xray' ? "Describe findings or interpretation" : 
+                    uploadType === 'bloodTest' ? "List test values and normal ranges" :
+                    uploadType === 'medication' ? "Specify dosage, frequency and special instructions" :
+                    "Enter detailed clinical notes"
+                  }
+                  rows={4}
+                  value={newRecord.details}
+                  onChange={(e) => setNewRecord({...newRecord, details: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddRecord}>
+              {uploadType === 'notes' ? 'Save Note' : 'Add Record'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      <BiomarkerDialog 
-        showDialog={showAddBiomarkerDialog}
-        setShowDialog={setShowAddBiomarkerDialog}
-        newBiomarker={newBiomarker as any}
-        setNewBiomarker={setNewBiomarker as any}
-        handleAddBiomarker={handleAddBiomarker}
-      />
+      <Dialog open={showAddBiomarkerDialog} onOpenChange={setShowAddBiomarkerDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Biomarker</DialogTitle>
+            <DialogDescription>
+              Record new biomarker test results for this patient
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className="text-sm">Biomarker Name</label>
+                <Input 
+                  placeholder="e.g., C-Reactive Protein (CRP)"
+                  value={newBiomarker.name}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, name: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm">Value</label>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    placeholder="e.g., 5.5"
+                    value={newBiomarker.value}
+                    onChange={(e) => setNewBiomarker({...newBiomarker, value: parseFloat(e.target.value)})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm">Unit</label>
+                  <Input 
+                    placeholder="e.g., mg/L"
+                    value={newBiomarker.unit}
+                    onChange={(e) => setNewBiomarker({...newBiomarker, unit: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Normal Range</label>
+                <Input 
+                  placeholder="e.g., 0.0 - 8.0"
+                  value={newBiomarker.normalRange}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, normalRange: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Status</label>
+                <select 
+                  className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  value={newBiomarker.status}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, status: e.target.value as any})}
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="elevated">Elevated</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm">Date</label>
+                <Input 
+                  type="date" 
+                  value={newBiomarker.timestamp}
+                  onChange={(e) => setNewBiomarker({...newBiomarker, timestamp: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setShowAddBiomarkerDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddBiomarker}>
+              Add Biomarker
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      <DeleteConfirmationDialog 
-        showDialog={showDeleteDialog}
-        setShowDialog={setShowDeleteDialog}
-        recordToDelete={recordToDelete}
-        biomarkerToDelete={biomarkerToDelete}
-        handleDeleteRecord={handleDeleteRecord}
-        handleDeleteBiomarker={handleDeleteBiomarker}
-      />
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this {recordToDelete ? 'record' : 'biomarker'}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {recordToDelete && (
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="font-medium">{recordToDelete.title}</p>
+                <p className="text-sm text-muted-foreground">Date: {recordToDelete.date}</p>
+              </div>
+            )}
+            {biomarkerToDelete && (
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="font-medium">{biomarkerToDelete.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Value: {biomarkerToDelete.value} {biomarkerToDelete.unit}
+                </p>
+                <p className="text-sm text-muted-foreground">Date: {biomarkerToDelete.timestamp}</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={recordToDelete ? handleDeleteRecord : handleDeleteBiomarker}
+            >
+              Delete {recordToDelete ? 'Record' : 'Biomarker'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export { PatientHistory };
 export default PatientHistory;
+
