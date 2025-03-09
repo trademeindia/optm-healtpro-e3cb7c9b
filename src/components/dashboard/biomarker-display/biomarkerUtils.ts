@@ -95,90 +95,101 @@ export const formatDate = (dateString: string) => {
 };
 
 export const getAffectedMuscles = (biomarkerName: string): string[] => {
-  // Map biomarker names to potentially affected muscles
+  // Map biomarker names to potentially affected skeletal muscles only
   const muscleMap: Record<string, string[]> = {
     'Hemoglobin': [
-      'All skeletal muscles - reduced oxygen delivery',
-      'Heart muscle (myocardium) - decreased oxygen supply',
-      'Respiratory muscles (diaphragm, intercostals) - increased workload'
+      'Quadriceps',
+      'Hamstrings',
+      'Gastrocnemius (calves)',
+      'Deltoids',
+      'Respiratory muscles (diaphragm, intercostals)'
     ],
     'White Blood Cell Count': [
-      'No direct muscle impact, but affects immune system function'
+      'No direct skeletal muscle impact'
     ],
     'Glucose (Fasting)': [
-      'All skeletal muscles - altered energy metabolism',
-      'Heart muscle - metabolic changes',
-      'Smooth muscles of blood vessels - potential vascular changes'
+      'Quadriceps',
+      'Hamstrings',
+      'Biceps',
+      'Triceps',
+      'Gluteal muscles'
     ],
     'Total Cholesterol': [
-      'Heart muscle - potential impaired function',
-      'Smooth muscles of arteries - vascular effects'
+      'No direct skeletal muscle impact'
     ],
     'HDL Cholesterol': [
-      'Heart muscle - cardiovascular protection',
-      'Arterial smooth muscle - vascular health'
+      'No direct skeletal muscle impact'
     ],
     'LDL Cholesterol': [
-      'Heart muscle - increased risk of atherosclerosis',
-      'Arterial smooth muscle - plaque formation'
+      'No direct skeletal muscle impact'
     ],
     'Vitamin D': [
-      'All skeletal muscles - strength and function',
-      'Postural muscles - stability and balance',
-      'Proximal limb muscles (shoulders, hips) - particular vulnerability'
+      'Quadriceps',
+      'Hamstrings',
+      'Gluteal muscles',
+      'Deltoids',
+      'Trapezius',
+      'Latissimus dorsi'
     ],
     'Cholesterol': [
-      'Heart muscle - cardiovascular effects',
-      'Arterial smooth muscle - vascular health'
+      'No direct skeletal muscle impact'
     ],
     'Glucose': [
-      'All skeletal muscles - energy metabolism',
-      'Heart muscle - altered metabolism',
-      'Smooth muscle of blood vessels'
+      'Quadriceps',
+      'Hamstrings', 
+      'Biceps',
+      'Triceps', 
+      'Gluteal muscles'
     ],
     'Iron': [
-      'All skeletal muscles - oxygen transport',
-      'Respiratory muscles - endurance',
-      'Heart muscle - oxygen utilization'
+      'Quadriceps',
+      'Hamstrings',
+      'Deltoids',
+      'Respiratory muscles (diaphragm, intercostals)'
     ],
     'Hemoglobin A1C': [
-      'Small blood vessels supplying muscles',
-      'All skeletal muscles - glycation effects',
-      'Heart muscle - metabolic changes'
+      'Quadriceps',
+      'Hamstrings',
+      'Biceps',
+      'Triceps',
+      'Foot muscles'
     ],
     'Vitamin B12': [
-      'All skeletal muscles - neurological function',
-      'Muscles involved in fine motor control',
-      'Muscles involved in balance and coordination'
+      'Quadriceps',
+      'Gastrocnemius (calves)',
+      'Forearm muscles',
+      'Hand muscles',
+      'Foot muscles'
     ],
     'Thyroid Stimulating Hormone': [
-      'All skeletal muscles - metabolic rate',
-      'Cardiac muscle - contractility and heart rate',
-      'Respiratory muscles - breathing rate'
+      'All skeletal muscles - affects metabolic rate',
+      'Pectoralis major and minor',
+      'Sternocleidomastoid',
+      'Respiratory muscles (diaphragm, intercostals)'
     ],
     'Ferritin': [
-      'All muscle groups - oxygen transport',
-      'Endurance muscles - fatigue resistance',
-      'Heart muscle - cardiovascular function'
+      'Quadriceps',
+      'Hamstrings',
+      'Gastrocnemius (calves)',
+      'Deltoids',
+      'Latissimus dorsi'
     ],
     'C-Reactive Protein': [
-      'All skeletal muscles - inflammatory processes',
-      'Cardiac muscle - inflammatory damage',
-      'Smooth muscle - vascular inflammation'
+      'Any skeletal muscle experiencing inflammation',
+      'May include muscles involved in chronic exercise'
     ],
     'Triglycerides': [
-      'Heart muscle - potential lipid infiltration',
-      'Skeletal muscles - altered energy metabolism'
+      'Quadriceps',
+      'Hamstrings',
+      'Biceps',
+      'Triceps'
     ],
     'Blood Pressure': [
-      'Heart muscle - increased workload',
-      'Arterial smooth muscle - structural changes',
-      'Blood vessel walls - adaptation to pressure'
+      'No direct skeletal muscle impact'
     ],
     'Vitamin B6': [
-      'All skeletal muscles - protein metabolism',
-      'Muscles involved in neurotransmitter function',
-      'Muscles involved in hemoglobin synthesis'
+      'All skeletal muscles involved in protein metabolism',
+      'Particularly muscles undergoing growth or repair'
     ]
   };
 

@@ -88,11 +88,11 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
             </div>
           </div>
 
-          {affectedMuscles && affectedMuscles.length > 0 && (
+          {affectedMuscles && affectedMuscles.length > 0 && affectedMuscles[0] !== 'No direct skeletal muscle impact' && (
             <div className="bg-muted/60 p-4 rounded-lg">
               <h4 className="font-medium mb-2 flex items-center">
                 <Dumbbell className="w-4 h-4 mr-2" />
-                Potentially Affected Muscles
+                Potentially Affected Skeletal Muscles
               </h4>
               <ul className="list-disc ml-4 space-y-1 text-sm">
                 {affectedMuscles.map((muscle, index) => (
@@ -100,7 +100,7 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
                 ))}
               </ul>
               <p className="text-xs mt-2 text-muted-foreground">
-                These muscle groups may be impacted by changes in this biomarker.
+                These skeletal muscle groups may be impacted by changes in this biomarker.
               </p>
             </div>
           )}
