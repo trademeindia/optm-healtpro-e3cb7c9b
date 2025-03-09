@@ -6,7 +6,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import AIAnalysisTab from '@/components/biomarkers/tabs/AIAnalysisTab';
 import { ReportAnalysis } from '@/components/biomarkers/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, ShieldCheck, Lightbulb, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AIAnalysisPage: React.FC = () => {
@@ -42,89 +42,7 @@ const AIAnalysisPage: React.FC = () => {
           </motion.div>
           
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="lg:col-span-2"
-              >
-                <AIAnalysisTab onAnalysisComplete={handleReportAnalysisComplete} />
-              </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="space-y-5"
-              >
-                <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300">
-                  <CardHeader className="bg-primary/5 pb-2 p-4 md:p-5">
-                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                      <Brain className="h-5 w-5 text-primary" />
-                      How It Works
-                    </CardTitle>
-                    <CardDescription>
-                      Understanding your AI analysis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 md:p-5">
-                    <p className="text-sm leading-relaxed">
-                      Our AI system analyzes your medical reports by identifying key biomarkers, 
-                      test results, and medical terminology. It then provides explanations in 
-                      simple language and identifies potential areas for follow-up.
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300">
-                  <CardHeader className="bg-primary/5 pb-2 p-4 md:p-5">
-                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                      <ShieldCheck className="h-5 w-5 text-primary" />
-                      Privacy Information
-                    </CardTitle>
-                    <CardDescription>
-                      How we handle your data
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 md:p-5">
-                    <p className="text-sm leading-relaxed">
-                      Your medical reports are processed securely. We do not store the 
-                      actual reports on our servers after analysis is complete. Only the 
-                      analyzed results are saved to your profile.
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300">
-                  <CardHeader className="bg-primary/5 pb-2 p-4 md:p-5">
-                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                      <Lightbulb className="h-5 w-5 text-accent" />
-                      Quick Tips
-                    </CardTitle>
-                    <CardDescription>
-                      Get the most from your analysis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 md:p-5">
-                    <ul className="text-sm space-y-2">
-                      <li className="flex items-start gap-2">
-                        <div className="bg-accent/10 text-accent rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">1</div>
-                        <span>Upload clear, complete reports for best results</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <div className="bg-accent/10 text-accent rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">2</div>
-                        <span>Use the text input for typed lab results</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <div className="bg-accent/10 text-accent rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">3</div>
-                        <span>Save analyses to track changes over time</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
+            <AIAnalysisTab onAnalysisComplete={handleReportAnalysisComplete} />
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
