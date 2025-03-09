@@ -1,7 +1,6 @@
 
 import React from 'react';
 import PatientProfile from '@/components/patient/PatientProfile';
-import { AnatomicalMap } from '@/components/patient/anatomical-map';
 
 interface MainContentProps {
   patient: any;
@@ -20,11 +19,6 @@ const MainContent: React.FC<MainContentProps> = ({
       {/* Patient profile - now full width */}
       <div className="lg:col-span-12">
         <PatientProfile patient={patient} onAssignTests={onAssignTests} />
-      </div>
-      
-      {/* Anatomical Map section */}
-      <div className="lg:col-span-12 mt-6">
-        <AnatomicalMap className="w-full" />
       </div>
     </div>;
 };
