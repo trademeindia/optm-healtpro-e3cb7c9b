@@ -2,10 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { InfoIcon, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp, Calendar, ChevronRight } from 'lucide-react';
+import { InfoIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { format } from 'date-fns';
 
 interface BiomarkerCardProps {
   name: string;
@@ -13,13 +11,8 @@ interface BiomarkerCardProps {
   unit: string;
   normalRange: string;
   status: 'normal' | 'elevated' | 'low' | 'critical';
-  timestamp: string; // Changed from lastUpdated to timestamp
+  lastUpdated: string;
   className?: string;
-  history?: Array<{date: string; value: number}>;
-  trend?: 'up' | 'down' | 'stable';
-  description?: string;
-  recommendations?: string[];
-  percentage?: number;
 }
 
 const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
@@ -28,26 +21,15 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
   unit,
   normalRange,
   status,
-  timestamp, // Changed from lastUpdated to timestamp
-  className,
-  history = [],
-  trend = 'stable',
-  description = "",
-  recommendations = [],
-  percentage: initialPercentage
+  lastUpdated,
+  className
 }) => {
   const pathRef = useRef<SVGCircleElement>(null);
   const [circumference, setCircumference] = useState(0);
-  const [percentage, setPercentage] = useState(initialPercentage || 0);
-  const [showDetails, setShowDetails] = useState(false);
+  const [percentage, setPercentage] = useState(0);
   
-  // Calculate the percentage based on status if not provided
+  // Calculate the percentage based on status
   useEffect(() => {
-    if (initialPercentage !== undefined) {
-      setPercentage(initialPercentage);
-      return;
-    }
-    
     let percent = 0;
     switch (status) {
       case 'normal':
@@ -64,7 +46,7 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
         break;
     }
     setPercentage(percent);
-  }, [status, initialPercentage]);
+  }, [status]);
   
   useEffect(() => {
     if (pathRef.current) {
@@ -102,31 +84,9 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
     }
   };
 
-  const getTrendIcon = () => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className={cn(
-          "w-4 h-4 mr-1",
-          status === 'normal' ? "text-medical-green" : 
-          status === 'elevated' || status === 'critical' ? "text-medical-red" : 
-          "text-medical-blue"
-        )} />;
-      case 'down':
-        return <TrendingDown className={cn(
-          "w-4 h-4 mr-1",
-          status === 'normal' ? "text-medical-green" : 
-          status === 'low' ? "text-medical-red" : 
-          "text-medical-blue"
-        )} />;
-      case 'stable':
-      default:
-        return <Minus className="w-4 h-4 mr-1 text-muted-foreground" />;
-    }
-  };
-
   return (
     <motion.div
-      className={cn("biomarker-card p-4 md:p-6 rounded-xl border border-border/40", className)}
+      className={cn("biomarker-card p-4 md:p-6", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -141,23 +101,19 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
                   <InfoIcon className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Normal range: {normalRange} {unit}</p>
-                  {description && <p className="mt-1">{description}</p>}
+                  Normal range: {normalRange} {unit}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="w-3 h-3" />
-            <span>Last updated: {timestamp}</span>
-          </div>
+          <p className="text-xs text-muted-foreground">Last updated: {lastUpdated}</p>
         </div>
         <span className={cn(
           "px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium",
-          status === 'normal' && "bg-medical-green/20 text-medical-green",
-          status === 'elevated' && "bg-medical-yellow/20 text-medical-yellow",
-          status === 'low' && "bg-medical-blue/20 text-medical-blue",
-          status === 'critical' && "bg-medical-red/20 text-medical-red",
+          status === 'normal' && "bg-medical-green/20",
+          status === 'elevated' && "bg-medical-yellow/20",
+          status === 'low' && "bg-medical-blue/20",
+          status === 'critical' && "bg-medical-red/20",
         )}>
           {getStatusLabel()}
         </span>
@@ -199,83 +155,12 @@ const BiomarkerCard: React.FC<BiomarkerCardProps> = ({
         <div className="flex-1">
           <div className="text-xl md:text-3xl font-bold mb-0 md:mb-1 flex items-center gap-1 md:gap-2">
             {value} <span className="text-sm md:text-base font-normal text-muted-foreground">{unit}</span>
-            <div className="flex items-center ml-auto text-xs font-normal">
-              {getTrendIcon()}
-              <span className={cn(
-                trend === 'up' && (status === 'elevated' || status === 'critical') && "text-medical-red",
-                trend === 'up' && status === 'normal' && "text-medical-green",
-                trend === 'down' && status === 'low' && "text-medical-red",
-                trend === 'down' && status === 'normal' && "text-medical-green",
-                trend === 'stable' && "text-muted-foreground"
-              )}>
-                {trend === 'stable' ? 'Stable' : trend === 'up' ? 'Increasing' : 'Decreasing'}
-              </span>
-            </div>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">
             Range: {normalRange} {unit}
           </p>
         </div>
       </div>
-
-      <Dialog>
-        <DialogTrigger asChild>
-          <button 
-            className="w-full mt-4 pt-3 border-t border-border/40 flex items-center justify-center text-xs text-muted-foreground"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            {showDetails ? <ChevronUp className="w-4 h-4 mr-1" /> : <ChevronDown className="w-4 h-4 mr-1" />}
-            {showDetails ? "Hide Details" : "View Details"}
-          </button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{name} Details</DialogTitle>
-            <DialogDescription>
-              Current value: {value} {unit} ({getStatusLabel()})
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            {description && (
-              <div>
-                <h4 className="text-sm font-medium mb-1">About this biomarker:</h4>
-                <p className="text-sm text-muted-foreground">{description}</p>
-              </div>
-            )}
-            
-            {history.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">History:</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {history.map((entry, i) => (
-                    <div key={i} className="flex justify-between items-center p-2 bg-muted rounded-md text-sm">
-                      <span>{format(new Date(entry.date), 'MMM d, yyyy')}</span>
-                      <span className="font-medium">{entry.value} {unit}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {recommendations.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Recommendations:</h4>
-                <ul className="space-y-1">
-                  {recommendations.map((recommendation, i) => (
-                    <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="rounded-full bg-primary/20 p-1 flex items-center justify-center mt-0.5">
-                        <ChevronRight className="w-3 h-3 text-primary" />
-                      </span>
-                      {recommendation}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 };

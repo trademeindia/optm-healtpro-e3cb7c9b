@@ -1,41 +1,62 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { HeartPulse } from 'lucide-react';
 
-// Import new components 
-import UserTypeSelector from '@/components/auth/UserTypeSelector';
-import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import LoginForm from '@/components/auth/LoginForm';
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import SignupDialog from '@/components/auth/SignupDialog';
-import MarketingPanel from '@/components/auth/MarketingPanel';
-import DebugSection from '@/components/auth/DebugSection';
-import { useLoginState } from '@/hooks/useLoginState';
-
 const Login: React.FC = () => {
-  const { 
-    email, setEmail,
-    password, setPassword,
-    isSubmitting, setIsSubmitting,
-    showForgotPassword, setShowForgotPassword,
-    forgotEmail, setForgotEmail,
-    userType, setUserType,
-    showSignupDialog, setShowSignupDialog,
-    signupData, setSignupData,
-    showDebug, setShowDebug,
-    handleSubmit,
-    handleForgotPassword,
-    handleSignup,
-    handleGoogleLogin,
-    handleSocialLogin,
-    handleTabChange,
-    handleSignupInputChange
-  } = useLoginState();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const { login, forgotPassword } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!forgotEmail) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await forgotPassword(forgotEmail);
+      setShowForgotPassword(false);
+    } catch (error) {
+      console.error('Password reset failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
+      {/* Left side - Login Form */}
       <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
         <motion.div 
           className="w-full max-w-md"
@@ -52,85 +73,185 @@ const Login: React.FC = () => {
           
           {!showForgotPassword ? (
             <>
-              <UserTypeSelector userType={userType} onTabChange={handleTabChange} />
+              <h2 className="text-2xl font-bold mb-2">Doctor Login</h2>
+              <p className="text-muted-foreground mb-8">Please sign in to continue to your dashboard</p>
               
-              <SocialLoginButtons 
-                onGoogleLogin={handleGoogleLogin}
-                onSocialLogin={handleSocialLogin}
-                isSubmitting={isSubmitting}
-              />
-              
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="doctor@example.com"
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-background text-muted-foreground">or</span>
+                
+                <div className="mb-6">
+                  <label htmlFor="password" className="block text-sm font-medium mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button 
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={togglePasswordVisibility}
+                    >
+                      {showPassword ? 
+                        <EyeOff className="h-5 w-5 text-muted-foreground" /> : 
+                        <Eye className="h-5 w-5 text-muted-foreground" />
+                      }
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              <LoginForm 
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPassword={setPassword}
-                userType={userType}
-                isSubmitting={isSubmitting}
-                onSubmit={handleSubmit}
-                onForgotPassword={() => setShowForgotPassword(true)}
-              />
-              
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
+                
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <input
+                      id="remember"
+                      type="checkbox"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                    />
+                    <label htmlFor="remember" className="ml-2 block text-sm text-muted-foreground">
+                      Remember me
+                    </label>
+                  </div>
                   <button
                     type="button"
-                    className="text-primary hover:text-primary/80 font-medium"
-                    onClick={() => setShowSignupDialog(true)}
+                    className="text-sm text-primary hover:text-primary/80 font-medium"
+                    onClick={() => setShowForgotPassword(true)}
                   >
-                    Sign up
+                    Forgot password?
                   </button>
-                </p>
-              </div>
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full py-2"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Signing in...' : 'Sign in'}
+                </Button>
+              </form>
               
-              <div className="mt-6 text-center">
-                <p className="text-center text-sm text-muted-foreground">
-                  {userType === 'doctor' 
-                    ? 'Demo: doctor@example.com / password123' 
-                    : 'Demo: patient@example.com / password123'}
-                </p>
-              </div>
-              
-              <DebugSection 
-                showDebug={showDebug} 
-                setShowDebug={setShowDebug} 
-              />
+              <p className="mt-8 text-center text-sm text-muted-foreground">
+                Demo credentials: doctor@example.com / password123
+              </p>
             </>
           ) : (
-            <ForgotPasswordForm 
-              forgotEmail={forgotEmail}
-              setForgotEmail={setForgotEmail}
-              onSubmit={handleForgotPassword}
-              onBackToLogin={() => setShowForgotPassword(false)}
-              isSubmitting={isSubmitting}
-            />
+            <>
+              <h2 className="text-2xl font-bold mb-2">Reset Password</h2>
+              <p className="text-muted-foreground mb-8">Enter your email to receive a password reset link</p>
+              
+              <form onSubmit={handleForgotPassword}>
+                <div className="mb-6">
+                  <label htmlFor="forgotEmail" className="block text-sm font-medium mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <input
+                      id="forgotEmail"
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className="pl-10 w-full p-2 border rounded-lg bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="doctor@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 py-2"
+                    onClick={() => setShowForgotPassword(false)}
+                    disabled={isSubmitting}
+                  >
+                    Back to Login
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 py-2"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Link'}
+                  </Button>
+                </div>
+              </form>
+            </>
           )}
         </motion.div>
       </div>
       
+      {/* Right side - Image Background */}
       <div className="hidden md:block w-1/2 bg-gradient-to-br from-primary to-accent p-10">
-        <MarketingPanel userType={userType} />
+        <div className="h-full flex flex-col justify-center items-center">
+          <motion.div
+            className="bg-white/10 backdrop-blur-md p-8 rounded-xl max-w-md text-white"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">Welcome to OPTM HealPro</h2>
+            <p className="mb-4">
+              Access your patient records, biomarkers, and treatment plans all in one place.
+            </p>
+            <ul className="space-y-2">
+              <li className="flex items-center">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Advanced patient tracking</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Interactive anatomical models</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Biomarker analysis and trends</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Secure and compliant platform</span>
+              </li>
+            </ul>
+          </motion.div>
+        </div>
       </div>
-      
-      <SignupDialog 
-        showSignupDialog={showSignupDialog}
-        setShowSignupDialog={setShowSignupDialog}
-        signupData={signupData}
-        handleSignupInputChange={handleSignupInputChange}
-        handleSignup={handleSignup}
-        isSubmitting={isSubmitting}
-        userType={userType}
-      />
     </div>
   );
 };

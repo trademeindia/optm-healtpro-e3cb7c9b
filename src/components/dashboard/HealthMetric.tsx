@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown, Minus, ExternalLink } from 'lucide-react';
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 
 interface HealthMetricProps {
   title: string;
@@ -13,9 +13,6 @@ interface HealthMetricProps {
   icon?: React.ReactNode;
   color?: string;
   className?: string;
-  source?: string;
-  lastSync?: string;
-  isConnected?: boolean;
 }
 
 const HealthMetric: React.FC<HealthMetricProps> = ({
@@ -27,9 +24,6 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
   icon,
   color = 'bg-primary/10 text-primary',
   className,
-  source,
-  lastSync,
-  isConnected = false,
 }) => {
   const getChangeIcon = () => {
     if (!change) return <Minus className="w-3 h-3" />;
@@ -75,24 +69,6 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
           {changeLabel && (
             <span className="text-xs text-muted-foreground ml-1.5">
               {changeLabel}
-            </span>
-          )}
-        </div>
-      )}
-
-      {source && (
-        <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between">
-          <div className="flex items-center">
-            {isConnected && (
-              <div className="w-2 h-2 rounded-full bg-green-500 mr-1.5"></div>
-            )}
-            <span className="text-xs text-muted-foreground">
-              {source}
-            </span>
-          </div>
-          {lastSync && (
-            <span className="text-xs text-muted-foreground">
-              Updated {lastSync}
             </span>
           )}
         </div>
