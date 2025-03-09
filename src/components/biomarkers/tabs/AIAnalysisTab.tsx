@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import MedicalReportAI, { ReportAnalysis } from '@/components/biomarkers/MedicalReportAI';
 
@@ -16,11 +17,11 @@ const AIAnalysisTab: React.FC<AIAnalysisTabProps> = ({ onAnalysisComplete }) => 
       transition={{ duration: 0.5 }}
       className="w-full"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="lg:col-span-2 xl:col-span-1">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
           <MedicalReportAI onAnalysisComplete={onAnalysisComplete} />
         </div>
-        <div className="space-y-6 lg:col-span-2 xl:col-span-1">
+        <div className="space-y-6">
           <AIHowItWorksCard />
           <AIPrivacyCard />
         </div>
@@ -31,7 +32,7 @@ const AIAnalysisTab: React.FC<AIAnalysisTabProps> = ({ onAnalysisComplete }) => 
 
 const AIHowItWorksCard: React.FC = () => {
   return (
-    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 h-auto">
       <CardHeader className="bg-primary/5 pb-2">
         <CardTitle className="text-lg md:text-xl flex items-center gap-2">
           How AI Report Analysis Works
@@ -78,9 +79,10 @@ const AIHowItWorksCard: React.FC = () => {
 
 const AIPrivacyCard: React.FC = () => {
   return (
-    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 h-auto">
       <CardHeader className="bg-primary/5 pb-2">
         <CardTitle className="text-lg md:text-xl flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-primary" />
           Privacy & Security
         </CardTitle>
       </CardHeader>

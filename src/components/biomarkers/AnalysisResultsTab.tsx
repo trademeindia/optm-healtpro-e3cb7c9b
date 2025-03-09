@@ -15,7 +15,7 @@ const AnalysisResultsTab: React.FC<AnalysisResultsTabProps> = ({ analysis }) => 
   if (!analysis) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-y-auto pr-1">
       <ReportSummary summary={analysis.summary} />
       <KeyFindings findings={analysis.keyFindings} />
       <BiomarkerValues values={analysis.normalValues} />

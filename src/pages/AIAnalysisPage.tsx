@@ -35,7 +35,7 @@ const AIAnalysisPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-6 pl-10 lg:pl-0"
           >
-            <h1 className="text-3xl font-bold text-gradient">AI Report Analysis</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gradient">AI Report Analysis</h1>
             <p className="text-sm text-muted-foreground">
               Upload your medical reports for AI-powered analysis and explanations
             </p>
@@ -56,11 +56,11 @@ const AIAnalysisPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="space-y-6"
+                className="space-y-5"
               >
-                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="bg-primary/5 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-xl">
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                       <Brain className="h-5 w-5 text-primary" />
                       How It Works
                     </CardTitle>
@@ -68,7 +68,7 @@ const AIAnalysisPage: React.FC = () => {
                       Understanding your AI analysis
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="pt-4 p-4 md:p-6">
                     <p className="text-sm leading-relaxed">
                       Our AI system analyzes your medical reports by identifying key biomarkers, 
                       test results, and medical terminology. It then provides explanations in 
@@ -77,9 +77,9 @@ const AIAnalysisPage: React.FC = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="bg-primary/5 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-xl">
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                       <ShieldCheck className="h-5 w-5 text-primary" />
                       Privacy Information
                     </CardTitle>
@@ -87,7 +87,7 @@ const AIAnalysisPage: React.FC = () => {
                       How we handle your data
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="pt-4 p-4 md:p-6">
                     <p className="text-sm leading-relaxed">
                       Your medical reports are processed securely. We do not store the 
                       actual reports on our servers after analysis is complete. Only the 
@@ -96,9 +96,9 @@ const AIAnalysisPage: React.FC = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="bg-primary/5 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-xl">
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                       <Lightbulb className="h-5 w-5 text-accent" />
                       Quick Tips
                     </CardTitle>
@@ -106,7 +106,7 @@ const AIAnalysisPage: React.FC = () => {
                       Get the most from your analysis
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="pt-4 p-4 md:p-6">
                     <ul className="text-sm space-y-2">
                       <li className="flex items-start gap-2">
                         <div className="bg-accent/10 text-accent rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">1</div>
@@ -134,12 +134,12 @@ const AIAnalysisPage: React.FC = () => {
             >
               <Card className="border border-primary/20 shadow-lg">
                 <CardHeader className="bg-primary/5 pb-2">
-                  <CardTitle className="flex items-center gap-2 text-xl">
+                  <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                     <HelpCircle className="h-5 w-5 text-primary" />
                     Important Note
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="pt-4 p-4 md:p-6">
                   <p className="text-sm text-muted-foreground">
                     The AI analysis is meant to help you understand your medical reports better, but it is not a substitute for professional medical advice.
                     Always consult with your healthcare provider about your test results and any health concerns.

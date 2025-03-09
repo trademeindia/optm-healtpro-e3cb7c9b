@@ -72,42 +72,42 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   };
 
   return (
-    <Card className="w-full h-full shadow-lg border border-primary/20 transition-shadow duration-300 hover:shadow-xl overflow-hidden">
-      <CardHeader className="bg-primary/5 pb-4">
-        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
-          <Brain className="h-5 w-5 text-primary" />
+    <Card className="w-full shadow-lg border border-primary/20 transition-all duration-300 hover:shadow-xl overflow-hidden">
+      <CardHeader className="bg-primary/5 pb-4 space-y-2">
+        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl font-bold">
+          <Brain className="h-6 w-6 text-primary" />
           AI Medical Report Analysis
         </CardTitle>
         <CardDescription className="text-sm md:text-base">
           Upload your medical report or paste its content for AI-powered analysis and explanation
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 md:p-6">
+      <CardContent className="p-4 md:p-6 pt-5">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4 w-full flex justify-start overflow-x-auto scrollbar-none p-1 bg-muted/30 rounded-lg">
+          <TabsList className="mb-5 w-full grid grid-cols-3 bg-muted/30 rounded-lg p-1">
             <TabsTrigger 
               value="upload" 
-              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               Upload Report
             </TabsTrigger>
             <TabsTrigger 
               value="text-input"
-              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               Text Input
             </TabsTrigger>
             <TabsTrigger 
               value="analysis" 
               disabled={!analysis}
-              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+              className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
-              Analysis Results
+              Results
             </TabsTrigger>
           </TabsList>
           
-          <div className="min-h-[300px] md:min-h-[400px]">
-            <TabsContent value="upload" className="mt-0 h-full">
+          <div className="min-h-[300px] md:min-h-[380px] relative">
+            <TabsContent value="upload" className="mt-0 absolute inset-0 h-full">
               <UploadTab 
                 file={file}
                 isProcessing={isProcessing}
@@ -117,7 +117,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
               />
             </TabsContent>
             
-            <TabsContent value="text-input" className="mt-0 h-full">
+            <TabsContent value="text-input" className="mt-0 absolute inset-0 h-full">
               <TextInputTab 
                 textInput={textInput}
                 isProcessing={isProcessing}
@@ -127,7 +127,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
               />
             </TabsContent>
             
-            <TabsContent value="analysis" className="mt-0 h-full">
+            <TabsContent value="analysis" className="mt-0 absolute inset-0 h-full overflow-y-auto">
               <AnalysisResultsTab analysis={analysis} />
             </TabsContent>
           </div>
