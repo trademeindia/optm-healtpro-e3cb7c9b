@@ -91,10 +91,13 @@ export const useAuthOperations = () => {
       });
 
       if (error) {
-        // Handle the specific provider not enabled error
+        // Handle different OAuth errors
         if (error.message.includes('provider is not enabled')) {
           toast.error(`${provider} login is not enabled. Please configure it in Supabase first.`);
           console.error(`Error: ${provider} provider is not enabled in Supabase. Enable it in Authentication > Providers.`);
+        } else if (error.message.includes('missing OAuth secret')) {
+          toast.error(`${provider} login is not properly configured. Missing OAuth client secret.`);
+          console.error(`Error: ${provider} provider is missing OAuth secrets. Add them in Supabase Authentication > Providers.`);
         } else {
           toast.error(`Failed to connect with ${provider}: ${error.message}`);
         }
