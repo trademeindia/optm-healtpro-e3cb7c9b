@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TestTube, Upload, FileText, Check, X, AlertCircle, Scan } from 'lucide-react';
@@ -6,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import BiomarkerDisplay from '@/components/dashboard/BiomarkerDisplay';
+import BiologicalAge from '@/components/dashboard/BiologicalAge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -107,6 +109,10 @@ const BiomarkersPage: React.FC = () => {
   const [processingFile, setProcessingFile] = useState(false);
   const [biomarkers, setBiomarkers] = useState<Biomarker[]>(mockBiomarkers);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  
+  // Mock data for biological age
+  const mockBiologicalAge = 21;
+  const mockChronologicalAge = 32;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -202,21 +208,32 @@ const BiomarkersPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="grid grid-cols-1 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <TestTube className="h-5 w-5 text-primary" />
-                        Your Biomarker Data
-                      </CardTitle>
-                      <CardDescription>
-                        Track your health metrics over time
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <BiomarkerDisplay biomarkers={biomarkers} />
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Biological Age Card - 4 columns on large screens */}
+                  <div className="lg:col-span-4">
+                    <BiologicalAge 
+                      biologicalAge={mockBiologicalAge} 
+                      chronologicalAge={mockChronologicalAge} 
+                    />
+                  </div>
+                  
+                  {/* Biomarker Data Card - 8 columns on large screens */}
+                  <div className="lg:col-span-8">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TestTube className="h-5 w-5 text-primary" />
+                          Your Biomarker Data
+                        </CardTitle>
+                        <CardDescription>
+                          Track your health metrics over time
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <BiomarkerDisplay biomarkers={biomarkers} />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </motion.div>
             </TabsContent>
