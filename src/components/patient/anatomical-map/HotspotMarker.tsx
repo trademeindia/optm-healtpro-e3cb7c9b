@@ -25,8 +25,8 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
               top: `${position.y}%`,
               width: `${hotspot.size}px`,
               height: `${hotspot.size}px`,
-              backgroundColor: hotspot.color,
-              border: isActive ? '2px solid white' : '2px dashed rgba(255,255,255,0.7)',
+              backgroundColor: isActive ? hotspot.color : 'rgba(255, 255, 255, 0.7)',
+              border: `2px solid ${hotspot.color}`,
               boxShadow: '0 0 10px rgba(0,0,0,0.3)',
               transform: 'translate(-50%, -50%)', // Center the hotspot on its position
               zIndex: 20 // Ensure hotspots are above the image
@@ -38,7 +38,11 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             whileHover={{ scale: 1.2 }}
             onClick={() => onClick(hotspot)}
           >
-            <Target className="h-3 w-3 text-white" />
+            {isActive ? (
+              <span className="text-white text-xs font-bold">{hotspot.id}</span>
+            ) : (
+              <span className="text-xs font-bold" style={{ color: hotspot.color }}>{hotspot.id}</span>
+            )}
           </motion.div>
         </TooltipTrigger>
         <TooltipContent>

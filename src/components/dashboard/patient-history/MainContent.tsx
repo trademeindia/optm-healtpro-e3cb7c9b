@@ -16,17 +16,19 @@ const MainContent: React.FC<MainContentProps> = ({
   onSelectRegion,
   onAssignTests
 }) => {
-  return <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      {/* Patient profile - now full width */}
-      <div className="lg:col-span-12">
-        <PatientProfile patient={patient} onAssignTests={onAssignTests} />
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Left column - Anatomical map */}
+      <div className="lg:col-span-8">
+        <AnatomicalMap className="w-full h-full" />
       </div>
       
-      {/* Anatomical Map Section */}
-      <div className="lg:col-span-12 mt-6">
-        <AnatomicalMap className="w-full" />
+      {/* Right column - Patient profile */}
+      <div className="lg:col-span-4">
+        <PatientProfile patient={patient} onAssignTests={onAssignTests} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default MainContent;

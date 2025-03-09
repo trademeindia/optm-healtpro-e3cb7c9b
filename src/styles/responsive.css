@@ -38,6 +38,20 @@
   overflow: visible !important;
 }
 
+/* Tab changes for small screens */
+@media (max-width: 640px) {
+  .tabs-container .tabs-list {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 0.5rem;
+  }
+  
+  .tabs-container .tab-trigger {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+  }
+}
+
 @media (max-width: 640px) {
   .anatomy-model-container {
     height: 450px !important;
