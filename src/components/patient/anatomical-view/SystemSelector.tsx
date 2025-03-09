@@ -16,12 +16,12 @@ const SystemSelector: React.FC<SystemSelectorProps> = ({
 }) => {
   return (
     <Tabs defaultValue={activeSystem} onValueChange={onSystemChange} className="w-full max-w-[500px]">
-      <TabsList className="bg-gray-100 dark:bg-gray-700 grid grid-flow-col auto-cols-fr w-full overflow-x-auto scrollbar-none">
+      <TabsList className="bg-gray-100 dark:bg-gray-700 grid grid-flow-col auto-cols-fr w-full overflow-x-auto scrollbar-none p-1 rounded-md">
         {systems.map(system => (
           <TabsTrigger 
             key={system.id} 
             value={system.id}
-            className="whitespace-nowrap text-xs py-1.5"
+            className="whitespace-nowrap text-sm py-2 px-3 font-medium transition-all hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
           >
             {system.label}
           </TabsTrigger>
