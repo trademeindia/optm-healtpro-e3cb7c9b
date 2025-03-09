@@ -2,48 +2,31 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { verifyOAuthState, getOAuthProvider, clearOAuthState } from '@/utils/oauth';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const OAuthCallback: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { handleOAuthCallback } = useAuth();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    const processOAuthCallback = async () => {
-      // Get query parameters from URL
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      const state = params.get('state');
-      const provider = params.get('provider');
-      
-      // Validate state and code
-      if (!code || !state || !provider) {
-        setError('Invalid OAuth callback parameters');
-        toast.error('Authentication failed: Missing parameters');
-        setTimeout(() => navigate('/login'), 2000);
-        return;
-      }
-      
-      // Verify the state matches what we stored (prevents CSRF)
-      if (!verifyOAuthState(state)) {
-        setError('Invalid OAuth state parameter');
-        toast.error('Authentication failed: Security error');
-        setTimeout(() => navigate('/login'), 2000);
-        return;
-      }
-      
+    // With Supabase auth, the callback is handled automatically
+    // We just need to wait for the auth state to be updated
+    const checkAuthState = async () => {
       try {
-        // Process the OAuth callback
-        await handleOAuthCallback(provider, code);
-        
-        // Clear OAuth state from storage
-        clearOAuthState();
-        
-        // Navigate to appropriate dashboard
-        toast.success('Successfully signed in!');
+        // If we have a user, redirect to the appropriate dashboard
+        if (user && !isLoading) {
+          toast.success('Successfully signed in!');
+          navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+        } 
+        // If we've finished loading and still don't have a user, there was an error
+        else if (!isLoading && !user) {
+          setError('Authentication failed');
+          toast.error('Authentication failed');
+          setTimeout(() => navigate('/login'), 2000);
+        }
       } catch (err) {
         setError('Failed to process authentication');
         toast.error('Authentication failed');
@@ -51,8 +34,8 @@ const OAuthCallback: React.FC = () => {
       }
     };
     
-    processOAuthCallback();
-  }, [navigate, handleOAuthCallback]);
+    checkAuthState();
+  }, [navigate, user, isLoading]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

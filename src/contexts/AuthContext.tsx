@@ -1,7 +1,9 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getMockUserProfileFromProvider, generateOAuthRedirectUrl } from '@/utils/oauth';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 type UserRole = 'doctor' | 'patient';
 type AuthProvider = 'email' | 'google' | 'apple' | 'github';
@@ -42,58 +44,107 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Failed to parse stored user', error);
-        localStorage.removeItem('user');
+  // Convert Supabase user to our app's user format
+  const formatUser = async (supabaseUser: SupabaseUser | null): Promise<User | null> => {
+    if (!supabaseUser) return null;
+
+    try {
+      // Fetch user profile from the profiles table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
       }
+
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        role: data.role as UserRole,
+        provider: data.provider as AuthProvider,
+        picture: data.picture
+      };
+    } catch (error) {
+      console.error('Error formatting user:', error);
+      return null;
     }
-    setIsLoading(false);
+  };
+
+  // Initialize auth state from Supabase session
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const formattedUser = await formatUser(session.user);
+          setUser(formattedUser);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setIsLoading(true);
+        
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          const formattedUser = await formatUser(session?.user || null);
+          setUser(formattedUser);
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      const formattedUser = await formatUser(data.user);
+      if (!formattedUser) throw new Error('User profile not found');
       
-      if (email === 'doctor@example.com' && password === 'password123') {
-        const userData: User = {
-          id: '1',
-          email: 'doctor@example.com',
-          name: 'Dr. Nikolas Pascal',
-          role: 'doctor',
-          provider: 'email'
-        };
-        
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        toast.success('Login successful');
+      toast.success('Login successful');
+      
+      // Redirect based on user role
+      if (formattedUser.role === 'doctor') {
         navigate('/dashboard');
-      } else if (email === 'patient@example.com' && password === 'password123') {
-        const userData: User = {
-          id: '2',
-          email: 'patient@example.com',
-          name: 'Alex Johnson',
-          role: 'patient',
-          provider: 'email'
-        };
-        
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        toast.success('Login successful');
-        navigate('/patient-dashboard');
       } else {
-        throw new Error('Invalid email or password');
+        navigate('/patient-dashboard');
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -103,23 +154,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, password: string, name: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const userData: User = {
-        id: Math.random().toString(36).substr(2, 9),
+      const { data, error } = await supabase.auth.signUp({
         email,
-        name,
-        role,
-        provider: 'email'
-      };
+        password,
+        options: {
+          data: {
+            name,
+            role
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Account created successfully. Please check your email for verification.');
       
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      toast.success('Account created successfully');
-      navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Signup failed');
+      // For development, we can auto-redirect if email confirmation is disabled
+      if (data.user && !data.user.email_confirmed_at) {
+        navigate('/login');
+      } else {
+        // If email is already confirmed (which can happen in development)
+        // we should get the user profile
+        const formattedUser = await formatUser(data.user);
+        if (formattedUser) {
+          navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Signup failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -128,41 +190,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithSocialProvider = async (provider: AuthProvider) => {
     try {
-      const redirectUrl = generateOAuthRedirectUrl(provider);
-      window.location.href = redirectUrl;
-    } catch (error) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/oauth-callback?provider=${provider}`
+        }
+      });
+
+      if (error) throw error;
+      
+      // The redirect happens automatically by Supabase
+    } catch (error: any) {
       console.error(`Error redirecting to ${provider}:`, error);
       toast.error(`Failed to connect with ${provider}`);
     }
   };
 
   const handleOAuthCallback = async (provider: string, code: string) => {
+    // This function is now handled automatically by Supabase's auth.onAuthStateChange
+    // The parameter is kept for backward compatibility with the existing interface
+    // We just need to wait for the auth state to be updated
+    
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // The auth state should be updated by the onAuthStateChange callback
+      // We can add some extra delay to ensure the state is updated
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const profile = getMockUserProfileFromProvider(provider);
-      
-      if (!profile) {
-        throw new Error(`Failed to get profile from ${provider}`);
+      if (!user) {
+        throw new Error('Authentication failed');
       }
       
-      const isDoctor = Math.random() > 0.5;
-      
-      const userData: User = {
-        id: profile.id,
-        email: profile.email,
-        name: profile.name,
-        role: isDoctor ? 'doctor' : 'patient',
-        provider: provider as AuthProvider,
-        picture: profile.picture
-      };
-      
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      navigate(userData.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-    } catch (error) {
+      // Navigate based on user role
+      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+    } catch (error: any) {
       console.error(`${provider} OAuth handling failed:`, error);
       toast.error(`${provider} login failed`);
       throw error;
@@ -171,20 +232,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    toast.info('You have been logged out');
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.info('You have been logged out');
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast.error('Failed to log out');
+    }
   };
 
   const forgotPassword = async (email: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
       
       toast.success('Password reset link sent to your email');
-    } catch (error) {
-      toast.error('Failed to send reset link');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset link');
       throw error;
     }
   };

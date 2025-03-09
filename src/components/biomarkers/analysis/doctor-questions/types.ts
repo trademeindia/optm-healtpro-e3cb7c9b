@@ -1,4 +1,5 @@
 
+
 export interface Question {
   text: string;
   answer?: string;
@@ -9,4 +10,7 @@ export interface Question {
   };
   userVoted?: 'helpful' | 'notHelpful' | null;
   favorited?: boolean;
+  // Add user_id for Supabase integration later when saving questions
+  user_id?: string;
 }
+
