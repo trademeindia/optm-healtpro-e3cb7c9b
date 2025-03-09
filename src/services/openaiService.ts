@@ -66,7 +66,11 @@ export class OpenAIService {
         summary: simulatedResponse.summary,
         keyFindings: simulatedResponse.keyFindings,
         recommendations: simulatedResponse.recommendations,
-        extractedBiomarkers: simulatedResponse.extractedBiomarkers,
+        extractedBiomarkers: simulatedResponse.extractedBiomarkers.map(biomarker => ({
+          ...biomarker,
+          // Ensure status is one of the allowed values
+          status: this.normalizeStatus(biomarker.status)
+        })),
       };
       
       /* PRODUCTION CODE (commented out for demo):
@@ -94,7 +98,10 @@ export class OpenAIService {
         summary: analysisData.summary || "No summary available",
         keyFindings: analysisData.keyFindings || [],
         recommendations: analysisData.recommendations || [],
-        extractedBiomarkers: analysisData.extractedBiomarkers || [],
+        extractedBiomarkers: analysisData.extractedBiomarkers.map(biomarker => ({
+          ...biomarker,
+          status: this.normalizeStatus(biomarker.status)
+        })) || [],
       };
       */
     } catch (error) {
@@ -110,6 +117,21 @@ export class OpenAIService {
         extractedBiomarkers: [],
       };
     }
+  }
+
+  /**
+   * Normalizes status string to one of the allowed values
+   */
+  private static normalizeStatus(status: string): 'normal' | 'elevated' | 'low' | 'critical' {
+    const lowerStatus = (status || '').toLowerCase();
+    
+    if (lowerStatus === 'normal') return 'normal';
+    if (lowerStatus === 'high' || lowerStatus === 'elevated') return 'elevated';
+    if (lowerStatus === 'low') return 'low';
+    if (lowerStatus === 'critical') return 'critical';
+    
+    // Default to normal if unknown status
+    return 'normal';
   }
 
   /**

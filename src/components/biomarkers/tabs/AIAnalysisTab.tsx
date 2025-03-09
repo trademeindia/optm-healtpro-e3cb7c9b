@@ -3,10 +3,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Lightbulb, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import MedicalReportAI, { ReportAnalysis } from '@/components/biomarkers/MedicalReportAI';
+import MedicalReportAI from '@/components/biomarkers/MedicalReportAI';
+import { MedicalAnalysis } from '@/types/medicalData';
 
 interface AIAnalysisTabProps {
-  onAnalysisComplete: (analysis: ReportAnalysis) => void;
+  onAnalysisComplete: (analysis: MedicalAnalysis) => void;
 }
 
 const AIAnalysisTab: React.FC<AIAnalysisTabProps> = ({ onAnalysisComplete }) => {

@@ -8,12 +8,10 @@ import Recommendations from './analysis/Recommendations';
 import DoctorQuestions from './analysis/DoctorQuestions';
 
 interface AnalysisResultsTabProps {
-  analysis: ReportAnalysis | null;
+  analysis: ReportAnalysis;
 }
 
 const AnalysisResultsTab: React.FC<AnalysisResultsTabProps> = ({ analysis }) => {
-  if (!analysis) return null;
-
   return (
     <div className="space-y-6 h-full overflow-y-auto pr-1 pb-4">
       <ReportSummary summary={analysis.summary} />

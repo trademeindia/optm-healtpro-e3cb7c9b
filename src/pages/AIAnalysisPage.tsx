@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import AIAnalysisTab from '@/components/biomarkers/tabs/AIAnalysisTab';
-import { ReportAnalysis } from '@/components/biomarkers/types';
+import { MedicalAnalysis } from '@/types/medicalData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 const AIAnalysisPage: React.FC = () => {
   const { toast } = useToast();
 
-  const handleReportAnalysisComplete = (analysis: ReportAnalysis) => {
+  const handleReportAnalysisComplete = (analysis: MedicalAnalysis) => {
     console.log("Report analysis completed:", analysis);
     
     toast({

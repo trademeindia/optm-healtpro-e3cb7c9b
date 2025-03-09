@@ -5,12 +5,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicalReportAIProps } from './types';
-import { simulateProcessing } from './utils/reportProcessing';
 import UploadTab from './UploadTab';
 import TextInputTab from './TextInputTab';
 import AnalysisResultsTab from './AnalysisResultsTab';
 import { useMedicalData } from '@/contexts/MedicalDataContext';
-import { MedicalReport } from '@/types/medicalData';
+import { MedicalReport, MedicalAnalysis } from '@/types/medicalData';
+import { ReportAnalysis } from './types';
 
 const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete }) => {
   const { toast } = useToast();
@@ -267,7 +267,11 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
             </TabsContent>
             
             <TabsContent value="analysis" className="mt-0 absolute inset-0 h-full overflow-y-auto">
-              {lastAnalysis && <AnalysisResultsTab analysis={lastAnalysis} />}
+              {lastAnalysis && (
+                <AnalysisResultsTab 
+                  analysis={convertToReportAnalysis(lastAnalysis)} 
+                />
+              )}
             </TabsContent>
           </div>
         </Tabs>
@@ -283,6 +287,40 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
       </CardFooter>
     </Card>
   );
+};
+
+// Helper function to convert MedicalAnalysis to ReportAnalysis
+const convertToReportAnalysis = (analysis: MedicalAnalysis): ReportAnalysis => {
+  // Create normalValues from extractedBiomarkers
+  const normalValues: Record<string, { value: string; status: 'normal' | 'abnormal' | 'critical' }> = {};
+  
+  analysis.extractedBiomarkers.forEach(biomarker => {
+    let displayStatus: 'normal' | 'abnormal' | 'critical';
+    
+    // Map the status values
+    switch(biomarker.status) {
+      case 'normal':
+        displayStatus = 'normal';
+        break;
+      case 'critical':
+        displayStatus = 'critical';
+        break;
+      default:
+        displayStatus = 'abnormal';
+        break;
+    }
+    
+    normalValues[biomarker.name] = {
+      value: String(biomarker.value) + (biomarker.unit ? ` ${biomarker.unit}` : ''),
+      status: displayStatus
+    };
+  });
+  
+  return {
+    ...analysis,
+    reportType: 'Medical Analysis',
+    normalValues
+  };
 };
 
 export default MedicalReportAI;

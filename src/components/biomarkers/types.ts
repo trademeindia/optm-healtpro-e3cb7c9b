@@ -1,14 +1,11 @@
 
-export interface ReportAnalysis {
-  id: string;
-  timestamp: string;
+import { MedicalAnalysis, ExtractedBiomarker } from '@/types/medicalData';
+
+export interface ReportAnalysis extends MedicalAnalysis {
   reportType: string;
-  summary: string;
-  keyFindings: string[];
-  recommendations: string[];
   normalValues: Record<string, { value: string; status: 'normal' | 'abnormal' | 'critical' }>;
 }
 
 export interface MedicalReportAIProps {
-  onAnalysisComplete?: (analysisResult: ReportAnalysis) => void;
+  onAnalysisComplete?: (analysisResult: MedicalAnalysis) => void;
 }
