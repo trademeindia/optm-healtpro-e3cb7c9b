@@ -13,8 +13,9 @@ export const simulateProcessing = (
   setProcessingProgress(0);
   
   const interval = setInterval(() => {
-    setProcessingProgress(prev => {
-      if (prev >= 100) {
+    setProcessingProgress((prev) => {
+      const newValue = prev + Math.random() * 15;
+      if (newValue >= 100) {
         clearInterval(interval);
         setIsProcessing(false);
         
@@ -54,7 +55,7 @@ export const simulateProcessing = (
         
         return 100;
       }
-      return prev + Math.random() * 15;
+      return newValue;
     });
   }, 500);
 };
