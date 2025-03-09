@@ -29,7 +29,18 @@ export const useAnatomicalView = (
   const [isRotating, setIsRotating] = useState(false);
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 2.8]);
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
-  const { symptoms } = useSymptoms();
+  const { symptoms, updateSymptom } = useSymptoms();
+
+  // Effect to handle external region selection (from AnatomicalMap)
+  useEffect(() => {
+    if (selectedRegion) {
+      // Find any hotspot matching the selected region
+      const matchingSymptom = symptoms.find(s => s.location === selectedRegion);
+      if (matchingSymptom) {
+        setActiveHotspot(matchingSymptom.id);
+      }
+    }
+  }, [selectedRegion, symptoms]);
 
   const hotspots: Hotspot[] = symptoms.map(symptom => ({
     id: symptom.id,
@@ -38,7 +49,8 @@ export const useAnatomicalView = (
     description: symptom.notes,
     severity: getSeverityLevel(symptom.painLevel),
     color: getSeverityColor(symptom.painLevel),
-    size: 0.1 + (symptom.painLevel * 0.02)
+    size: 0.1 + (symptom.painLevel * 0.02),
+    region: symptom.location // Add region info to sync with AnatomicalMap
   }));
   
   const handleZoomIn = () => {
@@ -55,11 +67,18 @@ export const useAnatomicalView = (
   };
   
   const handleHotspotClick = (id: string) => {
-    setActiveHotspot(id === activeHotspot ? null : id);
+    // Toggle active hotspot
+    const newActiveHotspot = id === activeHotspot ? null : id;
+    setActiveHotspot(newActiveHotspot);
+
+    // Notify parent component about region selection (for syncing with AnatomicalMap)
     if (onSelectRegion) {
       const symptom = symptoms.find(s => s.id === id);
       if (symptom) {
         onSelectRegion(symptom.location);
+      } else if (newActiveHotspot === null) {
+        // If deselecting, pass null or empty string
+        onSelectRegion('');
       }
     }
   };

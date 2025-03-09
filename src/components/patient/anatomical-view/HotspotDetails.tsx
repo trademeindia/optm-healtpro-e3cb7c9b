@@ -20,14 +20,19 @@ const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot }) => {
           style={{ backgroundColor: hotspot.color }}
         ></div>
         <h4 className="font-semibold">{hotspot.label}</h4>
+        {hotspot.region && (
+          <span className="text-xs text-muted-foreground ml-1">
+            ({hotspot.region})
+          </span>
+        )}
       </div>
       <p className="text-sm mb-2">{hotspot.description}</p>
       <div className={`text-xs font-medium ${
-        hotspot.severity === 'high' ? 'text-red-500' : 
-        hotspot.severity === 'medium' ? 'text-orange-500' : 
+        hotspot.severity === 'Severe' ? 'text-red-500' : 
+        hotspot.severity === 'Moderate' ? 'text-orange-500' : 
         'text-green-500'
       }`}>
-        Severity: {hotspot.severity.charAt(0).toUpperCase() + hotspot.severity.slice(1)}
+        Severity: {hotspot.severity}
       </div>
     </motion.div>
   );

@@ -7,6 +7,7 @@ export interface Hotspot {
   severity: string;
   color: string;
   size: number;
+  region: string; // Added to sync with AnatomicalMap
 }
 
 export interface HumanModelProps {

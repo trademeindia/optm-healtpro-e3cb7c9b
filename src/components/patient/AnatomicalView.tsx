@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { AnatomicalCanvas } from './anatomical-view';
 import { HotspotDetails } from './anatomical-view';
@@ -13,6 +13,23 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
   onSelectRegion,
   patientId 
 }) => {
+  // Track the internal selected region
+  const [internalSelectedRegion, setInternalSelectedRegion] = useState<string | undefined>(selectedRegion);
+  
+  // Update internal state when external selectedRegion changes
+  useEffect(() => {
+    setInternalSelectedRegion(selectedRegion);
+  }, [selectedRegion]);
+
+  // Handler for internal region selection
+  const handleRegionSelect = (region: string) => {
+    setInternalSelectedRegion(region);
+    // Propagate change to parent if callback provided
+    if (onSelectRegion) {
+      onSelectRegion(region);
+    }
+  };
+
   const {
     activeSystem,
     setActiveSystem,
@@ -26,7 +43,7 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     handleHotspotClick,
     activeHotspotDetails,
     bodySystems
-  } = useAnatomicalView(selectedRegion, onSelectRegion, patientId);
+  } = useAnatomicalView(internalSelectedRegion, handleRegionSelect, patientId);
 
   return (
     <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
@@ -45,7 +62,7 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 pt-0 pb-6 px-4 relative" style={{ minHeight: '80vh', position: 'relative' }}>
+      <CardContent className="flex-1 pt-0 pb-6 px-4 relative" style={{ minHeight: '70vh', position: 'relative' }}>
         <AnatomicalCanvas 
           activeSystem={activeSystem}
           isRotating={isRotating}
