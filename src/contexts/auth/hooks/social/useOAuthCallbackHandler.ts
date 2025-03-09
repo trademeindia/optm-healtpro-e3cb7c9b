@@ -42,7 +42,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
               console.log("Successfully retrieved user after OAuth flow:", formattedUser);
               toast.success(`Successfully signed in with ${provider}!`);
               // Use navigate instead of direct window.location.href to prevent blank screen
-              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
               return;
             } else {
               console.error("Failed to format user from session");
@@ -75,7 +75,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
               console.log("Created new profile for OAuth user:", newProfile);
               toast.success(`Successfully signed in with ${provider}!`);
               // Use navigate instead of window.location.href for a smoother transition
-              navigate('/patient-dashboard');
+              navigate('/patient-dashboard', { replace: true });
               return;
             }
           } catch (formatError) {
@@ -94,7 +94,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
       
       toast.success(`Successfully signed in with ${provider}!`);
       // Use navigate instead of window.location.href for smoother transition
-      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
       toast.error('Authentication failed. Please try again and check the debug section.');

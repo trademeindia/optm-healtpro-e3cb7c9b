@@ -1,21 +1,26 @@
 
 import React from 'react';
+import { Code } from 'lucide-react';
 
 interface OAuthDebugInfoProps {
   debugInfo: Record<string, any>;
 }
 
 const OAuthDebugInfo: React.FC<OAuthDebugInfoProps> = ({ debugInfo }) => {
-  if (!debugInfo || Object.keys(debugInfo).length === 0) {
+  // Only show this component in development mode
+  if (process.env.NODE_ENV !== 'development') {
     return null;
   }
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mt-4 mb-6 text-left">
-      <h3 className="font-semibold text-gray-800 mb-2">Debug Information:</h3>
-      <pre className="text-xs overflow-auto bg-gray-100 p-2 rounded">
-        {JSON.stringify(debugInfo, null, 2)}
-      </pre>
+    <div className="mt-6 text-left">
+      <div className="flex items-center gap-2 mb-2">
+        <Code className="h-4 w-4 text-muted-foreground" />
+        <h3 className="text-sm font-medium text-muted-foreground">Debug Information</h3>
+      </div>
+      <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md text-xs font-mono overflow-x-auto max-h-32 scrollbar-thin scrollbar-thumb-gray-400">
+        <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+      </div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
+import { toast } from 'sonner';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading, setUser } = useAuthSession();
@@ -30,30 +31,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [user, isLoading, operationsLoading]);
 
+  // Handle errors in authentication flow
+  useEffect(() => {
+    const handleAuthError = (error: ErrorEvent) => {
+      console.error('Auth error detected:', error.message);
+      // Only show toast for authentication related errors
+      if (error.message.toLowerCase().includes('auth') || 
+          error.message.toLowerCase().includes('token') ||
+          error.message.toLowerCase().includes('supabase')) {
+        toast.error('Authentication error. Please try again.');
+      }
+    };
+
+    window.addEventListener('error', handleAuthError);
+    
+    return () => {
+      window.removeEventListener('error', handleAuthError);
+    };
+  }, []);
+
   // Wrap login to update the user state for demo accounts
   const login = async (email: string, password: string): Promise<User | null> => {
-    const user = await loginBase(email, password);
-    
-    // If this is a demo login, update the user state manually since we're bypassing Supabase auth
-    if (user && (email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
-      setUser(user);
+    try {
+      const user = await loginBase(email, password);
       
-      // Handle navigation after setting the user
-      if (user.role === 'doctor') {
-        window.location.href = '/dashboard';
-      } else {
-        window.location.href = '/patient-dashboard';
+      // If this is a demo login, update the user state manually since we're bypassing Supabase auth
+      if (user && (email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
+        setUser(user);
+        
+        // Handle navigation after setting the user
+        if (user.role === 'doctor') {
+          window.location.href = '/dashboard';
+        } else {
+          window.location.href = '/patient-dashboard';
+        }
       }
+      
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please check your credentials and try again.');
+      return null;
     }
-    
-    return user;
   };
 
   // Wrap handleOAuthCallback to include the current user
   const handleOAuthCallback = async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code, hasUser: !!user });
-    // The issue is here - we need to pass the user object as the third argument
-    return handleOAuthCallbackBase(provider, code, user);
+    try {
+      // Pass the user object as the third argument
+      return await handleOAuthCallbackBase(provider, code, user);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      toast.error('OAuth authentication failed. Please try again.');
+      throw error;
+    }
   };
 
   return (

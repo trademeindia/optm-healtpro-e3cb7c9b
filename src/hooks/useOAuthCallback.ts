@@ -55,10 +55,15 @@ export const useOAuthCallback = () => {
       // Call the handler with the code from search params
       if (code) {
         console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
-        await handleOAuthCallback(provider, code);
-        
-        // Wait a short time for the auth state to update
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+          await handleOAuthCallback(provider, code);
+          
+          // Wait a short time for the auth state to update
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        } catch (callbackError) {
+          console.error('Error in handleOAuthCallback:', callbackError);
+          // Continue with checks below even if callback fails
+        }
       }
       
       // Verify Supabase connection and session
@@ -109,11 +114,11 @@ export const useOAuthCallback = () => {
         setTimeout(() => navigate('/login'), 3000);
       }
       // Try again if we're still loading or no user yet
-      else if ((!user || isLoading) && retryCount < 2) {
+      else if ((!user || isLoading) && retryCount < 3) {
         console.log(`Still waiting for authentication, retry ${retryCount + 1}/3...`);
         setRetryCount(prev => prev + 1);
-        // Try again after a delay
-        setTimeout(() => checkAuthState(), 2000);
+        // Try again after a delay with increasing timeouts
+        setTimeout(() => checkAuthState(), 1500 + (retryCount * 500));
       }
     } catch (err: any) {
       console.error('OAuth callback processing error:', err);
@@ -144,7 +149,10 @@ export const useOAuthCallback = () => {
 
     // Only run the auth check if we don't already have an error
     if (!error) {
-      checkAuthState();
+      // Add a small delay to ensure any auth state changes have propagated
+      setTimeout(() => {
+        checkAuthState();
+      }, 500);
     }
   }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, state, retryCount]);
 
