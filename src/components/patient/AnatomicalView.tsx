@@ -29,10 +29,9 @@ interface AnatomicalViewProps {
   patientId?: number;
 }
 
-// Interface for a medical issue hotspot
 interface Hotspot {
   id: string;
-  position: [number, number, number]; // 3D coordinates
+  position: [number, number, number];
   label: string;
   description: string;
   severity: 'low' | 'medium' | 'high';
@@ -40,7 +39,6 @@ interface Hotspot {
   size: number;
 }
 
-// Component that renders a single hotspot
 const Hotspot = ({ 
   position, 
   color, 
@@ -103,7 +101,6 @@ const Hotspot = ({
   );
 };
 
-// Helper component for auto-rotating the model
 const AutoRotate = ({ isRotating }: { isRotating: boolean }) => {
   const { camera } = useThree();
   
@@ -118,7 +115,6 @@ const AutoRotate = ({ isRotating }: { isRotating: boolean }) => {
   return null;
 };
 
-// Component that loads and displays the 3D human anatomy model
 const HumanModel = ({ 
   activeSystem, 
   hotspots, 
@@ -158,12 +154,19 @@ const HumanModel = ({
         center
         sprite
       >
-        <img 
-          src="/lovable-uploads/3e04ef50-20da-4d98-8be4-6c2ba39fbe32.png" 
-          alt="Human Anatomy" 
-          className="w-[400px] h-auto"
-          style={{ opacity: 1, pointerEvents: 'none' }}
-        />
+        <div className="w-full h-full flex items-center justify-center">
+          <img 
+            src="/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png" 
+            alt="Human Anatomy Muscular System" 
+            className="max-h-[500px] w-auto object-contain"
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              pointerEvents: 'none',
+              opacity: activeSystem === 'muscular' ? 1 : 0.7 
+            }}
+          />
+        </div>
       </Html>
       
       {hotspots.map((hotspot) => (
