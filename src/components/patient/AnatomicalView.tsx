@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { AnatomicalCanvas, DetailsPanel, Header, IssuesCounter, useAnatomicalView } from './anatomical-view';
 import { AnatomicalViewProps } from './anatomical-view';
-
 const AnatomicalView: React.FC<AnatomicalViewProps> = ({
   selectedRegion,
   onSelectRegion,
@@ -25,7 +23,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
       onSelectRegion(region);
     }
   };
-  
   const {
     activeSystem,
     setActiveSystem,
@@ -40,32 +37,12 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     activeHotspotDetails,
     bodySystems
   } = useAnatomicalView(internalSelectedRegion, handleRegionSelect, patientId);
-  
-  return (
-    <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
+  return <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3">
         <Header systems={bodySystems} activeSystem={activeSystem} onSystemChange={setActiveSystem} />
       </CardHeader>
       
-      <CardContent className="flex-1 pt-0 pb-6 px-4 relative" style={{ height: 'calc(100% - 80px)' }}>
-        <AnatomicalCanvas 
-          activeSystem={activeSystem}
-          isRotating={isRotating}
-          setIsRotating={setIsRotating}
-          cameraPosition={cameraPosition}
-          hotspots={hotspots}
-          handleZoomIn={handleZoomIn}
-          handleZoomOut={handleZoomOut}
-          handleResetView={handleResetView}
-          handleHotspotClick={handleHotspotClick}
-        />
-        
-        <DetailsPanel activeHotspotDetails={activeHotspotDetails} />
-        
-        <IssuesCounter count={hotspots.length} />
-      </CardContent>
-    </Card>
-  );
+      
+    </Card>;
 };
-
 export default AnatomicalView;
