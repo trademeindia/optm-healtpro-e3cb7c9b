@@ -43,10 +43,9 @@ const HumanModel: React.FC<HumanModelProps> = ({
           <img 
             src="/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png" 
             alt="Human Anatomy Muscular System" 
-            className="max-h-[500px] w-auto object-contain"
+            className="h-full w-auto object-contain max-h-[80vh]"
             style={{ 
-              maxWidth: '100%', 
-              height: 'auto',
+              maxWidth: '100%',
               pointerEvents: 'none',
               opacity: activeSystem === 'muscular' ? 1 : 0.7 
             }}
