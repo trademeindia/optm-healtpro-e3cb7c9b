@@ -8,7 +8,8 @@ import { symptomsToHotspots } from './utils';
 import MapControls from './MapControls';
 import HotspotMarker from './HotspotMarker';
 import HotspotDetail from './HotspotDetail';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SystemTabs from './SystemTabs';
+import MapVisualization from './MapVisualization';
 
 const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
   const { symptoms } = useSymptoms();
@@ -47,26 +48,6 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
     setHotspots(symptomsToHotspots(symptoms));
   }, [symptoms]);
 
-  // Select the appropriate image based on active system
-  const getSystemImage = () => {
-    switch (activeSystem) {
-      case 'muscular':
-        return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
-      case 'skeletal':
-        return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
-      case 'skin':
-        return "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png";
-      case 'organs':
-        return "/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png";
-      case 'vascular':
-      case 'nervous':
-      case 'lymphatic':
-        return "/lovable-uploads/2f92810e-f197-4554-81aa-25c65d85b001.png";
-      default:
-        return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
-    }
-  };
-
   return (
     <Card className={`bg-white dark:bg-gray-800 shadow-sm ${className || ''}`}>
       <CardHeader className="pb-3 flex flex-col">
@@ -82,57 +63,22 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
           />
         </div>
         
-        <Tabs 
-          defaultValue="muscular" 
-          value={activeSystem}
-          onValueChange={setActiveSystem}
-          className="w-full mt-4"
-        >
-          <TabsList className="grid grid-cols-7 w-full">
-            <TabsTrigger value="full-body" className="text-xs sm:text-sm">Full body</TabsTrigger>
-            <TabsTrigger value="skin" className="text-xs sm:text-sm">Skin</TabsTrigger>
-            <TabsTrigger value="muscular" className="text-xs sm:text-sm">Muscular</TabsTrigger>
-            <TabsTrigger value="skeletal" className="text-xs sm:text-sm">Skeletal</TabsTrigger>
-            <TabsTrigger value="organs" className="text-xs sm:text-sm">Organs</TabsTrigger>
-            <TabsTrigger value="vascular" className="text-xs sm:text-sm">Vascular</TabsTrigger>
-            <TabsTrigger value="nervous" className="text-xs sm:text-sm">Nervous</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <SystemTabs 
+          activeSystem={activeSystem}
+          onSystemChange={setActiveSystem}
+        />
       </CardHeader>
       
       <CardContent className="p-0 pb-4 px-4">
-        <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[550px]">
-          <motion.div
-            className="relative w-full h-full flex justify-center"
-            style={{
-              scale: zoom,
-              transition: 'scale 0.2s ease-out'
-            }}
-          >
-            {/* Anatomical model image */}
-            <img
-              src={getSystemImage()}
-              alt="Human Anatomy Model"
-              className="h-full object-contain max-w-full"
-              style={{ maxHeight: '550px' }}
-              onLoad={handleImageLoad}
-            />
-            
-            {/* Hotspots - Only render if image is loaded */}
-            {imageLoaded && (
-              <AnimatePresence>
-                {hotspots.map((hotspot) => (
-                  <HotspotMarker
-                    key={hotspot.id}
-                    hotspot={hotspot}
-                    isActive={activeHotspot?.id === hotspot.id}
-                    onClick={handleHotspotClick}
-                  />
-                ))}
-              </AnimatePresence>
-            )}
-          </motion.div>
-        </div>
+        <MapVisualization
+          activeSystem={activeSystem}
+          zoom={zoom}
+          hotspots={hotspots}
+          activeHotspot={activeHotspot}
+          onImageLoad={handleImageLoad}
+          onHotspotClick={handleHotspotClick}
+          imageLoaded={imageLoaded}
+        />
         
         {/* Detail panel for active hotspot */}
         {activeHotspot && <HotspotDetail hotspot={activeHotspot} />}

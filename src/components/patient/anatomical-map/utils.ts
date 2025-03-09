@@ -20,3 +20,24 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
     description: symptom.notes
   }));
 };
+
+// Select the appropriate image based on active system
+export const getSystemImage = (activeSystem: string): string => {
+  switch (activeSystem) {
+    case 'muscular':
+      return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
+    case 'skeletal':
+      return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
+    case 'skin':
+      return "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png";
+    case 'organs':
+      return "/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png";
+    case 'vascular':
+    case 'nervous':
+    case 'lymphatic':
+    case 'full-body':
+      return "/lovable-uploads/2f92810e-f197-4554-81aa-25c65d85b001.png";
+    default:
+      return "/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png";
+  }
+};
