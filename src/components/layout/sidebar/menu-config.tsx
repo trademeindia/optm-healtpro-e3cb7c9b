@@ -9,7 +9,8 @@ import {
   TestTube,
   Smartphone,
   Dumbbell,
-  Calendar
+  Calendar,
+  Brain
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -52,6 +53,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'Biomarkers', 
     path: '/biomarkers',
     description: 'View and upload your biomarker data and test results'
+  },
+  { 
+    icon: Brain, 
+    label: 'AI Report Analysis', 
+    path: '/ai-report-analysis',
+    description: 'Upload medical reports for AI-powered analysis and explanation'
   },
   { 
     icon: FileText, 
