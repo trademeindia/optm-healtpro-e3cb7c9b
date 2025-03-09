@@ -10,6 +10,8 @@ export interface Biomarker {
   percentage?: number;
   trend?: 'up' | 'down' | 'stable';
   description?: string;
+  possibleCauses?: string[];
+  recommendations?: string[];
 }
 
 export const mockBiomarkers: Biomarker[] = [
