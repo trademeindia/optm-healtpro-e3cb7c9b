@@ -28,6 +28,9 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
   if (!biomarker) return null;
 
   const affectedMuscles = getAffectedMuscles(biomarker.name);
+  const showMusclesSection = affectedMuscles.length > 0 && 
+                            affectedMuscles[0] !== 'No direct skeletal muscle impact' &&
+                            affectedMuscles[0] !== 'Information not available for this biomarker';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,7 +91,7 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
             </div>
           </div>
 
-          {affectedMuscles && affectedMuscles.length > 0 && affectedMuscles[0] !== 'No direct skeletal muscle impact' && (
+          {showMusclesSection && (
             <div className="bg-muted/60 p-4 rounded-lg">
               <h4 className="font-medium mb-2 flex items-center">
                 <Dumbbell className="w-4 h-4 mr-2" />

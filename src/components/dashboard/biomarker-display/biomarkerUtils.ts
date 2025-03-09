@@ -190,9 +190,63 @@ export const getAffectedMuscles = (biomarkerName: string): string[] => {
     'Vitamin B6': [
       'All skeletal muscles involved in protein metabolism',
       'Particularly muscles undergoing growth or repair'
+    ],
+    // Additional biomarkers commonly tested
+    'Calcium': [
+      'All skeletal muscles - affects muscle contraction',
+      'Particularly important for postural muscles'
+    ],
+    'Magnesium': [
+      'All skeletal muscles - essential for muscle function',
+      'Respiratory muscles',
+      'Postural muscles'
+    ],
+    'Potassium': [
+      'All skeletal muscles - critical for muscle contraction',
+      'Cardiac muscle (although not skeletal)'
+    ],
+    'Sodium': [
+      'All skeletal muscles - important for nerve impulse transmission'
+    ],
+    'Creatine Kinase': [
+      'Reflects damage in skeletal muscles',
+      'Particularly elevated after intense exercise'
+    ],
+    'Albumin': [
+      'No direct skeletal muscle impact, but affects protein availability'
+    ],
+    'Cortisol': [
+      'Can affect all skeletal muscles through protein catabolism',
+      'May lead to muscle wasting in chronic elevation'
+    ],
+    'Testosterone': [
+      'All skeletal muscles - promotes muscle protein synthesis',
+      'Particularly affects large muscle groups'
+    ],
+    'Vitamin K': [
+      'No direct skeletal muscle impact'
+    ],
+    'Folate': [
+      'No direct skeletal muscle impact'
+    ],
+    'Vitamin A': [
+      'No direct skeletal muscle impact'
+    ],
+    'Vitamin E': [
+      'May protect skeletal muscle from oxidative damage'
+    ],
+    'Zinc': [
+      'All skeletal muscles - involved in protein synthesis',
+      'Muscles undergoing growth or repair'
+    ],
+    'Copper': [
+      'No direct skeletal muscle impact'
+    ],
+    'Selenium': [
+      'May protect skeletal muscle from oxidative damage'
     ]
   };
 
   // Return the muscles affected by the given biomarker, or an empty array if none found
-  return muscleMap[biomarkerName] || [];
+  return muscleMap[biomarkerName] || ['Information not available for this biomarker'];
 };
