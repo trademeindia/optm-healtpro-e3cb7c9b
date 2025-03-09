@@ -14,7 +14,6 @@ import UpcomingAppointmentsCard from './UpcomingAppointmentsCard';
 import MedicalDocuments from './MedicalDocuments';
 import MessageYourDoctor from './MessageYourDoctor';
 import HealthSyncButton from './HealthSyncButton';
-import BiologicalAge from '@/components/dashboard/BiologicalAge';
 import { Heart, Activity, Thermometer, Droplet } from 'lucide-react';
 
 interface DashboardMainContentProps {
@@ -43,8 +42,6 @@ interface DashboardMainContentProps {
     doctor: string;
     type: string;
   }[];
-  biologicalAge: number;
-  chronologicalAge: number;
   hasConnectedApps: boolean;
   onSyncData: () => Promise<void>;
   handleConfirmAppointment?: (id: string) => void;
@@ -56,8 +53,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   activityData,
   treatmentTasks,
   upcomingAppointments,
-  biologicalAge,
-  chronologicalAge,
   hasConnectedApps,
   onSyncData,
   handleConfirmAppointment,
@@ -98,12 +93,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
           onSyncData={onSyncData}
         />
         
-        {/* Biological Age Card */}
-        <BiologicalAge 
-          biologicalAge={biologicalAge} 
-          chronologicalAge={chronologicalAge} 
-        />
-
         {/* Health Metrics */}
         <div className="grid grid-cols-2 gap-4">
           <HealthMetric

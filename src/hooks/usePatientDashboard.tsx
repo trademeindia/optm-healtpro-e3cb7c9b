@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
-import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
 
 export const usePatientDashboard = () => {
   const { toast } = useToast();
@@ -191,8 +190,6 @@ export const usePatientDashboard = () => {
     upcomingAppointments,
     healthMetrics,
     hasConnectedApps,
-    biologicalAge: mockBiologicalAge,
-    chronologicalAge: mockChronologicalAge,
     handleConfirmAppointment,
     handleRescheduleAppointment,
     handleSyncAllData

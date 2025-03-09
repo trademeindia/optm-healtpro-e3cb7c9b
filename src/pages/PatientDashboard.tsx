@@ -16,8 +16,6 @@ const PatientDashboard: React.FC = () => {
     treatmentTasks,
     upcomingAppointments,
     healthMetrics,
-    biologicalAge,
-    chronologicalAge,
     hasConnectedApps,
     handleConfirmAppointment,
     handleRescheduleAppointment,
@@ -54,8 +52,6 @@ const PatientDashboard: React.FC = () => {
                 activityData={activityData}
                 treatmentTasks={treatmentTasks}
                 upcomingAppointments={upcomingAppointments || []}
-                biologicalAge={biologicalAge}
-                chronologicalAge={chronologicalAge}
                 hasConnectedApps={hasConnectedApps}
                 onSyncData={handleSyncAllData}
                 handleConfirmAppointment={handleConfirmAppointment}
