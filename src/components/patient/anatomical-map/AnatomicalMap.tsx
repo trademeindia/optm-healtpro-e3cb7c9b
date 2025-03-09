@@ -9,7 +9,7 @@ import MapControls from './MapControls';
 import HotspotMarker from './HotspotMarker';
 import HotspotDetail from './HotspotDetail';
 
-const AnatomicalMap: React.FC<AnatomicalMapProps> = () => {
+const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
   const { symptoms } = useSymptoms();
   const [zoom, setZoom] = useState(1);
   const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
@@ -46,7 +46,7 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = () => {
   }, [symptoms]);
 
   return (
-    <Card className="glass-morphism">
+    <Card className={`glass-morphism ${className || ''}`}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>

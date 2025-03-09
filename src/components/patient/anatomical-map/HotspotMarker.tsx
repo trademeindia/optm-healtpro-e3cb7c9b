@@ -8,10 +8,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { HotspotProps } from './types';
+import { HotspotMarkerProps } from './types';
 import { getHotspotPosition } from './regions';
 
-const HotspotMarker: React.FC<HotspotProps> = ({ hotspot, isActive, onClick }) => {
+const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
   const position = getHotspotPosition(hotspot.region);
   
   return (

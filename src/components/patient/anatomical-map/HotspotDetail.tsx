@@ -1,12 +1,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HotSpot } from './types';
+import { HotspotDetailProps } from './types';
 import { anatomicalRegions } from './regions';
-
-interface HotspotDetailProps {
-  hotspot: HotSpot;
-}
 
 const HotspotDetail: React.FC<HotspotDetailProps> = ({ hotspot }) => {
   return (

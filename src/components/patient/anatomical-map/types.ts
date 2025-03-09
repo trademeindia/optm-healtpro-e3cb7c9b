@@ -18,10 +18,14 @@ export interface HotSpot {
   description: string;
 }
 
-export interface HotspotProps {
+export interface HotspotMarkerProps {
   hotspot: HotSpot;
   isActive: boolean;
   onClick: (hotspot: HotSpot) => void;
+}
+
+export interface HotspotDetailProps {
+  hotspot: HotSpot;
 }
 
 export interface MapControlsProps {
@@ -31,5 +35,5 @@ export interface MapControlsProps {
 }
 
 export interface AnatomicalMapProps {
-  // Empty for now, but we can add props if needed later
+  className?: string;
 }

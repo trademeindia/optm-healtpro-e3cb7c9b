@@ -29,7 +29,7 @@ export const anatomicalRegions: Record<string, AnatomicalRegion> = {
   leftFinger: { id: 'region-l-finger', name: 'Left Finger', x: 70, y: 51 },
 };
 
-// Get the position for a hotspot based on its anatomical region
+// Helper function to get hotspot position based on region
 export const getHotspotPosition = (region: string) => {
   if (!region) {
     console.warn('Region is undefined');
