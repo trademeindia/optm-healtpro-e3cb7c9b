@@ -138,7 +138,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
       {/* Medical Records Tabs Section */}
       <div className="mt-6">
         <MedicalRecordsTabs 
-          patient={patient}
+          patientId={patient.id}
           onAddRecord={handleAddRecord}
         />
       </div>

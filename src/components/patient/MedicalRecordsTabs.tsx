@@ -8,10 +8,17 @@ import { FileText, PlusCircle, FileImage, Pill, Stethoscope, Activity } from 'lu
 
 interface MedicalRecordsTabsProps {
   patientId?: number;
+  onAddRecord?: (type: string) => void;
 }
 
-const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) => {
+const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId, onAddRecord }) => {
   const [activeTab, setActiveTab] = useState('xrays');
+
+  const handleAddRecord = (type: string) => {
+    if (onAddRecord) {
+      onAddRecord(type);
+    }
+  };
 
   return (
     <Card className="bg-white dark:bg-gray-800 shadow-sm rounded-lg mt-6">
@@ -51,7 +58,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Upload or add X-ray images and scan reports
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('xray')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Record
               </Button>
@@ -65,7 +72,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Upload blood test results and reports
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('bloodTest')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Blood Test
               </Button>
@@ -79,7 +86,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Add current and past medications
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('medication')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Medication
               </Button>
@@ -93,7 +100,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Add clinical notes and observations
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('clinicalNote')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Note
               </Button>
@@ -107,7 +114,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Upload biomarker test results
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('biomarker')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Biomarkers
               </Button>
@@ -121,7 +128,7 @@ const MedicalRecordsTabs: React.FC<MedicalRecordsTabsProps> = ({ patientId }) =>
               <p className="mt-2 text-sm text-muted-foreground">
                 Add physical examination records
               </p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={() => handleAddRecord('physicalExam')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Exam Record
               </Button>
