@@ -1,74 +1,75 @@
 
 import { ReportAnalysis } from '../types';
 
+// Utility function to get color based on status
+export const getStatusColor = (status: 'normal' | 'abnormal' | 'critical'): string => {
+  switch (status) {
+    case 'normal':
+      return 'text-green-500';
+    case 'abnormal':
+      return 'text-amber-500';
+    case 'critical':
+      return 'text-red-500';
+    default:
+      return '';
+  }
+};
+
 export const simulateProcessing = (
   isFileUpload: boolean,
-  setIsProcessing: (value: boolean) => void,
-  setProcessingProgress: (value: number) => void,
-  setAnalysis: (analysis: ReportAnalysis | null) => void,
-  setActiveTab: (tab: string) => void,
-  onAnalysisComplete?: (analysis: ReportAnalysis) => void
+  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
+  setProcessingProgress: React.Dispatch<React.SetStateAction<number>>,
+  setAnalysis: React.Dispatch<React.SetStateAction<ReportAnalysis | null>>,
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>,
+  onAnalysisComplete: (analysis: ReportAnalysis) => void
 ) => {
   setIsProcessing(true);
   setProcessingProgress(0);
   
-  const interval = setInterval(() => {
-    setProcessingProgress((prev) => {
-      const newValue = prev + Math.random() * 15;
-      if (newValue >= 100) {
-        clearInterval(interval);
+  const mockAnalysis: ReportAnalysis = {
+    summary: "Your blood test results are generally within normal ranges with a few areas that may need attention. Your lipid panel shows slightly elevated LDL cholesterol, which should be monitored. All other metrics are within healthy ranges.",
+    keyFindings: [
+      "LDL Cholesterol is slightly elevated at 130 mg/dL (optimal is <100 mg/dL)",
+      "Blood pressure is optimal at 118/78 mmHg",
+      "Fasting glucose is within normal range at 92 mg/dL",
+      "Vitamin D levels are sufficient at 45 ng/mL"
+    ],
+    normalValues: {
+      "Total Cholesterol": { value: "210 mg/dL", status: "abnormal" },
+      "HDL Cholesterol": { value: "65 mg/dL", status: "normal" },
+      "LDL Cholesterol": { value: "130 mg/dL", status: "abnormal" },
+      "Triglycerides": { value: "88 mg/dL", status: "normal" },
+      "Fasting Glucose": { value: "92 mg/dL", status: "normal" },
+      "HbA1c": { value: "5.4%", status: "normal" },
+      "Blood Pressure": { value: "118/78 mmHg", status: "normal" },
+      "ALT (Liver)": { value: "22 U/L", status: "normal" },
+      "AST (Liver)": { value: "24 U/L", status: "normal" },
+      "Vitamin D": { value: "45 ng/mL", status: "normal" }
+    },
+    recommendations: [
+      "Consider dietary adjustments to help lower LDL cholesterol, such as reducing saturated fats and increasing soluble fiber",
+      "Maintain your current physical activity level to support your healthy blood pressure",
+      "Continue with your current vitamin D intake as levels are sufficient",
+      "Schedule a follow-up lipid panel in 6 months to monitor cholesterol levels"
+    ]
+  };
+  
+  // Simulate processing with progress updates
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += Math.random() * 10;
+    if (progress > 100) progress = 100;
+    
+    setProcessingProgress(progress);
+    
+    if (progress === 100) {
+      clearInterval(progressInterval);
+      setTimeout(() => {
         setIsProcessing(false);
-        
-        // Mock analysis result
-        const mockAnalysis: ReportAnalysis = {
-          id: `report-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          reportType: isFileUpload ? 'Blood Test' : 'Manual Input Analysis',
-          summary: 'Overall, your blood test results are within normal ranges with a few minor exceptions that require monitoring.',
-          keyFindings: [
-            'Cholesterol levels are slightly elevated but not at concerning levels',
-            'Vitamin D is lower than optimal, supplement recommended',
-            'All other markers are within normal ranges'
-          ],
-          recommendations: [
-            'Consider dietary changes to address cholesterol levels',
-            'Take vitamin D supplement (2000 IU daily)',
-            'Follow up in 3 months for another blood test'
-          ],
-          normalValues: {
-            'Cholesterol': { value: '210 mg/dL', status: 'abnormal' },
-            'HDL': { value: '65 mg/dL', status: 'normal' },
-            'LDL': { value: '130 mg/dL', status: 'abnormal' },
-            'Triglycerides': { value: '120 mg/dL', status: 'normal' },
-            'Glucose': { value: '90 mg/dL', status: 'normal' },
-            'Vitamin D': { value: '25 ng/mL', status: 'abnormal' },
-            'Iron': { value: '90 μg/dL', status: 'normal' },
-          }
-        };
-        
         setAnalysis(mockAnalysis);
         setActiveTab('analysis');
-        
-        if (onAnalysisComplete) {
-          onAnalysisComplete(mockAnalysis);
-        }
-        
-        return 100;
-      }
-      return newValue;
-    });
-  }, 500);
-};
-
-export const getStatusColor = (status: 'normal' | 'abnormal' | 'critical') => {
-  switch (status) {
-    case 'normal':
-      return 'text-green-600';
-    case 'abnormal':
-      return 'text-amber-600';
-    case 'critical':
-      return 'text-red-600';
-    default:
-      return 'text-green-600';
-  }
+        onAnalysisComplete(mockAnalysis);
+      }, 500);
+    }
+  }, 300);
 };
