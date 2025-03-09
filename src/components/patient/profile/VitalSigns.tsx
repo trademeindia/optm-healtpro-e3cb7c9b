@@ -1,7 +1,7 @@
 
 import React from 'react';
 import VitalSignCard from './VitalSignCard';
-import { Heart, Activity, Thermometer, Lung } from 'lucide-react';
+import { Heart, Activity, Thermometer, Wind } from 'lucide-react';
 
 interface VitalSignsProps {
   vitalSigns?: Array<{
@@ -41,7 +41,7 @@ const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
       value: '16',
       unit: 'bpm',
       status: 'normal' as const,
-      icon: <Lung className="h-4 w-4 text-muted-foreground" />
+      icon: <Wind className="h-4 w-4 text-muted-foreground" />
     }
   ];
 
