@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import OAuthErrorDisplay from '@/components/auth/oauth/OAuthErrorDisplay';
 import OAuthLoadingState from '@/components/auth/oauth/OAuthLoadingState';
 import { useOAuthCallback } from '@/hooks/useOAuthCallback';
@@ -14,6 +14,19 @@ const OAuthCallback: React.FC = () => {
     handleRetry,
     navigate
   } = useOAuthCallback();
+
+  // Add a backup fallback redirect
+  useEffect(() => {
+    // If nothing happens after 10 seconds, force redirect to prevent blank screen
+    const fallbackTimer = setTimeout(() => {
+      console.log("OAuth callback fallback redirect triggered");
+      if (document.visibilityState === 'visible') {
+        navigate('/dashboard');
+      }
+    }, 10000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

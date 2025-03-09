@@ -44,7 +44,10 @@ export const useOAuthCallback = () => {
         hasCode: !!code,
         hasState: !!state,
         provider,
-        retryCount
+        retryCount,
+        hasUser: !!user,
+        userRole: user?.role || 'none',
+        isLoadingState: isLoading
       });
       
       console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, state exists=${!!state}`);
@@ -80,18 +83,20 @@ export const useOAuthCallback = () => {
       if (user && !isLoading) {
         console.log('User authenticated successfully:', user);
         toast.success('Successfully signed in!');
-        window.location.href = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+        // Use navigate instead of direct window.location to prevent blank screen
+        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
+        return;
       } 
       // If we have a session but no user yet, try to extract the user
-      else if (data.session && !isLoading && !user) {
+      else if (data.session && !isLoading) {
         console.log('Session exists but no user object yet - trying to get user data from session');
         const { user: supabaseUser } = data.session;
         
         if (supabaseUser) {
           console.log('Session user exists:', supabaseUser.id);
-          // We'll redirect to dashboard and let the AuthProvider handle the role routing
+          // Use navigate instead of direct location change
           toast.success('Successfully authenticated!');
-          window.location.href = '/dashboard';
+          navigate('/dashboard', { replace: true });
           return;
         }
       }

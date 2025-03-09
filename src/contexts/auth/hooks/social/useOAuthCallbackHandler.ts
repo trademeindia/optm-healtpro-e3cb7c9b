@@ -41,8 +41,8 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
             if (formattedUser) {
               console.log("Successfully retrieved user after OAuth flow:", formattedUser);
               toast.success(`Successfully signed in with ${provider}!`);
-              // Use window.location.href for a full page reload to ensure state is fresh
-              window.location.href = formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+              // Use navigate instead of direct window.location.href to prevent blank screen
+              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
               return;
             } else {
               console.error("Failed to format user from session");
@@ -74,8 +74,8 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
               
               console.log("Created new profile for OAuth user:", newProfile);
               toast.success(`Successfully signed in with ${provider}!`);
-              // Use window.location.href for a full page reload
-              window.location.href = '/patient-dashboard';
+              // Use navigate instead of window.location.href for a smoother transition
+              navigate('/patient-dashboard', { replace: true });
               return;
             }
           } catch (formatError) {
@@ -93,8 +93,8 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
       }
       
       toast.success(`Successfully signed in with ${provider}!`);
-      // Use window.location.href for a full page reload
-      window.location.href = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+      // Use navigate instead of window.location.href for smoother transition
+      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
       toast.error('Authentication failed. Please try again and check the debug section.');
