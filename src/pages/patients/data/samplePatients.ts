@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { PatientRecords } from '@/components/dashboard/PatientRecords';
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
-import PatientHistory from '@/components/dashboard/PatientHistory';
-import { useSymptoms } from '@/contexts/SymptomContext';
 
-const samplePatients = [
+import { Patient } from '../types';
+
+export const samplePatients: Patient[] = [
   {
     id: 1,
     name: "Jane Smith",
@@ -25,7 +21,7 @@ const samplePatients = [
         value: 5.5,
         unit: "mg/L",
         normalRange: "0.0 - 8.0",
-        status: "normal" as const,
+        status: "normal",
         timestamp: "2023-06-10",
         percentage: 85,
         trend: "stable",
@@ -37,7 +33,7 @@ const samplePatients = [
         value: 12.8,
         unit: "pg/mL",
         normalRange: "0.0 - 7.0",
-        status: "elevated" as const,
+        status: "elevated",
         timestamp: "2023-06-10",
         percentage: 60,
         trend: "stable",
@@ -49,7 +45,7 @@ const samplePatients = [
         value: 22.3,
         unit: "pg/mL",
         normalRange: "0.0 - 15.0",
-        status: "elevated" as const,
+        status: "elevated",
         timestamp: "2023-06-10",
         percentage: 60,
         trend: "stable",
@@ -61,7 +57,7 @@ const samplePatients = [
         value: 28,
         unit: "mm/hr",
         normalRange: "0 - 22",
-        status: "elevated" as const,
+        status: "elevated",
         timestamp: "2023-06-09",
         percentage: 60,
         trend: "stable",
@@ -73,7 +69,7 @@ const samplePatients = [
         value: 8.5,
         unit: "K/μL",
         normalRange: "4.5 - 11.0",
-        status: "normal" as const,
+        status: "normal",
         timestamp: "2023-06-09",
         percentage: 85,
         trend: "stable",
@@ -85,7 +81,7 @@ const samplePatients = [
         value: 5.7,
         unit: "%",
         normalRange: "4.0 - 5.6",
-        status: "elevated" as const,
+        status: "elevated",
         timestamp: "2023-06-08",
         percentage: 60,
         trend: "stable",
@@ -112,7 +108,7 @@ const samplePatients = [
         value: 3.2,
         unit: "mg/L",
         normalRange: "0.0 - 8.0",
-        status: "normal" as const,
+        status: "normal",
         timestamp: "2023-05-22",
         percentage: 85,
         trend: "stable",
@@ -124,7 +120,7 @@ const samplePatients = [
         value: 7.8,
         unit: "K/μL",
         normalRange: "4.5 - 11.0",
-        status: "normal" as const,
+        status: "normal",
         timestamp: "2023-05-22",
         percentage: 85,
         trend: "stable",
@@ -151,7 +147,7 @@ const samplePatients = [
         value: 25,
         unit: "mm/hr",
         normalRange: "0 - 22",
-        status: "elevated" as const,
+        status: "elevated",
         timestamp: "2023-06-05",
         percentage: 60,
         trend: "up",
@@ -160,60 +156,3 @@ const samplePatients = [
     ]
   }
 ];
-
-const PatientsPage: React.FC = () => {
-  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
-  const [patients] = useState(samplePatients);
-  const { loadPatientSymptoms } = useSymptoms();
-  
-  const selectedPatient = patients.find(p => p.id === selectedPatientId);
-  
-  const handleViewPatient = (patientId: number) => {
-    setSelectedPatientId(patientId);
-    loadPatientSymptoms(patientId);
-  };
-  
-  const handleClosePatientHistory = () => {
-    setSelectedPatientId(null);
-  };
-  
-  const handleUpdatePatient = (updatedPatient: any) => {
-    // In a real app, this would update the patient data in your state or backend
-    console.log("Patient updated:", updatedPatient);
-  };
-  
-  useEffect(() => {
-    if (selectedPatientId) {
-      loadPatientSymptoms(selectedPatientId);
-    }
-  }, [selectedPatientId, loadPatientSymptoms]);
-  
-  return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto p-6">
-          {selectedPatientId && selectedPatient ? (
-            <div className="max-w-6xl mx-auto">
-              <PatientHistory 
-                patient={selectedPatient} 
-                onClose={handleClosePatientHistory} 
-                onUpdate={handleUpdatePatient} 
-              />
-            </div>
-          ) : (
-            <div className="max-w-6xl mx-auto">
-              <PatientRecords 
-                patients={patients} 
-                onViewPatient={handleViewPatient} 
-              />
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
-  );
-};
-
-export default PatientsPage;
