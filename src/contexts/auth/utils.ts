@@ -10,8 +10,9 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
     console.log("Formatting user:", supabaseUser.id);
     
     // Get provider information from the user metadata
+    // Ensure provider is of type AuthProviderType
     const providerInfo: AuthProviderType = 
-      supabaseUser.app_metadata?.provider || 
+      (supabaseUser.app_metadata?.provider as AuthProviderType) || 
       (supabaseUser.identities && supabaseUser.identities.length > 0 ? 
         supabaseUser.identities[0].provider as AuthProviderType : 'email');
     
