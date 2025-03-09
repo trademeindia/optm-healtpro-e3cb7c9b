@@ -31,10 +31,10 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   handleHotspotClick
 }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center relative">
+    <div className="w-full h-full absolute inset-0 flex items-center justify-center">
       <Canvas 
-        style={{ width: '100%', height: '100%', minHeight: '500px' }}
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        style={{ width: '100%', height: '100%', minHeight: '600px' }}
+        camera={{ position: [0, 0, 4.5], fov: 45 }}
       >
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={cameraPosition} />
