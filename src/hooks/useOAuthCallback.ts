@@ -89,7 +89,7 @@ export const useOAuthCallback = () => {
         console.log('User authenticated successfully:', user);
         toast.success('Successfully signed in!');
         // Use navigate instead of direct window.location to prevent blank screen
-        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard', { replace: true });
+        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
         return;
       } 
       // If we have a session but no user yet, try to extract the user
@@ -101,7 +101,7 @@ export const useOAuthCallback = () => {
           console.log('Session user exists:', supabaseUser.id);
           // Use navigate instead of direct location change
           toast.success('Successfully authenticated!');
-          navigate('/dashboard', { replace: true });
+          navigate('/dashboard');
           return;
         }
       }
