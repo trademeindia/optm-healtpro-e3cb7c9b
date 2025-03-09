@@ -50,6 +50,21 @@
     font-size: 0.75rem;
     padding: 0.5rem 0.25rem;
   }
+  
+  /* System tabs specific styling */
+  .tabs-container {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  
+  .tabs-container::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .tabs-container::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.3);
+    border-radius: 3px;
+  }
 }
 
 @media (max-width: 640px) {
