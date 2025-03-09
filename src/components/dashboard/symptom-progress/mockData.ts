@@ -1,114 +1,42 @@
 
 import { ChartData } from './types';
 
-export const getSymptomsMockData = (): ChartData[] => {
-  return [{
-    symptomName: 'Shoulder Pain',
-    color: '#FF8787',
-    data: [{
-      name: 'Jun 1',
-      date: '2023-06-01',
-      value: 8
-    }, {
-      name: 'Jun 3',
-      date: '2023-06-03',
-      value: 7
-    }, {
-      name: 'Jun 5',
-      date: '2023-06-05',
-      value: 7
-    }, {
-      name: 'Jun 7',
-      date: '2023-06-07',
-      value: 6
-    }, {
-      name: 'Jun 9',
-      date: '2023-06-09',
-      value: 5
-    }, {
-      name: 'Jun 11',
-      date: '2023-06-11',
-      value: 4
-    }, {
-      name: 'Jun 13',
-      date: '2023-06-13',
-      value: 3
-    }, {
-      name: 'Jun 15',
-      date: '2023-06-15',
-      value: 2
-    }]
-  }, {
-    symptomName: 'Back Pain',
-    color: '#5D5FEF',
-    data: [{
-      name: 'Jun 1',
-      date: '2023-06-01',
-      value: 3
-    }, {
-      name: 'Jun 3',
-      date: '2023-06-03',
-      value: 4
-    }, {
-      name: 'Jun 5',
-      date: '2023-06-05',
-      value: 5
-    }, {
-      name: 'Jun 7',
-      date: '2023-06-07',
-      value: 5
-    }, {
-      name: 'Jun 9',
-      date: '2023-06-09',
-      value: 4
-    }, {
-      name: 'Jun 11',
-      date: '2023-06-11',
-      value: 3
-    }, {
-      name: 'Jun 13',
-      date: '2023-06-13',
-      value: 2
-    }, {
-      name: 'Jun 15',
-      date: '2023-06-15',
-      value: 1
-    }]
-  }, {
-    symptomName: 'Headache',
-    color: '#F97316',
-    data: [{
-      name: 'Jun 1',
-      date: '2023-06-01',
-      value: 2
-    }, {
-      name: 'Jun 3',
-      date: '2023-06-03',
-      value: 3
-    }, {
-      name: 'Jun 5',
-      date: '2023-06-05',
-      value: 6
-    }, {
-      name: 'Jun 7',
-      date: '2023-06-07',
-      value: 4
-    }, {
-      name: 'Jun 9',
-      date: '2023-06-09',
-      value: 2
-    }, {
-      name: 'Jun 11',
-      date: '2023-06-11',
-      value: 0
-    }, {
-      name: 'Jun 13',
-      date: '2023-06-13',
-      value: 1
-    }, {
-      name: 'Jun 15',
-      date: '2023-06-15',
-      value: 0
-    }]
-  }];
+// Generate sample data for symptom trends visualization
+export const generateMockSymptomData = (): ChartData[] => {
+  const today = new Date();
+  const dates = Array.from({ length: 14 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() - (13 - i));
+    return date.toISOString().split('T')[0];
+  });
+  
+  return [
+    {
+      symptomName: 'Lower Back Pain',
+      color: '#ef4444',
+      data: dates.map((date, index) => ({
+        date,
+        name: date.slice(-2), // Use day for display
+        value: Math.max(1, 8 - Math.floor(index / 2)),
+      })),
+    },
+    {
+      symptomName: 'Neck Pain',
+      color: '#f97316',
+      data: dates.map((date, index) => ({
+        date,
+        name: date.slice(-2),
+        value: Math.max(1, 7 - Math.floor(index / 3)),
+      })),
+    },
+    {
+      symptomName: 'Shoulder Pain',
+      color: '#3b82f6',
+      data: dates.map((date, index) => ({
+        date,
+        name: date.slice(-2),
+        value: Math.min(10, 3 + Math.sin(index / 2) * 2),
+      })),
+    },
+  ];
 };

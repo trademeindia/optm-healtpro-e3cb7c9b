@@ -1,37 +1,45 @@
 
 import React from 'react';
-import { TrendingDown, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { TrendingDown } from 'lucide-react';
 import { PainReductionProps } from './types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const PainReductionCard: React.FC<PainReductionProps> = ({ painReduction }) => {
+  // Determine if the trend is positive (pain reduction) or negative
   const isPositive = painReduction > 0;
   
   return (
-    <div className="mb-4 p-3 bg-secondary/30 rounded-lg flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-full ${isPositive ? 'bg-medical-green/20' : 'bg-medical-red/20'} flex items-center justify-center`}>
-        <TrendingDown className={`w-5 h-5 ${isPositive ? 'text-medical-green' : 'text-medical-red'}`} />
-      </div>
-      <div className="flex-1">
-        <div className="font-medium flex items-center gap-1">
-          Overall Pain Change
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[250px]">
-                <p className="text-xs">
-                  This represents the average percentage change in pain levels across all tracked symptoms since you started tracking.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div className="bg-white/50 dark:bg-white/5 rounded-lg border border-border p-3 mb-4">
+      <h4 className="text-sm font-medium mb-1">Pain Reduction</h4>
+      
+      <div className="flex items-baseline gap-2">
+        <span className={cn(
+          "text-2xl font-bold",
+          isPositive ? "text-medical-green" : "text-medical-red"
+        )}>
+          {isPositive ? painReduction : 0}%
+        </span>
+        
+        <div className={cn(
+          "rounded-full px-2 py-0.5 text-xs font-medium flex items-center",
+          isPositive ? "bg-medical-green/20 text-medical-green" : "bg-medical-red/20 text-medical-red"
+        )}>
+          {isPositive ? (
+            <>
+              <TrendingDown className="w-3 h-3 mr-1" />
+              <span>Improving</span>
+            </>
+          ) : (
+            <span>No change</span>
+          )}
         </div>
-        <div className={`text-2xl font-bold ${isPositive ? 'text-medical-green' : 'text-medical-red'}`}>
-          {isPositive ? `↓ ${Math.abs(painReduction)}%` : `↑ ${Math.abs(painReduction)}%`}
-        </div>
       </div>
+      
+      <p className="text-xs text-muted-foreground mt-1">
+        {isPositive 
+          ? "Average reduction in pain levels since first record" 
+          : "Start tracking your symptoms to see progress over time"}
+      </p>
     </div>
   );
 };
