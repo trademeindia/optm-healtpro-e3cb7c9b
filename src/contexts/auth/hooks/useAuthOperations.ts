@@ -91,24 +91,27 @@ export const useAuthOperations = () => {
       // If connected, proceed with OAuth
       toast.info(`Attempting to sign in with ${provider}...`);
       
+      const redirectTo = `${window.location.origin}/oauth-callback`;
+      console.log(`Redirect URL: ${redirectTo}`);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/oauth-callback?provider=${provider}`
+          redirectTo: redirectTo
         }
       });
 
       if (error) {
         // Enhanced error handling for OAuth issues
         if (error.message.includes('provider is not enabled')) {
-          toast.error(`${provider} login is not enabled. Please configure it in Supabase Authentication settings.`);
+          toast.error(`${provider} login is not enabled in your Supabase project.`);
           console.error(`Error: ${provider} provider is not enabled in Supabase. Enable it in Authentication > Providers.`);
         } else if (error.message.includes('missing OAuth secret')) {
-          toast.error(`${provider} login is not properly configured. Missing OAuth client secret.`);
-          console.error(`Error: ${provider} provider is missing OAuth secrets. Add them in Supabase Authentication > Providers.`);
+          toast.error(`${provider} login needs Client ID and Client Secret in Supabase.`);
+          console.error(`Error: ${provider} provider is missing OAuth secrets in Supabase Authentication > Providers.`);
         } else if (error.message.includes('requested url is invalid')) {
-          toast.error(`Invalid redirect URL. Please check your Supabase URL configuration.`);
-          console.error(`Error: Your Supabase project's Site URL and Redirect URLs need to be configured in Authentication > URL Configuration.`);
+          toast.error(`Invalid redirect URL. Check your Supabase URL configuration.`);
+          console.error(`Error: Your Supabase project needs Site URL and Redirect URLs configured in Authentication > URL Configuration.`);
         } else {
           toast.error(`Failed to connect with ${provider}: ${error.message}`);
         }
