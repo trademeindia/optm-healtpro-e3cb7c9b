@@ -49,16 +49,16 @@ export const getDoctorMenuItems = (): MenuItem[] => [
 export const getPatientMenuItems = (): MenuItem[] => [
   getDashboardItem(false),
   { 
-    icon: TestTube, 
-    label: 'Biomarkers', 
-    path: '/biomarkers',
-    description: 'View and upload your biomarker data and test results'
-  },
-  { 
     icon: Brain, 
     label: 'AI Report Analysis', 
     path: '/ai-analysis',
     description: 'Get AI-powered analysis of your medical reports'
+  },
+  { 
+    icon: TestTube, 
+    label: 'Biomarkers', 
+    path: '/biomarkers',
+    description: 'View and upload your biomarker data and test results'
   },
   { 
     icon: FileText, 
