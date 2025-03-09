@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, Environment, PerspectiveCamera } from '@react-three/drei';
@@ -63,7 +62,6 @@ const Hotspot = ({
   
   return (
     <group position={position}>
-      {/* Pulsating sphere for the hotspot */}
       <mesh
         onClick={onClick}
         onPointerOver={() => setHovered(true)}
@@ -79,7 +77,6 @@ const Hotspot = ({
         />
       </mesh>
       
-      {/* HTML tooltip that appears on hover */}
       {hovered && (
         <Html
           position={[0, size + 0.1, 0]}
@@ -131,12 +128,9 @@ const HumanModel = ({
   hotspots: Hotspot[],
   onHotspotClick: (id: string) => void
 }) => {
-  // For a real implementation, you would load a 3D model here
-  // For now, we'll use the uploaded image as a placeholder
   const [modelLoaded, setModelLoaded] = useState(false);
   
   useEffect(() => {
-    // Simulate model loading
     const timer = setTimeout(() => {
       setModelLoaded(true);
     }, 1000);
@@ -157,22 +151,21 @@ const HumanModel = ({
   
   return (
     <group>
-      {/* This would be replaced with an actual 3D model */}
       <Html
         transform
-        center
-        scale={0.01}
-        position={[0, 0, 0.1]}
+        position={[0, 0, 0]}
         rotation={[0, 0, 0]}
+        center
+        sprite
       >
         <img 
           src="/lovable-uploads/3e04ef50-20da-4d98-8be4-6c2ba39fbe32.png" 
           alt="Human Anatomy" 
           className="w-[400px] h-auto"
+          style={{ opacity: 1, pointerEvents: 'none' }}
         />
       </Html>
       
-      {/* Render all hotspots */}
       {hotspots.map((hotspot) => (
         <Hotspot
           key={hotspot.id}
@@ -211,9 +204,7 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     { id: 'lymphatic', label: 'Lymphatic' }
   ];
 
-  // Convert symptoms to 3D hotspots
   const getHotspotPosition = (location: string): [number, number, number] => {
-    // Map anatomy locations to 3D coordinates
     const positionMap: Record<string, [number, number, number]> = {
       head: [0, 1.7, 0.3],
       neck: [0, 1.4, 0.2],
@@ -236,9 +227,9 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
   };
   
   const getSeverityColor = (painLevel: number): string => {
-    if (painLevel <= 3) return '#4CAF50'; // Green for low pain
-    if (painLevel <= 6) return '#FF9800'; // Orange for medium pain
-    return '#F44336'; // Red for high pain
+    if (painLevel <= 3) return '#4CAF50';
+    if (painLevel <= 6) return '#FF9800';
+    return '#F44336';
   };
   
   const getSeverityLevel = (painLevel: number): 'low' | 'medium' | 'high' => {
@@ -247,7 +238,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     return 'high';
   };
   
-  // Convert symptoms to hotspots
   const hotspots: Hotspot[] = symptoms.map(symptom => ({
     id: symptom.id,
     position: getHotspotPosition(symptom.location),
@@ -281,7 +271,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     }
   };
   
-  // Get details for the currently active hotspot
   const activeHotspotDetails = activeHotspot 
     ? hotspots.find(h => h.id === activeHotspot) 
     : null;
@@ -312,9 +301,11 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
       </CardHeader>
       
       <CardContent className="flex-1 pt-4 pb-6 px-4 relative">
-        {/* Main 3D view container */}
         <div className="w-full h-full flex items-center justify-center relative">
-          <Canvas style={{ width: '100%', height: '100%', minHeight: '500px' }}>
+          <Canvas 
+            style={{ width: '100%', height: '100%', minHeight: '500px' }}
+            camera={{ position: [0, 0, 5], fov: 60 }}
+          >
             <Suspense fallback={null}>
               <PerspectiveCamera makeDefault position={cameraPosition} />
               <ambientLight intensity={0.5} />
@@ -336,7 +327,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
             </Suspense>
           </Canvas>
           
-          {/* Control buttons */}
           <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
             <TooltipProvider>
               <Tooltip>
@@ -412,7 +402,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
           </div>
         </div>
         
-        {/* Detail panel for active hotspot */}
         {activeHotspotDetails && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -437,7 +426,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
           </motion.div>
         )}
         
-        {/* Hotspot count indicator */}
         {hotspots.length > 0 && (
           <div className="absolute top-4 left-4 bg-white dark:bg-gray-800 rounded-full py-1 px-3 text-xs font-medium shadow-md border z-10 flex items-center gap-1.5">
             <Info className="h-3 w-3 text-muted-foreground" />
