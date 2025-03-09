@@ -1,0 +1,59 @@
+
+/* Make hotspots more responsive */
+@media (max-width: 768px) {
+  .hotspot {
+    @apply w-6 h-6;
+  }
+}
+
+/* Make annotations more responsive */
+@media (max-width: 768px) {
+  .annotation {
+    @apply p-3 max-w-[150px] text-sm;
+  }
+}
+
+/* Additional responsive utilities for anatomy model */
+@media (max-width: 640px) {
+  .anatomy-model-container img {
+    max-height: 280px;
+  }
+  
+  .text-xs-mobile {
+    font-size: 0.65rem;
+  }
+  
+  .p-mobile {
+    padding: 0.5rem;
+  }
+  
+  .gap-mobile {
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .anatomy-model-container img {
+    max-height: 350px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .anatomy-model-container img {
+    max-height: 400px;
+  }
+}
+
+/* Make biomarker cards more responsive */
+@media (max-width: 768px) {
+  .biomarker-card {
+    @apply p-4;
+  }
+}
+
+/* Make metric cards more responsive */
+@media (max-width: 768px) {
+  .metric-card {
+    @apply p-4;
+  }
+}
