@@ -28,6 +28,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // If this is a demo login, update the user state manually since we're bypassing Supabase auth
     if (user && (email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
       setUser(user);
+      
+      // Handle navigation after setting the user
+      if (user.role === 'doctor') {
+        window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/patient-dashboard';
+      }
     }
     
     return user;

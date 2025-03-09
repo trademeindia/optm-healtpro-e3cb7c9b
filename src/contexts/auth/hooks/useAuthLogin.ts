@@ -34,12 +34,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         
         toast.success('Demo login successful');
         
-        if (demoUser.role === 'doctor') {
-          navigate('/dashboard');
-        } else {
-          navigate('/patient-dashboard');
-        }
-        
+        // Return the user first, navigation will be handled in AuthProvider
         return demoUser;
       }
       
@@ -56,12 +51,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       
       toast.success('Login successful');
       
-      if (formattedUser.role === 'doctor') {
-        navigate('/dashboard');
-      } else {
-        navigate('/patient-dashboard');
-      }
-      
+      // Regular users will be redirected in AuthProvider
       return formattedUser;
     } catch (error: any) {
       console.error('Login failed:', error);

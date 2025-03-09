@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -9,9 +10,11 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated && user) {
+        console.log('Index page: User authenticated, role is', user.role);
         // Redirect based on user role
         navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
       } else {
+        console.log('Index page: User not authenticated, redirecting to login');
         navigate('/login');
       }
     }

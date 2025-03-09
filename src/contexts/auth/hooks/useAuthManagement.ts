@@ -9,6 +9,16 @@ type UseAuthManagementProps = {
 export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
   const logout = async (): Promise<void> => {
     try {
+      // Check if we have a demo user in localStorage
+      const demoUserData = localStorage.getItem('demoUser');
+      if (demoUserData) {
+        // Clear demo user from localStorage
+        localStorage.removeItem('demoUser');
+        toast.info('You have been logged out');
+        navigate('/login');
+        return;
+      }
+      
       // Check current session to see if it's a demo account
       const { data: { session } } = await supabase.auth.getSession();
       
