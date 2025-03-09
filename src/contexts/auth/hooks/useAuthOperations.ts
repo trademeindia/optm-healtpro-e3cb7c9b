@@ -11,7 +11,7 @@ export const useAuthOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -41,7 +41,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole) => {
+  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<User | null> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -77,7 +77,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const loginWithSocialProvider = async (provider: Provider) => {
+  const loginWithSocialProvider = async (provider: Provider): Promise<void> => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -95,7 +95,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const handleOAuthCallback = async (provider: string, code: string, user: User | null) => {
+  const handleOAuthCallback = async (provider: string, code: string, user: User | null): Promise<void> => {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -114,7 +114,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       await supabase.auth.signOut();
       toast.info('You have been logged out');
@@ -125,7 +125,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const forgotPassword = async (email: string) => {
+  const forgotPassword = async (email: string): Promise<void> => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
