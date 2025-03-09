@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { AnatomicalCanvas } from './anatomical-view';
-import { HotspotDetails } from './anatomical-view';
-import { IssuesCounter } from './anatomical-view';
-import { SystemSelector } from './anatomical-view';
-import { useAnatomicalView } from './anatomical-view';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { 
+  AnatomicalCanvas, 
+  DetailsPanel,
+  Header,
+  IssuesCounter,
+  useAnatomicalView
+} from './anatomical-view';
 import { AnatomicalViewProps } from './anatomical-view';
 
 const AnatomicalView: React.FC<AnatomicalViewProps> = ({ 
@@ -48,18 +50,11 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
   return (
     <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>3D Anatomical View</CardTitle>
-            <CardDescription>Interactive visualization of patient issues</CardDescription>
-          </div>
-          
-          <SystemSelector 
-            systems={bodySystems} 
-            activeSystem={activeSystem} 
-            onSystemChange={setActiveSystem} 
-          />
-        </div>
+        <Header 
+          systems={bodySystems}
+          activeSystem={activeSystem}
+          onSystemChange={setActiveSystem}
+        />
       </CardHeader>
       
       <CardContent className="flex-1 pt-0 pb-6 px-4 relative" style={{ minHeight: '70vh', position: 'relative' }}>
@@ -75,9 +70,7 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
           handleHotspotClick={handleHotspotClick}
         />
         
-        {activeHotspotDetails && (
-          <HotspotDetails hotspot={activeHotspotDetails} />
-        )}
+        <DetailsPanel activeHotspotDetails={activeHotspotDetails} />
         
         <IssuesCounter count={hotspots.length} />
       </CardContent>
