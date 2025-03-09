@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Activity } from 'lucide-react';
+import { Activity, Dumbbell } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import TrendIndicator from './TrendIndicator';
@@ -10,7 +10,8 @@ import {
   getStatusBgColor, 
   getStatusDescription, 
   getTrendDescription,
-  formatDate 
+  formatDate,
+  getAffectedMuscles
 } from './biomarkerUtils';
 
 interface BiomarkerDetailDialogProps {
@@ -25,6 +26,8 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
   onOpenChange 
 }) => {
   if (!biomarker) return null;
+
+  const affectedMuscles = getAffectedMuscles(biomarker.name);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -84,6 +87,23 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
               <p className="text-sm">{getTrendDescription(biomarker.trend, biomarker.status)}</p>
             </div>
           </div>
+
+          {affectedMuscles && affectedMuscles.length > 0 && (
+            <div className="bg-muted/60 p-4 rounded-lg">
+              <h4 className="font-medium mb-2 flex items-center">
+                <Dumbbell className="w-4 h-4 mr-2" />
+                Potentially Affected Muscles
+              </h4>
+              <ul className="list-disc ml-4 space-y-1 text-sm">
+                {affectedMuscles.map((muscle, index) => (
+                  <li key={index}>{muscle}</li>
+                ))}
+              </ul>
+              <p className="text-xs mt-2 text-muted-foreground">
+                These muscle groups may be impacted by changes in this biomarker.
+              </p>
+            </div>
+          )}
 
           {biomarker.possibleCauses && biomarker.possibleCauses.length > 0 && (
             <div className="bg-muted/70 p-4 rounded-lg">
