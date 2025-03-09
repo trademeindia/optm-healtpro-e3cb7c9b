@@ -25,3 +25,17 @@ export interface BodySystem {
   id: string;
   label: string;
 }
+
+export interface AutoRotateProps {
+  isRotating: boolean;
+}
+
+export interface HotspotProps {
+  position: [number, number, number];
+  color: string;
+  size: number;
+  onClick: () => void;
+  label: string;
+  description: string;
+  severity: string;
+}
