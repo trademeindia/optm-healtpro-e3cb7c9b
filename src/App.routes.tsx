@@ -10,7 +10,7 @@ import PatientDashboard from './pages/PatientDashboard';
 import BiomarkersPage from './pages/BiomarkersPage';
 import PatientsPage from './pages/PatientsPage';
 import ReportsPage from './pages/ReportsPage';
-import PatientReportsPage from './pages/PatientReportsPage';
+import { PatientReportsPage } from './pages/PatientReportsPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
