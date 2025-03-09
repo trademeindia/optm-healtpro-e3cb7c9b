@@ -72,51 +72,69 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Card className="w-full h-full shadow-lg border border-primary/20 transition-shadow duration-300 hover:shadow-xl overflow-hidden">
+      <CardHeader className="bg-primary/5 pb-4">
+        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
           <Brain className="h-5 w-5 text-primary" />
           AI Medical Report Analysis
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm md:text-base">
           Upload your medical report or paste its content for AI-powered analysis and explanation
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="upload">Upload Report</TabsTrigger>
-            <TabsTrigger value="text-input">Text Input</TabsTrigger>
-            <TabsTrigger value="analysis" disabled={!analysis}>Analysis Results</TabsTrigger>
+      <CardContent className="p-4 md:p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-4 w-full flex justify-start overflow-x-auto scrollbar-none p-1 bg-muted/30 rounded-lg">
+            <TabsTrigger 
+              value="upload" 
+              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+            >
+              Upload Report
+            </TabsTrigger>
+            <TabsTrigger 
+              value="text-input"
+              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+            >
+              Text Input
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analysis" 
+              disabled={!analysis}
+              className="flex-1 md:flex-none px-3 py-1.5 text-sm font-medium"
+            >
+              Analysis Results
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="upload">
-            <UploadTab 
-              file={file}
-              isProcessing={isProcessing}
-              processingProgress={processingProgress}
-              onFileChange={handleFileChange}
-              onProcessFile={handleProcessFile}
-            />
-          </TabsContent>
-          
-          <TabsContent value="text-input">
-            <TextInputTab 
-              textInput={textInput}
-              isProcessing={isProcessing}
-              processingProgress={processingProgress}
-              onTextInputChange={handleTextInputChange}
-              onProcessText={handleProcessText}
-            />
-          </TabsContent>
-          
-          <TabsContent value="analysis">
-            <AnalysisResultsTab analysis={analysis} />
-          </TabsContent>
+          <div className="min-h-[300px] md:min-h-[400px]">
+            <TabsContent value="upload" className="mt-0 h-full">
+              <UploadTab 
+                file={file}
+                isProcessing={isProcessing}
+                processingProgress={processingProgress}
+                onFileChange={handleFileChange}
+                onProcessFile={handleProcessFile}
+              />
+            </TabsContent>
+            
+            <TabsContent value="text-input" className="mt-0 h-full">
+              <TextInputTab 
+                textInput={textInput}
+                isProcessing={isProcessing}
+                processingProgress={processingProgress}
+                onTextInputChange={handleTextInputChange}
+                onProcessText={handleProcessText}
+              />
+            </TabsContent>
+            
+            <TabsContent value="analysis" className="mt-0 h-full">
+              <AnalysisResultsTab analysis={analysis} />
+            </TabsContent>
+          </div>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex flex-col items-start text-xs text-muted-foreground">
-        <p>Note: This AI analysis is not a substitute for professional medical advice. Always consult with your healthcare provider about your test results.</p>
+      <CardFooter className="flex flex-col items-start text-xs bg-muted/10 px-4 md:px-6 py-3 border-t border-border/30">
+        <p className="text-muted-foreground">Note: This AI analysis is not a substitute for professional medical advice. Always consult with your healthcare provider about your test results.</p>
       </CardFooter>
     </Card>
   );
