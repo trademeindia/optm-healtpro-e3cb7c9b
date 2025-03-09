@@ -37,12 +37,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     activeHotspotDetails,
     bodySystems
   } = useAnatomicalView(internalSelectedRegion, handleRegionSelect, patientId);
-  return <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <Header systems={bodySystems} activeSystem={activeSystem} onSystemChange={setActiveSystem} />
-      </CardHeader>
-      
-      
-    </Card>;
+  return;
 };
 export default AnatomicalView;
