@@ -15,6 +15,10 @@
 
 /* Additional responsive utilities for anatomy model */
 @media (max-width: 640px) {
+  .anatomy-model-container {
+    height: 300px !important;
+  }
+  
   .anatomy-model-container img {
     max-height: 280px;
   }
@@ -33,14 +37,22 @@
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
+  .anatomy-model-container {
+    height: 450px !important;
+  }
+  
   .anatomy-model-container img {
-    max-height: 350px;
+    max-height: 400px;
   }
 }
 
 @media (min-width: 1025px) {
+  .anatomy-model-container {
+    height: 600px !important;
+  }
+  
   .anatomy-model-container img {
-    max-height: 400px;
+    max-height: 550px;
   }
 }
 

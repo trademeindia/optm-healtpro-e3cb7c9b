@@ -27,7 +27,7 @@ export const useAnatomicalView = (
 ) => {
   const [activeSystem, setActiveSystem] = useState('muscular');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 2.8]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 3.5]); // Start with a wider view
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const { symptoms, updateSymptom } = useSymptoms();
 
@@ -42,6 +42,11 @@ export const useAnatomicalView = (
     }
   }, [selectedRegion, symptoms]);
 
+  // Reset view when system changes
+  useEffect(() => {
+    handleResetView();
+  }, [activeSystem]);
+
   const hotspots: Hotspot[] = symptoms.map(symptom => ({
     id: symptom.id,
     position: getHotspotPosition(symptom.location),
@@ -54,15 +59,15 @@ export const useAnatomicalView = (
   }));
   
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.3, 1.5)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.3, 2)]);
   };
   
   const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.3, 8)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.3, 6)]); // Limit max zoom out
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 2.8]);
+    setCameraPosition([0, 0, 3.5]); // Default to a wider view that shows the full body
     setIsRotating(false);
   };
   

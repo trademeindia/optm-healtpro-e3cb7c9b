@@ -34,7 +34,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
     <div className="w-full h-full relative flex items-center justify-center" style={{ minHeight: '700px' }}>
       <Canvas 
         style={{ width: '100%', height: '100%' }}
-        camera={{ position: [0, 0, 3], fov: 25 }} // Reduced FOV for better proportions
+        camera={{ position: [0, 0, 3], fov: 30 }} // Increased FOV for wider view
       >
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={cameraPosition} />
@@ -46,6 +46,8 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
             enableRotate={!isRotating}
             minDistance={1.5}
             maxDistance={8}
+            minPolarAngle={Math.PI / 6} // Limit how far user can orbit vertically
+            maxPolarAngle={Math.PI - Math.PI / 6}
           />
           <HumanModel 
             activeSystem={activeSystem} 
