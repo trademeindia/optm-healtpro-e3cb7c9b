@@ -8,4 +8,5 @@ export interface Question {
     notHelpful: number;
   };
   userVoted?: 'helpful' | 'notHelpful' | null;
+  favorited?: boolean;
 }

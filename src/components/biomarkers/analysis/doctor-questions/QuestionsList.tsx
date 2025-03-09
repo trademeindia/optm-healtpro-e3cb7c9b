@@ -28,7 +28,7 @@ const QuestionsList: React.FC<QuestionsListProps> = ({
 
   return (
     <div>
-      <h4 className="text-sm font-medium text-muted-foreground mb-2">Previously Asked Questions</h4>
+      <h4 className="text-sm font-medium text-muted-foreground mb-2">Questions</h4>
       <div className="space-y-3">
         {questions.map((question, index) => (
           <QuestionItem

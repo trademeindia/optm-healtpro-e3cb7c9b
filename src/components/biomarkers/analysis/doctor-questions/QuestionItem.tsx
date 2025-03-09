@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrainCircuit, AlertTriangle, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { BrainCircuit, AlertTriangle, ThumbsUp, ThumbsDown, Bookmark, BookmarkPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
@@ -68,6 +68,22 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
     });
   };
 
+  const handleToggleFavorite = () => {
+    const isFavorited = !question.favorited;
+    
+    onUpdateQuestion(index, {
+      ...question,
+      favorited: isFavorited
+    });
+
+    toast({
+      description: isFavorited 
+        ? "Question saved to favorites." 
+        : "Question removed from favorites.",
+      duration: 2000
+    });
+  };
+
   return (
     <Card key={index} className="overflow-hidden border border-border/50">
       <CardContent className="p-0">
@@ -76,7 +92,22 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
             {index + 1}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium">{question.text}</p>
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium">{question.text}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 ml-2"
+                onClick={handleToggleFavorite}
+                title={question.favorited ? "Remove from favorites" : "Save to favorites"}
+              >
+                {question.favorited ? (
+                  <Bookmark className="h-4 w-4 text-amber-500" />
+                ) : (
+                  <BookmarkPlus className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
             {!question.answer && (
               <Button 
                 onClick={handleAskExisting} 
