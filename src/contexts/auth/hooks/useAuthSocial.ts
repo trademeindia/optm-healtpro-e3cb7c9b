@@ -30,23 +30,18 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       
       toast.info(`Signing in with ${provider}...`);
       
-      // Enhanced configuration for OAuth
+      // Create the OAuth options with the correct structure
       const options = {
         redirectTo,
       };
       
-      // Special handling for Google to ensure proper scopes
-      if (provider === 'google') {
-        // For Google, we need to use the scopes property properly
-        options.scopes = 'openid email profile';
-      }
-      
-      // Log the full OAuth configuration for debugging
-      console.log(`OAuth config for ${provider}:`, options);
-      
+      // Special handling for Google OAuth scopes
+      // We need to use the 'scopes' option within the signInWithOAuth call for Google
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options
+        options: provider === 'google' ? 
+          { ...options, scopes: 'openid email profile' } : 
+          options
       });
 
       console.log("OAuth initiation response:", data ? "Data received" : "No data", error ? `Error: ${error.message}` : "No error");
