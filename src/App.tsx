@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/auth";
+import { SymptomProvider } from "./contexts/SymptomContext";
 import Index from "./pages/Index";
 import Dashboard from './pages/dashboard/DashboardPage';
 import PatientDashboard from "./pages/PatientDashboard";
@@ -145,7 +147,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <SymptomProvider>
+            <AppRoutes />
+          </SymptomProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
