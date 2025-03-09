@@ -28,6 +28,7 @@ export const simulateProcessing = (
   
   const mockAnalysis: ReportAnalysis = {
     id: "report-" + Date.now(),
+    reportId: `report-id-${Date.now()}`,
     timestamp: new Date().toISOString(),
     reportType: isFileUpload ? "File Upload" : "Text Input",
     summary: "Your blood test results are generally within normal ranges with a few areas that may need attention. Your lipid panel shows slightly elevated LDL cholesterol, which should be monitored. All other metrics are within healthy ranges.",
@@ -54,6 +55,18 @@ export const simulateProcessing = (
       "Maintain your current physical activity level to support your healthy blood pressure",
       "Continue with your current vitamin D intake as levels are sufficient",
       "Schedule a follow-up lipid panel in 6 months to monitor cholesterol levels"
+    ],
+    extractedBiomarkers: [
+      { name: "Total Cholesterol", value: 210, unit: "mg/dL", normalRange: "125-200", status: "elevated" },
+      { name: "HDL Cholesterol", value: 65, unit: "mg/dL", normalRange: "40-60", status: "normal" },
+      { name: "LDL Cholesterol", value: 130, unit: "mg/dL", normalRange: "0-99", status: "elevated" },
+      { name: "Triglycerides", value: 88, unit: "mg/dL", normalRange: "0-149", status: "normal" },
+      { name: "Fasting Glucose", value: 92, unit: "mg/dL", normalRange: "70-99", status: "normal" },
+      { name: "HbA1c", value: 5.4, unit: "%", normalRange: "4.0-5.6", status: "normal" },
+      { name: "Blood Pressure", value: "118/78", unit: "mmHg", normalRange: "90/60-120/80", status: "normal" },
+      { name: "ALT", value: 22, unit: "U/L", normalRange: "7-56", status: "normal" },
+      { name: "AST", value: 24, unit: "U/L", normalRange: "8-48", status: "normal" },
+      { name: "Vitamin D", value: 45, unit: "ng/mL", normalRange: "30-50", status: "normal" }
     ]
   };
   
