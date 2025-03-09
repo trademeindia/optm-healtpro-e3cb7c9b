@@ -93,6 +93,15 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      console.log('Initiating Google OAuth login flow');
+      await loginWithSocialProvider('google');
+    } catch (error) {
+      console.error('Error initiating Google login:', error);
+    }
+  };
+
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
     try {
       await loginWithSocialProvider(provider);
@@ -165,7 +174,7 @@ const Login: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="flex items-center justify-center gap-2 h-11"
-                  onClick={() => handleSocialLogin('google')}
+                  onClick={() => handleGoogleLogin()}
                   disabled={isSubmitting}
                 >
                   <FcGoogle className="h-5 w-5" />
@@ -505,4 +514,3 @@ const Login: React.FC = () => {
 };
 
 export default Login;
-

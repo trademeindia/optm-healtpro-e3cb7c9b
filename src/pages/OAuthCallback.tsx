@@ -12,11 +12,12 @@ const OAuthCallback: React.FC = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, handleOAuthCallback } = useAuth();
   const [searchParams] = useSearchParams();
   const provider = searchParams.get('provider') || 'unknown';
   const errorCode = searchParams.get('error') || null;
   const errorDescription = searchParams.get('error_description') || null;
+  const code = searchParams.get('code') || '';
 
   useEffect(() => {
     // Log the component initialization for debugging
@@ -39,6 +40,12 @@ const OAuthCallback: React.FC = () => {
       setIsVerifying(true);
       
       try {
+        // Call the handler with the code from search params
+        if (code) {
+          console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
+          await handleOAuthCallback(provider, code);
+        }
+        
         // Verify Supabase connection and session
         const { data, error: sessionError } = await supabase.auth.getSession();
         
@@ -65,6 +72,21 @@ const OAuthCallback: React.FC = () => {
         } 
         // If we're done loading and still don't have a user, there was an error
         else if (!isLoading && !user) {
+          // Try one more time to handle the callback
+          if (code && provider !== 'unknown') {
+            console.log('Attempting secondary OAuth handling with code');
+            await handleOAuthCallback(provider, code);
+            
+            // Check again after handling
+            const { data: refreshData } = await supabase.auth.getSession(); 
+            if (refreshData.session) {
+              console.log('Session found after secondary handling');
+              toast.success('Successfully authenticated!');
+              navigate('/dashboard'); // We'll redirect and let the main app handle role routing
+              return;
+            }
+          }
+          
           console.error('Authentication failed - no user found after OAuth flow');
           setError('Authentication failed');
           setErrorDetails('The sign-in attempt was not successful. Please try again or use a different method.');
@@ -90,7 +112,7 @@ const OAuthCallback: React.FC = () => {
     if (!error) {
       checkAuthState();
     }
-  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error]);
+  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -113,6 +135,7 @@ const OAuthCallback: React.FC = () => {
               <li>Check that your Google Cloud project has proper OAuth credentials set up</li>
               <li>Verify that <code>{window.location.origin}</code> is added as an Authorized JavaScript Origin in Google Cloud Console</li>
               <li>Make sure <code>{window.location.origin}/oauth-callback</code> is added as an Authorized Redirect URI in Google Cloud Console</li>
+              <li>If you're getting 403 errors, check if your Google API credentials are restricted by domain</li>
             </ul>
           </div>
           <Button 
