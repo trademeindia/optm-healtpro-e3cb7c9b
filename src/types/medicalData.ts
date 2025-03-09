@@ -1,3 +1,4 @@
+
 /**
  * Shared data types for medical data synchronization
  */
@@ -85,6 +86,34 @@ export interface Patient {
 export interface FitnessData {
   steps?: {
     value: string;
+    source?: string;
+    timestamp: number;
+  };
+  heartRate?: {
+    value: string | number;
+    unit: string;
+    change?: number;
+    source?: string;
+    timestamp: number;
+  };
+  bloodPressure?: {
+    value: string;
+    unit: string;
+    change?: number;
+    source?: string;
+    timestamp: number;
+  };
+  temperature?: {
+    value: string | number;
+    unit: string;
+    change?: number;
+    source?: string;
+    timestamp: number;
+  };
+  oxygenSaturation?: {
+    value: string | number;
+    unit: string;
+    change?: number;
     source?: string;
     timestamp: number;
   };

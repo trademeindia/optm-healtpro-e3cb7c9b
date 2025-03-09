@@ -52,12 +52,11 @@ const PatientDashboard: React.FC = () => {
               <DashboardMainContent
                 healthMetrics={healthMetrics}
                 activityData={activityData}
-                treatmentTasks={treatmentTasks}
                 upcomingAppointments={upcomingAppointments || []}
                 biologicalAge={biologicalAge}
                 chronologicalAge={chronologicalAge}
                 hasConnectedApps={hasConnectedApps}
-                onSyncData={handleSyncAllData}
+                handleSyncAllData={handleSyncAllData}
                 handleConfirmAppointment={handleConfirmAppointment}
                 handleRescheduleAppointment={handleRescheduleAppointment}
               />

@@ -5,6 +5,7 @@ import { useDataSync } from './useDataSync';
 import { useAppointmentHandlers } from './useAppointmentHandlers';
 import { FitnessData, FitnessProvider } from '@/types/medicalData';
 import { Appointment } from '@/services/calendar/types';
+import { mockTreatmentTasks } from './mockData';
 
 export const usePatientDashboard = () => {
   // Mock data for fitness providers
@@ -69,6 +70,9 @@ export const usePatientDashboard = () => {
   // Mock data for biological and chronological age
   const biologicalAge = 32;
   const chronologicalAge = 35;
+  
+  // Include treatment tasks from mock data
+  const treatmentTasks = mockTreatmentTasks;
 
   return {
     healthMetrics,
@@ -76,6 +80,7 @@ export const usePatientDashboard = () => {
     biologicalAge,
     chronologicalAge,
     activityData,
+    treatmentTasks,
     handleSyncAllData,
     hasConnectedApps,
     handleConfirmAppointment,
