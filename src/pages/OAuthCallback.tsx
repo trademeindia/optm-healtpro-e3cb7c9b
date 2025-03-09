@@ -11,6 +11,7 @@ const OAuthCallback: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
   const navigate = useNavigate();
   const { user, isLoading, handleOAuthCallback } = useAuth();
   const [searchParams] = useSearchParams();
@@ -18,6 +19,7 @@ const OAuthCallback: React.FC = () => {
   const errorCode = searchParams.get('error') || null;
   const errorDescription = searchParams.get('error_description') || null;
   const code = searchParams.get('code') || '';
+  const state = searchParams.get('state') || '';
 
   useEffect(() => {
     // Log the component initialization for debugging
@@ -40,6 +42,20 @@ const OAuthCallback: React.FC = () => {
       setIsVerifying(true);
       
       try {
+        const callbackURL = window.location.href;
+        const originURL = window.location.origin;
+        
+        // Collect debug info
+        setDebugInfo({
+          callbackURL,
+          originURL,
+          hasCode: !!code,
+          hasState: !!state,
+          provider
+        });
+        
+        console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, state exists=${!!state}`);
+        
         // Call the handler with the code from search params
         if (code) {
           console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
@@ -112,7 +128,7 @@ const OAuthCallback: React.FC = () => {
     if (!error) {
       checkAuthState();
     }
-  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code]);
+  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, state]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -138,6 +154,16 @@ const OAuthCallback: React.FC = () => {
               <li>If you're getting 403 errors, check if your Google API credentials are restricted by domain</li>
             </ul>
           </div>
+          
+          {debugInfo && Object.keys(debugInfo).length > 0 && (
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mt-4 mb-6 text-left">
+              <h3 className="font-semibold text-gray-800 mb-2">Debug Information:</h3>
+              <pre className="text-xs overflow-auto bg-gray-100 p-2 rounded">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+          )}
+          
           <Button 
             variant="default" 
             onClick={() => navigate('/login')}

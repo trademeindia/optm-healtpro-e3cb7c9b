@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, User, Users, Github, Apple } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Users, Github, Apple, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeartPulse } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,7 +32,8 @@ const Login: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
-  
+  const [showDebug, setShowDebug] = useState(false);
+
   const { login, loginWithSocialProvider, signup, forgotPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,6 +105,7 @@ const Login: React.FC = () => {
 
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
     try {
+      console.log(`Initiating ${provider} OAuth login flow`);
       await loginWithSocialProvider(provider);
     } catch (error) {
       console.error(`${provider} login initiation failed:`, error);
@@ -300,11 +302,29 @@ const Login: React.FC = () => {
                 </p>
               </div>
               
-              <p className="mt-8 text-center text-sm text-muted-foreground">
-                {userType === 'doctor' 
-                  ? 'Demo: doctor@example.com / password123' 
-                  : 'Demo: patient@example.com / password123'}
-              </p>
+              <div className="mt-6 flex flex-col items-center">
+                <p className="text-center text-sm text-muted-foreground">
+                  {userType === 'doctor' 
+                    ? 'Demo: doctor@example.com / password123' 
+                    : 'Demo: patient@example.com / password123'}
+                </p>
+                
+                <button 
+                  className="mt-4 text-xs flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowDebug(!showDebug)}
+                >
+                  <Info className="h-3 w-3" />
+                  {showDebug ? "Hide Debugging Info" : "Show Debugging Info"}
+                </button>
+                
+                {showDebug && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-left w-full">
+                    <p className="font-mono">Origin: {window.location.origin}</p>
+                    <p className="font-mono">Redirect: {`${window.location.origin}/oauth-callback`}</p>
+                    <p className="font-mono">Current URL: {window.location.href}</p>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>

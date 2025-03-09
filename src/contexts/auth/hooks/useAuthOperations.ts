@@ -91,22 +91,37 @@ export const useAuthOperations = () => {
         return;
       }
       
-      // Set up the redirect URL carefully - Use current origin for local development
-      // and production environments will correctly set their own URLs
-      const redirectTo = `${window.location.origin}/oauth-callback`;
+      // Build and log the redirect URL - crucial for debugging OAuth redirects
+      const redirectTo = `${window.location.origin}/oauth-callback?provider=${provider}`;
       console.log(`OAuth redirect URL: ${redirectTo}`);
       
       toast.info(`Signing in with ${provider}...`);
       
+      // Enhanced configuration for Google specifically
+      const options = {
+        redirectTo,
+        queryParams: {},
+      };
+      
+      // Special handling for Google to ensure proper scopes
+      if (provider === 'google') {
+        options.queryParams = {
+          // These scopes ensure we get enough profile information
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: 'openid email profile',
+        };
+      }
+      
+      // Log the full OAuth configuration for debugging
+      console.log(`OAuth config for ${provider}:`, options);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo,
-          scopes: 'email profile', // Explicitly request these scopes for Google
-        }
+        options
       });
 
-      console.log("OAuth response:", data ? "Data received" : "No data", error ? `Error: ${error.message}` : "No error");
+      console.log("OAuth initiation response:", data ? "Data received" : "No data", error ? `Error: ${error.message}` : "No error");
 
       if (error) {
         // Enhanced error diagnostics with more specific messages
