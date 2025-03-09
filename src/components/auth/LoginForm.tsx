@@ -27,7 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   onForgotPassword
 }) => {
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} className="space-y-4">
       <EmailInput 
         email={email}
         setEmail={setEmail}

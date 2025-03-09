@@ -25,18 +25,19 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       <Button 
         onClick={onToggleCamera} 
         variant={cameraActive ? "destructive" : "default"}
-        className="gap-2 flex-1"
+        className="gap-2 flex-1 btn-responsive-text"
         disabled={isModelLoading}
+        aria-label={cameraActive ? "Stop Camera" : "Start Camera"}
       >
         {cameraActive ? (
           <>
             <CameraOff className="h-4 w-4" />
-            <span>Stop Camera</span>
+            <span className="sm:inline">Stop Camera</span>
           </>
         ) : (
           <>
             <Camera className="h-4 w-4" />
-            <span>{isModelLoading ? "Loading AI..." : "Start Camera"}</span>
+            <span className="sm:inline">{isModelLoading ? "Loading AI..." : "Start Camera"}</span>
           </>
         )}
       </Button>
@@ -44,21 +45,32 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       <Button 
         onClick={onReset} 
         variant="outline" 
-        className="gap-2"
+        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
         disabled={!cameraActive}
+        aria-label="Reset"
       >
         <RotateCcw className="h-4 w-4" />
         <span>Reset</span>
       </Button>
       
-      <Button onClick={onShowTutorial} variant="outline" className="gap-2">
+      <Button 
+        onClick={onShowTutorial} 
+        variant="outline" 
+        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
+        aria-label="How To"
+      >
         <Info className="h-4 w-4" />
         <span>How To</span>
       </Button>
       
-      <Button onClick={onFinish} variant="outline" className="gap-2 flex-1">
+      <Button 
+        onClick={onFinish} 
+        variant="outline" 
+        className="gap-2 flex-1 btn-responsive-text"
+        aria-label="Finish Session"
+      >
         <Check className="h-4 w-4" />
-        <span>Finish Session</span>
+        <span className="sm:inline">Finish Session</span>
       </Button>
     </div>
   );

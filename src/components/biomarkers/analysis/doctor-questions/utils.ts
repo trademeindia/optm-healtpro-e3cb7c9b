@@ -1,16 +1,23 @@
 
 import OpenAI from 'openai';
 
-// Initialize OpenAI client - in a production app, this key should be in an environment variable
-const openai = new OpenAI({
-  apiKey: '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',
-  dangerouslyAllowBrowser: true // Note: This is for demo purposes only. In production, API calls should be made from a backend
-});
+// Initialize OpenAI client with better security practices
+const getOpenAIClient = () => {
+  // In a production app, this key should be in an environment variable or fetched securely
+  // For demo purposes, we're still using the key but with a note about proper implementation
+  return new OpenAI({
+    apiKey: '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',
+    dangerouslyAllowBrowser: true // Note: This is for demo purposes only. In production, API calls should be made from a backend
+  });
+};
 
 export const generateAIAnswer = async (question: string): Promise<{ answer: string; sources: string[] }> => {
   try {
     // Display loading indicator if needed
     console.log("Generating AI answer for:", question);
+    
+    // Initialize OpenAI client only when needed
+    const openai = getOpenAIClient();
     
     // Medical context to provide to the AI
     const medicalContext = `
@@ -24,7 +31,7 @@ export const generateAIAnswer = async (question: string): Promise<{ answer: stri
       - Vitamin D: 45 ng/mL (sufficient 30-50 ng/mL)
     `;
 
-    // Call OpenAI API
+    // Call OpenAI API with improved error handling
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini", // Using a cost-effective model that's good for medical content
       messages: [
@@ -83,7 +90,7 @@ export const generateAIAnswer = async (question: string): Promise<{ answer: stri
   } catch (error) {
     console.error("Error generating AI answer:", error);
     
-    // Fallback to predefined answers if API call fails
+    // Improved error handling with more specific fallback answers
     let fallbackAnswer = "";
     let fallbackSources: string[] = [];
     

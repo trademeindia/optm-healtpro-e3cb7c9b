@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { RendererProps } from './renderer/types';
 import { useCanvasSize } from './renderer/useCanvasSize';
 import { drawPose } from './renderer/drawPose';
@@ -13,6 +13,7 @@ const PoseRenderer: React.FC<RendererProps> = ({
   config
 }) => {
   const { canvasSize } = useCanvasSize(canvasRef);
+  const animationFrameRef = useRef<number>();
   
   // Draw pose keypoints and skeleton on canvas
   const renderPose = useCallback(() => {
@@ -44,7 +45,8 @@ const PoseRenderer: React.FC<RendererProps> = ({
   // Run the drawing effect
   useEffect(() => {
     if (pose) {
-      requestAnimationFrame(renderPose);
+      // Use requestAnimationFrame for smoother rendering
+      animationFrameRef.current = requestAnimationFrame(renderPose);
     } else if (canvasRef.current) {
       // Clear canvas when no pose is detected
       const ctx = canvasRef.current.getContext('2d');
@@ -52,6 +54,13 @@ const PoseRenderer: React.FC<RendererProps> = ({
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       }
     }
+    
+    // Clean up animation frame on unmount
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, [pose, renderPose, canvasRef]);
 
   return null;

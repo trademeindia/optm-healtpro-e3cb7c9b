@@ -57,3 +57,44 @@
     @apply p-4;
   }
 }
+
+/* Make button text more responsive */
+@media (max-width: 480px) {
+  .btn-responsive-text {
+    font-size: 0.875rem;
+  }
+  
+  .btn-icon-only {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  .btn-icon-only span {
+    display: none;
+  }
+  
+  .btn-icon-only svg {
+    margin-right: 0;
+  }
+}
+
+/* Fix dashboard grid on smaller screens */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dashboard-grid > div {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Fix table layouts on mobile */
+@media (max-width: 640px) {
+  .responsive-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

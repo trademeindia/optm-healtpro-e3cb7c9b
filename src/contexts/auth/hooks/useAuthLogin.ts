@@ -32,6 +32,9 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           picture: ''
         };
         
+        // Save demo user to localStorage for persistence across refreshes
+        localStorage.setItem('demoUser', JSON.stringify(demoUser));
+        
         toast.success('Demo login successful');
         
         // Return the user first, navigation will be handled in AuthProvider

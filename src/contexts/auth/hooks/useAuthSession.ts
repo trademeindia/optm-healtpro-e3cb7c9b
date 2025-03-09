@@ -15,11 +15,16 @@ export const useAuthSession = () => {
         // First, check local storage for demo user
         const demoUserData = localStorage.getItem('demoUser');
         if (demoUserData) {
-          const demoUser = JSON.parse(demoUserData);
-          console.log('Found demo user in localStorage:', demoUser.email);
-          setUser(demoUser);
-          setIsLoading(false);
-          return;
+          try {
+            const demoUser = JSON.parse(demoUserData);
+            console.log('Found demo user in localStorage:', demoUser.email);
+            setUser(demoUser);
+            setIsLoading(false);
+            return;
+          } catch (e) {
+            console.error('Error parsing demo user data:', e);
+            localStorage.removeItem('demoUser'); // Remove invalid data
+          }
         }
         
         // Otherwise, check Supabase session
