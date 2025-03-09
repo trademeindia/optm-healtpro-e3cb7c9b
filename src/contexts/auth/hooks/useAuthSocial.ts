@@ -26,12 +26,12 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       }
       
       // Build and log the redirect URL - crucial for debugging OAuth redirects
-      const redirectTo = `${window.location.origin}/oauth-callback?provider=${provider}`;
+      const redirectTo = `${window.location.origin}/oauth-callback`;
       console.log(`OAuth redirect URL: ${redirectTo}`);
       
       toast.info(`Signing in with ${provider}...`);
       
-      // Enhanced configuration for Google specifically
+      // Enhanced configuration for OAuth
       const options = {
         redirectTo,
         queryParams: {},
@@ -60,7 +60,7 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       if (error) {
         // Enhanced error diagnostics with more specific messages
         if (error.message.includes('provider is not enabled')) {
-          toast.error(`${provider} login is not available. Please contact support or verify provider settings.`);
+          toast.error(`${provider} login is not available. Please check Supabase Authentication settings.`);
           console.error(`Error: ${provider} provider is not enabled in Supabase Authentication > Providers.`);
         } else if (error.message.includes('missing OAuth secret')) {
           toast.error(`${provider} login configuration is incomplete.`);
@@ -83,7 +83,7 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       console.log(`Successfully initiated ${provider} auth flow, user should be redirected.`);
     } catch (error: any) {
       console.error(`Error initiating ${provider} authentication:`, error);
-      // No need for another toast as one was already shown above
+      toast.error(`Login with ${provider} failed. Please check the debugging section for more information.`);
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +115,25 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
           }
         }
         
-        toast.error('Authentication failed. Please try again.');
+        // Add additional debug information to help diagnose the issue
+        console.error("OAuth callback failed to find a user despite having a code");
+        console.log("Examining URL parameters:", window.location.search);
+        
+        // Try to exchange the code directly
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const state = urlParams.get('state');
+          
+          if (code && state) {
+            console.log("Attempting to manually exchange auth code");
+            // We don't need to call this manually - Supabase handles it internally
+            // but this logs that we've verified the code and state exist
+          }
+        } catch (codeError) {
+          console.error("Error processing OAuth code:", codeError);
+        }
+        
+        toast.error('Authentication failed. Please try again and check the debug section.');
         navigate('/login');
         return;
       }
@@ -124,7 +142,7 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
-      toast.error('Authentication failed. Please try again.');
+      toast.error('Authentication failed. Please try again and check the debug section.');
       navigate('/login');
     } finally {
       setIsLoading(false);

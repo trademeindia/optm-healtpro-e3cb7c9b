@@ -22,6 +22,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         className="flex items-center justify-center gap-2 h-11"
         onClick={() => onGoogleLogin()}
         disabled={isSubmitting}
+        data-testid="google-login-button"
       >
         <FcGoogle className="h-5 w-5" />
         <span>Continue with Google</span>
