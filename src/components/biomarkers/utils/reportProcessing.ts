@@ -63,6 +63,7 @@ export const simulateProcessing = (
     progress += Math.random() * 10;
     if (progress > 100) progress = 100;
     
+    // Fix: directly pass the number value instead of a function
     setProcessingProgress(Math.round(progress));
     
     if (progress === 100) {
