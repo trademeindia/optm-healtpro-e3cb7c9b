@@ -44,18 +44,18 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-black/90 dark:bg-gray-900/90 rounded-xl text-white p-5 relative"
+          className="bg-gray-800/95 dark:bg-gray-900/95 rounded-xl text-white p-5 relative"
         >
           <div className="flex flex-col items-center">
             {/* Gauge Visualization */}
             <div className="relative w-full h-24 mb-2">
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-16 overflow-hidden">
                 {/* Background arc */}
-                <div className="absolute top-0 left-0 w-full h-full rounded-tl-full rounded-tr-full border-8 border-gray-700 border-b-0"></div>
+                <div className="absolute top-0 left-0 w-full h-full rounded-tl-full rounded-tr-full border-8 border-gray-600 border-b-0"></div>
                 
                 {/* Colored arc based on biological age */}
                 <div 
-                  className="absolute top-0 left-0 w-full h-full rounded-tl-full rounded-tr-full border-8 border-green-500 border-b-0"
+                  className="absolute top-0 left-0 w-full h-full rounded-tl-full rounded-tr-full border-8 border-green-400 border-b-0"
                   style={{ 
                     clipPath: `polygon(50% 100%, 50% 0%, 100% 0%, 100% 100%)`,
                     width: `${biologicalAge <= 30 ? 100 : 50 + (biologicalAge / maxAge) * 50}%` 
@@ -74,25 +74,25 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
               </div>
               
               {/* Age number */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-4xl font-bold">
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-4xl font-bold text-white">
                 {biologicalAge}
               </div>
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mt-1 text-sm">
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mt-1 text-sm text-gray-200">
                 Years
               </div>
             </div>
 
             {/* Description */}
             <div className="text-sm text-center mt-6 mb-3">
-              <p className="font-semibold mb-1">Good news! Your biological age is</p>
-              <p>{biologicalAge} years {isYounger ? 'younger' : 'older'} than your chronological age of {chronologicalAge}.</p>
-              <p className="mt-1 text-green-400">
+              <p className="font-semibold mb-1 text-gray-100">Good news! Your biological age is</p>
+              <p className="text-white">{Math.abs(ageDifference)} years {isYounger ? 'younger' : 'older'} than your chronological age of {chronologicalAge}.</p>
+              <p className="mt-1 text-green-300 font-medium">
                 A lower blood age will help you live healthier longer.
               </p>
             </div>
 
             {/* Learn more button */}
-            <Button variant="ghost" className="text-white hover:text-white hover:bg-white/10 mt-1 flex items-center">
+            <Button variant="ghost" className="text-white hover:text-white hover:bg-white/20 mt-1 flex items-center">
               Learn more
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
