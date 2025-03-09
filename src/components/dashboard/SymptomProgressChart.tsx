@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { useSymptomProgress } from './symptom-progress/useSymptomProgress';
-import SymptomChart from './symptom-progress/SymptomChart';
-import SymptomCardsContainer from './symptom-progress/SymptomCardsContainer';
-import PainReductionCard from './symptom-progress/PainReductionCard';
 import { SymptomProgressChartProps } from './symptom-progress/types';
+import { 
+  PainReductionSummary,
+  ChartSection,
+  SymptomDetails
+} from './symptom-progress/progress-chart';
 
 const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({ className }) => {
   const { symptoms, chartData, painReduction } = useSymptomProgress();
@@ -13,14 +15,14 @@ const SymptomProgressChart: React.FC<SymptomProgressChartProps> = ({ className }
     <div className={className}>
       <h3 className="text-lg font-medium mb-4">Symptom Progress</h3>
       
-      <PainReductionCard painReduction={painReduction} />
+      <PainReductionSummary painReduction={painReduction} />
       
-      <SymptomChart
+      <ChartSection 
         symptoms={symptoms}
         chartData={chartData}
       />
       
-      <SymptomCardsContainer symptoms={symptoms} />
+      <SymptomDetails symptoms={symptoms} />
     </div>
   );
 };
