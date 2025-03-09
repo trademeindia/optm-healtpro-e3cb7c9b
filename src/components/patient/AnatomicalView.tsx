@@ -45,7 +45,7 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 pt-4 pb-6 px-4 relative">
+      <CardContent className="flex-1 pt-4 pb-6 px-4 relative min-h-[60vh]">
         <AnatomicalCanvas 
           activeSystem={activeSystem}
           isRotating={isRotating}

@@ -34,7 +34,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
     <div className="w-full h-full flex items-center justify-center relative">
       <Canvas 
         style={{ width: '100%', height: '100%', minHeight: '500px' }}
-        camera={{ position: [0, 0, 5], fov: 60 }}
+        camera={{ position: [0, 0, 5], fov: 50 }}
       >
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={cameraPosition} />

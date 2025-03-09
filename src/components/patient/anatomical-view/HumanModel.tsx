@@ -39,13 +39,12 @@ const HumanModel: React.FC<HumanModelProps> = ({
         center
         sprite
       >
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="relative flex items-center justify-center w-full h-full">
           <img 
             src="/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png" 
             alt="Human Anatomy Muscular System" 
-            className="h-full w-auto object-contain max-h-[80vh]"
+            className="object-contain max-w-[95%] max-h-[75vh]"
             style={{ 
-              maxWidth: '100%',
               pointerEvents: 'none',
               opacity: activeSystem === 'muscular' ? 1 : 0.7 
             }}
