@@ -50,7 +50,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
         rotation={[0, 0, 0]}
         center
         sprite
-        scale={[2, 2, 2]} // Reduced scale to prevent over-zooming
+        scale={[1.8, 1.8, 1.8]} // Adjusted scale to prevent over-zooming
         distanceFactor={10}
       >
         <div className="flex items-center justify-center anatomy-model-container" style={{ width: '100%', height: '100%' }}>

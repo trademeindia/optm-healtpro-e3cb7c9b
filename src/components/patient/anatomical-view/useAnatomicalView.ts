@@ -27,7 +27,7 @@ export const useAnatomicalView = (
 ) => {
   const [activeSystem, setActiveSystem] = useState('muscular');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 3.5]); // Start with a wider view
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 4]); // Start with a more distant view
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const { symptoms, updateSymptom } = useSymptoms();
 
@@ -59,15 +59,15 @@ export const useAnatomicalView = (
   }));
   
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.3, 2)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 2.5)]);
   };
   
   const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.3, 6)]); // Limit max zoom out
+    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 6)]); // Limit max zoom out
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 3.5]); // Default to a wider view that shows the full body
+    setCameraPosition([0, 0, 4]); // Default to a more distant view that shows the full body
     setIsRotating(false);
   };
   
