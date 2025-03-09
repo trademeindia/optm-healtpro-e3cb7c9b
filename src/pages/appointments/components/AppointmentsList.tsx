@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, RefreshCw } from 'lucide-react';
+import { Calendar, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Appointment } from '@/services/calendar/googleCalendarService';
 import { useToast } from '@/hooks/use-toast';
