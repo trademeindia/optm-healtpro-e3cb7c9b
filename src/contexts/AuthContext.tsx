@@ -1,12 +1,12 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser, Session, Provider } from '@supabase/supabase-js';
+import { Database } from '@/integrations/supabase/types';
 
+type AuthProvider = Provider | 'email';
 type UserRole = 'doctor' | 'patient';
-type AuthProvider = 'email' | 'google' | 'apple' | 'github';
 
 type User = {
   id: string;
@@ -22,7 +22,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithSocialProvider: (provider: AuthProvider) => Promise<void>;
+  loginWithSocialProvider: (provider: Provider) => Promise<void>;
   handleOAuthCallback: (provider: string, code: string) => Promise<void>;
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
@@ -44,12 +44,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Convert Supabase user to our app's user format
   const formatUser = async (supabaseUser: SupabaseUser | null): Promise<User | null> => {
     if (!supabaseUser) return null;
 
     try {
-      // Fetch user profile from the profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -66,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return {
         id: data.id,
         email: data.email,
-        name: data.name,
+        name: data.name || '',
         role: data.role as UserRole,
         provider: data.provider as AuthProvider,
         picture: data.picture
@@ -77,13 +75,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Initialize auth state from Supabase session
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
         
-        // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
@@ -99,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setIsLoading(true);
@@ -137,7 +132,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success('Login successful');
       
-      // Redirect based on user role
       if (formattedUser.role === 'doctor') {
         navigate('/dashboard');
       } else {
@@ -169,12 +163,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       toast.success('Account created successfully. Please check your email for verification.');
       
-      // For development, we can auto-redirect if email confirmation is disabled
       if (data.user && !data.user.email_confirmed_at) {
         navigate('/login');
       } else {
-        // If email is already confirmed (which can happen in development)
-        // we should get the user profile
         const formattedUser = await formatUser(data.user);
         if (formattedUser) {
           navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
@@ -188,12 +179,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithSocialProvider = async (provider: AuthProvider) => {
+  const loginWithSocialProvider = async (provider: Provider) => {
     try {
-      const providerKey = provider as Provider;
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: providerKey,
+        provider,
         options: {
           redirectTo: `${window.location.origin}/oauth-callback?provider=${provider}`
         }
@@ -209,21 +198,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleOAuthCallback = async (provider: string, code: string) => {
-    // This function is now handled automatically by Supabase's auth.onAuthStateChange
-    // The parameter is kept for backward compatibility with the existing interface
-    // We just need to wait for the auth state to be updated
-    
     setIsLoading(true);
     try {
-      // The auth state should be updated by the onAuthStateChange callback
-      // We can add some extra delay to ensure the state is updated
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (!user) {
         throw new Error('Authentication failed');
       }
       
-      // Navigate based on user role
       navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
     } catch (error: any) {
       console.error(`${provider} OAuth handling failed:`, error);
