@@ -24,11 +24,12 @@
   object-fit: contain !important;
   max-width: 100% !important;
   max-height: 100% !important;
+  object-position: center !important;
 }
 
 @media (max-width: 640px) {
   .anatomy-model-container {
-    height: 400px !important;
+    height: 450px !important;
     width: 100% !important;
     display: flex;
     align-items: center;
@@ -36,11 +37,11 @@
   }
   
   .anatomy-canvas-container {
-    min-height: 400px;
+    min-height: 450px;
   }
   
   .anatomy-model-container img {
-    max-height: 380px;
+    max-height: 430px;
     max-width: 95%;
     object-fit: contain;
     object-position: center;
@@ -62,7 +63,7 @@
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .anatomy-model-container {
-    height: 550px !important;
+    height: 600px !important;
     width: 100% !important;
     display: flex;
     align-items: center;
@@ -70,11 +71,11 @@
   }
   
   .anatomy-canvas-container {
-    min-height: 550px;
+    min-height: 600px;
   }
   
   .anatomy-model-container img {
-    max-height: 520px;
+    max-height: 580px;
     max-width: 95%;
     object-fit: contain;
     object-position: center;
@@ -84,7 +85,7 @@
 
 @media (min-width: 1025px) {
   .anatomy-model-container {
-    height: 700px !important;
+    height: 750px !important;
     width: 100% !important;
     display: flex;
     align-items: center;
@@ -92,11 +93,11 @@
   }
   
   .anatomy-canvas-container {
-    min-height: 700px;
+    min-height: 750px;
   }
   
   .anatomy-model-container img {
-    max-height: 650px;
+    max-height: 720px;
     max-width: 98%;
     object-fit: contain;
     object-position: center;

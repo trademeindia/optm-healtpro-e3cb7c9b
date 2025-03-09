@@ -37,6 +37,8 @@ const HumanModel: React.FC<HumanModelProps> = ({
         return "/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png";
       case 'skeletal':
         return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
+      case 'muscular-new':
+        return "/lovable-uploads/bc0cdad1-9678-4b95-ac1c-9b03f27fbb17.png";  
       default:
         return "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png";
     }
@@ -50,7 +52,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
         rotation={[0, 0, 0]}
         center
         sprite
-        scale={[1.35, 1.35, 1.35]} // Adjusted scale to fit better
+        scale={[1.25, 1.25, 1.25]} // Slightly adjusted scale for better fit
         distanceFactor={10}
       >
         <div className="flex items-center justify-center anatomy-model-container" style={{ width: '100%', height: '100%' }}>

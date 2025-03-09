@@ -31,10 +31,10 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   handleHotspotClick
 }) => {
   return (
-    <div className="w-full h-full relative flex items-center justify-center anatomy-canvas-container" style={{ minHeight: '550px' }}>
+    <div className="w-full h-full relative flex items-center justify-center anatomy-canvas-container">
       <Canvas 
         style={{ width: '100%', height: '100%' }}
-        camera={{ position: [0, 0, 4.5], fov: 25 }} // Adjusted for better initial view
+        camera={{ position: [0, 0, 4], fov: 30 }} // Adjusted for better initial view
       >
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={cameraPosition} />
@@ -45,7 +45,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
             enablePan={true}
             enableRotate={!isRotating}
             minDistance={2.5}
-            maxDistance={8}
+            maxDistance={7}
             minPolarAngle={Math.PI / 6} // Limit how far user can orbit vertically
             maxPolarAngle={Math.PI - Math.PI / 6}
           />

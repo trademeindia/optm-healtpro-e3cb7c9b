@@ -1,112 +1,100 @@
 
 import { useState, useEffect } from 'react';
-import { useSymptoms } from '@/contexts/SymptomContext';
-import { Hotspot, BodySystem } from './types';
-import { 
-  getHotspotPosition, 
-  getSeverityColor, 
-  getSeverityLevel
-} from './utils';
-
-// Define the body systems with additional ones from screenshot
-export const BODY_SYSTEMS: BodySystem[] = [
-  { id: 'full-body', label: 'Full body' },
-  { id: 'skin', label: 'Skin' },
-  { id: 'muscular', label: 'Muscular' },
-  { id: 'skeletal', label: 'Skeletal' },
-  { id: 'organs', label: 'Organs' },
-  { id: 'vascular', label: 'Vascular' },
-  { id: 'nervous', label: 'Nervous' },
-  { id: 'lymphatic', label: 'Lymphatic' }
-];
+import { BodySystem, Hotspot } from './types';
 
 export const useAnatomicalView = (
   selectedRegion?: string, 
   onSelectRegion?: (region: string) => void,
   patientId?: number
 ) => {
-  const [activeSystem, setActiveSystem] = useState('muscular');
-  const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 5]); // Start with a more distant view
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
-  const { symptoms, updateSymptom } = useSymptoms();
-
-  // Effect to handle external region selection (from AnatomicalMap)
-  useEffect(() => {
-    if (selectedRegion) {
-      // Find any hotspot matching the selected region
-      const matchingSymptom = symptoms.find(s => s.location === selectedRegion);
-      if (matchingSymptom) {
-        setActiveHotspot(matchingSymptom.id);
-      }
-    }
-  }, [selectedRegion, symptoms]);
-
-  // Reset view when system changes
-  useEffect(() => {
-    handleResetView();
-  }, [activeSystem]);
-
-  const hotspots: Hotspot[] = symptoms.map(symptom => ({
-    id: symptom.id,
-    position: getHotspotPosition(symptom.location),
-    label: symptom.symptomName,
-    description: symptom.notes,
-    severity: getSeverityLevel(symptom.painLevel),
-    color: getSeverityColor(symptom.painLevel),
-    size: 0.1 + (symptom.painLevel * 0.02),
-    region: symptom.location // Add region info to sync with AnatomicalMap
-  }));
+  // Available body systems
+  const bodySystems: BodySystem[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'skeletal', label: 'Skeletal' },
+    { id: 'muscular', label: 'Muscular' },
+    { id: 'muscular-new', label: 'Muscular HD' },
+    { id: 'nervous', label: 'Nervous' }
+  ];
   
+  // State for the active system, camera, rotation, etc.
+  const [activeSystem, setActiveSystem] = useState('overview');
+  const [isRotating, setIsRotating] = useState(false);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 4]);
+  
+  // Mock hotspots data - this would come from an API in a real app
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+  
+  // Active hotspot details (when a hotspot is clicked)
+  const [activeHotspotDetails, setActiveHotspotDetails] = useState<Hotspot | null>(null);
+  
+  // Generate mock hotspots data based on selected region and system
+  useEffect(() => {
+    // This would be replaced with an API call in a real application
+    // Sample hotspot data
+    const mockHotspots: Hotspot[] = selectedRegion ? [
+      {
+        id: '1',
+        position: [0.5, 0.8, 0],
+        label: `${selectedRegion} Issue 1`,
+        description: `Pain in ${selectedRegion} area likely caused by muscle tension`,
+        severity: 'Moderate',
+        color: '#FF4500',
+        size: 0.15,
+        region: selectedRegion
+      },
+      {
+        id: '2',
+        position: [-0.5, 0.3, 0],
+        label: `${selectedRegion} Issue 2`,
+        description: `Inflammation detected in ${selectedRegion} region`,
+        severity: 'Mild',
+        color: '#FFA500',
+        size: 0.12,
+        region: selectedRegion
+      }
+    ] : [];
+    
+    setHotspots(mockHotspots);
+  }, [selectedRegion, activeSystem]);
+  
+  // Camera zoom controls
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 3)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 2.5)]);
   };
   
   const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 7)]); // Limit max zoom out
+    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 7)]);
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 5]); // Default to a more distant view that shows the full body
+    setCameraPosition([0, 0, 4]);
     setIsRotating(false);
   };
   
+  // Hotspot click handler
   const handleHotspotClick = (id: string) => {
-    // Toggle active hotspot
-    const newActiveHotspot = id === activeHotspot ? null : id;
-    setActiveHotspot(newActiveHotspot);
-
-    // Notify parent component about region selection (for syncing with AnatomicalMap)
-    if (onSelectRegion) {
-      const symptom = symptoms.find(s => s.id === id);
-      if (symptom) {
-        onSelectRegion(symptom.location);
-      } else if (newActiveHotspot === null) {
-        // If deselecting, pass null or empty string
-        onSelectRegion('');
-      }
+    const hotspot = hotspots.find(h => h.id === id);
+    setActiveHotspotDetails(hotspot || null);
+    
+    // If this hotspot is in a different region than the currently selected one,
+    // update the selected region
+    if (hotspot && hotspot.region !== selectedRegion && onSelectRegion) {
+      onSelectRegion(hotspot.region);
     }
   };
   
-  const activeHotspotDetails = activeHotspot 
-    ? hotspots.find(h => h.id === activeHotspot) 
-    : null;
-
   return {
     activeSystem,
     setActiveSystem,
     isRotating,
     setIsRotating,
     cameraPosition,
-    setCameraPosition,
-    activeHotspot,
-    setActiveHotspot,
     hotspots,
     handleZoomIn,
     handleZoomOut,
     handleResetView,
     handleHotspotClick,
     activeHotspotDetails,
-    bodySystems: BODY_SYSTEMS
+    bodySystems
   };
 };
