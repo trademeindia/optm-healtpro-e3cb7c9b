@@ -34,12 +34,16 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       // Enhanced configuration for OAuth
       const options = {
         redirectTo,
-        queryParams: {},
+        queryParams: {
+          // Add provider in query param for better tracking
+          provider
+        },
       };
       
       // Special handling for Google to ensure proper scopes
       if (provider === 'google') {
         options.queryParams = {
+          ...options.queryParams,
           // These scopes ensure we get enough profile information
           access_type: 'offline',
           prompt: 'consent',
@@ -92,7 +96,15 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
   const handleOAuthCallback = async (provider: string, code: string, user: User | null): Promise<void> => {
     setIsLoading(true);
     try {
-      console.log(`Processing OAuth callback for ${provider}`, user ? "User found" : "No user");
+      console.log(`Processing OAuth callback for ${provider}`, user ? "User found" : "No user", "code length:", code.length);
+      
+      // Ensure we have a code to exchange
+      if (!code) {
+        console.error("No authorization code provided in callback");
+        toast.error("Authentication failed: Missing authorization code");
+        navigate('/login');
+        return;
+      }
       
       if (!user) {
         // Try to get the session directly
@@ -107,31 +119,54 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
         
         if (data.session) {
           // We have a session but no formatted user yet
-          const formattedUser = await formatUser(data.session.user);
-          if (formattedUser) {
-            toast.success(`Successfully signed in with ${provider}!`);
-            navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-            return;
+          try {
+            const formattedUser = await formatUser(data.session.user);
+            if (formattedUser) {
+              console.log("Successfully retrieved user after OAuth flow:", formattedUser);
+              toast.success(`Successfully signed in with ${provider}!`);
+              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+              return;
+            } else {
+              console.error("Failed to format user from session");
+              // Instead of failing, let's try to create a profile with default values
+              const defaultRole = 'patient';
+              
+              // Insert a new profile for the OAuth user if formatUser failed but we have a session
+              const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: data.session.user.id,
+                  email: data.session.user.email,
+                  name: data.session.user.user_metadata?.full_name || 
+                        data.session.user.user_metadata?.name || 
+                        data.session.user.email?.split('@')[0] || 'User',
+                  role: defaultRole,
+                  provider: provider as any,
+                  picture: data.session.user.user_metadata?.avatar_url || ''
+                })
+                .select()
+                .single();
+                
+              if (insertError) {
+                console.error('Error creating user profile:', insertError);
+                toast.error('Failed to create user profile');
+                navigate('/login');
+                return;
+              }
+              
+              console.log("Created new profile for OAuth user:", newProfile);
+              toast.success(`Successfully signed in with ${provider}!`);
+              navigate('/patient-dashboard');
+              return;
+            }
+          } catch (formatError) {
+            console.error("Error formatting user from session:", formatError);
           }
         }
         
         // Add additional debug information to help diagnose the issue
         console.error("OAuth callback failed to find a user despite having a code");
         console.log("Examining URL parameters:", window.location.search);
-        
-        // Try to exchange the code directly
-        try {
-          const urlParams = new URLSearchParams(window.location.search);
-          const state = urlParams.get('state');
-          
-          if (code && state) {
-            console.log("Attempting to manually exchange auth code");
-            // We don't need to call this manually - Supabase handles it internally
-            // but this logs that we've verified the code and state exist
-          }
-        } catch (codeError) {
-          console.error("Error processing OAuth code:", codeError);
-        }
         
         toast.error('Authentication failed. Please try again and check the debug section.');
         navigate('/login');

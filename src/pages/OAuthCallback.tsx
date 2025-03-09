@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ const OAuthCallback: React.FC = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
   const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
+  const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   const { user, isLoading, handleOAuthCallback } = useAuth();
   const [searchParams] = useSearchParams();
@@ -51,7 +52,8 @@ const OAuthCallback: React.FC = () => {
           originURL,
           hasCode: !!code,
           hasState: !!state,
-          provider
+          provider,
+          retryCount
         });
         
         console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, state exists=${!!state}`);
@@ -60,6 +62,9 @@ const OAuthCallback: React.FC = () => {
         if (code) {
           console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
           await handleOAuthCallback(provider, code);
+          
+          // Wait a short time for the auth state to update
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Verify Supabase connection and session
@@ -80,38 +85,39 @@ const OAuthCallback: React.FC = () => {
           isLoading
         });
         
-        // If we have a user, authentication succeeded
+        // If we have a user or a session, authentication succeeded
         if (user && !isLoading) {
           console.log('User authenticated successfully:', user);
           toast.success('Successfully signed in!');
           navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
         } 
-        // If we're done loading and still don't have a user, there was an error
-        else if (!isLoading && !user) {
-          // Try one more time to handle the callback
-          if (code && provider !== 'unknown') {
-            console.log('Attempting secondary OAuth handling with code');
-            await handleOAuthCallback(provider, code);
-            
-            // Check again after handling
-            const { data: refreshData } = await supabase.auth.getSession(); 
-            if (refreshData.session) {
-              console.log('Session found after secondary handling');
-              toast.success('Successfully authenticated!');
-              navigate('/dashboard'); // We'll redirect and let the main app handle role routing
-              return;
-            }
-          }
+        // If we have a session but no user yet, try to extract the user
+        else if (data.session && !isLoading && !user) {
+          console.log('Session exists but no user object yet - trying to get user data from session');
+          const { user: supabaseUser } = data.session;
           
-          console.error('Authentication failed - no user found after OAuth flow');
+          if (supabaseUser) {
+            console.log('Session user exists:', supabaseUser.id);
+            // We'll redirect to dashboard and let the AuthProvider handle the role routing
+            toast.success('Successfully authenticated!');
+            navigate('/dashboard');
+            return;
+          }
+        }
+        // If we're done loading and still don't have a user, there was an error
+        else if (!isLoading && !user && retryCount >= 2) {
+          console.error('Authentication failed - no user found after OAuth flow and retries');
           setError('Authentication failed');
           setErrorDetails('The sign-in attempt was not successful. Please try again or use a different method.');
           toast.error('Authentication failed');
           setTimeout(() => navigate('/login'), 3000);
         }
-        // Still loading - wait for auth state to update
-        else {
-          console.log('Still waiting for authentication state...');
+        // Try again if we're still loading or no user yet
+        else if ((!user || isLoading) && retryCount < 2) {
+          console.log(`Still waiting for authentication, retry ${retryCount + 1}/3...`);
+          setRetryCount(prev => prev + 1);
+          // Try again after a delay
+          setTimeout(() => checkAuthState(), 2000);
         }
       } catch (err: any) {
         console.error('OAuth callback processing error:', err);
@@ -128,7 +134,16 @@ const OAuthCallback: React.FC = () => {
     if (!error) {
       checkAuthState();
     }
-  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, state]);
+  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, state, retryCount]);
+
+  const handleRetry = () => {
+    setError(null);
+    setErrorDetails(null);
+    setRetryCount(0);
+    setIsVerifying(true);
+    // Force refresh the authorization
+    window.location.href = '/login';
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -164,13 +179,22 @@ const OAuthCallback: React.FC = () => {
             </div>
           )}
           
-          <Button 
-            variant="default" 
-            onClick={() => navigate('/login')}
-            className="mt-2"
-          >
-            Return to Login
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/login')}
+            >
+              Return to Login
+            </Button>
+            <Button 
+              variant="default" 
+              onClick={handleRetry}
+              className="flex items-center gap-2"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Retry Authentication
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="text-center">
@@ -179,6 +203,9 @@ const OAuthCallback: React.FC = () => {
           <p className="text-gray-500">Please wait while we authenticate your account...</p>
           {isVerifying && (
             <p className="text-gray-400 mt-2 text-sm">Verifying your credentials...</p>
+          )}
+          {retryCount > 0 && (
+            <p className="text-amber-500 mt-2 text-sm">Retry attempt {retryCount}/2</p>
           )}
         </div>
       )}
