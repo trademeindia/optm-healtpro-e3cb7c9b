@@ -32,44 +32,42 @@ const AIAnalysisTab: React.FC<AIAnalysisTabProps> = ({ onAnalysisComplete }) => 
 
 const AIHowItWorksCard: React.FC = () => {
   return (
-    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 h-auto">
-      <CardHeader className="bg-primary/5 pb-2">
+    <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 h-auto">
+      <CardHeader className="bg-primary/5 pb-2 p-4 md:p-5">
         <CardTitle className="text-lg md:text-xl flex items-center gap-2">
           How AI Report Analysis Works
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <div className="space-y-4">
-          <div className="flex items-start gap-3">
-            <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">1</div>
-            <div>
-              <h4 className="font-medium">Upload your medical report</h4>
-              <p className="text-sm text-muted-foreground">Upload lab results, imaging reports, or any other medical documents.</p>
-            </div>
+      <CardContent className="p-4 md:p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">1</div>
+          <div>
+            <h4 className="font-medium">Upload your medical report</h4>
+            <p className="text-sm text-muted-foreground">Upload lab results, imaging reports, or any other medical documents.</p>
           </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">2</div>
-            <div>
-              <h4 className="font-medium">AI analyzes your report</h4>
-              <p className="text-sm text-muted-foreground">Our AI system reviews the medical terminology and data in your report.</p>
-            </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">2</div>
+          <div>
+            <h4 className="font-medium">AI analyzes your report</h4>
+            <p className="text-sm text-muted-foreground">Our AI system reviews the medical terminology and data in your report.</p>
           </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">3</div>
-            <div>
-              <h4 className="font-medium">Get a plain-language explanation</h4>
-              <p className="text-sm text-muted-foreground">Receive a clear breakdown of what your results mean and what actions you might consider.</p>
-            </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">3</div>
+          <div>
+            <h4 className="font-medium">Get a plain-language explanation</h4>
+            <p className="text-sm text-muted-foreground">Receive a clear breakdown of what your results mean and what actions you might consider.</p>
           </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">4</div>
-            <div>
-              <h4 className="font-medium">Prepare questions for your doctor</h4>
-              <p className="text-sm text-muted-foreground">Use the insights to have more informed discussions with your healthcare provider.</p>
-            </div>
+        </div>
+        
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5">4</div>
+          <div>
+            <h4 className="font-medium">Prepare questions for your doctor</h4>
+            <p className="text-sm text-muted-foreground">Use the insights to have more informed discussions with your healthcare provider.</p>
           </div>
         </div>
       </CardContent>
@@ -79,14 +77,14 @@ const AIHowItWorksCard: React.FC = () => {
 
 const AIPrivacyCard: React.FC = () => {
   return (
-    <Card className="border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 h-auto">
-      <CardHeader className="bg-primary/5 pb-2">
+    <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 h-auto">
+      <CardHeader className="bg-primary/5 pb-2 p-4 md:p-5">
         <CardTitle className="text-lg md:text-xl flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-primary" />
           Privacy & Security
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 md:p-6">
+      <CardContent className="p-4 md:p-5">
         <p className="text-sm text-muted-foreground mb-4">
           Your medical data is important and sensitive. Here's how we protect it:
         </p>
