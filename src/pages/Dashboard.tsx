@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Search, Filter, Upload, X, Plus
+  Search, Filter, Upload, X, Plus, MoveVertical
 } from 'lucide-react';
 
 import Header from '@/components/layout/Header';
