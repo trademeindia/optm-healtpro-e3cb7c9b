@@ -25,19 +25,21 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       <Button 
         onClick={onToggleCamera} 
         variant={cameraActive ? "destructive" : "default"}
-        className="gap-2 flex-1 btn-responsive-text"
+        size="auto"
+        fullWidth={true}
+        className="sm:flex-1"
         disabled={isModelLoading}
         aria-label={cameraActive ? "Stop Camera" : "Start Camera"}
       >
         {cameraActive ? (
           <>
-            <CameraOff className="h-4 w-4" />
-            <span className="sm:inline">Stop Camera</span>
+            <CameraOff className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">Stop Camera</span>
           </>
         ) : (
           <>
-            <Camera className="h-4 w-4" />
-            <span className="sm:inline">{isModelLoading ? "Loading AI..." : "Start Camera"}</span>
+            <Camera className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">{isModelLoading ? "Loading AI..." : "Start Camera"}</span>
           </>
         )}
       </Button>
@@ -45,32 +47,36 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       <Button 
         onClick={onReset} 
         variant="outline" 
-        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
+        size="auto"
+        className="flex-1 sm:flex-none"
         disabled={!cameraActive}
         aria-label="Reset"
       >
-        <RotateCcw className="h-4 w-4" />
-        <span>Reset</span>
+        <RotateCcw className="h-4 w-4 shrink-0" />
+        <span className="sm:inline">Reset</span>
       </Button>
       
       <Button 
         onClick={onShowTutorial} 
         variant="outline" 
-        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
+        size="auto"
+        className="flex-1 sm:flex-none"
         aria-label="How To"
       >
-        <Info className="h-4 w-4" />
-        <span>How To</span>
+        <Info className="h-4 w-4 shrink-0" />
+        <span className="sm:inline">How To</span>
       </Button>
       
       <Button 
         onClick={onFinish} 
         variant="outline" 
-        className="gap-2 flex-1 btn-responsive-text"
+        size="auto"
+        fullWidth={true}
+        className="sm:flex-1"
         aria-label="Finish Session"
       >
-        <Check className="h-4 w-4" />
-        <span className="sm:inline">Finish Session</span>
+        <Check className="h-4 w-4 shrink-0" />
+        <span className="whitespace-nowrap">Finish Session</span>
       </Button>
     </div>
   );
