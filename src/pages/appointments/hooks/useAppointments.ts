@@ -116,6 +116,47 @@ export const useAppointments = () => {
       });
     }
   };
+
+  // Function to create a new appointment
+  const handleCreateAppointment = async (appointmentData: {
+    type: string;
+    date: string;
+    time: string;
+    doctorName: string;
+    patientName: string;
+    notes?: string;
+  }) => {
+    try {
+      // Create appointment object
+      const newAppointment = {
+        ...appointmentData,
+        patientId: 'patient-123', // In a real app, this would come from the authenticated user
+        status: 'scheduled' as const
+      };
+      
+      const createdAppointment = await AppointmentService.createAppointment(newAppointment);
+      
+      if (createdAppointment) {
+        toast({
+          title: "Appointment Scheduled",
+          description: `Your ${appointmentData.type} appointment has been scheduled for ${appointmentData.date} at ${appointmentData.time}.`,
+        });
+        
+        // Reload appointments to include the new one
+        loadAppointments();
+      } else {
+        throw new Error("Failed to schedule appointment");
+      }
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      toast({
+        title: "Scheduling Failed",
+        description: "There was a problem scheduling your appointment.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
   
   return {
     appointments,
@@ -125,6 +166,7 @@ export const useAppointments = () => {
     checkCalendarConnection,
     handleConfirmAppointment,
     handleRescheduleAppointment,
-    handleConnectCalendar
+    handleConnectCalendar,
+    handleCreateAppointment
   };
 };

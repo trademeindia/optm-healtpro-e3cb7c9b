@@ -8,13 +8,15 @@ interface AppointmentsHeaderProps {
   calendarConnected: boolean;
   onRefresh: () => void;
   onConnectCalendar: () => void;
+  onNewAppointment: () => void;
 }
 
 const AppointmentsHeader: React.FC<AppointmentsHeaderProps> = ({
   isLoading,
   calendarConnected,
   onRefresh,
-  onConnectCalendar
+  onConnectCalendar,
+  onNewAppointment
 }) => {
   return (
     <div className="mb-6 pl-10 lg:pl-0">
@@ -39,7 +41,7 @@ const AppointmentsHeader: React.FC<AppointmentsHeaderProps> = ({
             </Button>
           )}
           
-          <Button>
+          <Button onClick={onNewAppointment}>
             <Plus className="h-4 w-4 mr-2" />
             New Appointment
           </Button>

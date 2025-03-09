@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import AppointmentsHeader from './components/AppointmentsHeader';
 import AppointmentsList from './components/AppointmentsList';
 import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
 import { useAppointments } from './hooks/useAppointments';
+import NewAppointmentModal from './components/NewAppointmentModal';
 
 const AppointmentsPage: React.FC = () => {
   const {
@@ -16,8 +17,11 @@ const AppointmentsPage: React.FC = () => {
     checkCalendarConnection,
     handleConfirmAppointment,
     handleRescheduleAppointment,
-    handleConnectCalendar
+    handleConnectCalendar,
+    handleCreateAppointment
   } = useAppointments();
+  
+  const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
   
   useEffect(() => {
     loadAppointments();
@@ -37,6 +41,7 @@ const AppointmentsPage: React.FC = () => {
             calendarConnected={calendarConnected}
             onRefresh={loadAppointments}
             onConnectCalendar={handleConnectCalendar}
+            onNewAppointment={() => setIsNewAppointmentModalOpen(true)}
           />
           
           <div className="max-w-7xl mx-auto">
@@ -56,10 +61,17 @@ const AppointmentsPage: React.FC = () => {
               calendarConnected={calendarConnected}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
+              onCreateAppointment={handleCreateAppointment}
             />
           </div>
         </main>
       </div>
+      
+      <NewAppointmentModal 
+        isOpen={isNewAppointmentModalOpen}
+        onClose={() => setIsNewAppointmentModalOpen(false)}
+        onSchedule={handleCreateAppointment}
+      />
     </div>
   );
 };
