@@ -1,15 +1,13 @@
-
 import React from 'react';
 import { FileText, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 interface MedicalDocumentsProps {
   className?: string;
 }
-
-const MedicalDocuments: React.FC<MedicalDocumentsProps> = ({ className }) => {
-  return (
-    <div className={`glass-morphism rounded-2xl p-6 ${className}`}>
+const MedicalDocuments: React.FC<MedicalDocumentsProps> = ({
+  className
+}) => {
+  return <div className="">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Medical Documents</h3>
         <Button variant="ghost" size="sm" className="text-primary">
@@ -62,8 +60,6 @@ const MedicalDocuments: React.FC<MedicalDocumentsProps> = ({ className }) => {
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default MedicalDocuments;
