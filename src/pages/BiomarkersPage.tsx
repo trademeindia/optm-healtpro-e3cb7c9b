@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 import Header from '@/components/layout/Header';
@@ -16,9 +16,17 @@ const BiomarkersPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [biomarkers, setBiomarkers] = useState<Biomarker[]>(mockBiomarkers);
+  const [activeTab, setActiveTab] = useState<string>("view");
   
   const handleProcessComplete = (newBiomarker: Biomarker) => {
     setBiomarkers((prevBiomarkers) => [...prevBiomarkers, newBiomarker]);
+    // Switch to view tab to show the newly added biomarker
+    setActiveTab("view");
+    
+    toast({
+      title: "New Biomarker Added",
+      description: `${newBiomarker.name} has been added to your profile`,
+    });
   };
 
   const handleReportAnalysisComplete = (analysis: ReportAnalysis) => {
@@ -47,7 +55,7 @@ const BiomarkersPage: React.FC = () => {
             </p>
           </div>
           
-          <Tabs defaultValue="view" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="view">View Biomarkers</TabsTrigger>
               <TabsTrigger value="upload">Upload Test Results</TabsTrigger>

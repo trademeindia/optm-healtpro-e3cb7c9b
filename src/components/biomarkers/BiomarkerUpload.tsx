@@ -55,21 +55,38 @@ const BiomarkerUpload: React.FC<BiomarkerUploadProps> = ({ onProcessComplete }) 
       setTimeout(() => {
         setProcessingFile(false);
         
-        const newBiomarker: Biomarker = {
-          id: `bm${Date.now()}`,
-          name: 'Vitamin D',
-          value: 28,
-          unit: 'ng/mL',
-          normalRange: '30-50',
-          status: 'low',
-          timestamp: new Date().toISOString(),
-          percentage: 56,
-          trend: 'down',
-          description: 'Important for bone health and immune function'
+        // Create a few biomarkers based on the file name to simulate processing results
+        const biomarkerTypes = ['Vitamin D', 'Cholesterol', 'Glucose', 'Iron'];
+        const randomIndex = Math.floor(Math.random() * biomarkerTypes.length);
+        const biomarkerName = biomarkerTypes[randomIndex];
+        
+        // Sample values for different biomarker types
+        const biomarkerValues = {
+          'Vitamin D': { value: 28, unit: 'ng/mL', normalRange: '30-50', status: 'low', percentage: 56 },
+          'Cholesterol': { value: 195, unit: 'mg/dL', normalRange: '125-200', status: 'normal', percentage: 78 },
+          'Glucose': { value: 110, unit: 'mg/dL', normalRange: '70-99', status: 'elevated', percentage: 65 },
+          'Iron': { value: 80, unit: 'μg/dL', normalRange: '60-170', status: 'normal', percentage: 82 }
         };
         
+        const selectedBiomarker = biomarkerValues[biomarkerName as keyof typeof biomarkerValues];
+        
+        const newBiomarker: Biomarker = {
+          id: `bm${Date.now()}`,
+          name: biomarkerName,
+          value: selectedBiomarker.value,
+          unit: selectedBiomarker.unit,
+          normalRange: selectedBiomarker.normalRange,
+          status: selectedBiomarker.status as 'normal' | 'elevated' | 'low' | 'critical',
+          timestamp: new Date().toISOString(),
+          percentage: selectedBiomarker.percentage,
+          trend: Math.random() > 0.5 ? 'up' : 'down',
+          description: `Important health indicator extracted from your uploaded test results`
+        };
+        
+        // Call the callback to add the biomarker to the state in the parent component
         onProcessComplete(newBiomarker);
         
+        // Reset the form
         setUploadedFile(null);
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) {
@@ -78,7 +95,7 @@ const BiomarkerUpload: React.FC<BiomarkerUploadProps> = ({ onProcessComplete }) 
         
         toast({
           title: "File processed successfully",
-          description: "New biomarker data has been added to your profile",
+          description: `New ${biomarkerName} data has been added to your profile`,
         });
       }, 2000);
     }, 3000);
