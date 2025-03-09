@@ -89,7 +89,7 @@ const OAuthCallback: React.FC = () => {
         if (user && !isLoading) {
           console.log('User authenticated successfully:', user);
           toast.success('Successfully signed in!');
-          navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+          window.location.href = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
         } 
         // If we have a session but no user yet, try to extract the user
         else if (data.session && !isLoading && !user) {
@@ -100,7 +100,7 @@ const OAuthCallback: React.FC = () => {
             console.log('Session user exists:', supabaseUser.id);
             // We'll redirect to dashboard and let the AuthProvider handle the role routing
             toast.success('Successfully authenticated!');
-            navigate('/dashboard');
+            window.location.href = '/dashboard';
             return;
           }
         }

@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,13 +31,12 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       
       toast.info(`Signing in with ${provider}...`);
       
-      // Create the OAuth options with the correct structure
+      // Create the OAuth options
       const options = {
         redirectTo,
       };
       
-      // Special handling for Google OAuth scopes
-      // We need to use the 'scopes' option within the signInWithOAuth call for Google
+      // Use the correct structure for Google OAuth with scopes
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: provider === 'google' ? 
@@ -109,7 +109,8 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
             if (formattedUser) {
               console.log("Successfully retrieved user after OAuth flow:", formattedUser);
               toast.success(`Successfully signed in with ${provider}!`);
-              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+              // Use window.location.href for a full page reload to ensure state is fresh
+              window.location.href = formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
               return;
             } else {
               console.error("Failed to format user from session");
@@ -141,7 +142,8 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
               
               console.log("Created new profile for OAuth user:", newProfile);
               toast.success(`Successfully signed in with ${provider}!`);
-              navigate('/patient-dashboard');
+              // Use window.location.href for a full page reload
+              window.location.href = '/patient-dashboard';
               return;
             }
           } catch (formatError) {
@@ -159,7 +161,8 @@ export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) =>
       }
       
       toast.success(`Successfully signed in with ${provider}!`);
-      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+      // Use window.location.href for a full page reload
+      window.location.href = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
       toast.error('Authentication failed. Please try again and check the debug section.');
