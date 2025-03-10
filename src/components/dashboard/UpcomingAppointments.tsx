@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Calendar, Clock, User } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, Clock, User, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface Appointment {
@@ -35,23 +36,39 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
     }
   };
 
+  const getBadgeVariant = (status: Appointment['status']) => {
+    switch (status) {
+      case 'scheduled': return 'secondary';
+      case 'confirmed': return 'default';
+      case 'completed': return 'outline';
+      case 'cancelled': return 'destructive';
+    }
+  };
+
   return (
     <Card className={cn("h-full", className)}>
-      <CardHeader>
-        <CardTitle className="text-xl">Upcoming Appointments</CardTitle>
-        <CardDescription>
-          Patient appointments scheduled for the coming days
-        </CardDescription>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">Upcoming Appointments</CardTitle>
+            <CardDescription>
+              Patient appointments scheduled for the coming days
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         <div className="space-y-4">
           {appointments.length === 0 ? (
             <p className="text-center text-muted-foreground py-6">No upcoming appointments</p>
           ) : (
             appointments.slice(0, 5).map((appointment) => (
-              <div key={appointment.id} className="flex items-start gap-4 border-b border-gray-100 dark:border-gray-800 pb-4 last:border-0 last:pb-0">
-                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-muted-foreground" />
+              <div 
+                key={appointment.id} 
+                className="flex items-start gap-4 border-b border-gray-100 dark:border-gray-800 pb-4 last:border-0 last:pb-0 transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded-lg -mx-2"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium">{appointment.patientName}</p>
@@ -67,20 +84,26 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className={cn("text-xs px-2 py-1 rounded-full font-medium", getStatusColor(appointment.status))}>
-                  {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                </div>
+                <Badge variant={getBadgeVariant(appointment.status)} className="capitalize">
+                  {appointment.status}
+                </Badge>
               </div>
             ))
           )}
         </div>
-        
-        {appointments.length > 5 && (
-          <Button variant="ghost" className="w-full mt-4" onClick={onViewAll}>
-            View All Appointments
-          </Button>
-        )}
       </CardContent>
+      {appointments.length > 5 && (
+        <CardFooter className="pt-0">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-between group" 
+            onClick={onViewAll}
+          >
+            View All Appointments
+            <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

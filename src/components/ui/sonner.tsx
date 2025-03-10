@@ -11,12 +11,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      // Add default duration of 5 seconds (5000ms)
-      duration={5000}
-      position="bottom-right"
-      closeButton
-      richColors
+      // Default durations based on toast type
       toastOptions={{
+        duration: 5000, // Default duration
+        success: {
+          duration: 3000, // Shorter duration for success messages
+        },
+        error: {
+          duration: 5000, // Longer duration for error messages
+        },
+        info: {
+          duration: 4000, // Medium duration for info messages
+        },
         classNames: {
           toast:
             "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
@@ -27,6 +33,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       }}
+      position="bottom-right"
+      closeButton
+      richColors
       {...props}
     />
   )

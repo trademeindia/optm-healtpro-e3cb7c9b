@@ -1,5 +1,5 @@
 
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -142,8 +142,8 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* Remove the shadcn/ui Toaster and only use Sonner */}
-      <Sonner />
+      {/* Only use the Sonner Toaster component */}
+      <Toaster />
       <BrowserRouter>
         <AuthProvider>
           <SymptomProvider>
