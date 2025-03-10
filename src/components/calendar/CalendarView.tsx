@@ -1,3 +1,4 @@
+
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
@@ -95,7 +96,9 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
       <div className="flex flex-col gap-1">
         <div className="font-medium truncate">{event.title}</div>
         {event.status && (
-          <AppointmentStatusIndicator status={event.status as AppointmentStatus} />
+          <AppointmentStatusIndicator 
+            status={event.status as AppointmentStatus} 
+          />
         )}
       </div>
     );
