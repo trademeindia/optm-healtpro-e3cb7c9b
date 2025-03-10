@@ -32,6 +32,13 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
     return formatDate(date, "h:mm a");
   };
 
+  // Calculate duration in minutes ensuring we have Date objects
+  const getDurationInMinutes = () => {
+    const start = startDate instanceof Date ? startDate : new Date(startDate);
+    const end = endDate instanceof Date ? endDate : new Date(endDate);
+    return Math.round((end.getTime() - start.getTime()) / 60000);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
@@ -69,7 +76,7 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
                 {formatTime(startDate)} - {formatTime(endDate)}
               </div>
               <div className="text-sm text-muted-foreground">
-                {Math.round((endDate.getTime() - startDate.getTime()) / 60000)} minutes
+                {getDurationInMinutes()} minutes
               </div>
             </div>
           </div>
