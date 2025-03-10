@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,12 +11,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatDate, cn } from '@/lib/utils';
 import { CalendarEvent } from '@/hooks/calendar/types';
+import { toast } from 'sonner';
 
-interface CreateAppointmentDialogProps {
+interface EditAppointmentDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreated: (eventData: Partial<CalendarEvent>) => Promise<boolean>;
-  selectedDate: Date;
+  onUpdate: (eventId: string, eventData: Partial<CalendarEvent>) => Promise<boolean>;
+  onDelete: (eventId: string) => Promise<boolean>;
+  event: CalendarEvent;
 }
 
 const appointmentTypes = [
@@ -44,42 +46,78 @@ const locations = [
   "West Wing - Suite 305"
 ];
 
-const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
+const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
   open,
   onClose,
-  onCreated,
-  selectedDate
+  onUpdate,
+  onDelete,
+  event
 }) => {
-  const [date, setDate] = useState<Date>(selectedDate);
-  const [startTime, setStartTime] = useState<string>("9:00 AM");
-  const [endTime, setEndTime] = useState<string>("9:30 AM");
-  const [type, setType] = useState<string>("Initial Consultation");
-  const [patient, setPatient] = useState<string>("");
-  const [location, setLocation] = useState<string>("Main Office - Room 101");
-  const [notes, setNotes] = useState<string>("");
+  const startDate = event.start instanceof Date ? event.start : new Date(event.start);
+  const endDate = event.end instanceof Date ? event.end : new Date(event.end);
+  
+  const [date, setDate] = useState<Date>(startDate);
+  const [startTime, setStartTime] = useState<string>(formatDate(startDate, "h:mm a"));
+  const [endTime, setEndTime] = useState<string>(formatDate(endDate, "h:mm a"));
+  const [type, setType] = useState<string>(event.type || appointmentTypes[0]);
+  const [patient, setPatient] = useState<string>(event.patientName || "");
+  const [location, setLocation] = useState<string>(event.location || locations[0]);
+  const [notes, setNotes] = useState<string>(event.description || "");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Update local state when event props change
+  useEffect(() => {
+    if (event) {
+      const start = event.start instanceof Date ? event.start : new Date(event.start);
+      const end = event.end instanceof Date ? event.end : new Date(event.end);
+      
+      setDate(start);
+      setStartTime(formatDate(start, "h:mm a"));
+      setEndTime(formatDate(end, "h:mm a"));
+      setType(event.type || appointmentTypes[0]);
+      setPatient(event.patientName || "");
+      setLocation(event.location || locations[0]);
+      setNotes(event.description || "");
+    }
+  }, [event]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const eventData: Partial<CalendarEvent> = {
+      const success = await onUpdate(event.id, {
         title: `${type} - ${patient}`,
         start: date,
         end: date,
         type,
         patientName: patient,
         location,
-        description: notes,
-        isAvailable: false
-      };
+        description: notes
+      });
       
-      await onCreated(eventData);
+      if (!success) {
+        throw new Error("Update failed");
+      }
     } catch (error) {
-      console.error("Error creating appointment:", error);
+      console.error("Error updating appointment:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirm("Are you sure you want to delete this appointment?")) {
+      setIsDeleting(true);
+      
+      try {
+        await onDelete(event.id);
+      } catch (error) {
+        console.error("Error deleting appointment:", error);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -87,7 +125,7 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Appointment</DialogTitle>
+          <DialogTitle className="text-xl">Edit Appointment</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -196,21 +234,32 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
             />
           </div>
           
-          <DialogFooter className="pt-4">
+          <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-between">
             <Button 
               type="button" 
-              variant="outline" 
-              onClick={onClose}
-              disabled={isLoading}
+              variant="destructive" 
+              onClick={handleDelete}
+              disabled={isLoading || isDeleting}
             >
-              Cancel
+              {isDeleting ? "Deleting..." : "Delete Appointment"}
             </Button>
-            <Button 
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating..." : "Create Appointment"}
-            </Button>
+            
+            <div className="flex gap-2 mb-2 sm:mb-0">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                disabled={isLoading || isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                disabled={isLoading || isDeleting}
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -218,4 +267,4 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   );
 };
 
-export default CreateAppointmentDialog;
+export default EditAppointmentDialog;

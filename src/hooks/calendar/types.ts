@@ -14,6 +14,7 @@ export interface CalendarEvent {
   status?: 'confirmed' | 'pending' | 'cancelled';
   type?: string;
   color?: string;
+  isAvailable?: boolean;
 }
 
 export interface CalendarDate {
@@ -21,4 +22,15 @@ export interface CalendarDate {
   isCurrentMonth: boolean;
   isToday: boolean;
   isSelected: boolean;
+}
+
+export interface UpcomingAppointment {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  patientName?: string;
+  patientId?: string;
+  type?: string;
+  location?: string;
 }

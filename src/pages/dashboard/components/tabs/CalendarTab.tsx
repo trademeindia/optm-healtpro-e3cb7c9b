@@ -2,14 +2,12 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
-import CreateAppointmentDialog from '@/components/calendar/CreateAppointmentDialog';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';
 import AppointmentsCard from '@/components/calendar/AppointmentsCard';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const { 
     isLoading, 
@@ -63,7 +61,6 @@ const CalendarTab: React.FC = () => {
       });
       return;
     }
-    setIsCreateDialogOpen(true);
   };
 
   const handleRefresh = async () => {
@@ -101,6 +98,7 @@ const CalendarTab: React.FC = () => {
           onDateSelect={setSelectedDate}
           onConnectCalendar={handleConnectCalendar}
           isConnecting={isConnecting}
+          onEventsChange={refreshCalendar}
         />
 
         <div className="space-y-6">
@@ -111,18 +109,6 @@ const CalendarTab: React.FC = () => {
           />
         </div>
       </div>
-
-      {isCreateDialogOpen && (
-        <CreateAppointmentDialog 
-          open={isCreateDialogOpen} 
-          onClose={() => setIsCreateDialogOpen(false)}
-          onCreated={() => {
-            setIsCreateDialogOpen(false);
-            refreshCalendar();
-          }}
-          selectedDate={selectedDate}
-        />
-      )}
     </div>
   );
 };

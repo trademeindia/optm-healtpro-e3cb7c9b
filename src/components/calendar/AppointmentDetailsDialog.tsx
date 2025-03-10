@@ -1,51 +1,31 @@
 
 import React from 'react';
-import { CalendarEvent } from '@/hooks/calendar/useCalendarIntegration';
+import { CalendarEvent } from '@/hooks/calendar/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, MapPin, FileText, Edit, Trash2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AppointmentDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   event: CalendarEvent;
+  onEdit: () => void;
 }
 
 const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
   open,
   onClose,
-  event
+  event,
+  onEdit
 }) => {
   const { user } = useAuth();
   const isDoctor = user?.role === 'doctor';
   
-  const handleEdit = () => {
-    toast.info("Editing appointment", {
-      description: "This functionality would open an edit dialog in a real app",
-      duration: 3000
-    });
-    onClose();
-  };
-  
-  const handleCancel = () => {
-    toast.success("Appointment cancelled", {
-      description: "The appointment has been cancelled",
-      duration: 3000
-    });
-    onClose();
-  };
-  
-  const handleReschedule = () => {
-    toast.info("Rescheduling appointment", {
-      description: "This functionality would open the scheduler in a real app",
-      duration: 3000
-    });
-    onClose();
-  };
+  const startDate = event.start instanceof Date ? event.start : new Date(event.start);
+  const endDate = event.end instanceof Date ? event.end : new Date(event.end);
 
   const formatTime = (date: Date) => {
     return formatDate(date, "h:mm a");
@@ -77,7 +57,7 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
           <div className="grid grid-cols-[20px_1fr] gap-3 items-start">
             <Calendar className="h-5 w-5 text-muted-foreground" />
             <div>
-              <div className="font-medium">{formatDate(event.start, "EEEE, MMMM d, yyyy")}</div>
+              <div className="font-medium">{formatDate(startDate, "EEEE, MMMM d, yyyy")}</div>
             </div>
           </div>
           
@@ -85,10 +65,10 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
             <Clock className="h-5 w-5 text-muted-foreground" />
             <div>
               <div className="font-medium">
-                {formatTime(event.start)} - {formatTime(event.end)}
+                {formatTime(startDate)} - {formatTime(endDate)}
               </div>
               <div className="text-sm text-muted-foreground">
-                {Math.round((event.end.getTime() - event.start.getTime()) / 60000)} minutes
+                {Math.round((endDate.getTime() - startDate.getTime()) / 60000)} minutes
               </div>
             </div>
           </div>
@@ -138,21 +118,14 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
         
         <DialogFooter className="flex sm:justify-between gap-2">
           {event.isAvailable ? (
-            <Button className="w-full" onClick={handleEdit}>
+            <Button className="w-full" onClick={onEdit}>
               Book This Slot
             </Button>
           ) : (
             <>
-              <div className="space-x-2 flex">
-                <Button variant="outline" size="icon" onClick={handleEdit}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="destructive" size="icon" onClick={handleCancel}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button variant="outline" onClick={handleReschedule}>
-                Reschedule
+              <Button variant="outline" onClick={onEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                {isDoctor ? "Edit Appointment" : "Reschedule"}
               </Button>
             </>
           )}

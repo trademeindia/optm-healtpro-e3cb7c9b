@@ -1,20 +1,22 @@
+
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import CalendarView from '@/components/calendar/CalendarView';
-import ConnectCalendarCard from '@/components/calendar/ConnectCalendarCard';
-import { CalendarEvent } from '@/hooks/calendar/useCalendarIntegration';
+import { Card, CardContent } from '@/components/ui/card';
+import ConnectCalendarCard from './ConnectCalendarCard';
+import CalendarView from './CalendarView';
+import { CalendarEvent } from '@/hooks/calendar/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface CalendarViewWrapperProps {
   isAuthorized: boolean;
   isLoading: boolean;
   selectedView: 'day' | 'week' | 'month';
   setSelectedView: (view: 'day' | 'week' | 'month') => void;
-  calendarData: CalendarEvent[] | undefined;
+  calendarData: CalendarEvent[];
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
   onConnectCalendar: () => Promise<void>;
   isConnecting: boolean;
+  onEventsChange?: () => void;
 }
 
 const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
@@ -26,51 +28,65 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   selectedDate,
   onDateSelect,
   onConnectCalendar,
-  isConnecting
+  isConnecting,
+  onEventsChange = () => {}
 }) => {
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle>Calendar</CardTitle>
-          <div className="flex items-center gap-2">
-            <Select 
-              value={selectedView} 
-              onValueChange={(value: 'day' | 'week' | 'month') => setSelectedView(value)}
-              disabled={!isAuthorized}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="day">Day</SelectItem>
-                <SelectItem value="week">Week</SelectItem>
-                <SelectItem value="month">Month</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <CardDescription>
-          {isAuthorized ? 'Your schedule and appointments' : 'Connect your calendar to view appointments'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isAuthorized ? (
-          <CalendarView 
-            view={selectedView} 
-            events={calendarData || []} 
-            isLoading={isLoading} 
-            selectedDate={selectedDate}
-            onDateSelect={onDateSelect}
-          />
-        ) : (
-          <ConnectCalendarCard
-            isConnecting={isConnecting}
-            onConnect={onConnectCalendar}
-          />
-        )}
-      </CardContent>
-    </Card>
+    <div className="lg:col-span-2">
+      <Card>
+        <CardContent className="p-0 sm:p-6">
+          {!isAuthorized ? (
+            <ConnectCalendarCard
+              onConnect={onConnectCalendar}
+              isConnecting={isConnecting}
+            />
+          ) : (
+            <div className="space-y-2">
+              <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as 'day' | 'week' | 'month')}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="day">Day</TabsTrigger>
+                  <TabsTrigger value="week">Week</TabsTrigger>
+                  <TabsTrigger value="month">Month</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="day" className="mt-0">
+                  <CalendarView
+                    view="day"
+                    events={calendarData}
+                    isLoading={isLoading}
+                    selectedDate={selectedDate}
+                    onDateSelect={onDateSelect}
+                    onEventsChange={onEventsChange}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="week" className="mt-0">
+                  <CalendarView
+                    view="week"
+                    events={calendarData}
+                    isLoading={isLoading}
+                    selectedDate={selectedDate}
+                    onDateSelect={onDateSelect}
+                    onEventsChange={onEventsChange}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="month" className="mt-0">
+                  <CalendarView
+                    view="month"
+                    events={calendarData}
+                    isLoading={isLoading}
+                    selectedDate={selectedDate}
+                    onDateSelect={onDateSelect}
+                    onEventsChange={onEventsChange}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
