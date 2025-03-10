@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, RefreshCw, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/useCalendarIntegration';
-import CalendarView from '@/components/calendar/CalendarView';
-import AppointmentsList from '@/components/calendar/AppointmentsList';
 import CreateAppointmentDialog from '@/components/calendar/CreateAppointmentDialog';
-import { Spinner } from '@/components/ui/spinner';
+import CalendarHeader from '@/components/calendar/CalendarHeader';
+import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';
+import AppointmentsCard from '@/components/calendar/AppointmentsCard';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
@@ -85,112 +82,33 @@ const CalendarTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Appointments Calendar</h2>
-          <p className="text-muted-foreground">
-            Manage and schedule patient appointments
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isLoading || !isAuthorized || isConnecting}
-          >
-            {isLoading ? <Spinner size="sm" className="mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Refresh
-          </Button>
-          <Button onClick={handleCreateAppointment}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Appointment
-          </Button>
-        </div>
-      </div>
+      <CalendarHeader 
+        isLoading={isLoading}
+        isAuthorized={isAuthorized}
+        isConnecting={isConnecting}
+        onRefresh={handleRefresh}
+        onCreateAppointment={handleCreateAppointment}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle>Calendar</CardTitle>
-              <div className="flex items-center gap-2">
-                <Select 
-                  value={selectedView} 
-                  onValueChange={(value: 'day' | 'week' | 'month') => setSelectedView(value)}
-                  disabled={!isAuthorized}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="View" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Day</SelectItem>
-                    <SelectItem value="week">Week</SelectItem>
-                    <SelectItem value="month">Month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <CardDescription>
-              {isAuthorized ? 'Your schedule and appointments' : 'Connect your calendar to view appointments'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isAuthorized ? (
-              <CalendarView 
-                view={selectedView} 
-                events={calendarData || []} 
-                isLoading={isLoading} 
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-              />
-            ) : (
-              <div className="border border-dashed rounded-lg p-8 flex items-center justify-center">
-                <div className="text-center max-w-sm">
-                  <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Connect Google Calendar</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Connect your Google Calendar to manage appointments and sync your schedule
-                  </p>
-                  <Button 
-                    onClick={handleConnectCalendar} 
-                    disabled={isConnecting}
-                    className="w-full"
-                  >
-                    {isConnecting ? (
-                      <>
-                        <Spinner size="sm" className="mr-2" />
-                        Connecting...
-                      </>
-                    ) : (
-                      <>
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Connect Calendar
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <CalendarViewWrapper 
+          isAuthorized={isAuthorized}
+          isLoading={isLoading}
+          selectedView={selectedView}
+          setSelectedView={setSelectedView}
+          calendarData={calendarData}
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          onConnectCalendar={handleConnectCalendar}
+          isConnecting={isConnecting}
+        />
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Appointments</CardTitle>
-              <CardDescription>
-                Your next scheduled appointments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AppointmentsList 
-                appointments={validAppointments}
-                isLoading={isLoading} 
-                isAuthorized={isAuthorized}
-              />
-            </CardContent>
-          </Card>
+          <AppointmentsCard 
+            isLoading={isLoading}
+            isAuthorized={isAuthorized}
+            appointments={validAppointments}
+          />
         </div>
       </div>
 

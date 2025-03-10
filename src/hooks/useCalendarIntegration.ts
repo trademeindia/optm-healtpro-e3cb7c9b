@@ -36,34 +36,6 @@ export const useCalendarIntegration = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [error, setError] = useState<string | null>(null);
 
-  const authorizeCalendar = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log("Starting calendar authorization process");
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real app, this would redirect to Google OAuth
-      setIsAuthorized(true);
-      
-      console.log("Calendar authorization successful");
-      
-      // Immediately fetch events after authorization
-      await fetchEvents();
-      return true;
-    } catch (error: any) {
-      console.error("Authorization error:", error);
-      setError(error.message || "Failed to connect to calendar");
-      setIsAuthorized(false);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchEvents]);
-
   const fetchEvents = useCallback(async () => {
     if (!isAuthorized) return;
     
@@ -110,6 +82,34 @@ export const useCalendarIntegration = () => {
       setIsLoading(false);
     }
   }, [isAuthorized, selectedDate]);
+
+  const authorizeCalendar = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log("Starting calendar authorization process");
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, this would redirect to Google OAuth
+      setIsAuthorized(true);
+      
+      console.log("Calendar authorization successful");
+      
+      // Immediately fetch events after authorization
+      await fetchEvents();
+      return true;
+    } catch (error: any) {
+      console.error("Authorization error:", error);
+      setError(error.message || "Failed to connect to calendar");
+      setIsAuthorized(false);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchEvents]);
 
   const refreshCalendar = useCallback(async () => {
     if (!isAuthorized) {
