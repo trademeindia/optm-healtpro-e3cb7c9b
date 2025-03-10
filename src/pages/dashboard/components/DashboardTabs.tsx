@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { AlertCircle, Bookmark } from 'lucide-react';
 import { DashboardData } from '../types/dashboardTypes';
 import OverviewTab from './tabs/OverviewTab';
 import PatientsTab from './tabs/PatientsTab';
 import ReportsTab from './tabs/ReportsTab';
 import AnalyticsTab from './tabs/AnalyticsTab';
 import CalendarTab from './tabs/CalendarTab';
+import { toast } from 'sonner';
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -31,35 +33,92 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
   handleViewPatient,
   dashboardData
 }) => {
+  const [isRecovering, setIsRecovering] = useState(false);
+  const [lastActiveTab, setLastActiveTab] = useState(activeTab);
+  
+  // Track last successful tab for recovery
+  useEffect(() => {
+    if (!isRecovering) {
+      setLastActiveTab(activeTab);
+    }
+  }, [activeTab, isRecovering]);
+
+  // Handle errors in tab switching
+  const handleTabChange = (value: string) => {
+    try {
+      setActiveTab(value);
+    } catch (error) {
+      console.error("Error switching tabs:", error);
+      setIsRecovering(true);
+      
+      // Fallback to previous tab if this one fails
+      toast.error("Error loading tab", {
+        description: "Returning to previous view",
+        duration: 3000
+      });
+      
+      // Try to recover by going back to last known good tab
+      setTimeout(() => {
+        setActiveTab(lastActiveTab);
+        setIsRecovering(false);
+      }, 500);
+    }
+  };
+
   const handleViewAllAppointments = () => {
-    setActiveTab("calendar");
+    handleTabChange("calendar");
   };
 
   const handleViewAllMessages = () => {
-    // Handle view all messages action
+    toast.info("Messages feature will be available soon", {
+      duration: 3000
+    });
   };
 
   const handleViewAllDocuments = () => {
-    // Handle view all documents action
+    handleTabChange("reports");
   };
 
   const handleAddReminder = () => {
-    // Handle add reminder action
+    toast.info("Add reminder feature will be available soon", {
+      duration: 3000
+    });
   };
 
   const handleToggleReminder = (id: string) => {
-    // Handle toggle reminder action
+    toast.success(`Reminder ${id} status toggled`, {
+      duration: 2000
+    });
   };
 
   const handleViewFullCalendar = () => {
-    setActiveTab("calendar");
+    handleTabChange("calendar");
   };
+
+  // Error boundary fallback
+  if (!dashboardData) {
+    return (
+      <div className="p-6 bg-destructive/10 rounded-lg text-center">
+        <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Dashboard data unavailable</h3>
+        <p className="text-muted-foreground mb-4">
+          We're having trouble loading the dashboard data. Please try refreshing the page.
+        </p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-white rounded-md"
+        >
+          Refresh Page
+        </button>
+      </div>
+    );
+  }
 
   return (
     <Tabs 
       defaultValue="overview" 
       value={activeTab} 
-      onValueChange={setActiveTab}
+      onValueChange={handleTabChange}
       className="w-full"
     >
       <div className="overflow-x-auto pb-2 -mx-4 px-4">
@@ -85,12 +144,12 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
       
       <TabsContent value="overview" className="mt-0">
         <OverviewTab 
-          appointments={dashboardData.upcomingAppointments}
-          therapySessions={dashboardData.therapySchedules}
-          messages={dashboardData.clinicMessages}
-          reminders={dashboardData.clinicReminders}
-          documents={dashboardData.clinicDocuments}
-          calendarEvents={dashboardData.calendarEvents}
+          appointments={dashboardData.upcomingAppointments || []}
+          therapySessions={dashboardData.therapySchedules || []}
+          messages={dashboardData.clinicMessages || []}
+          reminders={dashboardData.clinicReminders || []}
+          documents={dashboardData.clinicDocuments || []}
+          calendarEvents={dashboardData.calendarEvents || {}}
           currentDate={currentDate}
           onViewAllAppointments={handleViewAllAppointments}
           onViewPatient={handleViewPatient}
@@ -99,13 +158,13 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
           onToggleReminder={handleToggleReminder}
           onViewFullCalendar={handleViewFullCalendar}
           onViewAllDocuments={handleViewAllDocuments}
-          onUpload={() => setActiveTab("reports")}
+          onUpload={() => handleTabChange("reports")}
         />
       </TabsContent>
       
       <TabsContent value="patients" className="mt-0">
         <PatientsTab 
-          patients={dashboardData.patients}
+          patients={dashboardData.patients || []}
           selectedPatient={selectedPatient}
           onViewPatient={handleViewPatient}
           onClosePatientHistory={handleClosePatientHistory}

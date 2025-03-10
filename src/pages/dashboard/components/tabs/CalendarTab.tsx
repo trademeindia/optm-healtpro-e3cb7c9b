@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Plus, RefreshCw, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,10 +9,12 @@ import { useCalendarIntegration } from '@/hooks/useCalendarIntegration';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentsList from '@/components/calendar/AppointmentsList';
 import CreateAppointmentDialog from '@/components/calendar/CreateAppointmentDialog';
+import { Spinner } from '@/components/ui/spinner';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const { 
     isLoading, 
     isAuthorized, 
@@ -28,13 +30,27 @@ const CalendarTab: React.FC = () => {
   // Ensure appointments data is valid
   const validAppointments = upcomingAppointments || [];
 
-  // Handle calendar connection
+  // Handle calendar connection with proper error handling
   const handleConnectCalendar = async () => {
+    if (isConnecting) return;
+    
     try {
+      setIsConnecting(true);
+      console.info("Starting calendar authorization process");
       await authorizeCalendar();
+      console.info("Calendar authorization successful");
+      toast.success("Calendar connected successfully", {
+        description: "Your Google Calendar has been connected",
+        duration: 3000
+      });
     } catch (error) {
       console.error("Calendar connection error:", error);
-      toast.error("Failed to connect calendar. Please try again.");
+      toast.error("Failed to connect calendar", {
+        description: "Please try again or check your network connection",
+        duration: 5000
+      });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -49,6 +65,21 @@ const CalendarTab: React.FC = () => {
     setIsCreateDialogOpen(true);
   };
 
+  // Safely handle refresh with error handling
+  const handleRefresh = async () => {
+    try {
+      await refreshCalendar();
+      toast.success("Calendar refreshed", {
+        duration: 2000
+      });
+    } catch (error) {
+      console.error("Error refreshing calendar:", error);
+      toast.error("Failed to refresh calendar", {
+        duration: 3000
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -59,8 +90,13 @@ const CalendarTab: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={refreshCalendar} disabled={isLoading || !isAuthorized}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isLoading || !isAuthorized || isConnecting}
+          >
+            {isLoading ? <Spinner size="sm" className="mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Refresh
           </Button>
           <Button onClick={handleCreateAppointment}>
@@ -76,7 +112,11 @@ const CalendarTab: React.FC = () => {
             <div className="flex items-center justify-between">
               <CardTitle>Calendar</CardTitle>
               <div className="flex items-center gap-2">
-                <Select value={selectedView} onValueChange={(value: 'day' | 'week' | 'month') => setSelectedView(value)}>
+                <Select 
+                  value={selectedView} 
+                  onValueChange={(value: 'day' | 'week' | 'month') => setSelectedView(value)}
+                  disabled={!isAuthorized}
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="View" />
                   </SelectTrigger>
@@ -109,8 +149,18 @@ const CalendarTab: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Connect your Google Calendar to manage appointments
                   </p>
-                  <Button onClick={handleConnectCalendar} disabled={isLoading}>
-                    {isLoading ? 'Connecting...' : 'Connect Calendar'}
+                  <Button 
+                    onClick={handleConnectCalendar} 
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? (
+                      <>
+                        <Spinner size="sm" className="mr-2" />
+                        Connecting...
+                      </>
+                    ) : (
+                      'Connect Calendar'
+                    )}
                   </Button>
                 </div>
               </div>

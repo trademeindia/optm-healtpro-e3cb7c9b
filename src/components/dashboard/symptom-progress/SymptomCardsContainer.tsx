@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import SymptomCard from './SymptomCard';
 import SymptomTrend from './SymptomTrend';
 import { ChartData } from './types';
@@ -20,19 +20,17 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
   const [sortOption, setSortOption] = useState<SortOption>('severity');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   
-  const toggleExpand = (index: number) => {
-    if (expandedSymptom === index) {
-      setExpandedSymptom(null);
-    } else {
-      setExpandedSymptom(index);
-    }
-  };
+  const toggleExpand = useCallback((index: number) => {
+    setExpandedSymptom(prev => prev === index ? null : index);
+  }, []);
   
-  const toggleSortDirection = () => {
+  const toggleSortDirection = useCallback(() => {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
+  }, []);
   
   const sortedSymptoms = useMemo(() => {
+    if (!symptoms || symptoms.length === 0) return [];
+    
     return [...symptoms].sort((a, b) => {
       let comparison = 0;
       
@@ -53,6 +51,15 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
       return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [symptoms, sortOption, sortDirection]);
+  
+  // Handle empty state
+  if (!symptoms || symptoms.length === 0) {
+    return (
+      <div className="p-4 bg-muted/20 rounded-lg text-center">
+        <p className="text-muted-foreground">No symptom data available</p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-3 mt-4">
@@ -90,7 +97,10 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
       </div>
       
       {sortedSymptoms.map((symptom, index) => (
-        <div key={index} className="bg-white/50 dark:bg-white/5 rounded-lg border border-border overflow-hidden">
+        <div 
+          key={`symptom-${index}-${symptom.symptomName}`} 
+          className="bg-white/50 dark:bg-white/5 rounded-lg border border-border overflow-hidden"
+        >
           <div 
             className="p-3 flex justify-between items-center cursor-pointer hover:bg-secondary/20 transition-colors"
             onClick={() => toggleExpand(index)}

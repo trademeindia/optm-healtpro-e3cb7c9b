@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Calendar, Clock, User, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, AlertCircle } from 'lucide-react';
 import { UpcomingAppointment } from '@/hooks/useCalendarIntegration';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AppointmentsListProps {
   appointments: UpcomingAppointment[];
@@ -18,6 +19,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   isAuthorized
 }) => {
   const handleViewDetails = (appointment: UpcomingAppointment) => {
+    if (!appointment) return;
     toast.info(`Viewing details for ${appointment.title}`);
   };
 
@@ -46,7 +48,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   if (!isAuthorized) {
     return (
-      <div className="text-center py-6 text-muted-foreground">
+      <div className="text-center py-6 text-muted-foreground flex flex-col items-center gap-2">
+        <AlertCircle className="h-5 w-5 text-muted-foreground mb-1" />
         Connect your calendar to view appointments
       </div>
     );
@@ -69,26 +72,26 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             <p className="text-sm text-muted-foreground">{appointment.type}</p>
             
             <div className="flex gap-2 items-center text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{appointment.date}</span>
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{appointment.date}</span>
             </div>
             
             <div className="flex gap-2 items-center text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{appointment.time}</span>
+              <Clock className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{appointment.time}</span>
             </div>
             
             {appointment.patientName && (
               <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>{appointment.patientName}</span>
+                <User className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{appointment.patientName}</span>
               </div>
             )}
             
             {appointment.location && (
               <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{appointment.location}</span>
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{appointment.location}</span>
               </div>
             )}
             
