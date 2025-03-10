@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
-import { Appointment } from '@/services/calendar/googleCalendarService';
+import { Appointment } from '@/services/calendar/types';
 
 interface UpcomingAppointmentsCardProps {
   appointments: Appointment[];

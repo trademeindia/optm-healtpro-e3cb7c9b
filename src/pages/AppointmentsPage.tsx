@@ -1,11 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import AppointmentsHeader from './components/AppointmentsHeader';
-import AppointmentsList from './components/AppointmentsList';
+import AppointmentsHeader from '@/pages/appointments/components/AppointmentsHeader';
+import AppointmentsList from '@/pages/appointments/components/AppointmentsList';
 import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
-import { useAppointments } from './hooks/useAppointments';
-import NewAppointmentModal from './components/NewAppointmentModal';
+import { useAppointments } from '@/pages/appointments/hooks/useAppointments';
+import NewAppointmentModal from '@/pages/appointments/components/NewAppointmentModal';
 import { useToast } from '@/hooks/use-toast';
 import { Appointment } from '@/services/calendar/types';
 
