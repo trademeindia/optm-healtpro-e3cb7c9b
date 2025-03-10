@@ -1,10 +1,10 @@
 
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { useCameraSetup } from './useCameraSetup';
-import { useVideoElement } from './useVideoElement';
 import { VideoStatus } from '../hooks/detection/types';
-import { useWaitForVideoElement } from './useWaitForVideoElement';
+import { useCameraSetupValidation } from './hooks/useCameraSetupValidation';
+import { useCameraPermissionAndStream } from './hooks/useCameraPermissionAndStream';
+import { useVideoSetupManager } from './hooks/useVideoSetupManager';
 
 interface UseCameraToggleProps {
   cameraActive: boolean;
@@ -21,6 +21,11 @@ interface UseCameraToggleProps {
   setVideoStatus: React.Dispatch<React.SetStateAction<VideoStatus>>;
   stopCamera: () => void;
   onCameraStart?: () => void;
+  requestCameraAccess: () => Promise<{ stream: MediaStream | null; error: string | null; permissionDenied?: boolean }>;
+  setupVideoElement: (videoRef: React.RefObject<HTMLVideoElement>, canvasRef: React.RefObject<HTMLCanvasElement>, stream: MediaStream) => Promise<boolean>;
+  ensureVideoIsPlaying: (videoRef: React.RefObject<HTMLVideoElement>) => Promise<boolean>;
+  checkVideoStatus: (videoRef: React.RefObject<HTMLVideoElement>) => { isReady: boolean, details: string, resolution: { width: number, height: number } | null };
+  waitForVideoElement: (videoRef: React.RefObject<HTMLVideoElement>) => Promise<boolean>;
 }
 
 export const useCameraToggle = ({
@@ -37,11 +42,48 @@ export const useCameraToggle = ({
   setIsInitializing,
   setVideoStatus,
   stopCamera,
-  onCameraStart
+  onCameraStart,
+  requestCameraAccess,
+  setupVideoElement,
+  ensureVideoIsPlaying,
+  checkVideoStatus,
+  waitForVideoElement
 }: UseCameraToggleProps) => {
-  const { requestCameraAccess } = useCameraSetup();
-  const { setupVideoElement, ensureVideoIsPlaying, checkVideoStatus } = useVideoElement();
-  const { waitForVideoElement } = useWaitForVideoElement({ mountedRef });
+  
+  // Use our extracted hooks
+  const { validateVideoElement, validateComponentMounted, performFinalStatusCheck } = 
+    useCameraSetupValidation({
+      mountedRef,
+      videoRef,
+      canvasRef,
+      setCameraError,
+      stopCamera,
+      setIsInitializing,
+      waitForVideoElement,
+      checkVideoStatus
+    });
+    
+  const { getCameraStream } = useCameraPermissionAndStream({
+    requestCameraAccess,
+    streamRef,
+    setPermission,
+    setCameraError,
+    setVideoStatus,
+    setIsInitializing,
+    stopCamera
+  });
+  
+  const { setupVideo, ensureVideoPlayback } = useVideoSetupManager({
+    videoRef,
+    canvasRef,
+    setupTimeoutRef,
+    mountedRef,
+    setCameraError,
+    setVideoStatus,
+    stopCamera,
+    setupVideoElement,
+    ensureVideoIsPlaying
+  });
   
   // Main function to toggle camera
   const toggleCamera = useCallback(async () => {
@@ -59,103 +101,35 @@ export const useCameraToggle = ({
     setCameraError(null);
     
     try {
-      // First, ensure video element exists
-      const videoElementExists = await waitForVideoElement(videoRef);
-      if (!videoElementExists) {
-        setCameraError("Video element not found. Please reload the page and try again.");
+      // Validate video element exists
+      const videoElementValid = await validateVideoElement();
+      if (!videoElementValid) return;
+      
+      // Get camera stream
+      const streamObtained = await getCameraStream();
+      if (!streamObtained) return;
+      
+      // Validate component is still mounted
+      if (!validateComponentMounted()) return;
+      
+      // Setup video with stream
+      const videoSetup = await setupVideo(streamRef.current!);
+      if (!videoSetup) {
         setIsInitializing(false);
         return;
       }
       
-      // Request camera permission and turn on camera
-      const { stream, error, permissionDenied } = await requestCameraAccess() || {};
-      
-      if (error) {
-        setCameraError(error);
-        if (permissionDenied) {
-          setPermission('denied');
-        }
+      // Ensure video is playing
+      const playbackEnsured = await ensureVideoPlayback();
+      if (!playbackEnsured) {
         setIsInitializing(false);
         return;
       }
       
-      if (!stream) {
-        setCameraError("Failed to access camera stream");
-        setIsInitializing(false);
-        return;
-      }
-      
-      streamRef.current = stream;
-      
-      // Make sure component is still mounted
-      if (!mountedRef.current) {
-        console.log("Component unmounted during camera initialization");
-        stopCamera();
-        setIsInitializing(false);
-        return;
-      }
-      
-      // Double-check video element exists before proceeding
-      if (!videoRef.current) {
-        console.error("Video element not found in DOM after check");
-        setCameraError("Video element not available. Please reload and try again.");
-        stopCamera();
-        setIsInitializing(false);
-        return;
-      }
-      
-      // Update video status with stream
-      setVideoStatus(prevStatus => ({
-        ...prevStatus,
-        hasStream: true,
-        lastCheckTime: Date.now()
-      }));
-      
-      // Setup video element
-      const videoSetupSuccess = await setupVideoElement(videoRef, canvasRef, stream);
-      
-      if (!videoSetupSuccess) {
-        setCameraError("Failed to setup video element");
-        stopCamera();
-        setIsInitializing(false);
-        return;
-      }
-      
-      // Wait a bit longer to ensure video is ready
-      await new Promise(resolve => {
-        const timeoutId = window.setTimeout(resolve, 800);
-        setupTimeoutRef.current = timeoutId as unknown as number;
-      });
-      
-      // Double-check component is still mounted
-      if (!mountedRef.current) {
-        stopCamera();
-        setIsInitializing(false);
-        return;
-      }
-      
-      // Double-check video state and try to recover if needed
-      if (videoRef.current?.paused) {
-        console.log("Video not playing after setup, trying again");
-        
-        const playSuccess = await ensureVideoIsPlaying(videoRef);
-        if (!playSuccess) {
-          console.error("Failed to play video after retry");
-          setCameraError("Could not start video playback. Please try again.");
-          stopCamera();
-          setIsInitializing(false);
-          return;
-        }
-      }
-      
-      // Final video status check
-      const finalStatus = checkVideoStatus(videoRef);
-      
-      if (!finalStatus.isReady) {
-        console.error("Final video status check failed:", finalStatus.details);
-        setCameraError(`Camera feed has issues: ${finalStatus.details}`);
-        
-        // Try one more time
+      // Perform final status check
+      const statusCheckPassed = await performFinalStatusCheck();
+      if (!statusCheckPassed) {
+        // Try one more time to ensure video is playing
         await ensureVideoIsPlaying(videoRef).catch(() => {});
         
         // Check once more
@@ -172,7 +146,7 @@ export const useCameraToggle = ({
       setVideoStatus({
         isReady: true,
         hasStream: true,
-        resolution: finalStatus.resolution,
+        resolution: checkVideoStatus(videoRef).resolution,
         lastCheckTime: Date.now(),
         errorCount: 0
       });
@@ -202,23 +176,24 @@ export const useCameraToggle = ({
   }, [
     cameraActive, 
     isInitializing,
-    videoRef, 
-    canvasRef, 
-    streamRef, 
-    mountedRef,
-    setupTimeoutRef,
-    requestCameraAccess, 
-    setupVideoElement, 
-    ensureVideoIsPlaying, 
+    validateVideoElement,
+    getCameraStream,
+    validateComponentMounted,
+    setupVideo,
+    ensureVideoPlayback,
+    performFinalStatusCheck,
+    streamRef,
+    videoRef,
     checkVideoStatus,
-    waitForVideoElement,
+    ensureVideoIsPlaying,
     setCameraActive, 
     setPermission, 
     setCameraError, 
     setIsInitializing, 
     setVideoStatus, 
     stopCamera, 
-    onCameraStart
+    onCameraStart,
+    mountedRef
   ]);
   
   return { toggleCamera };

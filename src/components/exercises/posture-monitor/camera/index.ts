@@ -10,3 +10,6 @@ export { useCameraInitialization } from './useCameraInitialization';
 export { useCameraMonitoring } from './useCameraMonitoring';
 export { useCameraToggle } from './useCameraToggle';
 export { useWaitForVideoElement } from './useWaitForVideoElement';
+export { useCameraSetupValidation } from './hooks/useCameraSetupValidation';
+export { useCameraPermissionAndStream } from './hooks/useCameraPermissionAndStream';
+export { useVideoSetupManager } from './hooks/useVideoSetupManager';

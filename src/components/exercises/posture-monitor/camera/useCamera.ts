@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { VideoStatus } from '../hooks/detection/types';
@@ -6,6 +5,9 @@ import { useCameraInitialization } from './useCameraInitialization';
 import { useCameraCleanup } from './useCameraCleanup';
 import { useCameraToggle } from './useCameraToggle';
 import { useCameraMonitoring } from './useCameraMonitoring';
+import { useCameraSetup } from './useCameraSetup';
+import { useVideoElement } from './useVideoElement';
+import { useWaitForVideoElement } from './useWaitForVideoElement';
 
 interface UseCameraProps {
   onCameraStart?: () => void;
@@ -30,7 +32,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   
-  // Track video status
   const [videoStatus, setVideoStatus] = useState<VideoStatus>({
     isReady: false,
     hasStream: false,
@@ -39,14 +40,16 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     errorCount: 0
   });
   
-  // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mountedRef = useRef<boolean>(true);
   const setupTimeoutRef = useRef<number | null>(null);
   
-  // Camera cleanup hook
+  const { requestCameraAccess } = useCameraSetup();
+  const { setupVideoElement, ensureVideoIsPlaying, checkVideoStatus } = useVideoElement();
+  const { waitForVideoElement } = useWaitForVideoElement({ mountedRef });
+  
   const { stopCamera } = useCameraCleanup({
     videoRef,
     streamRef,
@@ -56,7 +59,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setupTimeoutRef
   });
   
-  // Camera toggle hook
   const { toggleCamera } = useCameraToggle({
     cameraActive,
     isInitializing,
@@ -71,10 +73,14 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setIsInitializing,
     setVideoStatus,
     stopCamera,
-    onCameraStart
+    onCameraStart,
+    requestCameraAccess,
+    setupVideoElement,
+    ensureVideoIsPlaying,
+    checkVideoStatus,
+    waitForVideoElement
   });
   
-  // Camera monitoring hook
   useCameraMonitoring({
     cameraActive,
     videoRef,
@@ -83,20 +89,17 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setCameraError
   });
   
-  // Camera initialization hook
   useCameraInitialization({
     mountedRef,
     stopCamera,
     setupTimeoutRef
   });
   
-  // Video status monitoring effect
   useEffect(() => {
     if (videoStatus.errorCount > 10) {
       console.error("Too many video errors, resetting camera");
       setCameraError("Camera feed has issues. Attempting to reset...");
       
-      // Auto-retry with timeout
       const retryTimeout = setTimeout(() => {
         retryCamera().catch(err => {
           console.error("Auto-retry of camera failed:", err);
@@ -107,7 +110,6 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }
   }, [videoStatus.errorCount]);
   
-  // Retry camera function
   const retryCamera = useCallback(async () => {
     if (isInitializing) {
       console.log("Camera is already initializing, ignoring retry");
@@ -117,10 +119,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     console.log("Retrying camera...");
     stopCamera();
     
-    // Small delay to ensure everything is reset
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Re-initialize
     await toggleCamera();
   }, [isInitializing, stopCamera, toggleCamera]);
   
