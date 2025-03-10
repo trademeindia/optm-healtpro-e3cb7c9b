@@ -65,7 +65,7 @@ const ExercisePage: React.FC = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
             {/* Main content - exercises and posture monitor */}
-            <div className="lg:col-span-8 space-y-4 md:space-y-6">
+            <div className="lg:col-span-8 space-y-4 md:space-y-6 overflow-hidden">
               <ExerciseContent 
                 showMonitor={showMonitor}
                 selectedExercise={selectedExercise}

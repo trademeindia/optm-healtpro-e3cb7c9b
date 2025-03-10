@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -105,11 +106,11 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
           ))}
         </div>
       </CardContent>
-      <CardFooter className="pt-0 pb-3 flex justify-between">
+      <CardFooter className="exercise-card-footer">
         <Button
           variant="outline"
           size="sm"
-          className="gap-1"
+          className="exercise-card-button gap-1"
           onClick={handleTogglePlay}
         >
           {isPlaying ? (
@@ -120,18 +121,18 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
           ) : (
             <>
               <Play className="h-4 w-4" />
-              <span>Watch Video</span>
+              <span>Watch</span>
             </>
           )}
         </Button>
         <Button
           variant="default"
           size="sm"
-          className="gap-1"
+          className="exercise-card-button gap-1"
           onClick={handleStartAIAnalysis}
         >
           <BarChart className="h-4 w-4" />
-          <span>Start AI Analysis</span>
+          <span>AI Analysis</span>
         </Button>
       </CardFooter>
     </Card>

@@ -74,7 +74,7 @@ interface ExerciseListProps {
 
 const ExerciseList: React.FC<ExerciseListProps> = ({ exercises, onStartExercise }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
       {exercises.map((exercise) => (
         <ExerciseVideo
           key={exercise.id}

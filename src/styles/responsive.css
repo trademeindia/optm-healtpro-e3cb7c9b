@@ -179,7 +179,15 @@
   }
   
   .card-footer {
-    @apply mt-3 pt-3;
+    @apply mt-3 pt-3 flex-wrap gap-2;
+  }
+  
+  .exercise-card-footer {
+    @apply flex-wrap gap-2;
+  }
+  
+  .exercise-card-button {
+    @apply text-xs py-1;
   }
   
   .card-spacing-lg > * + * {
@@ -222,6 +230,14 @@
   
   .card-footer {
     @apply mt-2 pt-2;
+  }
+  
+  .exercise-card-footer {
+    @apply gap-1;
+  }
+  
+  .exercise-card-button {
+    @apply text-xs py-1 px-2;
   }
   
   .card-spacing-sm > * + * {
