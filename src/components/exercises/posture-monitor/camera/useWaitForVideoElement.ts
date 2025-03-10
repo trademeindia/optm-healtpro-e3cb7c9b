@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 
 interface UseWaitForVideoElementProps {
-  mountedRef: React.RefObject<boolean>;
+  mountedRef: React.MutableRefObject<boolean>;
 }
 
 export const useWaitForVideoElement = ({

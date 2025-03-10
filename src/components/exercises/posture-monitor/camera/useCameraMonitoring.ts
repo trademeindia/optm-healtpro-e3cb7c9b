@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 interface UseCameraMonitoringProps {
   cameraActive: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
-  streamRef: React.RefObject<MediaStream | null>;
-  mountedRef: React.RefObject<boolean>;
+  streamRef: React.MutableRefObject<MediaStream | null>;
+  mountedRef: React.MutableRefObject<boolean>;
   setCameraError: (error: string | null) => void;
 }
 

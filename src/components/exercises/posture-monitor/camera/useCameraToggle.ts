@@ -11,9 +11,9 @@ interface UseCameraToggleProps {
   isInitializing: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  streamRef: React.RefObject<MediaStream | null>;
-  mountedRef: React.RefObject<boolean>;
-  setupTimeoutRef: React.RefObject<number | null>;
+  streamRef: React.MutableRefObject<MediaStream | null>;
+  mountedRef: React.MutableRefObject<boolean>;
+  setupTimeoutRef: React.MutableRefObject<number | null>;
   setCameraActive: (active: boolean) => void;
   setPermission: (permission: 'granted' | 'denied' | 'prompt') => void;
   setCameraError: (error: string | null) => void;
@@ -123,7 +123,8 @@ export const useCameraToggle = ({
       
       // Wait a bit longer to ensure video is ready
       await new Promise(resolve => {
-        setupTimeoutRef.current = window.setTimeout(resolve, 800) as unknown as number;
+        const timeoutId = window.setTimeout(resolve, 800);
+        setupTimeoutRef.current = timeoutId as unknown as number;
       });
       
       // Double-check component is still mounted

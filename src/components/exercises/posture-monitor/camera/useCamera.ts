@@ -16,7 +16,7 @@ interface UseCameraResult {
   permission: 'granted' | 'denied' | 'prompt';
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  streamRef: React.RefObject<MediaStream | null>;
+  streamRef: React.MutableRefObject<MediaStream | null>;
   toggleCamera: () => Promise<void>;
   stopCamera: () => void;
   cameraError: string | null;
@@ -43,7 +43,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const mountedRef = useRef(true);
+  const mountedRef = useRef<boolean>(true);
   const setupTimeoutRef = useRef<number | null>(null);
   
   // Camera cleanup hook

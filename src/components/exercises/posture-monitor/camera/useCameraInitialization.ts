@@ -2,9 +2,9 @@
 import { useEffect } from 'react';
 
 interface UseCameraInitializationProps {
-  mountedRef: React.RefObject<boolean>;
+  mountedRef: React.MutableRefObject<boolean>;
   stopCamera: () => void;
-  setupTimeoutRef: React.RefObject<number | null>;
+  setupTimeoutRef: React.MutableRefObject<number | null>;
 }
 
 export const useCameraInitialization = ({
@@ -14,9 +14,11 @@ export const useCameraInitialization = ({
 }: UseCameraInitializationProps) => {
   // Set up mounted ref
   useEffect(() => {
+    // Update mountedRef at mount
     mountedRef.current = true;
     
     return () => {
+      // Update mountedRef at unmount
       mountedRef.current = false;
       stopCamera();
       

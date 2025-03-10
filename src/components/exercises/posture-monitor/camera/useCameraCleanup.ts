@@ -4,11 +4,11 @@ import { VideoStatus } from '../hooks/detection/types';
 
 interface UseCameraCleanupProps {
   videoRef: React.RefObject<HTMLVideoElement>;
-  streamRef: React.RefObject<MediaStream | null>;
+  streamRef: React.MutableRefObject<MediaStream | null>;
   setCameraActive: (active: boolean) => void;
   setCameraError: (error: string | null) => void;
   setVideoStatus: React.Dispatch<React.SetStateAction<VideoStatus>>;
-  setupTimeoutRef: React.RefObject<number | null>;
+  setupTimeoutRef: React.MutableRefObject<number | null>;
 }
 
 export const useCameraCleanup = ({
