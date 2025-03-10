@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export const usePerformanceMetrics = () => {
   const [accuracy, setAccuracy] = useState(75); // Starting value
@@ -11,9 +11,9 @@ export const usePerformanceMetrics = () => {
     setReps(prev => prev + 1);
     setAccuracy(prev => Math.min(prev + 2, 100));
     
-    toast.success("Rep Completed", {
+    toast({
+      title: "Rep Completed",
       description: "Great form! Keep going!",
-      duration: 3000
     });
   }, []);
   
@@ -27,9 +27,9 @@ export const usePerformanceMetrics = () => {
     setIncorrectReps(0);
     setAccuracy(75);
     
-    toast.info("Session Reset", {
+    toast({
+      title: "Session Reset",
       description: "Your workout session has been reset. Ready to start new exercises!",
-      duration: 4000
     });
   }, []);
   
