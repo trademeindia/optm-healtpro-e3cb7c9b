@@ -34,11 +34,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check Supabase session on mount
   useEffect(() => {
     const checkSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error checking session:', error);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error checking session:', error);
+        }
+        console.log('Supabase session check:', data.session ? 'active' : 'none');
+      } catch (e) {
+        console.error('Supabase session check failed:', e);
       }
-      console.log('Supabase session check:', data.session ? 'active' : 'none');
     };
     
     checkSession();
@@ -56,28 +60,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Wrap login to update the user state for demo accounts
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      const user = await loginBase(email, password);
-      
-      // Handle demo login separately from real Supabase login
-      if (user && (email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
-        console.log('Demo login successful:', user);
-        setUser(user);
+      // Handle demo login
+      if ((email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
+        console.log('Demo login attempt:', email);
+        
+        // Create demo user
+        const demoUser: User = {
+          id: `demo-${Date.now()}`,
+          email: email,
+          name: email === 'doctor@example.com' ? 'Dr. Demo Account' : 'Patient Demo',
+          role: email === 'doctor@example.com' ? 'doctor' : 'patient',
+          avatar: null,
+          createdAt: new Date().toISOString()
+        };
+        
+        setUser(demoUser);
         
         // Store in localStorage for persistence
-        localStorage.setItem('demoUser', JSON.stringify(user));
+        localStorage.setItem('demoUser', JSON.stringify(demoUser));
         
         toast.success('Demo login successful', {
           duration: 3000
         });
         
-        // Navigate based on role
-        if (user.role === 'doctor') {
-          window.location.href = '/dashboard';
-        } else {
-          window.location.href = '/patient-dashboard';
-        }
+        return demoUser;
       }
       
+      // Handle real login
+      const user = await loginBase(email, password);
       return user;
     } catch (error) {
       console.error('Login error:', error);

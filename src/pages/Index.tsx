@@ -8,6 +8,8 @@ const Index: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   useEffect(() => {
+    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user });
+    
     if (!isLoading) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
@@ -21,8 +23,11 @@ const Index: React.FC = () => {
   }, [isAuthenticated, isLoading, navigate, user]);
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="animate-pulse">Redirecting...</div>
+    <div className="flex items-center justify-center h-screen w-full bg-background">
+      <div className="animate-pulse text-foreground p-4 text-center">
+        <h2 className="text-xl font-medium">Redirecting...</h2>
+        <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
+      </div>
     </div>
   );
 };
