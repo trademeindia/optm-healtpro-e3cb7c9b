@@ -1,42 +1,7 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { GoogleCalendarEvent, Appointment } from './types';
 import { getFromLocalStorage, storeInLocalStorage } from '../storage/localStorageService';
-
-// Types for Google Calendar
-export interface GoogleCalendarEvent {
-  id?: string;
-  summary: string;
-  description?: string;
-  location?: string;
-  start: {
-    dateTime: string;
-    timeZone?: string;
-  };
-  end: {
-    dateTime: string;
-    timeZone?: string;
-  };
-  attendees?: {
-    email: string;
-    name?: string;
-    responseStatus?: 'needsAction' | 'declined' | 'tentative' | 'accepted';
-  }[];
-  status?: 'confirmed' | 'tentative' | 'cancelled';
-}
-
-export interface Appointment {
-  id: string;
-  patientId: string;
-  patientName: string;
-  doctorId?: string;
-  doctorName: string;
-  date: string;
-  time: string;
-  type: string;
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
-  notes?: string;
-  googleEventId?: string;
-}
+import { CalendarUtils } from './calendarUtils';
 
 /**
  * Service to handle Google Calendar operations
@@ -44,7 +9,6 @@ export interface Appointment {
 export class GoogleCalendarService {
   private static readonly CALENDAR_AUTH_KEY = 'google_calendar_auth';
   private static readonly CALENDAR_EVENTS_KEY = 'calendar_events';
-  private static readonly DEFAULT_TIMEZONE = 'America/Los_Angeles';
 
   /**
    * Check if the user is authenticated with Google Calendar
@@ -103,26 +67,8 @@ export class GoogleCalendarService {
         return null;
       }
 
-      const startDateTime = new Date(`${appointment.date} ${appointment.time}`);
-      // Default appointment duration is 30 minutes
-      const endDateTime = new Date(startDateTime.getTime() + 30 * 60000);
-
-      const event: GoogleCalendarEvent = {
-        summary: `${appointment.type} with ${appointment.patientName}`,
-        description: appointment.notes || `Appointment with ${appointment.patientName}`,
-        start: {
-          dateTime: startDateTime.toISOString(),
-          timeZone: this.DEFAULT_TIMEZONE
-        },
-        end: {
-          dateTime: endDateTime.toISOString(),
-          timeZone: this.DEFAULT_TIMEZONE
-        },
-        attendees: [
-          { email: 'patient@example.com', name: appointment.patientName }
-        ],
-        status: appointment.status === 'confirmed' ? 'confirmed' : 'tentative'
-      };
+      // Convert appointment to Google Calendar event format
+      const event = CalendarUtils.appointmentToCalendarEvent(appointment);
 
       // In a real implementation, this would call the Google Calendar API
       // For now, we'll store in localStorage
@@ -159,23 +105,11 @@ export class GoogleCalendarService {
         return false;
       }
 
-      const startDateTime = new Date(`${appointment.date} ${appointment.time}`);
-      const endDateTime = new Date(startDateTime.getTime() + 30 * 60000);
-
-      const updatedEvent: GoogleCalendarEvent = {
-        ...events[eventIndex],
-        summary: `${appointment.type} with ${appointment.patientName}`,
-        description: appointment.notes || `Appointment with ${appointment.patientName}`,
-        start: {
-          dateTime: startDateTime.toISOString(),
-          timeZone: this.DEFAULT_TIMEZONE
-        },
-        end: {
-          dateTime: endDateTime.toISOString(),
-          timeZone: this.DEFAULT_TIMEZONE
-        },
-        status: appointment.status === 'confirmed' ? 'confirmed' : 'tentative'
-      };
+      // Convert appointment to Google Calendar event format
+      const updatedEvent = CalendarUtils.appointmentToCalendarEvent(
+        appointment, 
+        appointment.googleEventId
+      );
 
       // Update the event in localStorage
       storeInLocalStorage(this.CALENDAR_EVENTS_KEY, updatedEvent);
@@ -228,3 +162,6 @@ export class GoogleCalendarService {
     }
   }
 }
+
+// Re-export types for backward compatibility
+export { Appointment, GoogleCalendarEvent } from './types';

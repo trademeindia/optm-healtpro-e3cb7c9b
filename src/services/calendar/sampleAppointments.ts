@@ -1,5 +1,5 @@
 
-import { Appointment } from './googleCalendarService';
+import { Appointment } from './types';
 import { storeInLocalStorage } from '../storage/localStorageService';
 
 /**

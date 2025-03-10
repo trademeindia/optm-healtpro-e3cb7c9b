@@ -7,7 +7,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { useToast } from '@/hooks/use-toast';
 import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
 import { AppointmentService } from '@/services/calendar/appointmentService';
-import { Appointment } from '@/services/calendar/googleCalendarService';
+import { Appointment } from '@/services/calendar/types';
 import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
 
 const AppointmentsPage: React.FC = () => {
