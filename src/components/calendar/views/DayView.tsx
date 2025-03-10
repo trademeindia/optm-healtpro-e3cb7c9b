@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import { Button } from '@/components/ui/button';
 import { CalendarViewProps } from './types';
+import { format } from 'date-fns';
 
 const DayView: React.FC<CalendarViewProps> = ({
   selectedDate,
@@ -11,12 +12,9 @@ const DayView: React.FC<CalendarViewProps> = ({
   getEventsForHour,
   onEventClick
 }) => {
-  // Function to safely format dates, handling string or Date objects
-  const safeFormatDate = (date: string | Date, formatString: string) => {
-    if (typeof date === 'string') {
-      return formatDate(new Date(date), formatString);
-    }
-    return formatDate(date, formatString);
+  const formatEventTime = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return format(dateObj, "h:mm a");
   };
 
   return (
@@ -45,7 +43,7 @@ const DayView: React.FC<CalendarViewProps> = ({
                         {event.isAvailable ? 'Available' : 'Booked'}
                       </div>
                       <div className="text-xs">
-                        {safeFormatDate(event.start, "h:mm a")} - {safeFormatDate(event.end, "h:mm a")}
+                        {formatEventTime(event.start)} - {formatEventTime(event.end)}
                       </div>
                     </div>
                   ))}

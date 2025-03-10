@@ -1,13 +1,9 @@
 
 import { CalendarEvent } from './types';
-import { formatDate } from '@/lib/utils';
+import { format } from 'date-fns';
 
-// Helper function to ensure we're working with Date objects
-const ensureDate = (dateValue: string | Date): Date => {
-  if (typeof dateValue === 'string') {
-    return new Date(dateValue);
-  }
-  return dateValue;
+const ensureDateObject = (date: Date | string): Date => {
+  return typeof date === 'string' ? new Date(date) : date;
 };
 
 export function generateMockEvents(baseDate: Date): CalendarEvent[] {
@@ -103,14 +99,21 @@ export function generateMockEvents(baseDate: Date): CalendarEvent[] {
 
 export function mapEventsToAppointments(events: CalendarEvent[]): any[] {
   return events
-    .filter(event => !event.isAvailable && ensureDate(event.start) > new Date())
-    .sort((a, b) => ensureDate(a.start).getTime() - ensureDate(b.start).getTime())
+    .filter(event => {
+      const startDate = ensureDateObject(event.start);
+      return !event.isAvailable && startDate > new Date();
+    })
+    .sort((a, b) => {
+      const aDate = ensureDateObject(a.start);
+      const bDate = ensureDateObject(b.start);
+      return aDate.getTime() - bDate.getTime();
+    })
     .slice(0, 5)
     .map(event => ({
       id: event.id,
       title: event.title,
-      date: formatDate(ensureDate(event.start), "MMMM d, yyyy"),
-      time: formatDate(ensureDate(event.start), "h:mm a") + " - " + formatDate(ensureDate(event.end), "h:mm a"),
+      date: format(ensureDateObject(event.start), "MMMM d, yyyy"),
+      time: `${format(ensureDateObject(event.start), "h:mm a")} - ${format(ensureDateObject(event.end), "h:mm a")}`,
       patientName: event.patientName,
       patientId: event.patientId,
       type: event.type || "Consultation",

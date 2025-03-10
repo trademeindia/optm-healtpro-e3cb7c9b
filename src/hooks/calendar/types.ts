@@ -2,8 +2,8 @@
 export interface CalendarEvent {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: Date | string;
+  end: Date | string;
   allDay?: boolean;
   description?: string;
   location?: string;
