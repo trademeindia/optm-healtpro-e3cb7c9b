@@ -1,0 +1,40 @@
+
+/* Glass card variant */
+.glass-card {
+  @apply bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm;
+}
+
+/* Content spacing utilities */
+.card-spacing-sm > * + * {
+  @apply mt-2;
+}
+
+.card-spacing-md > * + * {
+  @apply mt-3 md:mt-4;
+}
+
+.card-spacing-lg > * + * {
+  @apply mt-4 md:mt-6;
+}
+
+/* Text alignment options */
+.card-text-left {
+  @apply text-left;
+}
+
+.card-text-center {
+  @apply text-center;
+}
+
+/* Grid layouts for card contents */
+.card-grid-2 {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4;
+}
+
+.card-grid-3 {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4;
+}
+
+.card-grid-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4;
+}

@@ -1,0 +1,43 @@
+
+/* Base card styles */
+.content-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg border border-border/40 shadow-sm overflow-hidden transition-all duration-200;
+}
+
+/* Card sizes */
+.card-sm {
+  @apply p-3 md:p-4;
+}
+
+.card-md {
+  @apply p-4 md:p-5;
+}
+
+.card-lg {
+  @apply p-5 md:p-6;
+}
+
+/* Card layouts */
+.card-flex {
+  @apply flex flex-col h-full;
+}
+
+.card-header {
+  @apply flex items-center justify-between mb-4 pb-2 border-b border-border/30;
+}
+
+.card-title {
+  @apply text-base md:text-lg font-medium flex items-center gap-2;
+}
+
+.card-description {
+  @apply text-xs md:text-sm text-muted-foreground mt-1;
+}
+
+.card-content {
+  @apply flex-1;
+}
+
+.card-footer {
+  @apply mt-4 pt-3 border-t border-border/30 flex justify-between items-center flex-wrap gap-2;
+}

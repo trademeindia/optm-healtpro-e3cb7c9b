@@ -3,5 +3,17 @@
 @import './utilities.css';
 @import './animations.css';
 @import './components.css';
-@import './responsive.css';
-@import './cards.css';
+
+/* Card styles */
+@import './cards/base.css';
+@import './cards/variants.css';
+@import './cards/utilities.css';
+@import './cards/specialized.css';
+
+/* Responsive styles */
+@import './responsive/elements.css';
+@import './responsive/anatomy.css';
+@import './responsive/tabs.css';
+@import './responsive/cards.css';
+@import './responsive/layout.css';
+@import './responsive/buttons.css';

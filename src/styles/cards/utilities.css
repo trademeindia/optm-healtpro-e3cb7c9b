@@ -1,0 +1,49 @@
+
+/* Handling overflow */
+.card-overflow-auto {
+  @apply overflow-auto;
+}
+
+.card-overflow-hidden {
+  @apply overflow-hidden;
+}
+
+/* Flexible spacing utilities */
+.card-gap-sm {
+  @apply gap-2;
+}
+
+.card-gap-md {
+  @apply gap-3 md:gap-4;
+}
+
+.card-gap-lg {
+  @apply gap-4 md:gap-6;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply hover:shadow-md hover:border-border/60 transition-all duration-200;
+}
+
+/* Card in grid container */
+.cards-container {
+  @apply grid gap-4 md:gap-6;
+}
+
+.cards-container-responsive {
+  @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6;
+}
+
+/* Ensure proper text wrapping and truncation */
+.card-text-wrap {
+  @apply break-words;
+}
+
+.card-text-truncate {
+  @apply truncate;
+}
+
+.card-text-line-clamp-2 {
+  @apply line-clamp-2;
+}
