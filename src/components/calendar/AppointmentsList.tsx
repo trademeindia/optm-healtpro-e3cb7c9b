@@ -5,7 +5,7 @@ import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Spinner } from '@/components/ui/spinner';
+import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
 
 interface AppointmentsListProps {
   appointments: UpcomingAppointment[];
@@ -68,7 +68,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       {appointments.map((appointment) => (
         <div key={appointment.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
           <div className="space-y-2">
-            <h4 className="font-medium">{appointment.title}</h4>
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">{appointment.title}</h4>
+              {appointment.status && (
+                <AppointmentStatusIndicator status={appointment.status} />
+              )}
+            </div>
+            
             <p className="text-sm text-muted-foreground">{appointment.type}</p>
             
             <div className="flex gap-2 items-center text-sm text-muted-foreground">
