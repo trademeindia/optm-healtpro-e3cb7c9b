@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
@@ -7,6 +7,8 @@ import CalendarNavigation from './CalendarNavigation';
 import DayView from './views/DayView';
 import WeekView from './views/WeekView';
 import MonthView from './views/MonthView';
+import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
+import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month';
@@ -23,125 +25,23 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   selectedDate,
   onDateSelect
 }) => {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [visibleDates, setVisibleDates] = useState<Date[]>([]);
-  const [visibleHours, setVisibleHours] = useState<number[]>([]);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const {
+    visibleDates,
+    visibleHours,
+    navigateToPrevious,
+    navigateToNext,
+    navigateToToday,
+    isToday
+  } = useCalendarDates(view, selectedDate, onDateSelect);
 
-  // Calculate visible dates based on view and selected date
-  useEffect(() => {
-    const dates: Date[] = [];
-    const today = new Date(selectedDate);
-    
-    if (view === 'day') {
-      dates.push(today);
-    } 
-    else if (view === 'week') {
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        dates.push(date);
-      }
-    } 
-    else if (view === 'month') {
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      
-      const startDay = startOfMonth.getDay();
-      for (let i = 0; i < startDay; i++) {
-        const date = new Date(startOfMonth);
-        date.setDate(date.getDate() - (startDay - i));
-        dates.push(date);
-      }
-      
-      for (let i = 1; i <= endOfMonth.getDate(); i++) {
-        dates.push(new Date(today.getFullYear(), today.getMonth(), i));
-      }
-      
-      const remainingDays = 42 - dates.length;
-      for (let i = 1; i <= remainingDays; i++) {
-        const date = new Date(endOfMonth);
-        date.setDate(date.getDate() + i);
-        dates.push(date);
-      }
-    }
-    
-    setVisibleDates(dates);
-  }, [selectedDate, view]);
-
-  // Set visible hours (8 AM to 6 PM by default)
-  useEffect(() => {
-    const hours = [];
-    for (let hour = 8; hour <= 18; hour++) {
-      hours.push(hour);
-    }
-    setVisibleHours(hours);
-  }, []);
-
-  const navigateToPrevious = () => {
-    const newDate = new Date(selectedDate);
-    if (view === 'day') {
-      newDate.setDate(newDate.getDate() - 1);
-    } else if (view === 'week') {
-      newDate.setDate(newDate.getDate() - 7);
-    } else if (view === 'month') {
-      newDate.setMonth(newDate.getMonth() - 1);
-    }
-    onDateSelect(newDate);
-  };
-
-  const navigateToNext = () => {
-    const newDate = new Date(selectedDate);
-    if (view === 'day') {
-      newDate.setDate(newDate.getDate() + 1);
-    } else if (view === 'week') {
-      newDate.setDate(newDate.getDate() + 7);
-    } else if (view === 'month') {
-      newDate.setMonth(newDate.getMonth() + 1);
-    }
-    onDateSelect(newDate);
-  };
-
-  const navigateToToday = () => {
-    onDateSelect(new Date());
-  };
-
-  const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setIsDetailsOpen(true);
-  };
-
-  // Determine if a date is today
-  const isToday = (date: Date): boolean => {
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
-  };
-
-  // Get events for a specific date
-  const getEventsForDate = (date: Date): CalendarEvent[] => {
-    return events.filter(event => {
-      const eventDate = new Date(event.start);
-      return eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear();
-    });
-  };
-
-  // Get events for a specific hour on a specific date
-  const getEventsForHour = (date: Date, hour: number): CalendarEvent[] => {
-    return events.filter(event => {
-      const eventDate = new Date(event.start);
-      return eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear() &&
-        eventDate.getHours() === hour;
-    });
-  };
+  const {
+    selectedEvent,
+    isDetailsOpen,
+    openEventDetails,
+    closeEventDetails,
+    getEventsForDate,
+    getEventsForHour
+  } = useCalendarEvents(events);
 
   if (isLoading) {
     return (
@@ -171,7 +71,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           selectedDate={selectedDate}
           visibleHours={visibleHours}
           getEventsForHour={getEventsForHour}
-          onEventClick={handleEventClick}
+          onEventClick={openEventDetails}
         />
       )}
       
@@ -181,7 +81,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           visibleDates={visibleDates}
           visibleHours={visibleHours}
           getEventsForHour={getEventsForHour}
-          onEventClick={handleEventClick}
+          onEventClick={openEventDetails}
           isToday={isToday}
         />
       )}
@@ -199,7 +99,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       {selectedEvent && (
         <AppointmentDetailsDialog
           open={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
+          onClose={closeEventDetails}
           event={selectedEvent}
         />
       )}
