@@ -25,8 +25,8 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
   const isDoctor = user?.role === 'doctor';
   
   // Always convert to Date objects
-  const startDate = new Date(event.start);
-  const endDate = new Date(event.end);
+  const startDate = event.start instanceof Date ? event.start : new Date(event.start);
+  const endDate = event.end instanceof Date ? event.end : new Date(event.end);
 
   const formatTime = (date: Date) => {
     return formatDate(date, "h:mm a");

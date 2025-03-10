@@ -19,13 +19,15 @@ export function useCalendarData(isAuthorized: boolean) {
     setError(null);
     
     try {
-      console.log("Fetching calendar events");
+      console.log("Fetching calendar events at", new Date().toISOString());
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Generate some mock data
       const mockEvents: CalendarEvent[] = generateMockEvents(selectedDate);
+      console.log(`Generated ${mockEvents.length} events for display`);
+      
       setCalendarData(mockEvents);
       
       // Also set upcoming appointments based on mock data
@@ -59,6 +61,8 @@ export function useCalendarData(isAuthorized: boolean) {
       duration: 1500
     });
     
+    console.log("Refreshing calendar data at", new Date().toISOString());
+    
     // Force a refresh by updating the lastRefresh timestamp
     setLastRefresh(Date.now());
     
@@ -73,6 +77,7 @@ export function useCalendarData(isAuthorized: boolean) {
   // Fetch events when authorization status or selected date changes
   useEffect(() => {
     if (isAuthorized) {
+      console.log("Auto-fetching events due to auth status, date change, or refresh trigger");
       fetchEvents();
     }
   }, [isAuthorized, selectedDate, fetchEvents, lastRefresh]);

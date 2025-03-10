@@ -54,13 +54,9 @@ const CalendarTab: React.FC = () => {
   };
 
   const handleCreateAppointment = () => {
-    if (!isAuthorized) {
-      toast.error("Calendar not connected", {
-        description: "Please connect your Google Calendar first",
-        duration: 3000
-      });
-      return;
-    }
+    // This function doesn't need to do anything here, as the create button functionality
+    // is handled within the CalendarViewWrapper component
+    console.log("Create appointment button clicked");
   };
 
   const handleRefresh = async () => {

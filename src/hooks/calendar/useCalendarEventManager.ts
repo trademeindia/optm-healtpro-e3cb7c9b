@@ -28,6 +28,7 @@ export const useCalendarEventManager = (
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const openCreateDialog = useCallback((date: Date) => {
+    console.log("Opening create dialog with date:", date);
     setCreateDialogOpen(true);
   }, []);
 
@@ -49,20 +50,23 @@ export const useCalendarEventManager = (
     setIsCreating(true);
     
     try {
-      // In a real app, this would be an API call
-      console.log('Creating event:', JSON.stringify(eventData, (key, value) => {
-        if (key === 'start' || key === 'end') {
-          return {
-            _type: 'Date',
-            value: {
-              iso: value instanceof Date ? value.toISOString() : new Date(value).toISOString(),
-              value: value instanceof Date ? value.getTime() : new Date(value).getTime(),
-              local: value instanceof Date ? value.toString() : new Date(value).toString()
-            }
-          };
-        }
-        return value;
-      }, 2));
+      // Validate that start and end times are actually Date objects
+      if (!(eventData.start instanceof Date) || !(eventData.end instanceof Date)) {
+        console.error("Invalid date objects for event creation", { 
+          start: eventData.start, 
+          end: eventData.end 
+        });
+        throw new Error("Invalid appointment times");
+      }
+      
+      console.log('Creating event with data:', {
+        title: eventData.title,
+        start: eventData.start.toISOString(),
+        end: eventData.end.toISOString(),
+        type: eventData.type,
+        patientName: eventData.patientName,
+        location: eventData.location
+      });
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -74,6 +78,7 @@ export const useCalendarEventManager = (
       
       // Notify parent components that events have changed
       if (onEventChange) {
+        console.log("Notifying parent about event change");
         onEventChange();
       }
       
@@ -101,19 +106,14 @@ export const useCalendarEventManager = (
     
     try {
       // In a real app, this would be an API call
-      console.log('Updating event:', eventId, JSON.stringify(eventData, (key, value) => {
-        if (key === 'start' || key === 'end') {
-          return {
-            _type: 'Date',
-            value: {
-              iso: value instanceof Date ? value.toISOString() : new Date(value).toISOString(),
-              value: value instanceof Date ? value.getTime() : new Date(value).getTime(),
-              local: value instanceof Date ? value.toString() : new Date(value).toString()
-            }
-          };
-        }
-        return value;
-      }, 2));
+      console.log('Updating event:', eventId, {
+        title: eventData.title,
+        start: eventData.start instanceof Date ? eventData.start.toISOString() : eventData.start,
+        end: eventData.end instanceof Date ? eventData.end.toISOString() : eventData.end,
+        type: eventData.type,
+        patientName: eventData.patientName,
+        location: eventData.location
+      });
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));

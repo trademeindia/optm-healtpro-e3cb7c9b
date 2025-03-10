@@ -32,31 +32,53 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   useEffect(() => {
     if (open) {
       setDate(selectedDate);
+      setPatient(""); // Reset patient name when reopening
+      setNotes(""); // Reset notes when reopening
     }
   }, [open, selectedDate]);
 
   const parseTimeToDate = (baseDate: Date, timeString: string): Date => {
-    // Parse the time string to get hours and minutes
-    const timeFormat = timeString.includes('AM') || timeString.includes('PM') ? 'h:mm a' : 'HH:mm';
-    const parsed = parse(timeString, timeFormat, new Date());
-    
-    // Create a new date with the base date's year, month, day and the parsed time
-    return set(new Date(baseDate), {
-      hours: parsed.getHours(),
-      minutes: parsed.getMinutes(),
-      seconds: 0,
-      milliseconds: 0
-    });
+    try {
+      // Parse the time string to get hours and minutes
+      const timeFormat = timeString.includes('AM') || timeString.includes('PM') ? 'h:mm a' : 'HH:mm';
+      const parsed = parse(timeString, timeFormat, new Date());
+      
+      // Create a new date with the base date's year, month, day and the parsed time
+      return set(new Date(baseDate), {
+        hours: parsed.getHours(),
+        minutes: parsed.getMinutes(),
+        seconds: 0,
+        milliseconds: 0
+      });
+    } catch (error) {
+      console.error("Error parsing time:", error, timeString);
+      // Return a default time if parsing fails
+      return new Date(baseDate);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!patient.trim()) {
+      toast.error("Please enter a patient name");
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
+      console.log("Creating appointment with date:", date);
+      console.log("Time values:", { startTime, endTime });
+      
       // Convert time strings to Date objects using the selected date as the base
       const startDateTime = parseTimeToDate(date, startTime);
       const endDateTime = parseTimeToDate(date, endTime);
+      
+      console.log("Parsed dates:", { 
+        startDateTime: startDateTime.toISOString(), 
+        endDateTime: endDateTime.toISOString() 
+      });
       
       const eventData: Partial<CalendarEvent> = {
         title: `${type} - ${patient}`,
@@ -69,9 +91,18 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
         isAvailable: false
       };
       
-      await onCreated(eventData);
+      console.log("Creating appointment with data:", eventData);
+      const success = await onCreated(eventData);
+      
+      if (success) {
+        console.log("Appointment created successfully");
+        onClose();
+      }
     } catch (error) {
       console.error("Error creating appointment:", error);
+      toast.error("Failed to create appointment", {
+        description: "There was an error creating your appointment. Please try again."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -112,5 +143,8 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     </Dialog>
   );
 };
+
+// Missing import for toast
+import { toast } from 'sonner';
 
 export default CreateAppointmentDialog;
