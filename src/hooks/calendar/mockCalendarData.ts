@@ -1,122 +1,156 @@
 
-import { CalendarEvent } from './types';
-import { format } from 'date-fns';
+import { CalendarEvent, UpcomingAppointment } from './types';
+import { AppointmentStatus } from '@/types/appointment';
+import { format, addDays, addHours, startOfDay, subDays, eachDayOfInterval } from 'date-fns';
 
-const ensureDateObject = (date: Date | string): Date => {
-  return typeof date === 'string' ? new Date(date) : date;
+const appointmentTypes = [
+  "Initial Consultation",
+  "Follow-up",
+  "Physical Therapy",
+  "Examination",
+  "Treatment Review",
+  "Urgent Care"
+];
+
+const patientNames = [
+  "Emma Rodriguez",
+  "Marcus Johnson",
+  "Sarah Chen",
+  "Jamie Smith",
+  "David Wilson",
+  "Sophia Garcia",
+  "Michael Brown",
+  "Olivia Taylor",
+  "Noah Davis",
+  "Ava Martinez"
+];
+
+const doctors = [
+  "Dr. Jane Foster",
+  "Dr. Stephen Palmer",
+  "Dr. Maria Rodriguez",
+  "Dr. James Wilson",
+  "Dr. Lisa Chen"
+];
+
+const locations = [
+  "Main Office - Room 101",
+  "Virtual Meeting",
+  "Clinic A - Floor 2",
+  "Rehab Center",
+  "West Wing - Suite 305"
+];
+
+const statuses: AppointmentStatus[] = ['scheduled', 'confirmed', 'cancelled', 'completed'];
+
+const generateRandomTime = (date: Date): Date => {
+  const hours = 8 + Math.floor(Math.random() * 9); // 8 AM to 5 PM
+  const minutes = Math.random() > 0.5 ? 0 : 30; // Either on the hour or half past
+  
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes
+  );
 };
 
-export function generateMockEvents(baseDate: Date): CalendarEvent[] {
-  const events: CalendarEvent[] = [];
-  const startOfWeek = new Date(baseDate);
-  startOfWeek.setDate(baseDate.getDate() - baseDate.getDay()); // Start from Sunday
+const generateRandomAppointment = (date: Date, isAvailable = false): CalendarEvent => {
+  const startTime = generateRandomTime(date);
+  const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minutes later
   
-  const patientNames = [
-    "Emma Rodriguez", "Marcus Johnson", "Sarah Chen", 
-    "David Williams", "Olivia Martinez", "James Wilson",
-    "Sophia Thompson", "Alexander Davis", "Ava Garcia"
-  ];
+  const type = appointmentTypes[Math.floor(Math.random() * appointmentTypes.length)];
+  const patientName = patientNames[Math.floor(Math.random() * patientNames.length)];
+  const doctor = doctors[Math.floor(Math.random() * doctors.length)];
+  const location = locations[Math.floor(Math.random() * locations.length)];
+  const status = statuses[Math.floor(Math.random() * statuses.length)];
   
-  const appointmentTypes = [
-    "Initial Consultation", "Follow-up", "Physical Therapy", 
-    "Examination", "Treatment Review", "Urgent Care"
-  ];
+  if (isAvailable) {
+    return {
+      id: `available-${date.getTime()}-${Math.random()}`,
+      title: 'Available Slot',
+      start: startTime,
+      end: endTime,
+      isAvailable: true,
+      location,
+      doctorName: doctor,
+      color: '#4caf50'
+    };
+  }
   
-  const locations = [
-    "Main Office - Room 101", "Virtual Meeting", "Clinic A - Floor 2",
-    "Rehab Center", "West Wing - Suite 305"
-  ];
+  return {
+    id: `appointment-${date.getTime()}-${Math.random()}`,
+    title: `${type} - ${patientName}`,
+    start: startTime,
+    end: endTime,
+    description: `Regular ${type.toLowerCase()} appointment`,
+    patientName,
+    doctorName: doctor,
+    location,
+    type,
+    status,
+    isAvailable: false,
+    color: '#2196f3'
+  };
+};
 
-  // Generate available slots and some booked appointments
-  for (let day = 0; day < 14; day++) {
-    const currentDate = new Date(startOfWeek);
-    currentDate.setDate(startOfWeek.getDate() + day);
+export const generateMockEvents = (referenceDate: Date): CalendarEvent[] => {
+  const events: CalendarEvent[] = [];
+  
+  // Generate events for the past week up to next week
+  const startDate = subDays(startOfDay(referenceDate), 7);
+  const endDate = addDays(startOfDay(referenceDate), 14);
+  
+  const dates = eachDayOfInterval({ start: startDate, end: endDate });
+  
+  // Generate 2-5 appointments per day
+  dates.forEach(date => {
+    const numEvents = 2 + Math.floor(Math.random() * 4);
     
-    const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
-    
-    if (!isWeekend) {
-      for (let hour = 9; hour < 17; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          const start = new Date(currentDate);
-          start.setHours(hour, minute, 0, 0);
-          
-          const end = new Date(start);
-          end.setMinutes(end.getMinutes() + 30);
-          
-          const isBooked = Math.random() < 0.3;
-          
-          if (isBooked) {
-            const patientName = patientNames[Math.floor(Math.random() * patientNames.length)];
-            const type = appointmentTypes[Math.floor(Math.random() * appointmentTypes.length)];
-            const location = locations[Math.floor(Math.random() * locations.length)];
-            
-            events.push({
-              id: `appointment-${day}-${hour}-${minute}`,
-              title: `${type} - ${patientName}`,
-              start,
-              end,
-              isAvailable: false,
-              patientName,
-              patientId: `patient-${Math.floor(Math.random() * 1000)}`,
-              type,
-              location,
-              description: `${type} appointment with ${patientName}`
-            });
-          } else {
-            events.push({
-              id: `slot-${day}-${hour}-${minute}`,
-              title: 'Available',
-              start,
-              end,
-              isAvailable: true
-            });
-          }
-        }
-      }
+    for (let i = 0; i < numEvents; i++) {
+      // 70% booked, 30% available
+      const isAvailable = Math.random() > 0.7;
+      events.push(generateRandomAppointment(date, isAvailable));
     }
-    
-    if (Math.random() < 0.4) {
-      const startHour = Math.floor(Math.random() * 10) + 8;
-      const start = new Date(currentDate);
-      start.setHours(startHour, 0, 0, 0);
-      
-      const durationHours = Math.floor(Math.random() * 3) + 1;
-      const end = new Date(start);
-      end.setHours(end.getHours() + durationHours);
-      
-      events.push({
-        id: `blocked-${day}-${startHour}`,
-        title: 'Blocked',
-        start,
-        end,
-        isAvailable: false
-      });
-    }
+  });
+  
+  // Add some events specifically for today
+  const today = startOfDay(new Date());
+  const numTodayEvents = 3 + Math.floor(Math.random() * 3);
+  
+  for (let i = 0; i < numTodayEvents; i++) {
+    const isAvailable = Math.random() > 0.8; // 20% chance of available slots today
+    events.push(generateRandomAppointment(today, isAvailable));
   }
   
   return events;
-}
+};
 
-export function mapEventsToAppointments(events: CalendarEvent[]): any[] {
+export const mapEventsToAppointments = (events: CalendarEvent[]): UpcomingAppointment[] => {
+  const now = new Date();
+  
   return events
-    .filter(event => {
-      const startDate = ensureDateObject(event.start);
-      return !event.isAvailable && startDate > new Date();
-    })
-    .sort((a, b) => {
-      const aDate = ensureDateObject(a.start);
-      const bDate = ensureDateObject(b.start);
-      return aDate.getTime() - bDate.getTime();
-    })
-    .slice(0, 5)
-    .map(event => ({
-      id: event.id,
-      title: event.title,
-      date: format(ensureDateObject(event.start), "MMMM d, yyyy"),
-      time: `${format(ensureDateObject(event.start), "h:mm a")} - ${format(ensureDateObject(event.end), "h:mm a")}`,
-      patientName: event.patientName,
-      patientId: event.patientId,
-      type: event.type || "Consultation",
-      location: event.location
-    }));
-}
+    .filter(event => 
+      !event.isAvailable && 
+      new Date(event.start) > now && 
+      event.status !== 'cancelled'
+    )
+    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+    .slice(0, 5) // Take only next 5 appointments
+    .map(event => {
+      const startDate = event.start instanceof Date ? event.start : new Date(event.start);
+      
+      return {
+        id: event.id,
+        title: event.title,
+        date: format(startDate, 'MMMM d, yyyy'),
+        time: format(startDate, 'h:mm a'),
+        patientName: event.patientName,
+        patientId: event.patientId,
+        type: event.type,
+        location: event.location,
+        status: event.status
+      };
+    });
+};

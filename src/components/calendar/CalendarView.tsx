@@ -1,3 +1,4 @@
+
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
@@ -90,6 +91,11 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     return success;
   };
 
+  const handleStatusChanged = () => {
+    console.log("Appointment status changed, refreshing calendar");
+    onEventsChange();
+  };
+
   const renderEventContent = (event: CalendarEvent) => {
     return (
       <div className="flex flex-col gap-1">
@@ -135,6 +141,7 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
           onClose={closeEventDetails}
           event={selectedEvent}
           onEdit={handleBookFromDetails}
+          onStatusChange={handleStatusChanged}
         />
       )}
 

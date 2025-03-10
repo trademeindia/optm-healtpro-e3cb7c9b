@@ -70,7 +70,7 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
         location: eventData.location || '',
         patientName: eventData.patientName || '',
         type: eventData.type || '',
-        status: 'confirmed',
+        status: 'scheduled',
         ...(eventData as any)
       };
       
@@ -117,7 +117,8 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
         end: eventData.end instanceof Date ? eventData.end.toISOString() : eventData.end,
         type: eventData.type,
         patientName: eventData.patientName,
-        location: eventData.location
+        location: eventData.location,
+        status: eventData.status || 'scheduled'
       });
       
       // Simulate API call delay
