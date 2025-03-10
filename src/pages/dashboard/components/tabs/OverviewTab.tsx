@@ -46,7 +46,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onUpload
 }) => {
   const handleQuickAction = (action: string) => {
-    toast.info(`${action} action initiated`, { duration: 3000 });
+    toast.info(`${action} action initiated`, { 
+      duration: 3000 
+    });
   };
 
   return (
