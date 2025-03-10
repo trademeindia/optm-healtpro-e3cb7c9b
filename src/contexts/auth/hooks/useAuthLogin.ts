@@ -32,12 +32,8 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           picture: ''
         };
         
-        // Save demo user to localStorage for persistence across refreshes
-        localStorage.setItem('demoUser', JSON.stringify(demoUser));
-        
         toast.success('Demo login successful');
         
-        // Return the user first, navigation will be handled in AuthProvider
         return demoUser;
       }
       
@@ -47,14 +43,22 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Authentication error:', error);
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error('No user returned from authentication');
+      }
 
       const formattedUser = await formatUser(data.user);
-      if (!formattedUser) throw new Error('User profile not found');
+      if (!formattedUser) {
+        throw new Error('User profile not found');
+      }
       
       toast.success('Login successful');
       
-      // Regular users will be redirected in AuthProvider
       return formattedUser;
     } catch (error: any) {
       console.error('Login failed:', error);

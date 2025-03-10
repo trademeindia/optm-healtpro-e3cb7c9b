@@ -23,16 +23,25 @@ export const useAuthSession = () => {
             return;
           } catch (e) {
             console.error('Error parsing demo user data:', e);
-            localStorage.removeItem('demoUser'); // Remove invalid data
+            localStorage.removeItem('demoUser');
           }
         }
         
         // Otherwise, check Supabase session
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
         
-        if (session) {
-          const formattedUser = await formatUser(session.user);
+        if (error) {
+          console.error('Error getting session:', error);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (data.session) {
+          console.log('Supabase session found, loading user profile');
+          const formattedUser = await formatUser(data.session.user);
           setUser(formattedUser);
+        } else {
+          console.log('No active session found');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -43,13 +52,17 @@ export const useAuthSession = () => {
 
     initializeAuth();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         setIsLoading(true);
         
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          const formattedUser = await formatUser(session?.user || null);
-          setUser(formattedUser);
+          if (session) {
+            const formattedUser = await formatUser(session.user);
+            setUser(formattedUser);
+          }
         }
         
         if (event === 'SIGNED_OUT') {

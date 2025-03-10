@@ -2,4 +2,5 @@
 import { createContext } from 'react';
 import { AuthContextType } from './types';
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create the context with proper typing
+export const AuthContext = createContext<AuthContextType | null>(null);

@@ -19,18 +19,14 @@ export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
         return;
       }
       
-      // Check current session to see if it's a demo account
-      const { data: { session } } = await supabase.auth.getSession();
+      // Regular logout for authenticated users
+      const { error } = await supabase.auth.signOut();
       
-      // If there's no session, this could be a demo user
-      if (!session) {
-        toast.info('You have been logged out');
-        navigate('/login');
-        return;
+      if (error) {
+        console.error('Supabase signOut error:', error);
+        throw error;
       }
       
-      // Regular logout for authenticated users
-      await supabase.auth.signOut();
       toast.info('You have been logged out');
       navigate('/login');
     } catch (error: any) {

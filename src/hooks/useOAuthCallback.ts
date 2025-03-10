@@ -19,7 +19,6 @@ export const useOAuthCallback = () => {
   const errorCode = searchParams.get('error') || null;
   const errorDescription = searchParams.get('error_description') || null;
   const code = searchParams.get('code') || '';
-  const state = searchParams.get('state') || '';
 
   const handleRetry = () => {
     setError(null);
@@ -42,7 +41,6 @@ export const useOAuthCallback = () => {
         callbackURL,
         originURL,
         hasCode: !!code,
-        hasState: !!state,
         provider,
         retryCount,
         hasUser: !!user,
@@ -50,7 +48,7 @@ export const useOAuthCallback = () => {
         isLoadingState: isLoading
       });
       
-      console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, state exists=${!!state}`);
+      console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}`);
       
       // Call the handler with the code from search params
       if (code) {
@@ -72,9 +70,8 @@ export const useOAuthCallback = () => {
       if (sessionError) {
         console.error('Supabase session error:', sessionError);
         setError('Unable to verify authentication');
-        setErrorDetails('There was a problem connecting to the authentication service. Please try again.');
+        setErrorDetails('There was a problem connecting to the authentication service.');
         toast.error('Authentication verification failed');
-        setTimeout(() => navigate('/login'), 3000);
         return;
       }
 
@@ -88,18 +85,16 @@ export const useOAuthCallback = () => {
       if (user && !isLoading) {
         console.log('User authenticated successfully:', user);
         toast.success('Successfully signed in!');
-        // Use navigate instead of direct window.location to prevent blank screen
         navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
         return;
       } 
       // If we have a session but no user yet, try to extract the user
       else if (data.session && !isLoading) {
-        console.log('Session exists but no user object yet - trying to get user data from session');
+        console.log('Session exists but no user object yet');
         const { user: supabaseUser } = data.session;
         
         if (supabaseUser) {
           console.log('Session user exists:', supabaseUser.id);
-          // Use navigate instead of direct location change
           toast.success('Successfully authenticated!');
           navigate('/dashboard');
           return;
@@ -109,7 +104,7 @@ export const useOAuthCallback = () => {
       else if (!isLoading && !user && retryCount >= 2) {
         console.error('Authentication failed - no user found after OAuth flow and retries');
         setError('Authentication failed');
-        setErrorDetails('The sign-in attempt was not successful. Please try again or use a different method.');
+        setErrorDetails('The sign-in attempt was not successful. Please try again.');
         toast.error('Authentication failed');
         setTimeout(() => navigate('/login'), 3000);
       }
@@ -123,7 +118,7 @@ export const useOAuthCallback = () => {
     } catch (err: any) {
       console.error('OAuth callback processing error:', err);
       setError('Authentication process failed');
-      setErrorDetails(err.message || 'An unexpected error occurred during authentication');
+      setErrorDetails(err.message || 'An unexpected error occurred');
       toast.error('Authentication failed');
       setTimeout(() => navigate('/login'), 3000);
     } finally {
@@ -154,7 +149,7 @@ export const useOAuthCallback = () => {
         checkAuthState();
       }, 500);
     }
-  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, state, retryCount]);
+  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, retryCount]);
 
   return {
     error,

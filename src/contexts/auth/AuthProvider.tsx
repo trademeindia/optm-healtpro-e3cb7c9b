@@ -1,14 +1,14 @@
 
-import React, { useEffect } from 'react';
-import { Provider } from '@supabase/supabase-js';
+import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading, setUser } = useAuthSession();
+  const { user, isLoading: sessionLoading, setUser } = useAuthSession();
   const {
     isLoading: operationsLoading,
     login: loginBase,
@@ -20,33 +20,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } = useAuthOperations();
 
   // Combine loading states
-  const isAuthLoading = isLoading || operationsLoading;
+  const isLoading = sessionLoading || operationsLoading;
 
   // Monitor auth state for debugging
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user ? `${user.email} (${user.role})` : 'null', 
-      isLoading, 
+      sessionLoading, 
       operationsLoading 
     });
-  }, [user, isLoading, operationsLoading]);
+  }, [user, sessionLoading, operationsLoading]);
 
-  // Handle errors in authentication flow
+  // Check Supabase session on mount
   useEffect(() => {
-    const handleAuthError = (error: ErrorEvent) => {
-      console.error('Auth error detected:', error.message);
-      // Only show toast for authentication related errors
-      if (error.message.toLowerCase().includes('auth') || 
-          error.message.toLowerCase().includes('token') ||
-          error.message.toLowerCase().includes('supabase')) {
-        toast.error('Authentication error. Please try again.');
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error checking session:', error);
       }
+      console.log('Supabase session check:', data.session ? 'active' : 'none');
     };
-
-    window.addEventListener('error', handleAuthError);
+    
+    checkSession();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
+    });
     
     return () => {
-      window.removeEventListener('error', handleAuthError);
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -55,11 +58,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const user = await loginBase(email, password);
       
-      // If this is a demo login, update the user state manually since we're bypassing Supabase auth
+      // Handle demo login separately from real Supabase login
       if (user && (email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
+        console.log('Demo login successful:', user);
         setUser(user);
         
-        // Handle navigation after setting the user
+        // Store in localStorage for persistence
+        localStorage.setItem('demoUser', JSON.stringify(user));
+        
+        toast.success('Demo login successful');
+        
+        // Navigate based on role
         if (user.role === 'doctor') {
           window.location.href = '/dashboard';
         } else {
@@ -77,10 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Wrap handleOAuthCallback to include the current user
   const handleOAuthCallback = async (provider: string, code: string) => {
-    console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code, hasUser: !!user });
+    console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      // Pass the user object as the third argument
-      return await handleOAuthCallbackBase(provider, code, user);
+      return await handleOAuthCallbackBase(provider, code);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
@@ -93,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isAuthenticated: !!user,
-        isLoading: isAuthLoading,
+        isLoading,
         login,
         loginWithSocialProvider,
         handleOAuthCallback,

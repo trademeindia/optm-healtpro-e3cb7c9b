@@ -23,7 +23,7 @@ const OAuthCallback: React.FC = () => {
       console.log("OAuth callback fallback redirect triggered");
       if (document.visibilityState === 'visible' && window.location.pathname.includes('oauth-callback')) {
         console.log("User still on OAuth callback page after 15 seconds, redirecting to safety");
-        navigate('/dashboard');
+        navigate('/login');
       }
     }, 15000);
 
