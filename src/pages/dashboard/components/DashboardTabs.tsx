@@ -142,47 +142,49 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsList>
       </div>
       
-      <TabsContent value="overview" className="mt-0">
-        <OverviewTab 
-          appointments={dashboardData.upcomingAppointments || []}
-          therapySessions={dashboardData.therapySchedules || []}
-          messages={dashboardData.clinicMessages || []}
-          reminders={dashboardData.clinicReminders || []}
-          documents={dashboardData.clinicDocuments || []}
-          calendarEvents={dashboardData.calendarEvents || {}}
-          currentDate={currentDate}
-          onViewAllAppointments={handleViewAllAppointments}
-          onViewPatient={handleViewPatient}
-          onViewAllMessages={handleViewAllMessages}
-          onAddReminder={handleAddReminder}
-          onToggleReminder={handleToggleReminder}
-          onViewFullCalendar={handleViewFullCalendar}
-          onViewAllDocuments={handleViewAllDocuments}
-          onUpload={() => handleTabChange("reports")}
-        />
-      </TabsContent>
-      
-      <TabsContent value="patients" className="mt-0">
-        <PatientsTab 
-          patients={dashboardData.patients || []}
-          selectedPatient={selectedPatient}
-          onViewPatient={handleViewPatient}
-          onClosePatientHistory={handleClosePatientHistory}
-          onUpdatePatient={handleUpdatePatient}
-        />
-      </TabsContent>
-      
-      <TabsContent value="reports" className="mt-0">
-        <ReportsTab />
-      </TabsContent>
-      
-      <TabsContent value="analytics" className="mt-0">
-        <AnalyticsTab />
-      </TabsContent>
-      
-      <TabsContent value="calendar" className="mt-0">
-        <CalendarTab />
-      </TabsContent>
+      <div className="tab-content-container">
+        <TabsContent value="overview" className="mt-0">
+          <OverviewTab 
+            appointments={dashboardData.upcomingAppointments || []}
+            therapySessions={dashboardData.therapySchedules || []}
+            messages={dashboardData.clinicMessages || []}
+            reminders={dashboardData.clinicReminders || []}
+            documents={dashboardData.clinicDocuments || []}
+            calendarEvents={dashboardData.calendarEvents || {}}
+            currentDate={currentDate}
+            onViewAllAppointments={handleViewAllAppointments}
+            onViewPatient={handleViewPatient}
+            onViewAllMessages={handleViewAllMessages}
+            onAddReminder={handleAddReminder}
+            onToggleReminder={handleToggleReminder}
+            onViewFullCalendar={handleViewFullCalendar}
+            onViewAllDocuments={handleViewAllDocuments}
+            onUpload={() => handleTabChange("reports")}
+          />
+        </TabsContent>
+        
+        <TabsContent value="patients" className="mt-0">
+          <PatientsTab 
+            patients={dashboardData.patients || []}
+            selectedPatient={selectedPatient}
+            onViewPatient={handleViewPatient}
+            onClosePatientHistory={handleClosePatientHistory}
+            onUpdatePatient={handleUpdatePatient}
+          />
+        </TabsContent>
+        
+        <TabsContent value="reports" className="mt-0">
+          <ReportsTab />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-0">
+          <AnalyticsTab />
+        </TabsContent>
+        
+        <TabsContent value="calendar" className="mt-0">
+          <CalendarTab />
+        </TabsContent>
+      </div>
     </Tabs>
   );
 };

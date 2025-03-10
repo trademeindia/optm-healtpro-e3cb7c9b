@@ -35,7 +35,7 @@ const MessageYourDoctor: React.FC<MessageYourDoctorProps> = ({ className }) => {
   };
 
   return (
-    <div className={`glass-morphism rounded-2xl p-6 ${className}`}>
+    <div className={`glass-morphism rounded-2xl p-4 md:p-6 ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-primary" />
@@ -52,11 +52,13 @@ const MessageYourDoctor: React.FC<MessageYourDoctorProps> = ({ className }) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           disabled={isSending}
+          aria-label="Message to your doctor"
         ></textarea>
         <Button 
           className="w-full flex items-center justify-center gap-2"
           onClick={handleSendMessage}
           disabled={isSending}
+          aria-busy={isSending}
         >
           {isSending ? (
             <>

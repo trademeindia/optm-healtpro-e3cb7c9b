@@ -68,6 +68,19 @@ html, body {
   gap: 1rem;
 }
 
+/* Dashboard card layout improvements */
+.dashboard-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Better responsive behavior for patient cards */
 @media (max-width: 768px) {
   .patient-card {
@@ -95,6 +108,12 @@ html, body {
   }
 }
 
+/* Tab content container improvements */
+.tab-content-container {
+  width: 100%;
+  transition: opacity 0.2s ease-in-out;
+}
+
 /* Content wrapper improvements */
 .content-wrapper {
   width: 100%;
@@ -112,5 +131,31 @@ html, body {
 @media (min-width: 1024px) {
   .content-wrapper {
     padding: 0 2rem;
+  }
+}
+
+/* Dashboard section spacing */
+.dashboard-section {
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-section {
+    margin-bottom: 2rem;
+  }
+}
+
+/* Fix for card components on small screens */
+@media (max-width: 640px) {
+  .card-content-container {
+    padding: 0.75rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem 0.75rem 0;
+  }
+  
+  .card-footer {
+    padding: 0 0.75rem 0.75rem;
   }
 }

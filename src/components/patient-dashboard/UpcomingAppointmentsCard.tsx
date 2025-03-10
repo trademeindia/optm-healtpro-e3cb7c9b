@@ -40,7 +40,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   };
 
   return (
-    <div className={`glass-morphism rounded-2xl p-6 ${className}`}>
+    <div className={`glass-morphism rounded-2xl p-4 md:p-6 ${className}`}>
       <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
       <div className="space-y-4">
         {upcomingAppointments.length > 0 ? (
@@ -58,7 +58,11 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
           </div>
         )}
       </div>
-      <Button variant="ghost" className="w-full mt-3 text-sm">
+      <Button 
+        variant="ghost" 
+        className="w-full mt-3 text-sm"
+        aria-label="View all appointments"
+      >
         View All Appointments
       </Button>
     </div>

@@ -42,6 +42,10 @@
     min-width: auto;
     padding: 0.5rem 0.75rem;
   }
+  
+  .tabs-list {
+    padding: 0.25rem;
+  }
 }
 
 /* Improve tabs headers spacing and layout */
@@ -69,4 +73,25 @@
 
 .stacked-tabs .tab-item:last-child {
   border-bottom: none;
+}
+
+/* Tab content transitions */
+.tabs-content [data-state="active"] {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive tab layout improvements */
+@media (max-width: 768px) {
+  .responsive-tabs {
+    flex-direction: column;
+  }
+  
+  .responsive-tabs .tab-panel {
+    padding: 1rem 0;
+  }
 }

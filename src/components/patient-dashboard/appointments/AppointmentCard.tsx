@@ -23,9 +23,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onRescheduleAppointment
 }) => {
   return (
-    <div className="p-4 border rounded-lg bg-card">
-      <div className="flex justify-between items-start gap-4 mb-3">
-        <div className="min-w-0">
+    <div className="p-3 md:p-4 border rounded-lg bg-card">
+      <div className="flex justify-between items-start gap-3 mb-3">
+        <div className="min-w-0 flex-1">
           <h4 className="font-medium text-base truncate">{appointment.type}</h4>
           <p className="text-sm text-muted-foreground mt-1 truncate">
             {appointment.date} at {appointment.time}

@@ -72,39 +72,47 @@ const Dashboard: React.FC = () => {
         <Header />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 overflow-container">
-          <div className="max-w-7xl mx-auto">
+          <div className="content-wrapper">
             {/* Dashboard Header */}
             <DashboardHeader doctorName="Samantha" />
             
             {/* Filter Period Selector */}
-            <PeriodFilter 
-              filterPeriod={filterPeriod} 
-              setFilterPeriod={setFilterPeriod} 
-            />
+            <div className="mb-6">
+              <PeriodFilter 
+                filterPeriod={filterPeriod} 
+                setFilterPeriod={setFilterPeriod} 
+              />
+            </div>
             
-            {/* Key Metrics Cards */}
-            <KeyMetricsCards />
+            {/* Key Metrics Cards - Now in a more responsive grid */}
+            <div className="mb-8">
+              <KeyMetricsCards />
+            </div>
             
             {/* Analytics Graph Section */}
-            <div className="mb-6">
+            <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <ClinicAnalyticsGraph />
             </div>
             
             {/* Legacy Charts Section */}
-            <LegacyCharts handleSaveReport={handleSaveReport} />
+            <div className="mb-8">
+              <LegacyCharts handleSaveReport={handleSaveReport} />
+            </div>
           
             {/* Tabs for detailed content */}
-            <DashboardTabs 
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              currentDate={currentDate}
-              setCurrentDate={setCurrentDate}
-              selectedPatient={selectedPatient}
-              handleClosePatientHistory={handleClosePatientHistory}
-              handleUpdatePatient={handleUpdatePatient}
-              handleViewPatient={handleViewPatient}
-              dashboardData={dashboardData}
-            />
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+              <DashboardTabs 
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+                selectedPatient={selectedPatient}
+                handleClosePatientHistory={handleClosePatientHistory}
+                handleUpdatePatient={handleUpdatePatient}
+                handleViewPatient={handleViewPatient}
+                dashboardData={dashboardData}
+              />
+            </div>
           </div>
         </main>
       </div>

@@ -1,54 +1,64 @@
 
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PostureAnalysisTabs from './posture-analysis/PostureAnalysisTabs';
-import RecommendedExercises from './posture-analysis/RecommendedExercises';
-import { PostureArea } from './posture-analysis/types';
+import { PostureArea, ProgressSnapshot } from './posture-analysis/types';
 
-interface PostureAnalysisProps {
-  className?: string;
-}
-
-const PostureAnalysis: React.FC<PostureAnalysisProps> = ({
-  className
-}) => {
-  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+const PostureAnalysis: React.FC = () => {
   const [activeTab, setActiveTab] = useState('posture');
   
-  // Mock data for progress snapshots
-  const progressSnapshots = [
-    { id: 1, date: 'May 15, 2023', posture: 'Initial Assessment', improvement: '0%' },
-    { id: 2, date: 'Jun 20, 2023', posture: 'First Follow-up', improvement: '12%' },
-    { id: 3, date: 'Jul 25, 2023', posture: 'Second Follow-up', improvement: '27%' }
-  ];
-
-  // Mock posture analysis data with proper typing
+  // Sample posture analysis data
   const postureAnalysis = {
-    overallScore: 68,
+    overallScore: 72,
     areas: [
-      { name: 'Head Alignment', score: 75, status: 'good' as const, recommendation: 'Maintain current posture' },
-      { name: 'Shoulder Balance', score: 62, status: 'moderate' as const, recommendation: 'Try shoulder rolls and stretches' },
-      { name: 'Spine Curvature', score: 58, status: 'moderate' as const, recommendation: 'Focus on core strengthening' },
-      { name: 'Hip Alignment', score: 77, status: 'good' as const, recommendation: 'Continue hip-opening exercises' }
-    ] as PostureArea[]
+      {
+        name: 'Neck Alignment',
+        score: 65,
+        status: 'moderate' as const,
+        recommendation: 'Consider neck strengthening exercises and proper ergonomics.'
+      },
+      {
+        name: 'Shoulder Balance',
+        score: 80,
+        status: 'good' as const,
+        recommendation: 'Continue shoulder stretching and mobility exercises.'
+      },
+      {
+        name: 'Spine Curvature',
+        score: 70,
+        status: 'moderate' as const,
+        recommendation: 'Core strengthening and lumbar support recommended.'
+      },
+      {
+        name: 'Pelvic Tilt',
+        score: 75,
+        status: 'moderate' as const,
+        recommendation: 'Hip flexor stretches and glute activation exercises.'
+      }
+    ]
   };
   
+  // Sample progress snapshots
+  const progressSnapshots: ProgressSnapshot[] = [
+    { id: 1, date: '2023-05-15', posture: 'Forward Head', improvement: '+5%' },
+    { id: 2, date: '2023-05-30', posture: 'Rounded Shoulders', improvement: '+8%' },
+    { id: 3, date: '2023-06-15', posture: 'Overall Alignment', improvement: '+10%' }
+  ];
+  
   return (
-    <div className={cn("glass-morphism rounded-2xl p-4 md:p-6", className)}>
-      <h3 className="text-lg font-semibold mb-2">Posture & Mobility Analysis</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Track posture metrics, range-of-motion, and view progress over time
-      </p>
-      
-      <PostureAnalysisTabs 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        postureAnalysis={postureAnalysis}
-        progressSnapshots={progressSnapshots}
-      />
-      
-      <RecommendedExercises />
-    </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Posture Analysis</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <PostureAnalysisTabs 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          postureAnalysis={postureAnalysis}
+          progressSnapshots={progressSnapshots}
+        />
+      </CardContent>
+    </Card>
   );
 };
 

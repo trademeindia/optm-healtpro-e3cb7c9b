@@ -63,7 +63,7 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
   
   return (
     <div className="space-y-3 mt-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-sm font-medium">Symptom Details</h4>
         
         <div className="flex items-center gap-2">
@@ -86,6 +86,7 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
             size="icon" 
             className="h-8 w-8" 
             onClick={toggleSortDirection}
+            aria-label={sortDirection === 'asc' ? "Sort ascending" : "Sort descending"}
           >
             {sortDirection === 'asc' ? (
               <ArrowUp className="h-4 w-4" />
@@ -104,10 +105,22 @@ const SymptomCardsContainer: React.FC<SymptomCardsContainerProps> = ({ symptoms 
           <div 
             className="p-3 flex justify-between items-center cursor-pointer hover:bg-secondary/20 transition-colors"
             onClick={() => toggleExpand(index)}
+            aria-expanded={expandedSymptom === index}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                toggleExpand(index);
+                e.preventDefault();
+              }
+            }}
           >
             <SymptomCard symptom={symptom} index={index} />
             
-            <button className="ml-2 text-muted-foreground p-1 rounded-full hover:bg-secondary">
+            <button 
+              className="ml-2 text-muted-foreground p-1 rounded-full hover:bg-secondary"
+              aria-label={expandedSymptom === index ? "Collapse details" : "Expand details"}
+            >
               {expandedSymptom === index ? (
                 <ChevronUp className="w-4 h-4" />
               ) : (

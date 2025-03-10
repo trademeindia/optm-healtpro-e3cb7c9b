@@ -46,16 +46,16 @@ const MedicalDocuments: React.FC<MedicalDocumentsProps> = ({
                 key={doc.id}
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
               >
-                <div className="flex items-center">
-                  <FileText className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">{doc.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex items-center min-w-0 flex-1 mr-2">
+                  <FileText className="h-5 w-5 mr-3 text-primary flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{doc.name}</p>
+                    <p className="text-sm text-muted-foreground truncate">
                       {doc.date} · {doc.type} · {doc.size}
                     </p>
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" className="flex items-center">
+                <Button size="sm" variant="ghost" className="flex-shrink-0 flex items-center">
                   <Download className="h-4 w-4 mr-1" />
                   <span className="hidden sm:inline">Download</span>
                 </Button>
