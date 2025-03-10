@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, MessageSquare, Calendar, Download } from 'lucide-react';
@@ -13,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { dashboardData } from './data/dashboardData';
 import DashboardTabs from './components/DashboardTabs';
 import DashboardDialog from './components/DashboardDialog';
+import ClinicAnalyticsGraph from '@/components/dashboard/ClinicAnalyticsGraph';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -227,7 +227,12 @@ const Dashboard: React.FC = () => {
               </motion.div>
             </div>
             
-            {/* Charts and Main Content */}
+            {/* Analytics Graph Section */}
+            <div className="mb-6">
+              <ClinicAnalyticsGraph />
+            </div>
+            
+            {/* Legacy Charts Section - we'll keep this for comparison */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <Card className="lg:col-span-2 border border-border/30">
                 <CardContent className="p-4">
