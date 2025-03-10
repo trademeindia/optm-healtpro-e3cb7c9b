@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ doctorName }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           Dashboard
@@ -21,24 +21,24 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ doctorName }) => {
         </p>
       </div>
       
-      <div className="flex items-center gap-2 w-full md:w-auto">
-        <div className="relative flex-1 md:w-64 md:flex-none">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="relative flex-1 sm:w-64 sm:flex-none">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input 
             placeholder="Search patients, records..." 
-            className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 h-9"
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="relative h-9 w-9">
+        <div className="flex items-center gap-2 ml-auto sm:ml-0">
+          <Button variant="outline" size="icon" className="relative h-9 w-9 flex items-center justify-center">
             <Bell className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               4
             </span>
           </Button>
           
-          <Button variant="outline" size="icon" className="relative h-9 w-9">
+          <Button variant="outline" size="icon" className="relative h-9 w-9 flex items-center justify-center">
             <MessageSquare className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               3

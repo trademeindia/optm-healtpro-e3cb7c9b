@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -65,46 +66,48 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto space-y-6">
             <DashboardHeader doctorName="Samantha" />
             
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="flex flex-wrap w-full border-b border-gray-200 dark:border-gray-700 px-4 py-2 gap-2">
-                  <TabsTrigger value="overview" className="flex items-center gap-2">
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span className="hidden sm:inline">Overview</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="appointments" className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span className="hidden sm:inline">Appointments</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="reports" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden sm:inline">Reports</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-2">
-                    <Book className="h-4 w-4" />
-                    <span className="hidden sm:inline">History</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="doctors" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="hidden sm:inline">Doctors</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">Settings</span>
-                  </TabsTrigger>
-                </TabsList>
+            <div className="dashboard-tabs bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="border-b border-gray-200 dark:border-gray-700">
+                  <TabsList className="dashboard-tabs-list p-2 bg-gray-50 dark:bg-gray-900 flex flex-wrap gap-1 justify-start">
+                    <TabsTrigger value="overview" className="dashboard-tab-trigger">
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="hidden sm:inline">Overview</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="appointments" className="dashboard-tab-trigger">
+                      <Calendar className="h-4 w-4" />
+                      <span className="hidden sm:inline">Appointments</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="reports" className="dashboard-tab-trigger">
+                      <FileText className="h-4 w-4" />
+                      <span className="hidden sm:inline">Reports</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="dashboard-tab-trigger">
+                      <Book className="h-4 w-4" />
+                      <span className="hidden sm:inline">History</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="doctors" className="dashboard-tab-trigger">
+                      <Users className="h-4 w-4" />
+                      <span className="hidden sm:inline">Doctors</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="dashboard-tab-trigger">
+                      <Settings className="h-4 w-4" />
+                      <span className="hidden sm:inline">Settings</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
                 
-                <div className="p-6">
+                <div className="dashboard-tab-content">
                   <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
                     <OverviewTabContent 
                       dashboardData={dashboardData} 

@@ -51,21 +51,61 @@ html, body {
 }
 
 .dashboard-tabs {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm;
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden;
 }
 
 .dashboard-tab-content {
-  @apply p-6;
+  @apply p-4 md:p-6;
 }
 
 /* Fix tab alignment and responsiveness */
 .dashboard-tabs-list {
-  @apply flex flex-wrap gap-2 p-2 bg-gray-50 dark:bg-gray-900 rounded-t-lg;
+  @apply flex flex-wrap gap-1 p-1 md:p-2 bg-gray-50 dark:bg-gray-900;
 }
 
 .dashboard-tab-trigger {
-  @apply flex items-center gap-2 px-4 py-2 rounded-md transition-colors
+  @apply flex items-center justify-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-colors
          hover:bg-gray-100 dark:hover:bg-gray-700
          data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800
          data-[state=active]:shadow-sm;
+}
+
+/* Make sure tab content is visible with proper spacing */
+.dashboard-tabs .tabs-content {
+  @apply p-0 m-0;
+}
+
+/* Ensure proper spacing between dashboard cards */
+.dashboard-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6;
+}
+
+/* Responsive header adjustments */
+@media (max-width: 640px) {
+  .dashboard-header-container {
+    @apply flex-col items-start;
+  }
+  
+  .dashboard-search {
+    @apply w-full mt-2;
+  }
+}
+
+/* Fix for dark mode contrast */
+@media (prefers-color-scheme: dark) {
+  .dark\:bg-gray-800 {
+    @apply bg-gray-800;
+  }
+  
+  .dark\:bg-gray-900 {
+    @apply bg-gray-900;
+  }
+  
+  .dark\:text-white {
+    @apply text-gray-100;
+  }
+  
+  .dark\:border-gray-700 {
+    @apply border-gray-700;
+  }
 }
