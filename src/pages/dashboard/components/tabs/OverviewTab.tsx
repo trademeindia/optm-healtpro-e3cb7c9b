@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { toast } from 'sonner';
 import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
 import TherapySchedules from '@/components/dashboard/TherapySchedules';
 import ClinicMessages from '@/components/dashboard/ClinicMessages';
@@ -8,7 +8,6 @@ import ClinicReminders from '@/components/dashboard/ClinicReminders';
 import MiniCalendar from '@/components/dashboard/MiniCalendar';
 import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
 import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
 
 interface OverviewTabProps {
   appointments: any[];
@@ -51,7 +50,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {["Add Patient", "Schedule", "Message", "Reports", "Analytics", "Help"].map((action) => (
           <Card 
@@ -66,7 +64,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         ))}
       </div>
       
-      {/* Appointment Dashboard */}
       <AppointmentsDashboard />
       
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

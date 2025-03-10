@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { FitnessProvider } from '@/components/dashboard/FitnessIntegrations';
 
 interface HealthMetric {
@@ -208,9 +208,9 @@ const useFitnessIntegration = () => {
         }));
       }
 
-      toast({
-        title: "Successfully connected",
+      toast.success("Successfully connected", {
         description: `Health data synced from ${providers.find(p => p.id === providerId)?.name}`,
+        duration: 3000
       });
 
       return true;

@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
 
 export const usePatientDashboard = () => {
-  const { toast } = useToast();
   const { 
     providers, 
     fitnessData, 
@@ -70,17 +69,17 @@ export const usePatientDashboard = () => {
 
   // Function to handle appointment confirmation
   const handleConfirmAppointment = (id: string) => {
-    toast({
-      title: "Appointment Confirmed",
+    toast.success("Appointment Confirmed", {
       description: "Your appointment has been confirmed.",
+      duration: 3000
     });
   };
 
   // Function to handle appointment rescheduling
   const handleRescheduleAppointment = (id: string) => {
-    toast({
-      title: "Reschedule Requested",
+    toast.info("Reschedule Requested", {
       description: "Your request to reschedule has been sent.",
+      duration: 3000
     });
   };
 
@@ -88,16 +87,16 @@ export const usePatientDashboard = () => {
   const handleSyncAllData = async () => {
     const connectedProviders = providers.filter(p => p.isConnected);
     if (connectedProviders.length === 0) {
-      toast({
-        title: "No connected apps",
+      toast.error("No connected apps", {
         description: "Please connect a health app to sync data.",
+        duration: 4000
       });
       return;
     }
 
-    toast({
-      title: "Syncing data",
+    toast.info("Syncing data", {
       description: "Syncing data from all connected health apps...",
+      duration: 3000
     });
 
     // Sync data from all connected providers
@@ -105,9 +104,9 @@ export const usePatientDashboard = () => {
       await refreshProviderData(provider.id);
     }
 
-    toast({
-      title: "Sync complete",
+    toast.success("Sync complete", {
       description: "Your health data has been updated.",
+      duration: 3000
     });
   };
 
@@ -122,14 +121,13 @@ export const usePatientDashboard = () => {
         lastSync: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString()
       };
     }
-    // Make sure we return a number here, not a string
     return { value: 72, unit: 'bpm', change: -3 };
   };
 
   const getBloodPressure = () => {
     if (fitnessData.bloodPressure) {
       return {
-        value: String(fitnessData.bloodPressure.value), // Ensure value is a string
+        value: String(fitnessData.bloodPressure.value),
         unit: fitnessData.bloodPressure.unit,
         change: 0,
         source: fitnessData.bloodPressure.source,
