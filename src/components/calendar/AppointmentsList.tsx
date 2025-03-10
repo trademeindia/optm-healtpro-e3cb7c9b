@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Calendar, Clock, User, MapPin, AlertCircle } from 'lucide-react';
-import { UpcomingAppointment } from '@/hooks/useCalendarIntegration';
+import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CalendarEvent } from '@/hooks/useCalendarIntegration';
+import { CalendarEvent } from '@/hooks/calendar/useCalendarIntegration';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, MapPin, FileText, Edit, Trash2 } from 'lucide-react';

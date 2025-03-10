@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useCalendarIntegration } from '@/hooks/useCalendarIntegration';
+import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
 import CreateAppointmentDialog from '@/components/calendar/CreateAppointmentDialog';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';

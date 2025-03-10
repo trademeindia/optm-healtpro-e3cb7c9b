@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppointmentsList from '@/components/calendar/AppointmentsList';
-import { UpcomingAppointment } from '@/hooks/useCalendarIntegration';
+import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
 
 interface AppointmentsCardProps {
   isLoading: boolean;

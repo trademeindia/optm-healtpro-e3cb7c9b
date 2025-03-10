@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CalendarView from '@/components/calendar/CalendarView';
 import ConnectCalendarCard from '@/components/calendar/ConnectCalendarCard';
-import { CalendarEvent } from '@/hooks/useCalendarIntegration';
+import { CalendarEvent } from '@/hooks/calendar/useCalendarIntegration';
 
 interface CalendarViewWrapperProps {
   isAuthorized: boolean;
