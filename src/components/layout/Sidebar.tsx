@@ -49,8 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       
       {/* Use conditional classes for mobile sidebar */}
       <aside className={cn(
-        "h-screen fixed lg:relative lg:w-64 z-50 bg-background glass-morphism border-r border-r-border py-6 transition-all duration-300",
-        isOpen ? "w-64 left-0" : "-left-64 lg:left-0 lg:w-0",
+        "h-full lg:w-64 glass-morphism border-r border-r-border py-6 z-40 transition-all duration-300",
+        isOpen ? "fixed lg:relative w-64 left-0" : "fixed -left-64 lg:left-0 lg:w-0",
+        isMobile && isOpen ? "fixed inset-0 w-64 h-full" : "",
         className
       )}>
         <SidebarContent 
@@ -63,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       {/* Add overlay for mobile */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

@@ -11,7 +11,7 @@ import { samplePatients } from './data/samplePatients';
 
 const PatientsPage: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
-  const [patients, setPatients] = useState<Patient[]>(samplePatients);
+  const [patients] = useState<Patient[]>(samplePatients);
   const { loadPatientSymptoms } = useSymptoms();
   
   const selectedPatient = patients.find(p => p.id === selectedPatientId);
@@ -26,21 +26,8 @@ const PatientsPage: React.FC = () => {
   };
   
   const handleUpdatePatient = (updatedPatient: Patient) => {
-    // Update patient in our state
-    setPatients(prevPatients => 
-      prevPatients.map(p => p.id === updatedPatient.id ? updatedPatient : p)
-    );
-    
-    // In a real app, this would update the patient data in your backend
+    // In a real app, this would update the patient data in your state or backend
     console.log("Patient updated:", updatedPatient);
-  };
-  
-  const handleAddPatient = (newPatient: Patient) => {
-    // Add the new patient to our state
-    setPatients(prevPatients => [...prevPatients, newPatient]);
-    
-    // In a real app, this would add the patient data to your backend
-    console.log("Patient added:", newPatient);
   };
   
   useEffect(() => {
@@ -61,7 +48,6 @@ const PatientsPage: React.FC = () => {
         <PatientsList
           patients={patients}
           onViewPatient={handleViewPatient}
-          onAddPatient={handleAddPatient}
         />
       )}
     </PatientsLayout>

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Appointment } from '@/services/calendar/types';
+import { Appointment } from '@/services/calendar/googleCalendarService';
 import { AppointmentService } from '@/services/calendar/appointmentService';
 import { initializeCalendarService } from '@/services/calendar/calendarInit';
 import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';

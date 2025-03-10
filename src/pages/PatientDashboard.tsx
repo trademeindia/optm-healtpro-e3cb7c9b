@@ -45,18 +45,19 @@ const PatientDashboard: React.FC = () => {
           <SymptomProvider>
             <DashboardTabs
               initialTab={initialTab}
-              appointments={upcomingAppointments || []}
+              upcomingAppointments={upcomingAppointments || []}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
             >
               <DashboardMainContent
                 healthMetrics={healthMetrics}
                 activityData={activityData}
+                treatmentTasks={treatmentTasks}
                 upcomingAppointments={upcomingAppointments || []}
                 biologicalAge={biologicalAge}
                 chronologicalAge={chronologicalAge}
                 hasConnectedApps={hasConnectedApps}
-                handleSyncAllData={handleSyncAllData}
+                onSyncData={handleSyncAllData}
                 handleConfirmAppointment={handleConfirmAppointment}
                 handleRescheduleAppointment={handleRescheduleAppointment}
               />

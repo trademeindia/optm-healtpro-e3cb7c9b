@@ -1,5 +1,5 @@
 
-import { Appointment } from './types';
+import { Appointment } from './googleCalendarService';
 import { storeInLocalStorage } from '../storage/localStorageService';
 
 /**
@@ -26,6 +26,7 @@ export const initializeSampleAppointments = () => {
       id: 'appointment-1',
       patientId: 'patient-123',
       patientName: 'John Doe',
+      doctorId: 'doctor-456',
       doctorName: 'Dr. Nikolas Pascal',
       date: formatDate(tomorrow),
       time: '10:30 AM',
@@ -38,6 +39,7 @@ export const initializeSampleAppointments = () => {
       id: 'appointment-2',
       patientId: 'patient-123',
       patientName: 'John Doe',
+      doctorId: 'doctor-456',
       doctorName: 'Dr. Nikolas Pascal',
       date: formatDate(nextWeek),
       time: '02:00 PM',
@@ -49,6 +51,7 @@ export const initializeSampleAppointments = () => {
       id: 'appointment-3',
       patientId: 'patient-123',
       patientName: 'John Doe',
+      doctorId: 'doctor-789',
       doctorName: 'Dr. Sarah Chen',
       date: formatDate(twoWeeksLater),
       time: '11:15 AM',

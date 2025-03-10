@@ -14,7 +14,7 @@ import BiomarkersPage from "./pages/BiomarkersPage";
 import AIAnalysisPage from "./pages/AIAnalysisPage";
 import HealthAppsPage from "./pages/HealthAppsPage";
 import ExercisePage from "./pages/exercises";
-import AppointmentsPage from './pages/appointments';
+import AppointmentsPage from "./pages/AppointmentsPage";
 import SettingsPage from "./pages/SettingsPage";
 import HelpPage from "./pages/HelpPage";
 import Login from "./pages/Login";

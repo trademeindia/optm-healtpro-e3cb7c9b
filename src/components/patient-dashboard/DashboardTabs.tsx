@@ -1,11 +1,16 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Appointment } from '@/services/calendar/types';
 
 interface DashboardTabsProps {
   initialTab: string;
-  appointments: Appointment[];
+  upcomingAppointments: {
+    id: string;
+    date: string;
+    time: string;
+    doctor: string;
+    type: string;
+  }[];
   onConfirmAppointment: (id: string) => void;
   onRescheduleAppointment: (id: string) => void;
   children?: React.ReactNode;
@@ -15,7 +20,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
   Content: typeof TabsContent;
 } = ({
   initialTab,
-  appointments = [], // Provide default empty array
+  upcomingAppointments = [], // Provide default empty array
   onConfirmAppointment,
   onRescheduleAppointment,
   children

@@ -1,4 +1,17 @@
 
+export interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  status: 'normal' | 'elevated' | 'low';
+  timestamp: string;
+  percentage: number;
+  trend: string;
+  description: string;
+}
+
 export interface Patient {
   id: number;
   name: string;
@@ -11,14 +24,8 @@ export interface Patient {
   icdCode: string;
   lastVisit: string;
   nextVisit: string;
+  biomarkers?: Biomarker[];
   medicalRecords?: any[];
-  biomarkers?: any[]; // Added biomarkers property to fix the type error
-}
-
-export interface PatientsListProps {
-  patients: Patient[];
-  onViewPatient: (patientId: number) => void;
-  onAddPatient?: (patient: Patient) => void;
 }
 
 export interface PatientDetailsProps {
@@ -27,33 +34,11 @@ export interface PatientDetailsProps {
   onUpdate: (patient: Patient) => void;
 }
 
+export interface PatientsListProps {
+  patients: Patient[];
+  onViewPatient: (patientId: number) => void;
+}
+
 export interface PatientsLayoutProps {
   children: React.ReactNode;
-}
-
-export interface PatientSearchBarProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  onAddPatient: () => void;
-}
-
-export interface PatientTableProps {
-  patients: Patient[];
-  filteredCount: number;
-  totalCount: number;
-  onViewPatient: (patientId: number) => void;
-  onScheduleAppointment: (patientId: number) => void;
-  onViewOptions: (patientId: number) => void;
-}
-
-export interface PatientTableRowProps {
-  patient: Patient;
-  onViewPatient: (patientId: number) => void;
-  onScheduleAppointment: (patientId: number) => void;
-  onViewOptions: (patientId: number) => void;
-}
-
-export interface PatientTablePaginationProps {
-  filteredCount: number;
-  totalCount: number;
 }
