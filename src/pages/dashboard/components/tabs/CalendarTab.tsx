@@ -7,12 +7,16 @@ import { Appointment } from '@/services/calendar/types';
 import { AppointmentService } from '@/services/calendar/appointmentService';
 import { initializeCalendarService } from '@/services/calendar/calendarInit';
 import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
+import AddAppointmentDialog from '@/components/calendar/AddAppointmentDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const CalendarTab: React.FC = () => {
+  const { toast } = useToast();
   const [date, setDate] = useState<Date>(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   
   useEffect(() => {
     // Initialize calendar service
@@ -33,6 +37,11 @@ const CalendarTab: React.FC = () => {
       setAppointments(appointments);
     } catch (error) {
       console.error('Error loading appointments:', error);
+      toast({
+        title: "Error loading appointments",
+        description: "There was a problem retrieving your appointments.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -43,9 +52,20 @@ const CalendarTab: React.FC = () => {
       const success = await GoogleCalendarService.authenticate();
       if (success) {
         setCalendarConnected(true);
+        toast({
+          title: "Connected to Google Calendar",
+          description: "Your appointments will now sync with Google Calendar.",
+        });
+      } else {
+        throw new Error("Failed to connect to Google Calendar");
       }
     } catch (error) {
       console.error('Error connecting to Google Calendar:', error);
+      toast({
+        title: "Calendar Connection Failed",
+        description: "There was a problem connecting to Google Calendar.",
+        variant: "destructive"
+      });
     }
   };
   
@@ -85,7 +105,7 @@ const CalendarTab: React.FC = () => {
             </Button>
           )}
           
-          <Button>
+          <Button onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Appointment
           </Button>
@@ -146,7 +166,7 @@ const CalendarTab: React.FC = () => {
               <div className="text-center py-8 border-dashed border-2 rounded-md">
                 <CalendarIcon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">No appointments scheduled for this day</p>
-                <Button variant="outline" className="mt-4">
+                <Button variant="outline" className="mt-4" onClick={() => setAddDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Appointment
                 </Button>
@@ -155,6 +175,12 @@ const CalendarTab: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <AddAppointmentDialog 
+        open={addDialogOpen} 
+        onOpenChange={setAddDialogOpen} 
+        onAppointmentAdded={loadAppointments}
+      />
     </div>
   );
 };

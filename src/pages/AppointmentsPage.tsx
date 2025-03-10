@@ -9,12 +9,14 @@ import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard'
 import { AppointmentService } from '@/services/calendar/appointmentService';
 import { Appointment } from '@/services/calendar/types';
 import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
+import AddAppointmentDialog from '@/components/calendar/AddAppointmentDialog';
 
 const AppointmentsPage: React.FC = () => {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   
   // Load appointments
   const loadAppointments = async () => {
@@ -132,7 +134,7 @@ const AppointmentsPage: React.FC = () => {
                   </Button>
                 )}
                 
-                <Button>
+                <Button onClick={() => setAddDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   New Appointment
                 </Button>
@@ -213,7 +215,7 @@ const AppointmentsPage: React.FC = () => {
                 ) : (
                   <div className="text-center p-6">
                     <p className="text-muted-foreground">No upcoming appointments scheduled</p>
-                    <Button className="mt-4" onClick={() => toast({ title: "New Appointment", description: "Creating new appointment" })}>
+                    <Button className="mt-4" onClick={() => setAddDialogOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Schedule Your First Appointment
                     </Button>
@@ -231,6 +233,12 @@ const AppointmentsPage: React.FC = () => {
           </div>
         </main>
       </div>
+      
+      <AddAppointmentDialog 
+        open={addDialogOpen} 
+        onOpenChange={setAddDialogOpen} 
+        onAppointmentAdded={loadAppointments}
+      />
     </div>
   );
 };

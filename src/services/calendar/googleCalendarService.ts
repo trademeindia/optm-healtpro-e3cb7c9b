@@ -152,13 +152,78 @@ export class GoogleCalendarService {
   }
   
   static async updateEvent(appointment: Appointment): Promise<boolean> {
-    // Implementation of update event
-    return true;
+    try {
+      if (!appointment.googleEventId) {
+        return false;
+      }
+      
+      await signInToGoogleCalendar();
+      
+      const event: GoogleCalendarEvent = {
+        summary: `${appointment.type} with ${appointment.doctorName}`,
+        description: `Appointment for ${appointment.patientName}`,
+        start: {
+          dateTime: new Date(`${appointment.date} ${appointment.time}`).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        end: {
+          dateTime: new Date(`${appointment.date} ${appointment.time}`).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+      };
+      
+      await window.gapi.client.calendar.events.update({
+        calendarId: 'primary',
+        eventId: appointment.googleEventId,
+        resource: event
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating Google Calendar event:', error);
+      return false;
+    }
   }
   
   static async deleteEvent(eventId: string): Promise<boolean> {
-    // Implementation of delete event
-    return true;
+    try {
+      await signInToGoogleCalendar();
+      
+      await window.gapi.client.calendar.events.delete({
+        calendarId: 'primary',
+        eventId: eventId
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting Google Calendar event:', error);
+      return false;
+    }
+  }
+  
+  // Add the missing authenticate method
+  static async authenticate(): Promise<boolean> {
+    try {
+      await initGoogleCalendarApi();
+      return signInToGoogleCalendar();
+    } catch (error) {
+      console.error('Error authenticating with Google Calendar:', error);
+      return false;
+    }
+  }
+  
+  // Add the missing disconnect method
+  static disconnect(): boolean {
+    try {
+      const authInstance = window.gapi?.auth2?.getAuthInstance();
+      if (authInstance && authInstance.isSignedIn.get()) {
+        authInstance.signOut();
+      }
+      return true;
+    } catch (error) {
+      console.error('Error disconnecting from Google Calendar:', error);
+      return false;
+    }
   }
 }
 

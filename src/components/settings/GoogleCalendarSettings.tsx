@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Calendar, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
+import { GoogleCalendarService, signInToGoogleCalendar, signOutFromGoogleCalendar } from '@/services/calendar/googleCalendarService';
 
 const GoogleCalendarSettings: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -28,7 +28,7 @@ const GoogleCalendarSettings: React.FC = () => {
     try {
       if (isConnected) {
         // Disconnect
-        const success = GoogleCalendarService.disconnect();
+        const success = await signOutFromGoogleCalendar();
         if (success) {
           setIsConnected(false);
           toast({
