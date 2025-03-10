@@ -21,11 +21,11 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
   const [activeSystem, setActiveSystem] = useState('muscular');
   
   const handleZoomIn = () => {
-    if (zoom < 2) setZoom(prev => prev + 0.2);
+    if (zoom < 2) setZoom(prev => Math.min(prev + 0.2, 2));
   };
   
   const handleZoomOut = () => {
-    if (zoom > 0.6) setZoom(prev => prev - 0.2);
+    if (zoom > 0.6) setZoom(prev => Math.max(prev - 0.2, 0.6));
   };
   
   const handleHotspotClick = (hotspot: HotSpot) => {
@@ -44,14 +44,19 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
 
   // Convert symptoms to hotspots whenever symptoms change
   useEffect(() => {
-    console.log("Symptoms updated in AnatomicalMap:", symptoms);
-    setHotspots(symptomsToHotspots(symptoms));
+    if (symptoms) {
+      console.log("Symptoms updated in AnatomicalMap:", symptoms);
+      setHotspots(symptomsToHotspots(symptoms));
+    } else {
+      console.log("No symptoms data available");
+      setHotspots([]);
+    }
   }, [symptoms]);
 
   return (
-    <Card className={`bg-white dark:bg-gray-800 shadow-sm ${className || ''}`}>
+    <Card className={`glass-morphism bg-white dark:bg-gray-800 shadow-sm overflow-visible ${className || ''}`}>
       <CardHeader className="pb-3 flex flex-col">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <div>
             <CardTitle>Anatomical Map</CardTitle>
             <CardDescription>Interactive visualization of affected areas</CardDescription>
@@ -63,13 +68,15 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
           />
         </div>
         
-        <SystemTabs 
-          activeSystem={activeSystem}
-          onSystemChange={setActiveSystem}
-        />
+        <div className="tabs-container overflow-x-auto mt-2">
+          <SystemTabs 
+            activeSystem={activeSystem}
+            onSystemChange={setActiveSystem}
+          />
+        </div>
       </CardHeader>
       
-      <CardContent className="p-0 pb-4 px-4">
+      <CardContent className="p-0 pb-4 px-4 overflow-visible">
         <MapVisualization
           activeSystem={activeSystem}
           zoom={zoom}

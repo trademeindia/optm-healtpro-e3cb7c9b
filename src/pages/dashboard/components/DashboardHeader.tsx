@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ doctorName }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -19,7 +19,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ doctorName }) => {
         </p>
       </div>
       
-      <div className="flex items-center mt-4 md:mt-0 gap-2">
+      <div className="flex items-center mt-2 md:mt-0 gap-2 w-full md:w-auto">
         <div className="relative w-full md:w-64">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
@@ -28,16 +28,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ doctorName }) => {
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
+        <div className="flex items-center gap-2 ml-2">
+          <Button variant="outline" size="icon" className="relative h-9 w-9">
+            <Bell className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               4
             </span>
           </Button>
           
-          <Button variant="outline" size="icon" className="relative">
-            <MessageSquare className="h-5 w-5" />
+          <Button variant="outline" size="icon" className="relative h-9 w-9">
+            <MessageSquare className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               3
             </span>

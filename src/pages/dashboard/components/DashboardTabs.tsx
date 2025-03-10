@@ -62,23 +62,26 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
       onValueChange={setActiveTab}
       className="w-full"
     >
-      <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
-        <TabsTrigger value="overview" className="rounded-md">
-          Overview
-        </TabsTrigger>
-        <TabsTrigger value="patients" className="rounded-md">
-          Patients
-        </TabsTrigger>
-        <TabsTrigger value="reports" className="rounded-md">
-          Reports & Documents
-        </TabsTrigger>
-        <TabsTrigger value="analytics" className="rounded-md">
-          Analytics
-        </TabsTrigger>
-        <TabsTrigger value="calendar" className="rounded-md">
-          Calendar
-        </TabsTrigger>
-      </TabsList>
+      <div className="overflow-x-auto pb-2 -mx-4 px-4">
+        <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 w-full flex flex-nowrap min-w-max">
+          <TabsTrigger value="overview" className="rounded-md flex-1 whitespace-nowrap">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="patients" className="rounded-md flex-1 whitespace-nowrap">
+            Patients
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="rounded-md flex-1 whitespace-nowrap">
+            <span className="hidden sm:inline">Reports & Documents</span>
+            <span className="sm:hidden">Reports</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-md flex-1 whitespace-nowrap">
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="rounded-md flex-1 whitespace-nowrap">
+            Calendar
+          </TabsTrigger>
+        </TabsList>
+      </div>
       
       <TabsContent value="overview" className="mt-0">
         <OverviewTab 

@@ -27,7 +27,7 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
   return (
     <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[550px]">
       <motion.div
-        className="relative w-full h-full flex justify-center"
+        className="relative w-full h-full flex justify-center items-center"
         style={{
           scale: zoom,
           transition: 'scale 0.2s ease-out'
@@ -37,8 +37,8 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
         <img
           src={getSystemImage(activeSystem)}
           alt="Human Anatomy Model"
-          className="h-full object-contain max-w-full"
-          style={{ maxHeight: '550px' }}
+          className="model-image max-h-full max-w-full object-contain"
+          style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
           onLoad={onImageLoad}
         />
         

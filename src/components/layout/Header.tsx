@@ -46,11 +46,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           <DropdownMenuTrigger asChild>
             <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/20 flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors">
               <span className="text-xs md:text-sm font-medium text-primary">
-                {user?.name.split(' ').map(n => n[0]).join('') || 'DR'}
+                {user?.name?.split(' ').map(n => n[0]).join('') || 'DR'}
               </span>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 z-50 bg-card border border-border shadow-md">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-sm">
