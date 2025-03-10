@@ -13,3 +13,5 @@ export { useWaitForVideoElement } from './useWaitForVideoElement';
 export { useCameraSetupValidation } from './hooks/useCameraSetupValidation';
 export { useCameraPermissionAndStream } from './hooks/useCameraPermissionAndStream';
 export { useVideoSetupManager } from './hooks/useVideoSetupManager';
+export { useCameraToggleState } from './hooks/useCameraToggleState';
+export { useCameraToggleActions } from './hooks/useCameraToggleActions';

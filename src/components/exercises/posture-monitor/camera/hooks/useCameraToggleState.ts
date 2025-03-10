@@ -1,32 +1,29 @@
 
 import { useCallback } from 'react';
-import { VideoStatus } from '../../hooks/detection/types';
 
-interface UseCameraSetupValidationProps {
+interface UseCameraToggleStateProps {
   mountedRef: React.MutableRefObject<boolean>;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  videoRef: React.MutableRefObject<HTMLVideoElement | null>;
   setCameraError: (error: string | null) => void;
   stopCamera: () => void;
   setIsInitializing: (initializing: boolean) => void;
-  waitForVideoElement: (videoRef: React.RefObject<HTMLVideoElement>) => Promise<boolean>;
-  checkVideoStatus: (videoRef: React.RefObject<HTMLVideoElement>) => { 
+  waitForVideoElement: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => Promise<boolean>;
+  checkVideoStatus: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => { 
     isReady: boolean, 
     details: string,
     resolution: { width: number, height: number } | null
   };
 }
 
-export const useCameraSetupValidation = ({
+export const useCameraToggleState = ({
   mountedRef,
   videoRef,
-  canvasRef,
   setCameraError,
   stopCamera,
   setIsInitializing,
   waitForVideoElement,
   checkVideoStatus
-}: UseCameraSetupValidationProps) => {
+}: UseCameraToggleStateProps) => {
   
   // Check if video element exists and is ready
   const validateVideoElement = useCallback(async (): Promise<boolean> => {

@@ -2,35 +2,75 @@
 import { useCallback } from 'react';
 import { VideoStatus } from '../../hooks/detection/types';
 
-interface UseVideoSetupManagerProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+interface UseCameraToggleActionsProps {
+  requestCameraAccess: () => Promise<{ stream: MediaStream | null; error: string | null; permissionDenied?: boolean }>;
+  streamRef: React.MutableRefObject<MediaStream | null>;
+  videoRef: React.MutableRefObject<HTMLVideoElement | null>;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   setupTimeoutRef: React.MutableRefObject<number | null>;
   mountedRef: React.MutableRefObject<boolean>;
+  setPermission: (permission: 'granted' | 'denied' | 'prompt') => void;
   setCameraError: (error: string | null) => void;
   setVideoStatus: React.Dispatch<React.SetStateAction<VideoStatus>>;
+  setIsInitializing: (initializing: boolean) => void;
   stopCamera: () => void;
   setupVideoElement: (
-    videoRef: React.RefObject<HTMLVideoElement>,
-    canvasRef: React.RefObject<HTMLCanvasElement>,
+    videoRef: React.MutableRefObject<HTMLVideoElement | null>,
+    canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
     stream: MediaStream
   ) => Promise<boolean>;
   ensureVideoIsPlaying: (
-    videoRef: React.RefObject<HTMLVideoElement>
+    videoRef: React.MutableRefObject<HTMLVideoElement | null>
   ) => Promise<boolean>;
 }
 
-export const useVideoSetupManager = ({
+export const useCameraToggleActions = ({
+  requestCameraAccess,
+  streamRef,
   videoRef,
   canvasRef,
   setupTimeoutRef,
   mountedRef,
+  setPermission,
   setCameraError,
   setVideoStatus,
+  setIsInitializing,
   stopCamera,
   setupVideoElement,
   ensureVideoIsPlaying
-}: UseVideoSetupManagerProps) => {
+}: UseCameraToggleActionsProps) => {
+  
+  // Request camera permission and get stream
+  const getCameraStream = useCallback(async (): Promise<boolean> => {
+    // Request camera permission and turn on camera
+    const { stream, error, permissionDenied } = await requestCameraAccess() || {};
+    
+    if (error) {
+      setCameraError(error);
+      if (permissionDenied) {
+        setPermission('denied');
+      }
+      setIsInitializing(false);
+      return false;
+    }
+    
+    if (!stream) {
+      setCameraError("Failed to access camera stream");
+      setIsInitializing(false);
+      return false;
+    }
+    
+    streamRef.current = stream;
+    
+    // Update video status with stream
+    setVideoStatus(prevStatus => ({
+      ...prevStatus,
+      hasStream: true,
+      lastCheckTime: Date.now()
+    }));
+    
+    return true;
+  }, [requestCameraAccess, streamRef, setPermission, setCameraError, setVideoStatus, setIsInitializing]);
   
   // Set up video element with stream
   const setupVideo = useCallback(async (stream: MediaStream): Promise<boolean> => {
@@ -86,6 +126,7 @@ export const useVideoSetupManager = ({
   }, [videoRef, ensureVideoIsPlaying, setCameraError, stopCamera]);
   
   return {
+    getCameraStream,
     setupVideo,
     ensureVideoPlayback
   };

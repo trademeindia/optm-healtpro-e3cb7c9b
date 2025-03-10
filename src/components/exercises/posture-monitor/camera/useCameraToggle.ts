@@ -2,15 +2,14 @@
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { VideoStatus } from '../hooks/detection/types';
-import { useCameraSetupValidation } from './hooks/useCameraSetupValidation';
-import { useCameraPermissionAndStream } from './hooks/useCameraPermissionAndStream';
-import { useVideoSetupManager } from './hooks/useVideoSetupManager';
+import { useCameraToggleActions } from './hooks/useCameraToggleActions';
+import { useCameraToggleState } from './hooks/useCameraToggleState';
 
 interface UseCameraToggleProps {
   cameraActive: boolean;
   isInitializing: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  videoRef: React.MutableRefObject<HTMLVideoElement | null>;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   streamRef: React.MutableRefObject<MediaStream | null>;
   mountedRef: React.MutableRefObject<boolean>;
   setupTimeoutRef: React.MutableRefObject<number | null>;
@@ -22,10 +21,10 @@ interface UseCameraToggleProps {
   stopCamera: () => void;
   onCameraStart?: () => void;
   requestCameraAccess: () => Promise<{ stream: MediaStream | null; error: string | null; permissionDenied?: boolean }>;
-  setupVideoElement: (videoRef: React.RefObject<HTMLVideoElement>, canvasRef: React.RefObject<HTMLCanvasElement>, stream: MediaStream) => Promise<boolean>;
-  ensureVideoIsPlaying: (videoRef: React.RefObject<HTMLVideoElement>) => Promise<boolean>;
-  checkVideoStatus: (videoRef: React.RefObject<HTMLVideoElement>) => { isReady: boolean, details: string, resolution: { width: number, height: number } | null };
-  waitForVideoElement: (videoRef: React.RefObject<HTMLVideoElement>) => Promise<boolean>;
+  setupVideoElement: (videoRef: React.MutableRefObject<HTMLVideoElement | null>, canvasRef: React.MutableRefObject<HTMLCanvasElement | null>, stream: MediaStream) => Promise<boolean>;
+  ensureVideoIsPlaying: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => Promise<boolean>;
+  checkVideoStatus: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => { isReady: boolean, details: string, resolution: { width: number, height: number } | null };
+  waitForVideoElement: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => Promise<boolean>;
 }
 
 export const useCameraToggle = ({
@@ -50,12 +49,11 @@ export const useCameraToggle = ({
   waitForVideoElement
 }: UseCameraToggleProps) => {
   
-  // Use our extracted hooks
+  // Use extracted hooks for better organization
   const { validateVideoElement, validateComponentMounted, performFinalStatusCheck } = 
-    useCameraSetupValidation({
+    useCameraToggleState({
       mountedRef,
       videoRef,
-      canvasRef,
       setCameraError,
       stopCamera,
       setIsInitializing,
@@ -63,27 +61,22 @@ export const useCameraToggle = ({
       checkVideoStatus
     });
     
-  const { getCameraStream } = useCameraPermissionAndStream({
-    requestCameraAccess,
-    streamRef,
-    setPermission,
-    setCameraError,
-    setVideoStatus,
-    setIsInitializing,
-    stopCamera
-  });
-  
-  const { setupVideo, ensureVideoPlayback } = useVideoSetupManager({
-    videoRef,
-    canvasRef,
-    setupTimeoutRef,
-    mountedRef,
-    setCameraError,
-    setVideoStatus,
-    stopCamera,
-    setupVideoElement,
-    ensureVideoIsPlaying
-  });
+  const { getCameraStream, setupVideo, ensureVideoPlayback } = 
+    useCameraToggleActions({
+      requestCameraAccess,
+      streamRef,
+      videoRef,
+      canvasRef,
+      setupTimeoutRef,
+      mountedRef,
+      setPermission,
+      setCameraError,
+      setVideoStatus,
+      setIsInitializing,
+      stopCamera,
+      setupVideoElement,
+      ensureVideoIsPlaying
+    });
   
   // Main function to toggle camera
   const toggleCamera = useCallback(async () => {
