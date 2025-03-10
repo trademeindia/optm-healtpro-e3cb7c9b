@@ -43,20 +43,28 @@
   
   /* Biomarker sections specific styles */
   .biomarker-detail-section {
-    @apply p-3;
+    @apply p-4 rounded-lg;
   }
   
   .biomarker-detail-section h4 {
-    @apply text-sm mb-1.5;
+    @apply text-sm mb-2 font-medium;
   }
   
   .biomarker-detail-section ul {
-    @apply pl-4;
+    @apply pl-5 space-y-1.5;
   }
   
   .biomarker-detail-section p, 
   .biomarker-detail-section li {
-    @apply text-xs;
+    @apply text-sm break-words;
+  }
+  
+  .biomarker-dialog-content {
+    @apply p-4 max-h-[85vh] overflow-y-auto;
+  }
+  
+  .biomarker-dialog-section {
+    @apply space-y-4 py-4;
   }
 }
 
@@ -111,29 +119,29 @@
   
   /* Biomarker sections specific styles */
   .biomarker-detail-section {
-    @apply p-2.5;
+    @apply p-3 rounded-lg;
   }
   
   .biomarker-detail-section h4 {
-    @apply text-xs mb-1;
+    @apply text-xs mb-1.5 font-medium;
   }
   
   .biomarker-detail-section ul {
-    @apply pl-3;
+    @apply pl-4 space-y-1;
   }
   
   .biomarker-detail-section p, 
   .biomarker-detail-section li {
-    @apply text-xs leading-tight;
+    @apply text-xs leading-relaxed break-words;
   }
   
   /* Dialog specific adjustments */
   .biomarker-dialog-content {
-    @apply p-3 space-y-3;
+    @apply p-3 max-h-[80vh];
   }
   
   .biomarker-dialog-section {
-    @apply space-y-3;
+    @apply space-y-3 py-3;
   }
 }
 

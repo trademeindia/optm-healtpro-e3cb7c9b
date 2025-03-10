@@ -19,14 +19,14 @@ const MusclesAffected: React.FC<MusclesAffectedProps> = ({ biomarker }) => {
   }
   
   return (
-    <div className="bg-muted/50 p-4 rounded-lg">
-      <h4 className="font-medium mb-2 flex items-center">
-        <Dumbbell className="w-4 h-4 mr-2" />
+    <div className="bg-muted/50 p-4 md:p-6 rounded-lg biomarker-detail-section">
+      <h4 className="font-medium mb-2 flex items-center gap-2">
+        <Dumbbell className="w-4 h-4 mr-1 md:mr-2" />
         Potentially Affected Skeletal Muscles
       </h4>
-      <ul className="list-disc pl-5 space-y-1">
+      <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-1.5">
         {affectedMuscles.map((muscle, index) => (
-          <li key={index} className="text-sm text-muted-foreground">{muscle}</li>
+          <li key={index} className="text-xs md:text-sm text-muted-foreground">{muscle}</li>
         ))}
       </ul>
       <p className="text-xs mt-2 text-muted-foreground">
