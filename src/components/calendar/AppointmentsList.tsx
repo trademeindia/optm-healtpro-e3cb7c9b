@@ -52,7 +52,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     );
   }
 
-  if (appointments.length === 0) {
+  if (!appointments || appointments.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground">
         No upcoming appointments scheduled

@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, RefreshCw, Calendar as CalendarIcon, User, MapPin } from 'lucide-react';
+import { Calendar, Clock, Plus, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/useCalendarIntegration';
@@ -25,6 +24,19 @@ const CalendarTab: React.FC = () => {
     setSelectedDate,
     upcomingAppointments
   } = useCalendarIntegration();
+
+  // Ensure appointments data is valid
+  const validAppointments = upcomingAppointments || [];
+
+  // Handle calendar connection
+  const handleConnectCalendar = async () => {
+    try {
+      await authorizeCalendar();
+    } catch (error) {
+      console.error("Calendar connection error:", error);
+      toast.error("Failed to connect calendar. Please try again.");
+    }
+  };
 
   const handleCreateAppointment = () => {
     if (!isAuthorized) {
@@ -84,7 +96,7 @@ const CalendarTab: React.FC = () => {
             {isAuthorized ? (
               <CalendarView 
                 view={selectedView} 
-                events={calendarData} 
+                events={calendarData || []} 
                 isLoading={isLoading} 
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
@@ -97,8 +109,8 @@ const CalendarTab: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Connect your Google Calendar to manage appointments
                   </p>
-                  <Button onClick={authorizeCalendar}>
-                    Connect Calendar
+                  <Button onClick={handleConnectCalendar} disabled={isLoading}>
+                    {isLoading ? 'Connecting...' : 'Connect Calendar'}
                   </Button>
                 </div>
               </div>
@@ -116,7 +128,7 @@ const CalendarTab: React.FC = () => {
             </CardHeader>
             <CardContent>
               <AppointmentsList 
-                appointments={upcomingAppointments}
+                appointments={validAppointments}
                 isLoading={isLoading} 
                 isAuthorized={isAuthorized}
               />

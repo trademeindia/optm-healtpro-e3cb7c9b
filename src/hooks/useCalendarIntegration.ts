@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,11 +34,16 @@ export const useCalendarIntegration = () => {
   const [calendarData, setCalendarData] = useState<CalendarEvent[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [error, setError] = useState<string | null>(null);
 
   // Mock Google OAuth flow - in a real app, this would connect to Google OAuth
   const authorizeCalendar = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
+      console.log("Starting calendar authorization process");
+      
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
@@ -51,10 +55,15 @@ export const useCalendarIntegration = () => {
         duration: 3000
       });
       
+      console.log("Calendar authorization successful");
+      
       // Immediately fetch events after authorization
       await fetchEvents();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Authorization error:", error);
+      setError(error.message || "Failed to connect to calendar");
+      setIsAuthorized(false);
+      
       toast.error("Connection Failed", {
         description: "Could not connect to Google Calendar. Please try again.",
         duration: 3000
@@ -69,7 +78,11 @@ export const useCalendarIntegration = () => {
     if (!isAuthorized) return;
     
     setIsLoading(true);
+    setError(null);
+    
     try {
+      console.log("Fetching calendar events");
+      
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -94,8 +107,11 @@ export const useCalendarIntegration = () => {
         }));
       
       setUpcomingAppointments(upcoming);
-    } catch (error) {
+      console.log("Successfully fetched calendar events", mockEvents.length);
+    } catch (error: any) {
       console.error("Error fetching events:", error);
+      setError(error.message || "Failed to fetch calendar data");
+      
       toast.error("Failed to fetch calendar data", {
         description: "Could not retrieve your calendar events. Please try again.",
         duration: 3000
@@ -140,14 +156,6 @@ export const useCalendarIntegration = () => {
     }
   }, [selectedDate, isAuthorized, fetchEvents]);
 
-  // For demo purposes, let's auto-authorize on first load for a better demo experience
-  useEffect(() => {
-    // Uncomment this for auto-authorization in demo mode
-    // if (!isAuthorized && !isLoading) {
-    //   authorizeCalendar();
-    // }
-  }, []);
-
   return {
     isLoading,
     isAuthorized,
@@ -157,7 +165,8 @@ export const useCalendarIntegration = () => {
     fetchEvents,
     refreshCalendar,
     selectedDate,
-    setSelectedDate
+    setSelectedDate,
+    error
   };
 };
 
@@ -188,11 +197,9 @@ function generateMockEvents(baseDate: Date): CalendarEvent[] {
     const currentDate = new Date(startOfWeek);
     currentDate.setDate(startOfWeek.getDate() + day);
     
-    // Skip slots on weekends for available appointments
     const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
     
     if (!isWeekend) {
-      // Generate slots from 9 AM to 5 PM
       for (let hour = 9; hour < 17; hour++) {
         for (let minute = 0; minute < 60; minute += 30) {
           const start = new Date(currentDate);
@@ -201,7 +208,6 @@ function generateMockEvents(baseDate: Date): CalendarEvent[] {
           const end = new Date(start);
           end.setMinutes(end.getMinutes() + 30);
           
-          // Calculate if this slot should be booked (30% chance)
           const isBooked = Math.random() < 0.3;
           
           if (isBooked) {
@@ -234,19 +240,18 @@ function generateMockEvents(baseDate: Date): CalendarEvent[] {
       }
     }
     
-    // Add some personal events and blocked times (even on weekends)
     if (Math.random() < 0.4) {
-      const startHour = Math.floor(Math.random() * 10) + 8; // Between 8 AM and 6 PM
+      const startHour = Math.floor(Math.random() * 10) + 8;
       const start = new Date(currentDate);
       start.setHours(startHour, 0, 0, 0);
       
-      const durationHours = Math.floor(Math.random() * 3) + 1; // 1-3 hours
+      const durationHours = Math.floor(Math.random() * 3) + 1;
       const end = new Date(start);
       end.setHours(end.getHours() + durationHours);
       
       events.push({
         id: `blocked-${day}-${startHour}`,
-        title: 'Blocked', // Not showing real title for privacy
+        title: 'Blocked',
         start,
         end,
         isAvailable: false

@@ -13,7 +13,7 @@ const PossibleCauses: React.FC<PossibleCausesProps> = ({ biomarker }) => {
   }
   
   return (
-    <div className="bg-muted/50 p-4 md:p-6 rounded-lg space-y-3 biomarker-detail-section">
+    <div className="bg-muted/50 p-4 md:p-6 rounded-lg space-y-3 biomarker-detail-section w-full">
       <h4 className="font-semibold text-base flex items-center gap-2">
         <Activity className="w-5 h-5" />
         Possible Causes
