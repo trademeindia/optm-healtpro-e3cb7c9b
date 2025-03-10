@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Appointment } from '@/services/calendar/googleCalendarService';
+import { Appointment } from '@/services/calendar/types';
 
 interface DashboardTabsProps {
   initialTab: string;

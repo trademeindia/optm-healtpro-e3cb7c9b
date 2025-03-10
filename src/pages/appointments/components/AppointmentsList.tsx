@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Appointment } from '@/services/calendar/googleCalendarService';
+import { Appointment } from '@/services/calendar/types';
 import { useToast } from '@/hooks/use-toast';
 import RescheduleModal from './RescheduleModal';
 
