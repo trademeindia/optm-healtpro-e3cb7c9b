@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { VideoStatus } from '../hooks/detection/types';
@@ -17,8 +16,8 @@ interface UseCameraProps {
 interface UseCameraResult {
   cameraActive: boolean;
   permission: 'granted' | 'denied' | 'prompt';
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  videoRef: React.MutableRefObject<HTMLVideoElement | null>;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   streamRef: React.MutableRefObject<MediaStream | null>;
   toggleCamera: () => Promise<void>;
   stopCamera: () => void;
@@ -41,8 +40,8 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     errorCount: 0
   });
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mountedRef = useRef<boolean>(true);
   const setupTimeoutRef = useRef<number | null>(null);

@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { VideoStatus } from '../hooks/detection/types';
 
 interface UseCameraCleanupProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.MutableRefObject<HTMLVideoElement | null>;
   streamRef: React.MutableRefObject<MediaStream | null>;
   setCameraActive: (active: boolean) => void;
   setCameraError: (error: string | null) => void;
@@ -19,16 +19,26 @@ export const useCameraCleanup = ({
   setVideoStatus,
   setupTimeoutRef
 }: UseCameraCleanupProps) => {
-  // Clean up function to stop the camera stream
-  const stopCamera = useCallback(() => {
-    console.log("Stopping camera...");
+  
+  const cleanupVideoStream = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+  }, [videoRef, streamRef]);
+  
+  const cleanupTimeouts = useCallback(() => {
+    if (setupTimeoutRef.current) {
+      window.clearTimeout(setupTimeoutRef.current);
+      setupTimeoutRef.current = null;
+    }
+  }, [setupTimeoutRef]);
+  
+  const resetCameraState = useCallback(() => {
     setCameraActive(false);
     setCameraError(null);
     setVideoStatus(prevStatus => ({
@@ -37,13 +47,15 @@ export const useCameraCleanup = ({
       hasStream: false,
       lastCheckTime: Date.now()
     }));
-    
-    // Clear any timeouts
-    if (setupTimeoutRef.current) {
-      window.clearTimeout(setupTimeoutRef.current);
-      setupTimeoutRef.current = null;
-    }
-  }, [videoRef, streamRef, setCameraActive, setCameraError, setVideoStatus, setupTimeoutRef]);
+  }, [setCameraActive, setCameraError, setVideoStatus]);
+  
+  const stopCamera = useCallback(() => {
+    console.log("Stopping camera...");
+    cleanupVideoStream();
+    cleanupTimeouts();
+    resetCameraState();
+  }, [cleanupVideoStream, cleanupTimeouts, resetCameraState]);
   
   return { stopCamera };
 };
+
