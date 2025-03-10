@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth'; // Fix import path
+import { useAuth } from '@/contexts/auth';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +13,9 @@ const Index: React.FC = () => {
     if (!isLoading) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
-        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+        const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+        console.log(`Navigating to ${dashboard}`);
+        navigate(dashboard);
       } else {
         console.log('Index page: User not authenticated, redirecting to login');
         navigate('/login');

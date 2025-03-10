@@ -6,6 +6,7 @@ import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading: sessionLoading, setUser } = useAuthSession();
@@ -67,10 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           picture: null
         };
         
+        // Set the user in state and localStorage
         setUser(demoUser);
-        localStorage.setItem('demoUser', JSON.stringify(demoUser));
         
         toast.success('Demo login successful');
+        
         return demoUser;
       }
       

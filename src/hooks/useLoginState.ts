@@ -1,8 +1,10 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/auth'; // Fix the import path
+import { useAuth } from '@/contexts/auth';
+import { useNavigate } from 'react-router-dom';
 
 export const useLoginState = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,7 +20,7 @@ export const useLoginState = () => {
   });
   const [showDebug, setShowDebug] = useState(false);
 
-  const { login, loginWithSocialProvider, signup, forgotPassword } = useAuth();
+  const { login, loginWithSocialProvider, signup, forgotPassword, isAuthenticated, user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,13 +31,32 @@ export const useLoginState = () => {
     
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      const result = await login(email, password);
+      
+      if (result) {
+        console.log('Login successful, redirecting to dashboard');
+        // Manually navigate to dashboard based on user role
+        setTimeout(() => {
+          const dashboard = result.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+          console.log(`Navigating to ${dashboard}`);
+          navigate(dashboard);
+        }, 500);
+      }
     } catch (error) {
       console.error('Login failed:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Use an effect to redirect after successful login
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to dashboard');
+      const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+      navigate(dashboard);
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

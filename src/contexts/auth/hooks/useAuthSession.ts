@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
@@ -18,9 +19,23 @@ export const useAuthSession = () => {
           try {
             const demoUser = JSON.parse(demoUserData);
             console.log('Found demo user in localStorage:', demoUser.email);
-            setUser(demoUser);
-            setIsLoading(false);
-            return;
+            
+            // Ensure demo user has all required properties
+            if (demoUser && demoUser.email && demoUser.role) {
+              // Ensure the user object has all required properties
+              const completeUser: User = {
+                id: demoUser.id || `demo-${Date.now()}`,
+                email: demoUser.email,
+                name: demoUser.name || (demoUser.email === 'doctor@example.com' ? 'Dr. Demo Account' : 'Patient Demo'),
+                role: demoUser.role,
+                provider: demoUser.provider || 'email',
+                picture: demoUser.picture || null
+              };
+              
+              setUser(completeUser);
+              setIsLoading(false);
+              return;
+            }
           } catch (e) {
             console.error('Error parsing demo user data:', e);
             localStorage.removeItem('demoUser');

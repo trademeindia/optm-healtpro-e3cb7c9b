@@ -29,17 +29,17 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           name: isDemoDoctor ? 'Demo Doctor' : 'Demo Patient',
           role: isDemoDoctor ? 'doctor' : 'patient',
           provider: 'email',
-          picture: ''
+          picture: null
         };
         
-        toast.success('Demo login successful', {
-          duration: 3000
-        });
+        toast.success('Demo login successful');
         
-        // Navigate to the appropriate dashboard
+        // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
         setTimeout(() => {
-          navigate(isDemoDoctor ? '/dashboard' : '/patient-dashboard');
-        }, 500);
+          const dashboard = isDemoDoctor ? '/dashboard' : '/patient-dashboard';
+          console.log(`Navigating to ${dashboard}`);
+          navigate(dashboard);
+        }, 100);
         
         return demoUser;
       }
@@ -64,16 +64,12 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         throw new Error('User profile not found');
       }
       
-      toast.success('Login successful', {
-        duration: 3000
-      });
+      toast.success('Login successful');
       
       return formattedUser;
     } catch (error: any) {
       console.error('Login failed:', error);
-      toast.error(error.message || 'Login failed', {
-        duration: 5000
-      });
+      toast.error(error.message || 'Login failed');
       throw error;
     } finally {
       setIsLoading(false);
