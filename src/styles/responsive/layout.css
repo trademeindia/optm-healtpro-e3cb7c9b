@@ -24,7 +24,8 @@ html, body {
 
 /* Fix content overflow */
 .overflow-container {
-  @apply overflow-y-auto -webkit-overflow-scrolling-touch h-full w-full;
+  @apply overflow-y-auto h-full w-full;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Ensure proper z-index for popups/modals */
