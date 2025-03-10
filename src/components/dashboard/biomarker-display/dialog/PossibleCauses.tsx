@@ -18,9 +18,11 @@ const PossibleCauses: React.FC<PossibleCausesProps> = ({ biomarker }) => {
         <Activity className="w-5 h-5" />
         Possible Causes
       </h4>
-      <ul className="list-disc pl-5 md:pl-6 space-y-1.5 md:space-y-2">
+      <ul className="list-disc pl-5 md:pl-6 space-y-1.5 md:space-y-2 max-w-full">
         {biomarker.possibleCauses.map((cause, index) => (
-          <li key={index} className="text-muted-foreground text-sm break-words">{cause}</li>
+          <li key={index} className="text-muted-foreground text-sm break-words">
+            {cause}
+          </li>
         ))}
       </ul>
     </div>
