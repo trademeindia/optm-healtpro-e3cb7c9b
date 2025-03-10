@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { CircleNotch } from 'lucide-react';
+import { Loader } from 'lucide-react';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Index: React.FC = () => {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="flex flex-col items-center gap-4">
-        <CircleNotch className="h-8 w-8 animate-spin text-primary" />
+        <Loader className="h-8 w-8 animate-spin text-primary" />
         <p className="text-muted-foreground">Redirecting...</p>
       </div>
     </div>

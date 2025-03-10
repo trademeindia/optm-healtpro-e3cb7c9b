@@ -33,6 +33,20 @@ export class GoogleCalendarService {
   }
   
   /**
+   * Disconnect from Google Calendar
+   * In a real app, this would revoke access tokens
+   */
+  static disconnect(): boolean {
+    try {
+      localStorage.setItem(this.LOCAL_STORAGE_KEY, 'false');
+      return true;
+    } catch (error) {
+      console.error('Error disconnecting from Google Calendar:', error);
+      return false;
+    }
+  }
+  
+  /**
    * Sync an appointment with Google Calendar
    * In a real app, this would create a Google Calendar event
    */
