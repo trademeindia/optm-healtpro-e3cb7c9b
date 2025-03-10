@@ -10,7 +10,7 @@ import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
 import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
 import { useCalendarEventManager } from '@/hooks/calendar/useCalendarEventManager';
 import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
-import { Appointment } from '@/types/appointment';
+import { Appointment, AppointmentStatus } from '@/types/appointment';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month';
