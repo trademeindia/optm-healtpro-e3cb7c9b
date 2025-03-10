@@ -4,6 +4,7 @@ import { Search, Filter, ArrowUpDown, MoreHorizontal, User, Calendar, FileText, 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import NewPatientDialog from '@/pages/patients/components/NewPatientDialog';
 
 interface Patient {
   id: number;
@@ -27,6 +28,7 @@ interface PatientRecordsProps {
 
 const PatientRecords: React.FC<PatientRecordsProps> = ({ patients, onViewPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
   const { toast } = useToast();
   
   const filteredPatients = patients.filter(patient => 
@@ -36,9 +38,15 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients, onViewPatient
   );
 
   const handleAddPatient = () => {
+    setIsNewPatientDialogOpen(true);
+  };
+
+  const handleSavePatient = (patientData: any) => {
+    // In a real app, this would add the patient to the database
+    // For now, we'll just show a toast notification
     toast({
-      title: "Add Patient",
-      description: "Opening new patient form",
+      title: "Patient Added",
+      description: `${patientData.name} has been added to your patient records.`,
     });
   };
 
@@ -252,6 +260,12 @@ const PatientRecords: React.FC<PatientRecordsProps> = ({ patients, onViewPatient
           </div>
         </div>
       </div>
+      
+      <NewPatientDialog 
+        isOpen={isNewPatientDialogOpen}
+        onOpenChange={setIsNewPatientDialogOpen}
+        onSavePatient={handleSavePatient}
+      />
     </div>
   );
 };

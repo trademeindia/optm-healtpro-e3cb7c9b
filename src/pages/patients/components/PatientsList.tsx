@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, ArrowUpDown, MoreHorizontal, User, Calendar, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,9 +5,15 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { PatientsListProps } from '../types';
 import { PatientStatistics } from './PatientStatistics';
+import NewPatientDialog from './NewPatientDialog';
 
-export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPatient }) => {
+export const PatientsList: React.FC<PatientsListProps> = ({ 
+  patients, 
+  onViewPatient,
+  onAddPatient 
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
   const { toast } = useToast();
   
   const filteredPatients = patients.filter(patient => 
@@ -18,9 +23,17 @@ export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPati
   );
 
   const handleAddPatient = () => {
+    setIsNewPatientDialogOpen(true);
+  };
+
+  const handleSavePatient = (patientData: any) => {
+    if (onAddPatient) {
+      onAddPatient(patientData);
+    }
+    
     toast({
-      title: "Add Patient",
-      description: "Opening new patient form",
+      title: "Patient Added",
+      description: `${patientData.name} has been added to your patient records.`,
     });
   };
 
@@ -202,6 +215,12 @@ export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPati
       </div>
       
       <PatientStatistics patients={patients} />
+      
+      <NewPatientDialog 
+        isOpen={isNewPatientDialogOpen}
+        onOpenChange={setIsNewPatientDialogOpen}
+        onSavePatient={handleSavePatient}
+      />
     </div>
   );
 };
