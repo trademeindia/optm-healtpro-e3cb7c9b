@@ -24,7 +24,7 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
   const { user } = useAuth();
   const isDoctor = user?.role === 'doctor';
   
-  // Convert string dates to Date objects
+  // Ensure we have Date objects to work with
   const startDate = typeof event.start === 'string' ? new Date(event.start) : event.start;
   const endDate = typeof event.end === 'string' ? new Date(event.end) : event.end;
 
