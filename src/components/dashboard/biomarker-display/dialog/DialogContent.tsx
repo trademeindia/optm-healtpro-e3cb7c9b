@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Biomarker } from '../types';
+import { Biomarker } from '../utils/types';
 import BiomarkerBasicInfo from './BiomarkerBasicInfo';
 import BiomarkerExplanation from './BiomarkerExplanation';
 import MusclesAffected from './MusclesAffected';
@@ -11,7 +11,7 @@ interface DialogContentProps {
   biomarker: Biomarker;
 }
 
-const DialogContent: React.FC<DialogContentProps> = ({ biomarker }) => {
+const DialogContentSection: React.FC<DialogContentProps> = ({ biomarker }) => {
   return (
     <div className="space-y-4 md:space-y-6 py-4 md:py-6 biomarker-dialog-section">
       <BiomarkerBasicInfo biomarker={biomarker} />
@@ -23,4 +23,4 @@ const DialogContent: React.FC<DialogContentProps> = ({ biomarker }) => {
   );
 };
 
-export default DialogContent;
+export default DialogContentSection;
