@@ -1,31 +1,22 @@
 
 import React from 'react';
 import { Patient } from '../../types';
-import { PatientTableHeader } from './PatientTableHeader';
-import { PatientTableRow } from './PatientTableRow';
 
 interface PatientsTableProps {
   patients: Patient[];
   onViewPatient: (patientId: number) => void;
+  children: React.ReactNode;
 }
 
 export const PatientsTable: React.FC<PatientsTableProps> = ({
   patients,
   onViewPatient,
+  children
 }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
-        <PatientTableHeader />
-        <tbody>
-          {patients.map((patient) => (
-            <PatientTableRow 
-              key={patient.id}
-              patient={patient} 
-              onViewPatient={onViewPatient}
-            />
-          ))}
-        </tbody>
+        {children}
       </table>
       
       {patients.length === 0 && (

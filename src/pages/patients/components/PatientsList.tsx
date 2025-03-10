@@ -98,20 +98,19 @@ export const PatientsList: React.FC<PatientsListProps> = ({
       <PatientStatistics patients={patients} />
       
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <PatientListHeader />
+        <PatientListHeader 
+          title="Patient List"
+          description="View and manage your patients"
+        />
         
         <div className="p-5">
           <PatientSearch 
             searchTerm={searchTerm} 
-            setSearchTerm={setSearchTerm} 
+            onSearchChange={setSearchTerm} 
           />
           
-          <PatientsTable>
-            <PatientTableHeader 
-              sortBy={sortBy}
-              sortDirection={sortDirection}
-              onSort={handleSort}
-            />
+          <PatientsTable patients={sortedPatients} onViewPatient={onViewPatient}>
+            <PatientTableHeader />
             
             <tbody>
               {sortedPatients.length > 0 ? (

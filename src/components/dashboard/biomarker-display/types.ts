@@ -13,3 +13,14 @@ export interface Biomarker {
   possibleCauses?: string[];
   recommendations?: string[];
 }
+
+export interface BiomarkerCardProps {
+  biomarker: Biomarker;
+  onSelectBiomarker: (biomarker: Biomarker) => void;
+}
+
+export interface BiomarkerDetailDialogProps {
+  biomarker: Biomarker | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
