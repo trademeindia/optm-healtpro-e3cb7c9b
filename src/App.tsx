@@ -30,8 +30,8 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
+        <Router>
+          <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -50,9 +50,9 @@ function App() {
               <Route path="/ai-analysis" element={<AIAnalysisPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </Router>
-          <Toaster position="bottom-right" richColors closeButton />
-        </AuthProvider>
+            <Toaster position="bottom-right" richColors closeButton />
+          </AuthProvider>
+        </Router>
       </QueryClientProvider>
     </ThemeProvider>
   );
