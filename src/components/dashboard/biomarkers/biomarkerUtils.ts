@@ -6,5 +6,6 @@ export const convertBiomarkerToComponentFormat = (biomarker: DataBiomarker): Com
   return {
     ...biomarker,
     lastUpdated: biomarker.timestamp,
+    percentage: biomarker.percentage || 0, // Ensure percentage is always provided with a default
   };
 };
