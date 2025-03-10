@@ -10,7 +10,7 @@ export type User = {
   name: string;
   role: UserRole;
   provider?: AuthProviderType;
-  picture?: string;
+  picture?: string | null;
 };
 
 export type AuthContextType = {
@@ -21,6 +21,6 @@ export type AuthContextType = {
   loginWithSocialProvider: (provider: Provider) => Promise<void>;
   handleOAuthCallback: (provider: string, code: string) => Promise<void>;
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
-  logout: () => void;
+  logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 };
