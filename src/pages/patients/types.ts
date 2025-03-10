@@ -12,6 +12,7 @@ export interface Patient {
   lastVisit: string;
   nextVisit: string;
   medicalRecords?: any[];
+  biomarkers?: any[];
 }
 
 export interface PatientsListProps {
@@ -24,4 +25,35 @@ export interface PatientDetailsProps {
   patient: Patient;
   onClose: () => void;
   onUpdate: (patient: Patient) => void;
+}
+
+export interface PatientsLayoutProps {
+  children: React.ReactNode;
+}
+
+export interface PatientSearchBarProps {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  onAddPatient: () => void;
+}
+
+export interface PatientTableProps {
+  patients: Patient[];
+  filteredCount: number;
+  totalCount: number;
+  onViewPatient: (patientId: number) => void;
+  onScheduleAppointment: (patientId: number) => void;
+  onViewOptions: (patientId: number) => void;
+}
+
+export interface PatientTableRowProps {
+  patient: Patient;
+  onViewPatient: (patientId: number) => void;
+  onScheduleAppointment: (patientId: number) => void;
+  onViewOptions: (patientId: number) => void;
+}
+
+export interface PatientTablePaginationProps {
+  filteredCount: number;
+  totalCount: number;
 }
