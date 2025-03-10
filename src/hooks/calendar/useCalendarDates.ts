@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths } from 'date-fns';
 
-export interface CalendarDatesResult {
+interface CalendarDatesResult {
   visibleDates: Date[];
   visibleHours: number[];
   navigateToPrevious: () => void;
@@ -12,107 +13,82 @@ export interface CalendarDatesResult {
 
 export const useCalendarDates = (
   view: 'day' | 'week' | 'month',
-  initialDate: Date,
+  selectedDate: Date,
   onDateSelect: (date: Date) => void
 ): CalendarDatesResult => {
   const [visibleDates, setVisibleDates] = useState<Date[]>([]);
-  const [visibleHours, setVisibleHours] = useState<number[]>([]);
-  const [selectedDate, setSelectedDateInternal] = useState<Date>(initialDate);
-
-  // Update internal date when prop changes
+  
+  // Generate hours from 0 to 23 for day and week views
+  const visibleHours = Array.from({ length: 24 }, (_, i) => i);
+  
+  // Check if a date is today
+  const isToday = useCallback((date: Date) => {
+    return isSameDay(date, new Date());
+  }, []);
+  
+  // Navigate to previous period
+  const navigateToPrevious = useCallback(() => {
+    switch (view) {
+      case 'day':
+        onDateSelect(subDays(selectedDate, 1));
+        break;
+      case 'week':
+        onDateSelect(subWeeks(selectedDate, 1));
+        break;
+      case 'month':
+        onDateSelect(subMonths(selectedDate, 1));
+        break;
+    }
+  }, [view, selectedDate, onDateSelect]);
+  
+  // Navigate to next period
+  const navigateToNext = useCallback(() => {
+    switch (view) {
+      case 'day':
+        onDateSelect(addDays(selectedDate, 1));
+        break;
+      case 'week':
+        onDateSelect(addWeeks(selectedDate, 1));
+        break;
+      case 'month':
+        onDateSelect(addMonths(selectedDate, 1));
+        break;
+    }
+  }, [view, selectedDate, onDateSelect]);
+  
+  // Navigate to today
+  const navigateToToday = useCallback(() => {
+    onDateSelect(new Date());
+  }, [onDateSelect]);
+  
+  // Update visible dates when view or selected date changes
   useEffect(() => {
-    setSelectedDateInternal(initialDate);
-  }, [initialDate]);
-
-  // Calculate visible dates based on view and selected date
-  useEffect(() => {
-    const dates: Date[] = [];
-    const today = new Date(selectedDate);
+    let dates: Date[] = [];
     
-    if (view === 'day') {
-      dates.push(today);
-    } 
-    else if (view === 'week') {
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        dates.push(date);
-      }
-    } 
-    else if (view === 'month') {
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      
-      const startDay = startOfMonth.getDay();
-      for (let i = 0; i < startDay; i++) {
-        const date = new Date(startOfMonth);
-        date.setDate(date.getDate() - (startDay - i));
-        dates.push(date);
-      }
-      
-      for (let i = 1; i <= endOfMonth.getDate(); i++) {
-        dates.push(new Date(today.getFullYear(), today.getMonth(), i));
-      }
-      
-      const remainingDays = 42 - dates.length;
-      for (let i = 1; i <= remainingDays; i++) {
-        const date = new Date(endOfMonth);
-        date.setDate(date.getDate() + i);
-        dates.push(date);
-      }
+    switch (view) {
+      case 'day':
+        dates = [selectedDate];
+        break;
+      case 'week':
+        const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
+        const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
+        dates = eachDayOfInterval({ start: weekStart, end: weekEnd });
+        break;
+      case 'month':
+        const monthStart = startOfMonth(selectedDate);
+        const monthEnd = endOfMonth(selectedDate);
+        
+        // Include days from previous and next months to fill the calendar grid
+        const firstDay = startOfWeek(monthStart, { weekStartsOn: 0 });
+        const lastDay = endOfWeek(monthEnd, { weekStartsOn: 0 });
+        
+        dates = eachDayOfInterval({ start: firstDay, end: lastDay });
+        break;
     }
     
     setVisibleDates(dates);
-  }, [selectedDate, view]);
-
-  // Set visible hours (8 AM to 6 PM by default)
-  useEffect(() => {
-    const hours = [];
-    for (let hour = 8; hour <= 18; hour++) {
-      hours.push(hour);
-    }
-    setVisibleHours(hours);
-  }, []);
-
-  const navigateToPrevious = () => {
-    const newDate = new Date(selectedDate);
-    if (view === 'day') {
-      newDate.setDate(newDate.getDate() - 1);
-    } else if (view === 'week') {
-      newDate.setDate(newDate.getDate() - 7);
-    } else if (view === 'month') {
-      newDate.setMonth(newDate.getMonth() - 1);
-    }
-    onDateSelect(newDate);
-  };
-
-  const navigateToNext = () => {
-    const newDate = new Date(selectedDate);
-    if (view === 'day') {
-      newDate.setDate(newDate.getDate() + 1);
-    } else if (view === 'week') {
-      newDate.setDate(newDate.getDate() + 7);
-    } else if (view === 'month') {
-      newDate.setMonth(newDate.getMonth() + 1);
-    }
-    onDateSelect(newDate);
-  };
-
-  const navigateToToday = () => {
-    onDateSelect(new Date());
-  };
-
-  // Determine if a date is today
-  const isToday = (date: Date): boolean => {
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
-  };
-
+  }, [view, selectedDate]);
+  
   return {
     visibleDates,
     visibleHours,

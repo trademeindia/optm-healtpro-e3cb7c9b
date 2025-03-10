@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface CalendarNavigationProps {
   selectedDate: Date;
@@ -19,32 +19,34 @@ const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
   onNext,
   onToday
 }) => {
-  const getHeaderText = () => {
-    if (view === 'day') {
-      return formatDate(selectedDate, "MMMM d, yyyy");
-    } else if (view === 'week') {
-      const weekStart = new Date(selectedDate);
-      weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      return `${formatDate(weekStart, "MMM d")} - ${formatDate(weekEnd, "MMM d, yyyy")}`;
+  // Format the title based on the view
+  const formatTitle = () => {
+    switch (view) {
+      case 'day':
+        return format(selectedDate, 'EEEE, MMMM d, yyyy');
+      case 'week':
+        return `Week of ${format(selectedDate, 'MMMM d, yyyy')}`;
+      case 'month':
+        return format(selectedDate, 'MMMM yyyy');
+      default:
+        return '';
     }
-    return formatDate(selectedDate, "MMMM yyyy");
   };
 
   return (
-    <div className="flex justify-between items-center">
-      <h3 className="text-lg font-medium">
-        {getHeaderText()}
-      </h3>
-      <div className="flex gap-2">
-        <Button variant="outline" size="icon" onClick={onPrevious}>
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-xl font-semibold">{formatTitle()}</h2>
+      <div className="flex items-center space-x-2">
+        <Button variant="outline" size="sm" onClick={onPrevious}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon" onClick={onNext}>
+        <Button variant="outline" size="sm" onClick={onToday}>
+          <Calendar className="h-4 w-4 mr-1" />
+          Today
+        </Button>
+        <Button variant="outline" size="sm" onClick={onNext}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="outline" onClick={onToday}>Today</Button>
       </div>
     </div>
   );
