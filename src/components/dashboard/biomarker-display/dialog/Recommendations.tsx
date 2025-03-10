@@ -35,14 +35,14 @@ const Recommendations: React.FC<RecommendationsProps> = ({ biomarker }) => {
   const recommendations = getRecommendations();
 
   return (
-    <div className="bg-muted/50 p-4 rounded-lg">
-      <h4 className="font-medium mb-2 flex items-center">
-        <ListChecks className="w-4 h-4 mr-2" />
+    <div className="bg-muted/50 p-6 rounded-lg space-y-3">
+      <h4 className="font-semibold text-base flex items-center gap-2">
+        <ListChecks className="w-5 h-5" />
         Recommendations
       </h4>
-      <ul className="list-disc pl-5 space-y-1">
+      <ul className="list-disc pl-6 space-y-2">
         {recommendations.map((rec, index) => (
-          <li key={index} className="text-sm text-muted-foreground">{rec}</li>
+          <li key={index} className="text-muted-foreground">{rec}</li>
         ))}
       </ul>
     </div>

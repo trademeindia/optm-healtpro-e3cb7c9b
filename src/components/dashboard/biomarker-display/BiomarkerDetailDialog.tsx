@@ -19,10 +19,10 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="md:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6">
         <DialogHeader biomarker={biomarker} />
         
-        <div className="space-y-5 py-4">
+        <div className="space-y-6 py-6">
           <BiomarkerBasicInfo biomarker={biomarker} />
           <BiomarkerExplanation biomarker={biomarker} />
           <MusclesAffected biomarker={biomarker} />
