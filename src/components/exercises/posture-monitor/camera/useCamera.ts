@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { VideoStatus } from '../hooks/detection/types';
@@ -40,12 +41,14 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     errorCount: 0
   });
   
+  // Refs
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mountedRef = useRef<boolean>(true);
   const setupTimeoutRef = useRef<number | null>(null);
   
+  // Hook composition
   const { requestCameraAccess } = useCameraSetup();
   const { setupVideoElement, ensureVideoIsPlaying, checkVideoStatus } = useVideoElement();
   const { waitForVideoElement } = useWaitForVideoElement({ mountedRef });
@@ -81,6 +84,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     waitForVideoElement
   });
   
+  // Monitor camera state
   useCameraMonitoring({
     cameraActive,
     videoRef,
@@ -89,12 +93,14 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     setCameraError
   });
   
+  // Handle initialization
   useCameraInitialization({
     mountedRef,
     stopCamera,
     setupTimeoutRef
   });
   
+  // Handle camera errors
   useEffect(() => {
     if (videoStatus.errorCount > 10) {
       console.error("Too many video errors, resetting camera");
@@ -110,6 +116,7 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
     }
   }, [videoStatus.errorCount]);
   
+  // Camera retry function
   const retryCamera = useCallback(async () => {
     if (isInitializing) {
       console.log("Camera is already initializing, ignoring retry");
