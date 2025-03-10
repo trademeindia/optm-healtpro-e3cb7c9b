@@ -11,7 +11,7 @@ export interface CalendarEvent {
   patientName?: string;
   doctorId?: string;
   doctorName?: string;
-  status?: 'confirmed' | 'pending' | 'cancelled';
+  status?: string;
   type?: string;
   color?: string;
   isAvailable?: boolean;
@@ -33,4 +33,5 @@ export interface UpcomingAppointment {
   patientId?: string;
   type?: string;
   location?: string;
+  status?: string;
 }
