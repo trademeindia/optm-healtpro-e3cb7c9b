@@ -46,7 +46,7 @@ const PostureAnalysis: React.FC = () => {
   ];
   
   return (
-    <Card className="overflow-hidden">
+    <Card className="glass-morphism overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Posture Analysis</CardTitle>
       </CardHeader>
