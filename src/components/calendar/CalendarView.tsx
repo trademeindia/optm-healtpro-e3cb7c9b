@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
@@ -11,7 +10,7 @@ import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
 import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
 import { useCalendarEventManager } from '@/hooks/calendar/useCalendarEventManager';
 import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
-import { Appointment, AppointmentStatus } from '@/types/appointment';
+import { AppointmentStatus } from '@/types/appointment';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month';
