@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
 import CalendarNavigation from './CalendarNavigation';
 import DayView from './views/DayView';
@@ -176,6 +177,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       
       {view === 'week' && (
         <WeekView
+          selectedDate={selectedDate}
           visibleDates={visibleDates}
           visibleHours={visibleHours}
           getEventsForHour={getEventsForHour}
