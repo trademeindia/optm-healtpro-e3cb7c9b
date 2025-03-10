@@ -45,7 +45,7 @@ const PatientDashboard: React.FC = () => {
           <SymptomProvider>
             <DashboardTabs
               initialTab={initialTab}
-              upcomingAppointments={upcomingAppointments || []}
+              upcomingAppointments={upcomingAppointments}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
             >
@@ -53,7 +53,7 @@ const PatientDashboard: React.FC = () => {
                 healthMetrics={healthMetrics}
                 activityData={activityData}
                 treatmentTasks={treatmentTasks}
-                upcomingAppointments={upcomingAppointments || []}
+                upcomingAppointments={upcomingAppointments}
                 biologicalAge={biologicalAge}
                 chronologicalAge={chronologicalAge}
                 hasConnectedApps={hasConnectedApps}

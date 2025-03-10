@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
+import { Appointment } from '@/services/calendar/googleCalendarService';
 
 export const usePatientDashboard = () => {
   const { toast } = useToast();
@@ -50,21 +51,29 @@ export const usePatientDashboard = () => {
     }
   ];
 
-  // Mock upcoming appointments
-  const upcomingAppointments = [
+  // Mock upcoming appointments - updated to match Appointment type
+  const upcomingAppointments: Appointment[] = [
     {
       id: '1',
+      patientId: 'patient-123',
+      patientName: 'John Doe',
+      doctorId: 'doctor-456',
+      doctorName: 'Dr. Nikolas Pascal',
       date: 'June 20, 2023',
       time: '10:30 AM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Follow-up'
+      type: 'Follow-up',
+      status: 'scheduled'
     },
     {
       id: '2',
+      patientId: 'patient-123',
+      patientName: 'John Doe',
+      doctorId: 'doctor-456',
+      doctorName: 'Dr. Nikolas Pascal',
       date: 'July 5, 2023',
       time: '02:00 PM',
-      doctor: 'Dr. Nikolas Pascal',
-      type: 'Physical Therapy'
+      type: 'Physical Therapy',
+      status: 'scheduled'
     }
   ];
 

@@ -1,16 +1,11 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Appointment } from '@/services/calendar/googleCalendarService';
 
 interface DashboardTabsProps {
   initialTab: string;
-  upcomingAppointments: {
-    id: string;
-    date: string;
-    time: string;
-    doctor: string;
-    type: string;
-  }[];
+  upcomingAppointments: Appointment[];
   onConfirmAppointment: (id: string) => void;
   onRescheduleAppointment: (id: string) => void;
   children?: React.ReactNode;
