@@ -19,29 +19,24 @@ export function useCalendarData(isAuthorized: boolean) {
     setError(null);
     
     try {
-      console.log("Fetching calendar events at", new Date().toISOString());
-      
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Generate some mock data
-      const mockEvents: CalendarEvent[] = generateMockEvents(selectedDate);
-      console.log(`Generated ${mockEvents.length} events for display`);
+      const mockEvents = generateMockEvents(selectedDate);
       
       setCalendarData(mockEvents);
       
-      // Also set upcoming appointments based on mock data
+      // Update upcoming appointments
       const upcoming = mapEventsToAppointments(mockEvents);
       setUpcomingAppointments(upcoming);
       
-      console.log("Successfully fetched calendar events", mockEvents.length);
     } catch (error: any) {
       console.error("Error fetching events:", error);
       setError(error.message || "Failed to fetch calendar data");
       
       toast.error("Failed to fetch calendar data", {
         description: "Could not retrieve your calendar events. Please try again.",
-        duration: 3000
       });
     } finally {
       setIsLoading(false);
@@ -52,27 +47,16 @@ export function useCalendarData(isAuthorized: boolean) {
     if (!isAuthorized) {
       toast.error("Calendar not connected", {
         description: "Please connect your Google Calendar first",
-        duration: 3000
       });
       return;
     }
     
-    toast.info("Refreshing calendar data...", {
-      duration: 1500
-    });
-    
-    console.log("Refreshing calendar data at", new Date().toISOString());
-    
-    // Force a refresh by updating the lastRefresh timestamp
+    toast.info("Refreshing calendar data...");
     setLastRefresh(Date.now());
-    
-    await fetchEvents();
-  }, [isAuthorized, fetchEvents]);
+  }, [isAuthorized]);
 
-  // Fetch events when authorization status or selected date changes
   useEffect(() => {
     if (isAuthorized) {
-      console.log("Auto-fetching events due to auth status, date change, or refresh trigger");
       fetchEvents();
     }
   }, [isAuthorized, selectedDate, fetchEvents, lastRefresh]);

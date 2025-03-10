@@ -1,26 +1,8 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent } from './types';
 
-export interface CalendarEventManagerResult {
-  isCreating: boolean;
-  isEditing: boolean;
-  editingEvent: CalendarEvent | null;
-  createDialogOpen: boolean;
-  editDialogOpen: boolean;
-  openCreateDialog: (date: Date) => void;
-  closeCreateDialog: () => void;
-  openEditDialog: (event: CalendarEvent) => void;
-  closeEditDialog: () => void;
-  handleCreateEvent: (eventData: Partial<CalendarEvent>) => Promise<boolean>;
-  handleUpdateEvent: (eventId: string, eventData: Partial<CalendarEvent>) => Promise<boolean>;
-  handleDeleteEvent: (eventId: string) => Promise<boolean>;
-}
-
-export const useCalendarEventManager = (
-  onEventChange?: () => void
-): CalendarEventManagerResult => {
+export const useCalendarEventManager = (onEventChange?: () => void) => {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -28,7 +10,6 @@ export const useCalendarEventManager = (
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const openCreateDialog = useCallback((date: Date) => {
-    console.log("Opening create dialog with date:", date);
     setCreateDialogOpen(true);
   }, []);
 
@@ -50,35 +31,14 @@ export const useCalendarEventManager = (
     setIsCreating(true);
     
     try {
-      // Validate that start and end times are actually Date objects
       if (!(eventData.start instanceof Date) || !(eventData.end instanceof Date)) {
-        console.error("Invalid date objects for event creation", { 
-          start: eventData.start, 
-          end: eventData.end 
-        });
         throw new Error("Invalid appointment times");
       }
-      
-      console.log('Creating event with data:', {
-        title: eventData.title,
-        start: eventData.start.toISOString(),
-        end: eventData.end.toISOString(),
-        type: eventData.type,
-        patientName: eventData.patientName,
-        location: eventData.location
-      });
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Appointment created successfully', {
-        description: 'Your appointment has been added to the calendar',
-        duration: 3000
-      });
-      
-      // Notify parent components that events have changed
       if (onEventChange) {
-        console.log("Notifying parent about event change");
         onEventChange();
       }
       
@@ -88,7 +48,6 @@ export const useCalendarEventManager = (
       
       toast.error('Failed to create appointment', {
         description: 'There was an error creating your appointment. Please try again.',
-        duration: 3000
       });
       
       return false;

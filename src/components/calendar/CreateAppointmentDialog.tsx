@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDialogForm from './appointments/AppointmentDialogForm';
 import AppointmentDialogActions from './appointments/AppointmentDialogActions';
-import { parse, set } from 'date-fns';
+import { useAppointmentDates } from '@/hooks/calendar/useAppointmentDates';
 import { toast } from 'sonner';
 
 interface CreateAppointmentDialogProps {
@@ -20,42 +20,36 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   onCreated,
   selectedDate
 }) => {
-  const [date, setDate] = useState<Date>(selectedDate);
-  const [startTime, setStartTime] = useState<string>("9:00 AM");
-  const [endTime, setEndTime] = useState<string>("9:30 AM");
+  const {
+    date,
+    setDate,
+    startTime,
+    setStartTime,
+    endTime,
+    setEndTime,
+    getAppointmentTimes
+  } = useAppointmentDates(selectedDate);
+  
   const [type, setType] = useState<string>("Initial Consultation");
   const [patient, setPatient] = useState<string>("");
   const [location, setLocation] = useState<string>("Main Office - Room 101");
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Reset form when opening dialog with a new selected date
   useEffect(() => {
     if (open) {
       setDate(selectedDate);
-      setPatient(""); // Reset patient name when reopening
-      setNotes(""); // Reset notes when reopening
+      setPatient("");
+      setNotes("");
     }
-  }, [open, selectedDate]);
+  }, [open, selectedDate, setDate]);
 
-  const parseTimeToDate = (baseDate: Date, timeString: string): Date => {
-    try {
-      // Parse the time string to get hours and minutes
-      const timeFormat = timeString.includes('AM') || timeString.includes('PM') ? 'h:mm a' : 'HH:mm';
-      const parsed = parse(timeString, timeFormat, new Date());
-      
-      // Create a new date with the base date's year, month, day and the parsed time
-      return set(new Date(baseDate), {
-        hours: parsed.getHours(),
-        minutes: parsed.getMinutes(),
-        seconds: 0,
-        milliseconds: 0
-      });
-    } catch (error) {
-      console.error("Error parsing time:", error, timeString);
-      // Return a default time if parsing fails
-      return new Date(baseDate);
+  const validateTimes = (start: Date, end: Date): boolean => {
+    if (end <= start) {
+      toast.error("End time must be after start time");
+      return false;
     }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,25 +60,19 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
       return;
     }
     
+    const { start, end } = getAppointmentTimes();
+    
+    if (!validateTimes(start, end)) {
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      console.log("Creating appointment with date:", date);
-      console.log("Time values:", { startTime, endTime });
-      
-      // Convert time strings to Date objects using the selected date as the base
-      const startDateTime = parseTimeToDate(date, startTime);
-      const endDateTime = parseTimeToDate(date, endTime);
-      
-      console.log("Parsed dates:", { 
-        startDateTime: startDateTime.toISOString(), 
-        endDateTime: endDateTime.toISOString() 
-      });
-      
       const eventData: Partial<CalendarEvent> = {
         title: `${type} - ${patient}`,
-        start: startDateTime,
-        end: endDateTime,
+        start,
+        end,
         type,
         patientName: patient,
         location,
@@ -92,12 +80,11 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
         isAvailable: false
       };
       
-      console.log("Creating appointment with data:", eventData);
       const success = await onCreated(eventData);
       
       if (success) {
-        console.log("Appointment created successfully");
         onClose();
+        toast.success("Appointment created successfully");
       }
     } catch (error) {
       console.error("Error creating appointment:", error);
