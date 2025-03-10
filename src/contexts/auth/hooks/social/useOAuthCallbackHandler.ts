@@ -10,7 +10,7 @@ type UseOAuthCallbackHandlerProps = {
 };
 
 export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCallbackHandlerProps) => {
-  const handleOAuthCallback = async (provider: string, code: string, user: User | null): Promise<void> => {
+  const handleOAuthCallback = async (provider: string, code: string, user: User | null = null): Promise<void> => {
     setIsLoading(true);
     try {
       console.log(`Processing OAuth callback for ${provider}`, user ? "User found" : "No user", "code length:", code.length);

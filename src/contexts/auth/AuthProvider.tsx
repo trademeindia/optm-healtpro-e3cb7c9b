@@ -88,7 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleOAuthCallback = async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      return await handleOAuthCallbackBase(provider, code);
+      // Pass the current user as the third argument
+      return await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
