@@ -10,7 +10,7 @@ interface BiomarkerBasicInfoProps {
 
 const BiomarkerBasicInfo: React.FC<BiomarkerBasicInfoProps> = ({ biomarker }) => {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col space-y-3">
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium">Current Value</span>
         <span className="text-xl font-bold">{biomarker.value} <span className="text-sm font-normal">{biomarker.unit}</span></span>

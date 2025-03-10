@@ -13,14 +13,14 @@ const PossibleCauses: React.FC<PossibleCausesProps> = ({ biomarker }) => {
   }
   
   return (
-    <div className="bg-muted/70 p-4 rounded-lg">
+    <div className="bg-muted/50 p-4 rounded-lg">
       <h4 className="font-medium mb-2 flex items-center">
         <Activity className="w-4 h-4 mr-2" />
         Possible Causes
       </h4>
-      <ul className="list-disc ml-4 space-y-1 text-sm">
+      <ul className="list-disc pl-5 space-y-1">
         {biomarker.possibleCauses.map((cause, index) => (
-          <li key={index}>{cause}</li>
+          <li key={index} className="text-sm text-muted-foreground">{cause}</li>
         ))}
       </ul>
     </div>

@@ -40,6 +40,24 @@
   .cards-container {
     @apply gap-4;
   }
+  
+  /* Biomarker sections specific styles */
+  .biomarker-detail-section {
+    @apply p-3;
+  }
+  
+  .biomarker-detail-section h4 {
+    @apply text-sm mb-1.5;
+  }
+  
+  .biomarker-detail-section ul {
+    @apply pl-4;
+  }
+  
+  .biomarker-detail-section p, 
+  .biomarker-detail-section li {
+    @apply text-xs;
+  }
 }
 
 @media (max-width: 480px) {
@@ -90,18 +108,57 @@
   .card-spacing-lg > * + * {
     @apply mt-3;
   }
+  
+  /* Biomarker sections specific styles */
+  .biomarker-detail-section {
+    @apply p-2.5;
+  }
+  
+  .biomarker-detail-section h4 {
+    @apply text-xs mb-1;
+  }
+  
+  .biomarker-detail-section ul {
+    @apply pl-3;
+  }
+  
+  .biomarker-detail-section p, 
+  .biomarker-detail-section li {
+    @apply text-xs leading-tight;
+  }
+  
+  /* Dialog specific adjustments */
+  .biomarker-dialog-content {
+    @apply p-3 space-y-3;
+  }
+  
+  .biomarker-dialog-section {
+    @apply space-y-3;
+  }
 }
 
 /* Make biomarker cards more responsive */
 @media (max-width: 768px) {
   .biomarker-card {
-    @apply p-4;
+    @apply p-3;
+  }
+  
+  .biomarker-card-header {
+    @apply text-sm mb-1;
+  }
+  
+  .biomarker-card-value {
+    @apply text-lg;
+  }
+  
+  .biomarker-card-footer {
+    @apply text-xs;
   }
 }
 
 /* Make metric cards more responsive */
 @media (max-width: 768px) {
   .metric-card {
-    @apply p-4;
+    @apply p-3;
   }
 }

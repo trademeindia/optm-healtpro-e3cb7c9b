@@ -13,7 +13,7 @@ interface AnalysisResultsTabProps {
 
 const AnalysisResultsTab: React.FC<AnalysisResultsTabProps> = ({ analysis }) => {
   return (
-    <div className="space-y-6 h-full overflow-y-auto pr-1 pb-4">
+    <div className="space-y-6 h-full overflow-y-auto pr-1 pb-6">
       <ReportSummary summary={analysis.summary} />
       <KeyFindings findings={analysis.keyFindings} />
       <BiomarkerValues values={analysis.normalValues} />
