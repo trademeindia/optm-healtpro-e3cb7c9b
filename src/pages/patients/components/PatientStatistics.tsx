@@ -6,7 +6,9 @@ interface PatientStatisticsProps {
   patients: Patient[];
 }
 
-export const PatientStatistics: React.FC<PatientStatisticsProps> = ({ patients }) => {
+export const PatientStatistics: React.FC<PatientStatisticsProps> = ({
+  patients,
+}) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
       <h3 className="text-lg font-semibold mb-4">Patient Statistics</h3>

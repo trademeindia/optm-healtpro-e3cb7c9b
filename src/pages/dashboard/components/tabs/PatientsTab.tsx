@@ -1,7 +1,7 @@
 
 import React from 'react';
 import PatientHistory from '@/components/dashboard/PatientHistory';
-import PatientRecords from '@/components/dashboard/PatientRecords';
+import { PatientsList } from '@/pages/patients/components/PatientsList';
 
 interface PatientsTabProps {
   patients: any[];
@@ -27,7 +27,7 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
           onUpdate={onUpdatePatient}
         />
       ) : (
-        <PatientRecords 
+        <PatientsList 
           patients={patients} 
           onViewPatient={onViewPatient}
         />
