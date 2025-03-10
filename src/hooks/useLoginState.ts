@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,7 +49,7 @@ export const useLoginState = () => {
   };
 
   // Use an effect to redirect after successful login
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, redirecting to dashboard');
       const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
