@@ -54,8 +54,8 @@ const CalendarTab: React.FC = () => {
   };
 
   const handleCreateAppointment = () => {
-    // This function doesn't need to do anything here, as the create button functionality
-    // is handled within the CalendarViewWrapper component
+    // This is intentionally left empty as the functionality is 
+    // handled within CalendarViewWrapper via the CalendarView component
     console.log("Create appointment button clicked");
   };
 

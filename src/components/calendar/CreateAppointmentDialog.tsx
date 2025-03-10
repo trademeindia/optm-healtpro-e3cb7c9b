@@ -5,6 +5,7 @@ import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDialogForm from './appointments/AppointmentDialogForm';
 import AppointmentDialogActions from './appointments/AppointmentDialogActions';
 import { parse, set } from 'date-fns';
+import { toast } from 'sonner';
 
 interface CreateAppointmentDialogProps {
   open: boolean;
@@ -143,8 +144,5 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     </Dialog>
   );
 };
-
-// Missing import for toast
-import { toast } from 'sonner';
 
 export default CreateAppointmentDialog;

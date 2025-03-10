@@ -94,9 +94,8 @@ export const useCalendarEventManager = (
       return false;
     } finally {
       setIsCreating(false);
-      closeCreateDialog();
     }
-  }, [onEventChange, closeCreateDialog]);
+  }, [onEventChange]);
 
   const handleUpdateEvent = useCallback(async (
     eventId: string, 
