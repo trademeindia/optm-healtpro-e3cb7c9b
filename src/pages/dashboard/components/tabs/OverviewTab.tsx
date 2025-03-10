@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { toast } from 'sonner';
 import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
@@ -6,7 +7,7 @@ import ClinicMessages from '@/components/dashboard/ClinicMessages';
 import ClinicDocuments from '@/components/dashboard/ClinicDocuments';
 import ClinicReminders from '@/components/dashboard/ClinicReminders';
 import MiniCalendar from '@/components/dashboard/MiniCalendar';
-import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
+import { AppointmentsDashboard } from '@/components/dashboard/appointments';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface OverviewTabProps {

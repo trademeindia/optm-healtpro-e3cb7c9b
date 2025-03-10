@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useToast } from '@/hooks/use-toast';
-import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
+import { AppointmentsDashboard } from '@/components/dashboard/appointments';
 
 const AppointmentsPage: React.FC = () => {
   const { toast } = useToast();
