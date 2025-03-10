@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent, UpcomingAppointment } from './types';
 import { generateMockEvents, mapEventsToAppointments } from './mockCalendarData';
@@ -11,20 +11,26 @@ export function useCalendarData(isAuthorized: boolean) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const isRefreshingRef = useRef(false);
 
   const fetchEvents = useCallback(async () => {
-    if (!isAuthorized) return;
+    // Don't fetch if not authorized or already fetching
+    if (!isAuthorized || isRefreshingRef.current) return;
     
     setIsLoading(true);
     setError(null);
+    isRefreshingRef.current = true;
     
     try {
+      console.log("Fetching calendar events...");
+      
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Generate some mock data
       const mockEvents = generateMockEvents(selectedDate);
       
+      console.log(`Fetched ${mockEvents.length} calendar events`);
       setCalendarData(mockEvents);
       
       // Update upcoming appointments
@@ -40,6 +46,7 @@ export function useCalendarData(isAuthorized: boolean) {
       });
     } finally {
       setIsLoading(false);
+      isRefreshingRef.current = false;
     }
   }, [isAuthorized, selectedDate]);
 
@@ -51,10 +58,17 @@ export function useCalendarData(isAuthorized: boolean) {
       return;
     }
     
+    if (isRefreshingRef.current) {
+      console.log("Calendar refresh already in progress, skipping");
+      return;
+    }
+    
+    console.log("Refreshing calendar data...");
     toast.info("Refreshing calendar data...");
     setLastRefresh(Date.now());
   }, [isAuthorized]);
 
+  // Load calendar data when authorized or refresh is triggered
   useEffect(() => {
     if (isAuthorized) {
       fetchEvents();

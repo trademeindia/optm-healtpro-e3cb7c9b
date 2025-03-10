@@ -1,6 +1,8 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent } from './types';
+import { v4 as uuidv4 } from 'uuid';
 
 export const useCalendarEventManager = (onEventChange?: () => void) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -27,18 +29,59 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
     setEditingEvent(null);
   }, []);
 
+  const validateEventData = useCallback((eventData: Partial<CalendarEvent>): boolean => {
+    if (!eventData.start || !eventData.end) {
+      console.error("Missing start or end time");
+      return false;
+    }
+    
+    const start = eventData.start instanceof Date ? eventData.start : new Date(eventData.start);
+    const end = eventData.end instanceof Date ? eventData.end : new Date(eventData.end);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.error("Invalid date object in event data");
+      return false;
+    }
+    
+    if (end <= start) {
+      console.error("End time must be after start time");
+      return false;
+    }
+    
+    return true;
+  }, []);
+
   const handleCreateEvent = useCallback(async (eventData: Partial<CalendarEvent>): Promise<boolean> => {
     setIsCreating(true);
     
     try {
-      if (!(eventData.start instanceof Date) || !(eventData.end instanceof Date)) {
-        throw new Error("Invalid appointment times");
+      if (!validateEventData(eventData)) {
+        throw new Error("Invalid appointment data");
       }
+      
+      // Add a unique ID to the event
+      const completeEventData: CalendarEvent = {
+        id: uuidv4(),
+        title: eventData.title || 'Untitled Event',
+        start: eventData.start as Date,
+        end: eventData.end as Date,
+        allDay: eventData.allDay || false,
+        description: eventData.description || '',
+        location: eventData.location || '',
+        patientName: eventData.patientName || '',
+        type: eventData.type || '',
+        status: 'confirmed',
+        ...(eventData as any)
+      };
+      
+      console.log('Creating event with data:', completeEventData);
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Notify parent components that events have changed
       if (onEventChange) {
+        console.log("Triggering calendar refresh after create");
         onEventChange();
       }
       
@@ -54,7 +97,7 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
     } finally {
       setIsCreating(false);
     }
-  }, [onEventChange]);
+  }, [validateEventData, onEventChange]);
 
   const handleUpdateEvent = useCallback(async (
     eventId: string, 
@@ -63,6 +106,10 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
     setIsEditing(true);
     
     try {
+      if (!validateEventData(eventData)) {
+        throw new Error("Invalid appointment data");
+      }
+      
       // In a real app, this would be an API call
       console.log('Updating event:', eventId, {
         title: eventData.title,
@@ -83,6 +130,7 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       
       // Notify parent components that events have changed
       if (onEventChange) {
+        console.log("Triggering calendar refresh after update");
         onEventChange();
       }
       
@@ -100,7 +148,7 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       setIsEditing(false);
       closeEditDialog();
     }
-  }, [onEventChange, closeEditDialog]);
+  }, [validateEventData, onEventChange, closeEditDialog]);
 
   const handleDeleteEvent = useCallback(async (eventId: string): Promise<boolean> => {
     try {
@@ -117,6 +165,7 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       
       // Notify parent components that events have changed
       if (onEventChange) {
+        console.log("Triggering calendar refresh after delete");
         onEventChange();
       }
       

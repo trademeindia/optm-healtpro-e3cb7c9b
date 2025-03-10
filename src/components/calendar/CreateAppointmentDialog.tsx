@@ -27,7 +27,9 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     setStartTime,
     endTime,
     setEndTime,
-    getAppointmentTimes
+    getAppointmentTimes,
+    validateTimeRange,
+    setAutoEndTime
   } = useAppointmentDates(selectedDate);
   
   const [type, setType] = useState<string>("Initial Consultation");
@@ -36,39 +38,49 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Reset form when dialog opens or selected date changes
   useEffect(() => {
     if (open) {
       setDate(selectedDate);
+      setType("Initial Consultation");
       setPatient("");
+      setLocation("Main Office - Room 101");
       setNotes("");
+      
+      // Set default start and end times
+      setStartTime("9:00 AM");
+      setEndTime("9:30 AM");
     }
-  }, [open, selectedDate, setDate]);
+  }, [open, selectedDate, setDate, setStartTime, setEndTime]);
 
-  const validateTimes = (start: Date, end: Date): boolean => {
-    if (end <= start) {
-      toast.error("End time must be after start time");
-      return false;
+  // Update end time when start time changes
+  useEffect(() => {
+    if (open && startTime) {
+      setAutoEndTime();
     }
-    return true;
-  };
+  }, [startTime, open, setAutoEndTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate patient name
     if (!patient.trim()) {
       toast.error("Please enter a patient name");
       return;
     }
     
-    const { start, end } = getAppointmentTimes();
-    
-    if (!validateTimes(start, end)) {
+    // Validate appointment times
+    const timeValidation = validateTimeRange();
+    if (!timeValidation.isValid) {
+      toast.error(timeValidation.errorMessage || "Invalid time range");
       return;
     }
     
     setIsLoading(true);
     
     try {
+      const { start, end } = getAppointmentTimes();
+      
       const eventData: Partial<CalendarEvent> = {
         title: `${type} - ${patient}`,
         start,
@@ -79,6 +91,8 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
         description: notes,
         isAvailable: false
       };
+      
+      console.log("Creating appointment with data:", eventData);
       
       const success = await onCreated(eventData);
       
