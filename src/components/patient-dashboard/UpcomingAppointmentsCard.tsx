@@ -2,7 +2,7 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Appointment {
   id: string;
@@ -25,16 +25,13 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
-  const { toast } = useToast();
-
   // Function to handle appointment confirmation
   const handleConfirmAppointment = (id: string) => {
     if (onConfirmAppointment) {
       onConfirmAppointment(id);
     } else {
-      toast({
-        title: "Appointment Confirmed",
-        description: "Your appointment has been confirmed.",
+      toast.success("Your appointment has been confirmed.", {
+        duration: 3000
       });
     }
   };
@@ -44,9 +41,8 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
     if (onRescheduleAppointment) {
       onRescheduleAppointment(id);
     } else {
-      toast({
-        title: "Reschedule Requested",
-        description: "Your request to reschedule has been sent.",
+      toast.success("Your request to reschedule has been sent.", {
+        duration: 3000
       });
     }
   };

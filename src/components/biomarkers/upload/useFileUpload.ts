@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { generateBiomarker } from './biomarkerGenerator';
 import { Biomarker } from '@/data/mockBiomarkerData';
 
@@ -9,7 +9,6 @@ interface UseFileUploadProps {
 }
 
 export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
-  const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingFile, setProcessingFile] = useState(false);
@@ -55,9 +54,9 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
       setUploadedFile(file);
       
       // Give immediate feedback that the file was selected
-      toast({
-        title: "File selected",
-        description: `${file.name} is ready for processing`,
+      toast(`${file.name} is ready for processing`, {
+        description: "Click upload to process the file",
+        duration: 4000
       });
     }
   };
@@ -73,10 +72,8 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
 
   const uploadFile = async () => {
     if (!uploadedFile) {
-      toast({
-        title: "No file selected",
-        description: "Please select a file to upload",
-        variant: "destructive",
+      toast.error("Please select a file to upload", {
+        duration: 4000
       });
       return;
     }
@@ -129,17 +126,14 @@ export const useFileUpload = ({ onProcessComplete }: UseFileUploadProps) => {
           fileInput.value = '';
         }
         
-        toast({
-          title: "Analysis complete",
-          description: `New ${newBiomarker.name} data has been extracted and added to your profile`,
+        toast.success(`New ${newBiomarker.name} data has been extracted and added to your profile`, {
+          duration: 4000
         });
       } catch (error) {
         console.error('Error processing biomarker data:', error);
         setFileError('Failed to process biomarker data. Please try again.');
-        toast({
-          title: "Processing failed",
-          description: "There was an error analyzing your medical report. Please try again.",
-          variant: "destructive",
+        toast.error("There was an error analyzing your medical report. Please try again.", {
+          duration: 5000
         });
       }
     }, processingTime);

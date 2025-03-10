@@ -2,7 +2,7 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface HealthSyncButtonProps {
   hasConnectedApps: boolean;
@@ -13,8 +13,6 @@ const HealthSyncButton: React.FC<HealthSyncButtonProps> = ({
   hasConnectedApps,
   onSyncData
 }) => {
-  const { toast } = useToast();
-  
   if (!hasConnectedApps) return null;
   
   const handleSyncClick = async () => {
@@ -22,10 +20,8 @@ const HealthSyncButton: React.FC<HealthSyncButtonProps> = ({
       await onSyncData();
     } catch (error) {
       console.error('Error syncing health data:', error);
-      toast({
-        title: "Sync failed",
-        description: "There was an error syncing your health data. Please try again.",
-        variant: "destructive"
+      toast.error("There was an error syncing your health data. Please try again.", {
+        duration: 5000
       });
     }
   };

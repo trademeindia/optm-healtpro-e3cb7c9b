@@ -14,7 +14,9 @@ export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
       if (demoUserData) {
         // Clear demo user from localStorage
         localStorage.removeItem('demoUser');
-        toast.info('You have been logged out');
+        toast.info('You have been logged out', {
+          duration: 3000
+        });
         navigate('/login');
         return;
       }
@@ -27,11 +29,15 @@ export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
         throw error;
       }
       
-      toast.info('You have been logged out');
+      toast.info('You have been logged out', {
+        duration: 3000
+      });
       navigate('/login');
     } catch (error: any) {
       console.error('Logout error:', error);
-      toast.error('Failed to log out');
+      toast.error('Failed to log out', {
+        duration: 4000
+      });
     }
   };
 
@@ -39,7 +45,9 @@ export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
     try {
       // Special case for demo accounts
       if (email === 'doctor@example.com' || email === 'patient@example.com') {
-        toast.success('Demo account password is "password123"');
+        toast.success('Demo account password is "password123"', {
+          duration: 5000
+        });
         return;
       }
       
@@ -49,9 +57,13 @@ export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
       
       if (error) throw error;
       
-      toast.success('Password reset link sent to your email');
+      toast.success('Password reset link sent to your email', {
+        duration: 5000
+      });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset link');
+      toast.error(error.message || 'Failed to send reset link', {
+        duration: 5000
+      });
       throw error;
     }
   };

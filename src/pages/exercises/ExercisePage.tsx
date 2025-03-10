@@ -4,11 +4,10 @@ import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import ExerciseContent from './components/ExerciseContent';
 import ProgressTracking from './components/ProgressTracking';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import useExercises from '@/hooks/useExercises';
 
 const ExercisePage: React.FC = () => {
-  const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showMonitor, setShowMonitor] = useState(false);
   
@@ -29,18 +28,16 @@ const ExercisePage: React.FC = () => {
     startExercise(exerciseId);
     setShowMonitor(true);
     
-    toast({
-      title: "Exercise Started",
-      description: "AI posture monitoring is now active.",
+    toast.info("AI posture monitoring is now active.", {
+      duration: 3000
     });
   };
   
   const handleFinishExercise = () => {
     if (selectedExercise) {
       markExerciseCompleted(selectedExercise.id);
-      toast({
-        title: "Exercise Completed",
-        description: "Great job! Your progress has been updated.",
+      toast.success("Great job! Your progress has been updated.", {
+        duration: 3000
       });
     }
     setShowMonitor(false);

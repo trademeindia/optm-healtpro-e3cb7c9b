@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Question } from './types';
 import { generateAIAnswer } from './utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Import smaller components
 import QuestionHeader from './components/QuestionHeader';
@@ -26,8 +26,6 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
   setIsGeneratingAnswer,
   onUpdateQuestion,
 }) => {
-  const { toast } = useToast();
-
   const handleAskExisting = async () => {
     setIsGeneratingAnswer(true);
     const { answer, sources } = await generateAIAnswer(question.text);
@@ -62,12 +60,12 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
       userVoted: voteType
     });
 
-    toast({
-      description: voteType === 'helpful' 
+    toast[voteType === 'helpful' ? 'success' : 'info'](
+      voteType === 'helpful' 
         ? "Thank you for your feedback! We're glad this was helpful." 
-        : "Thank you for your feedback. We'll work to improve our answers.",
-      duration: 3000
-    });
+        : "Thank you for your feedback. We'll work to improve our answers.", 
+      { duration: 3000 }
+    );
   };
 
   const handleToggleFavorite = () => {
@@ -78,12 +76,12 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
       favorited: isFavorited
     });
 
-    toast({
-      description: isFavorited 
+    toast.success(
+      isFavorited 
         ? "Question saved to favorites." 
-        : "Question removed from favorites.",
-      duration: 2000
-    });
+        : "Question removed from favorites.", 
+      { duration: 2000 }
+    );
   };
 
   return (

@@ -32,7 +32,9 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           picture: ''
         };
         
-        toast.success('Demo login successful');
+        toast.success('Demo login successful', {
+          duration: 3000
+        });
         
         return demoUser;
       }
@@ -57,12 +59,16 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         throw new Error('User profile not found');
       }
       
-      toast.success('Login successful');
+      toast.success('Login successful', {
+        duration: 3000
+      });
       
       return formattedUser;
     } catch (error: any) {
       console.error('Login failed:', error);
-      toast.error(error.message || 'Login failed');
+      toast.error(error.message || 'Login failed', {
+        duration: 5000
+      });
       throw error;
     } finally {
       setIsLoading(false);

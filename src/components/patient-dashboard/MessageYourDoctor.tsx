@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface MessageYourDoctorProps {
   className?: string;
@@ -10,21 +10,17 @@ interface MessageYourDoctorProps {
 
 const MessageYourDoctor: React.FC<MessageYourDoctorProps> = ({ className }) => {
   const [message, setMessage] = useState('');
-  const { toast } = useToast();
 
   const handleSendMessage = () => {
     if (!message.trim()) {
-      toast({
-        title: "Empty Message",
-        description: "Please enter a message before sending.",
-        variant: "destructive",
+      toast.error("Please enter a message before sending.", {
+        duration: 4000
       });
       return;
     }
 
-    toast({
-      title: "Message Sent",
-      description: "Your message has been sent to your doctor.",
+    toast.success("Your message has been sent to your doctor.", {
+      duration: 3000
     });
     
     // Clear the message input after sending

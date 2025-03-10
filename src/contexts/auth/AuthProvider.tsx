@@ -66,7 +66,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Store in localStorage for persistence
         localStorage.setItem('demoUser', JSON.stringify(user));
         
-        toast.success('Demo login successful');
+        toast.success('Demo login successful', {
+          duration: 3000
+        });
         
         // Navigate based on role
         if (user.role === 'doctor') {
@@ -79,7 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return user;
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Login failed. Please check your credentials and try again.');
+      toast.error('Login failed. Please check your credentials and try again.', {
+        duration: 5000
+      });
       return null;
     }
   };
@@ -92,7 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
-      toast.error('OAuth authentication failed. Please try again.');
+      toast.error('OAuth authentication failed. Please try again.', {
+        duration: 5000
+      });
       throw error;
     }
   };

@@ -18,7 +18,9 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
       // Ensure we have a code to exchange
       if (!code) {
         console.error("No authorization code provided in callback");
-        toast.error("Authentication failed: Missing authorization code");
+        toast.error("Authentication failed: Missing authorization code", {
+          duration: 5000
+        });
         navigate('/login');
         return;
       }
@@ -29,7 +31,9 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         console.log("Session check:", data?.session ? "Session exists" : "No session", error ? `Error: ${error.message}` : "No error");
         
         if (error) {
-          toast.error(`Authentication verification failed: ${error.message}`);
+          toast.error(`Authentication verification failed: ${error.message}`, {
+            duration: 5000
+          });
           navigate('/login');
           return;
         }
@@ -40,7 +44,9 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
             const formattedUser = await formatUser(data.session.user);
             if (formattedUser) {
               console.log("Successfully retrieved user after OAuth flow:", formattedUser);
-              toast.success(`Successfully signed in with ${provider}!`);
+              toast.success(`Successfully signed in with ${provider}!`, {
+                duration: 3000
+              });
               // Use navigate instead of direct window.location.href to prevent blank screen
               navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
               return;
@@ -67,13 +73,17 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
                 
               if (insertError) {
                 console.error('Error creating user profile:', insertError);
-                toast.error('Failed to create user profile');
+                toast.error('Failed to create user profile', {
+                  duration: 5000
+                });
                 navigate('/login');
                 return;
               }
               
               console.log("Created new profile for OAuth user:", newProfile);
-              toast.success(`Successfully signed in with ${provider}!`);
+              toast.success(`Successfully signed in with ${provider}!`, {
+                duration: 3000
+              });
               // Use navigate instead of window.location.href for a smoother transition
               navigate('/patient-dashboard');
               return;
@@ -87,17 +97,23 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         console.error("OAuth callback failed to find a user despite having a code");
         console.log("Examining URL parameters:", window.location.search);
         
-        toast.error('Authentication failed. Please try again and check the debug section.');
+        toast.error('Authentication failed. Please try again and check the debug section.', {
+          duration: 5000
+        });
         navigate('/login');
         return;
       }
       
-      toast.success(`Successfully signed in with ${provider}!`);
+      toast.success(`Successfully signed in with ${provider}!`, {
+        duration: 3000
+      });
       // Use navigate instead of window.location.href for smoother transition
       navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
-      toast.error('Authentication failed. Please try again and check the debug section.');
+      toast.error('Authentication failed. Please try again and check the debug section.', {
+        duration: 5000
+      });
       navigate('/login');
     } finally {
       setIsLoading(false);

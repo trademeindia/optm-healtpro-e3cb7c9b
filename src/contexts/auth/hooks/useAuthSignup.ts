@@ -26,7 +26,9 @@ export const useAuthSignup = ({ setIsLoading, navigate }: UseAuthSignupProps) =>
 
       if (error) throw error;
 
-      toast.success('Account created successfully. Please check your email for verification.');
+      toast.success('Account created successfully. Please check your email for verification.', {
+        duration: 5000
+      });
       
       if (data.user && !data.user.email_confirmed_at) {
         navigate('/login');
@@ -39,7 +41,9 @@ export const useAuthSignup = ({ setIsLoading, navigate }: UseAuthSignupProps) =>
         return formattedUser;
       }
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed');
+      toast.error(error.message || 'Signup failed', {
+        duration: 5000
+      });
       throw error;
     } finally {
       setIsLoading(false);
