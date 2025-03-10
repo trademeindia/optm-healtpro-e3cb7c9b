@@ -1,16 +1,5 @@
 
-export interface Appointment {
-  id: string;
-  type: string;
-  date: string;
-  time: string;
-  doctorName: string;
-  patientName: string;
-  patientId: string;
-  notes?: string;
-  status: 'scheduled' | 'confirmed' | 'canceled' | 'completed';
-  googleEventId?: string;
-}
+import { Appointment } from './types';
 
 export class GoogleCalendarService {
   private static readonly LOCAL_STORAGE_KEY = 'google_calendar_connected';

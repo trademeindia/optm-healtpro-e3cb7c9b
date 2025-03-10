@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Appointment } from '@/services/calendar/types';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
@@ -72,6 +73,12 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
         patientName,
         notes
       });
+      // Reset form
+      setDate(new Date());
+      setTime(timeSlots[0]);
+      setType(appointmentTypes[0]);
+      setDoctorName(doctors[0]);
+      setNotes('');
       onClose();
     } catch (error) {
       console.error('Failed to schedule appointment:', error);

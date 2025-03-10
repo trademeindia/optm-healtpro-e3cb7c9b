@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Appointment } from '@/services/calendar/googleCalendarService';
+import { Appointment, CreateAppointmentRequest } from '@/services/calendar/types';
 import { AppointmentService } from '@/services/calendar/appointmentService';
 import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
 
@@ -130,14 +130,14 @@ export const useAppointments = () => {
     doctorName: string;
     patientName: string;
     notes?: string;
-  }) => {
+  }): Promise<Appointment | null> => {
     try {
       console.log('Creating new appointment:', appointmentData);
       // Create appointment object
-      const newAppointment = {
+      const newAppointment: CreateAppointmentRequest = {
         ...appointmentData,
         patientId: 'patient-123', // In a real app, this would come from the authenticated user
-        status: 'scheduled' as const
+        status: 'scheduled'
       };
       
       const createdAppointment = await AppointmentService.createAppointment(newAppointment);
