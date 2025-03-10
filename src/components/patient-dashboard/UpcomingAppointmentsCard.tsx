@@ -53,35 +53,35 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
       <div className="space-y-4">
         {upcomingAppointments.length > 0 ? (
           upcomingAppointments.map(appointment => (
-            <div key={appointment.id} className="p-3 border rounded-lg bg-card">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h4 className="font-medium">{appointment.type}</h4>
-                  <p className="text-sm text-muted-foreground">
+            <div key={appointment.id} className="p-4 border rounded-lg bg-card">
+              <div className="flex justify-between items-start gap-4 mb-3">
+                <div className="min-w-0"> {/* Added min-w-0 to prevent text overflow */}
+                  <h4 className="font-medium text-base truncate">{appointment.type}</h4>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">
                     {appointment.date} at {appointment.time}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground truncate">
                     {appointment.doctor}
                   </p>
                 </div>
-                <div className="bg-primary/10 text-primary p-2 rounded-full">
-                  <Calendar className="h-4 w-4" />
+                <div className="bg-primary/10 p-2 rounded-full flex-shrink-0">
+                  <Calendar className="h-4 w-4 text-primary" />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="text-xs flex-1"
-                  onClick={() => handleConfirmAppointment(appointment.id)}
+                  className="flex-1 text-xs py-2 h-8" // Adjusted height and padding
+                  onClick={() => onConfirmAppointment?.(appointment.id)}
                 >
                   Confirm
                 </Button>
                 <Button 
                   variant="ghost" 
-                  size="sm" 
-                  className="text-xs flex-1"
-                  onClick={() => handleRescheduleAppointment(appointment.id)}
+                  size="sm"
+                  className="flex-1 text-xs py-2 h-8" // Adjusted height and padding
+                  onClick={() => onRescheduleAppointment?.(appointment.id)}
                 >
                   Reschedule
                 </Button>
