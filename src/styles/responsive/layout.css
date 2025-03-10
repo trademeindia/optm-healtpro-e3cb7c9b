@@ -4,10 +4,12 @@
   .dashboard-grid {
     display: flex;
     flex-direction: column;
+    padding: 1rem;
   }
   
   .dashboard-grid > div {
     margin-bottom: 1rem;
+    width: 100%;
   }
 }
 
@@ -17,14 +19,16 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+    width: 100%;
   }
 }
 
 /* General fix for overflow issues */
 html, body {
-  overflow: hidden;
   width: 100%;
   height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -32,6 +36,8 @@ html, body {
 .overflow-container {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  height: 100%;
+  width: 100%;
 }
 
 /* Ensure proper z-index for popups/modals */

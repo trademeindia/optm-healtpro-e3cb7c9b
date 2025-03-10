@@ -91,11 +91,15 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased min-h-screen w-full;
   }
   
   /* Make the app more responsive on smaller screens */
   html, body {
-    @apply overflow-hidden touch-manipulation text-base;
+    @apply w-full min-h-screen touch-manipulation text-base overflow-x-hidden;
+  }
+
+  #root {
+    @apply w-full min-h-screen;
   }
 }
