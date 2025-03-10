@@ -1,4 +1,6 @@
 
+import { AppointmentStatus } from '@/types/appointment';
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -11,7 +13,7 @@ export interface CalendarEvent {
   patientName?: string;
   doctorId?: string;
   doctorName?: string;
-  status?: string;
+  status?: AppointmentStatus;
   type?: string;
   color?: string;
   isAvailable?: boolean;
@@ -33,5 +35,5 @@ export interface UpcomingAppointment {
   patientId?: string;
   type?: string;
   location?: string;
-  status?: string;
+  status?: AppointmentStatus;
 }

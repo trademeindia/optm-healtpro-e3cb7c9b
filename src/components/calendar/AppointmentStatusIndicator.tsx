@@ -31,7 +31,7 @@ export const AppointmentStatusIndicator: React.FC<AppointmentStatusIndicatorProp
   status,
   className
 }) => {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.scheduled;
   
   return (
     <div className={cn("flex items-center gap-2", className)}>
