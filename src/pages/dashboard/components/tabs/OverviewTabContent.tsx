@@ -7,6 +7,7 @@ import LegacyCharts from '../LegacyCharts';
 import { AppointmentsDashboard } from '@/components/dashboard/appointments';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
 import PatientBiomarkers from '@/components/dashboard/PatientBiomarkers';
+import { mockBiomarkers } from '@/data/mockBiomarkerData';
 
 interface OverviewTabContentProps {
   dashboardData: any;
@@ -47,7 +48,7 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
       {/* Two-column layout for charts and biomarkers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SymptomProgressChart />
-        <PatientBiomarkers />
+        <PatientBiomarkers biomarkers={mockBiomarkers} />
       </div>
       
       {/* Legacy Charts Section */}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
@@ -29,6 +28,10 @@ const MedicalHistoryTabContent: React.FC<MedicalHistoryTabContentProps> = ({
     );
   }, [patients, searchQuery]);
 
+  const handleUpdatePatient = (updatedPatient: any) => {
+    console.log('Updating patient:', updatedPatient);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -45,7 +48,11 @@ const MedicalHistoryTabContent: React.FC<MedicalHistoryTabContentProps> = ({
       </div>
 
       {selectedPatient ? (
-        <PatientHistory patient={selectedPatient} onClose={onClosePatientHistory} />
+        <PatientHistory 
+          patient={selectedPatient} 
+          onClose={onClosePatientHistory}
+          onUpdate={handleUpdatePatient}
+        />
       ) : (
         <Card>
           <CardHeader className="pb-3">

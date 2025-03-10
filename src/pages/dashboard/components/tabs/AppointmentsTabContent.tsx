@@ -37,6 +37,11 @@ const AppointmentsTabContent: React.FC<AppointmentsTabContentProps> = ({
     }
   };
 
+  // Modified to properly handle the Promise<void> return type
+  const handleAuthorizeCalendar = async () => {
+    await authorizeCalendar();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
@@ -56,7 +61,7 @@ const AppointmentsTabContent: React.FC<AppointmentsTabContentProps> = ({
           calendarData={calendarData}
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
-          onConnectCalendar={authorizeCalendar}
+          onConnectCalendar={handleAuthorizeCalendar}
           isConnecting={isLoading}
           onEventsChange={refreshCalendar}
           calendarViewRef={calendarViewRef}
