@@ -1,10 +1,13 @@
 
 import React from 'react';
-import { Dialog } from '@/components/ui/dialog';
-import { DialogContent as UIDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BiomarkerDetailDialogProps } from './types';
 import DialogHeader from './dialog/DialogHeader';
-import DialogContentSection from './dialog/DialogContent';
+import BiomarkerBasicInfo from './dialog/BiomarkerBasicInfo';
+import BiomarkerExplanation from './dialog/BiomarkerExplanation';
+import MusclesAffected from './dialog/MusclesAffected';
+import PossibleCauses from './dialog/PossibleCauses';
+import Recommendations from './dialog/Recommendations';
 import DisclaimerFooter from './dialog/DisclaimerFooter';
 
 const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({ 
@@ -16,11 +19,18 @@ const BiomarkerDetailDialog: React.FC<BiomarkerDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <UIDialogContent className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-4 md:p-6 biomarker-dialog-content">
+      <DialogContent className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-4 md:p-6 biomarker-dialog-content">
         <DialogHeader biomarker={biomarker} />
-        <DialogContentSection biomarker={biomarker} />
-        <DisclaimerFooter />
-      </UIDialogContent>
+        
+        <div className="space-y-4 md:space-y-6 py-4 md:py-6 biomarker-dialog-section">
+          <BiomarkerBasicInfo biomarker={biomarker} />
+          <BiomarkerExplanation biomarker={biomarker} />
+          <MusclesAffected biomarker={biomarker} />
+          <PossibleCauses biomarker={biomarker} />
+          <Recommendations biomarker={biomarker} />
+          <DisclaimerFooter />
+        </div>
+      </DialogContent>
     </Dialog>
   );
 };

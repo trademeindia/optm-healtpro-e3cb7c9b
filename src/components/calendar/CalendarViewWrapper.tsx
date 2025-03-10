@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import ConnectCalendarCard from './ConnectCalendarCard';
 import CalendarView from './CalendarView';
@@ -44,7 +44,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
             />
           ) : (
             <div className="space-y-2">
-              <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as 'day' | 'week' | 'month')} className="mt-2">
+              <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as 'day' | 'week' | 'month')}>
                 <TabsList className="mb-4">
                   <TabsTrigger value="day">Day</TabsTrigger>
                   <TabsTrigger value="week">Week</TabsTrigger>

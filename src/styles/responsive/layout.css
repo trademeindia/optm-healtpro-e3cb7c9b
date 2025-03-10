@@ -2,111 +2,50 @@
 /* Fix dashboard grid on smaller screens */
 @media (max-width: 1024px) {
   .dashboard-grid {
-    @apply flex flex-col p-4;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
   }
   
   .dashboard-grid > div {
-    @apply mb-4 w-full;
+    margin-bottom: 1rem;
+    width: 100%;
   }
 }
 
 /* Fix table layouts on mobile */
 @media (max-width: 640px) {
   .responsive-table {
-    @apply block overflow-x-auto whitespace-nowrap w-full;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
   }
 }
 
 /* General fix for overflow issues */
 html, body {
-  @apply w-full h-full overflow-x-hidden overflow-y-auto relative;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
 }
 
 /* Fix content overflow */
 .overflow-container {
-  @apply overflow-y-auto h-full w-full;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  height: 100%;
+  width: 100%;
 }
 
 /* Ensure proper z-index for popups/modals */
 .popup, .modal {
-  @apply z-[100];
+  z-index: 100;
 }
 
 /* Ensure dropdowns appear above other elements */
 .select-menu, .dropdown-menu {
-  @apply z-50;
-}
-
-/* Dashboard specific styles */
-.dashboard-container {
-  @apply h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900;
-}
-
-.dashboard-content {
-  @apply flex-1 overflow-y-auto;
-}
-
-.dashboard-header {
-  @apply sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700;
-}
-
-.dashboard-tabs {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden;
-}
-
-.dashboard-tab-content {
-  @apply p-4 md:p-6;
-}
-
-/* Fix tab alignment and responsiveness */
-.dashboard-tabs-list {
-  @apply flex flex-wrap gap-1 p-1 md:p-2 bg-gray-50 dark:bg-gray-900;
-}
-
-.dashboard-tab-trigger {
-  @apply flex items-center justify-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-colors
-         hover:bg-gray-100 dark:hover:bg-gray-700
-         data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800
-         data-[state=active]:shadow-sm;
-}
-
-/* Make sure tab content is visible with proper spacing */
-.dashboard-tabs .tabs-content {
-  @apply p-0 m-0;
-}
-
-/* Ensure proper spacing between dashboard cards */
-.dashboard-card {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6;
-}
-
-/* Responsive header adjustments */
-@media (max-width: 640px) {
-  .dashboard-header-container {
-    @apply flex-col items-start;
-  }
-  
-  .dashboard-search {
-    @apply w-full mt-2;
-  }
-}
-
-/* Fix for dark mode contrast */
-@media (prefers-color-scheme: dark) {
-  .dark\:bg-gray-800 {
-    @apply bg-gray-800;
-  }
-  
-  .dark\:bg-gray-900 {
-    @apply bg-gray-900;
-  }
-  
-  .dark\:text-white {
-    @apply text-gray-100;
-  }
-  
-  .dark\:border-gray-700 {
-    @apply border-gray-700;
-  }
+  z-index: 50 !important;
 }
