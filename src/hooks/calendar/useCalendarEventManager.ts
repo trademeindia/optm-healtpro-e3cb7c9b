@@ -50,12 +50,24 @@ export const useCalendarEventManager = (
     
     try {
       // In a real app, this would be an API call
+      console.log('Creating event:', JSON.stringify(eventData, (key, value) => {
+        if (key === 'start' || key === 'end') {
+          return {
+            _type: 'Date',
+            value: {
+              iso: value instanceof Date ? value.toISOString() : new Date(value).toISOString(),
+              value: value instanceof Date ? value.getTime() : new Date(value).getTime(),
+              local: value instanceof Date ? value.toString() : new Date(value).toString()
+            }
+          };
+        }
+        return value;
+      }, 2));
+      
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulate successful creation
-      console.log('Creating event:', eventData);
-      
-      toast.success('Event created successfully', {
+      toast.success('Appointment created successfully', {
         description: 'Your appointment has been added to the calendar',
         duration: 3000
       });
@@ -69,8 +81,8 @@ export const useCalendarEventManager = (
     } catch (error) {
       console.error('Error creating event:', error);
       
-      toast.error('Failed to create event', {
-        description: 'There was an error creating your event. Please try again.',
+      toast.error('Failed to create appointment', {
+        description: 'There was an error creating your appointment. Please try again.',
         duration: 3000
       });
       
@@ -89,12 +101,24 @@ export const useCalendarEventManager = (
     
     try {
       // In a real app, this would be an API call
+      console.log('Updating event:', eventId, JSON.stringify(eventData, (key, value) => {
+        if (key === 'start' || key === 'end') {
+          return {
+            _type: 'Date',
+            value: {
+              iso: value instanceof Date ? value.toISOString() : new Date(value).toISOString(),
+              value: value instanceof Date ? value.getTime() : new Date(value).getTime(),
+              local: value instanceof Date ? value.toString() : new Date(value).toString()
+            }
+          };
+        }
+        return value;
+      }, 2));
+      
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulate successful update
-      console.log('Updating event:', eventId, eventData);
-      
-      toast.success('Event updated successfully', {
+      toast.success('Appointment updated successfully', {
         description: 'Your appointment details have been updated',
         duration: 3000
       });
@@ -108,8 +132,8 @@ export const useCalendarEventManager = (
     } catch (error) {
       console.error('Error updating event:', error);
       
-      toast.error('Failed to update event', {
-        description: 'There was an error updating your event. Please try again.',
+      toast.error('Failed to update appointment', {
+        description: 'There was an error updating your appointment. Please try again.',
         duration: 3000
       });
       
@@ -123,12 +147,12 @@ export const useCalendarEventManager = (
   const handleDeleteEvent = useCallback(async (eventId: string): Promise<boolean> => {
     try {
       // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate successful deletion
       console.log('Deleting event:', eventId);
       
-      toast.success('Event deleted successfully', {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Appointment deleted successfully', {
         description: 'The appointment has been removed from your calendar',
         duration: 3000
       });
@@ -142,8 +166,8 @@ export const useCalendarEventManager = (
     } catch (error) {
       console.error('Error deleting event:', error);
       
-      toast.error('Failed to delete event', {
-        description: 'There was an error deleting the event. Please try again.',
+      toast.error('Failed to delete appointment', {
+        description: 'There was an error deleting the appointment. Please try again.',
         duration: 3000
       });
       

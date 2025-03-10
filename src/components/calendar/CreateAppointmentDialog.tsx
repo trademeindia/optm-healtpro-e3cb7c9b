@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDialogForm from './appointments/AppointmentDialogForm';
 import AppointmentDialogActions from './appointments/AppointmentDialogActions';
+import { parse, set } from 'date-fns';
 
 interface CreateAppointmentDialogProps {
   open: boolean;
@@ -27,15 +28,40 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Reset form when opening dialog with a new selected date
+  useEffect(() => {
+    if (open) {
+      setDate(selectedDate);
+    }
+  }, [open, selectedDate]);
+
+  const parseTimeToDate = (baseDate: Date, timeString: string): Date => {
+    // Parse the time string to get hours and minutes
+    const timeFormat = timeString.includes('AM') || timeString.includes('PM') ? 'h:mm a' : 'HH:mm';
+    const parsed = parse(timeString, timeFormat, new Date());
+    
+    // Create a new date with the base date's year, month, day and the parsed time
+    return set(new Date(baseDate), {
+      hours: parsed.getHours(),
+      minutes: parsed.getMinutes(),
+      seconds: 0,
+      milliseconds: 0
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
+      // Convert time strings to Date objects using the selected date as the base
+      const startDateTime = parseTimeToDate(date, startTime);
+      const endDateTime = parseTimeToDate(date, endTime);
+      
       const eventData: Partial<CalendarEvent> = {
         title: `${type} - ${patient}`,
-        start: date,
-        end: date,
+        start: startDateTime,
+        end: endDateTime,
         type,
         patientName: patient,
         location,

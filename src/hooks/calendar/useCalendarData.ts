@@ -10,6 +10,7 @@ export function useCalendarData(isAuthorized: boolean) {
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   const fetchEvents = useCallback(async () => {
     if (!isAuthorized) return;
@@ -58,6 +59,9 @@ export function useCalendarData(isAuthorized: boolean) {
       duration: 1500
     });
     
+    // Force a refresh by updating the lastRefresh timestamp
+    setLastRefresh(Date.now());
+    
     await fetchEvents();
     
     toast.success("Calendar refreshed", {
@@ -71,7 +75,7 @@ export function useCalendarData(isAuthorized: boolean) {
     if (isAuthorized) {
       fetchEvents();
     }
-  }, [isAuthorized, selectedDate, fetchEvents]);
+  }, [isAuthorized, selectedDate, fetchEvents, lastRefresh]);
 
   return {
     isLoading,
