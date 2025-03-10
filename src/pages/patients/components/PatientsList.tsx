@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -10,15 +11,18 @@ import {
 } from './patients-list';
 import { PatientStatistics } from './PatientStatistics';
 import { Patient } from '../types';
+import { Spinner } from '@/components/ui/spinner';
 
 interface PatientsListProps {
   patients: Patient[];
   onViewPatient: (patientId: number) => void;
+  isLoading?: boolean; // Added to match the updated interface
 }
 
 export const PatientsList: React.FC<PatientsListProps> = ({
   patients,
   onViewPatient,
+  isLoading = false, // Default to false if not provided
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'lastVisit' | 'condition'>('lastVisit');
@@ -65,11 +69,23 @@ export const PatientsList: React.FC<PatientsListProps> = ({
 
   // Show initial data loaded notification
   useEffect(() => {
-    toast.success("Patient data loaded", {
-      description: "Viewing your patient list",
-      duration: 3000
-    });
-  }, []);
+    if (!isLoading && patients.length > 0) {
+      toast.success("Patient data loaded", {
+        description: "Viewing your patient list",
+        duration: 3000
+      });
+    }
+  }, [isLoading, patients.length]);
+
+  // Show loading state if isLoading is true
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Spinner size="lg" className="mb-4" />
+        <p className="text-muted-foreground">Loading patient data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

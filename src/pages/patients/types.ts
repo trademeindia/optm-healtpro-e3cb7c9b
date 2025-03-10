@@ -37,6 +37,7 @@ export interface PatientDetailsProps {
 export interface PatientsListProps {
   patients: Patient[];
   onViewPatient: (patientId: number) => void;
+  isLoading?: boolean; // Added this optional property
 }
 
 export interface PatientsLayoutProps {
