@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import {
   PatientListHeader,
@@ -25,7 +24,6 @@ export const PatientsList: React.FC<PatientsListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'lastVisit' | 'condition'>('lastVisit');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const queryClient = useQueryClient();
 
   // Filter patients based on search term
   const filteredPatients = useMemo(() => {
@@ -66,32 +64,13 @@ export const PatientsList: React.FC<PatientsListProps> = ({
     }
   };
 
-  // Force refresh patient data every 60 seconds to ensure sync
+  // Show initial data loaded notification
   useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
-    }, 60000);
-    
-    return () => clearInterval(interval);
-  }, [queryClient]);
-
-  // Sync notification when patient data updates
-  useEffect(() => {
-    const syncData = async () => {
-      try {
-        await queryClient.fetchQuery({ queryKey: ['patients'] });
-        toast.success("Patient data synchronized", {
-          description: "Latest patient information has been loaded",
-          duration: 3000
-        });
-      } catch (error) {
-        console.error("Error syncing patient data:", error);
-      }
-    };
-
-    // Initial sync when component mounts
-    syncData();
-  }, [queryClient]);
+    toast.success("Patient data loaded", {
+      description: "Viewing your patient list",
+      duration: 3000
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
