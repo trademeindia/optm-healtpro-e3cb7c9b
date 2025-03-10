@@ -8,7 +8,7 @@ export interface ActivityTrackerProps {
   title: string;
   data: { day: string; value: number }[];
   unit: string;
-  currentValue: number;
+  currentValue: number;  // This is the key property that was mismatched
   source?: string;
   lastSync?: string;
   className?: string;

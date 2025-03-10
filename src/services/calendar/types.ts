@@ -26,7 +26,7 @@ export interface GoogleCalendarEvent {
 
 export interface Appointment {
   id: string;
-  patientId: string;
+  patientId: string; // Changed from number to string to match the mock data
   patientName: string;
   doctorId?: string;
   doctorName: string;

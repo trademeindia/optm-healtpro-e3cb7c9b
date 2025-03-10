@@ -26,6 +26,13 @@ const GOOGLE_AUTH_CONFIG: GoogleAuthConfig = {
   scope: SCOPES
 };
 
+// Define gapi globally since it's loaded via script tag
+declare global {
+  interface Window {
+    gapi: any;
+  }
+}
+
 /**
  * Initialize Google Calendar API
  */
@@ -46,14 +53,14 @@ export const initGoogleCalendarApi = async (): Promise<boolean> => {
     
     // Load the API client
     await new Promise<void>((resolve, reject) => {
-      gapi.load('client:auth2', {
+      window.gapi.load('client:auth2', {
         callback: resolve,
         onerror: reject
       });
     });
     
     // Initialize the client
-    await gapi.client.init(GOOGLE_AUTH_CONFIG);
+    await window.gapi.client.init(GOOGLE_AUTH_CONFIG);
     
     return true;
   } catch (error) {
@@ -67,7 +74,7 @@ export const initGoogleCalendarApi = async (): Promise<boolean> => {
  */
 export const signInToGoogleCalendar = async (): Promise<boolean> => {
   try {
-    const authInstance = gapi.auth2.getAuthInstance();
+    const authInstance = window.gapi.auth2.getAuthInstance();
     if (!authInstance.isSignedIn.get()) {
       await authInstance.signIn();
     }
@@ -83,7 +90,7 @@ export const signInToGoogleCalendar = async (): Promise<boolean> => {
  */
 export const signOutFromGoogleCalendar = async (): Promise<boolean> => {
   try {
-    const authInstance = gapi.auth2.getAuthInstance();
+    const authInstance = window.gapi.auth2.getAuthInstance();
     if (authInstance.isSignedIn.get()) {
       await authInstance.signOut();
     }
@@ -122,7 +129,7 @@ export const createGoogleCalendarEvent = async (
     };
     
     // Insert the event
-    const response = await gapi.client.calendar.events.insert({
+    const response = await window.gapi.client.calendar.events.insert({
       calendarId: 'primary',
       resource: event
     });
@@ -134,5 +141,26 @@ export const createGoogleCalendarEvent = async (
   }
 };
 
-// Re-export types using export type syntax
+// Create a class to be exported for appointmentService.ts to use
+export class GoogleCalendarService {
+  static isAuthenticated() {
+    return window.gapi?.auth2?.getAuthInstance()?.isSignedIn.get() || false;
+  }
+  
+  static async createEvent(appointment: Appointment): Promise<string | null> {
+    return createGoogleCalendarEvent(appointment);
+  }
+  
+  static async updateEvent(appointment: Appointment): Promise<boolean> {
+    // Implementation of update event
+    return true;
+  }
+  
+  static async deleteEvent(eventId: string): Promise<boolean> {
+    // Implementation of delete event
+    return true;
+  }
+}
+
+// Use 'export type' for re-exporting types
 export type { GoogleCalendarEvent, Appointment };

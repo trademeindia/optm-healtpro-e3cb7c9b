@@ -29,7 +29,7 @@ interface DashboardMainContentProps {
   };
   activityData: {
     data: { day: string; value: number }[];
-    currentValue: number;
+    currentValue: number;  // Ensure this matches ActivityTrackerProps
     source?: string;
     lastSync?: string;
   };
