@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProps } from './sidebar/types';
 import { 
@@ -16,7 +16,6 @@ import { useSidebarResponsive } from './sidebar/useSidebarResponsive';
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user } = useAuth(); // Get the current user
   const { isOpen, isMobile, toggleSidebar, setIsOpen } = useSidebarResponsive();
   
@@ -34,9 +33,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     }
     
     // Show toast notification for navigation
-    toast({
-      title: `Navigating to ${path.substring(1)}`,
+    toast.info(`Navigating to ${path.substring(1)}`, {
       description: `Loading ${path.substring(1)} page...`,
+      duration: 3000
     });
     
     // Navigate to the path

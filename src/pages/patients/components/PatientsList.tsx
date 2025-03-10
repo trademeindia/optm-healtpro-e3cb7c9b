@@ -1,15 +1,13 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, ArrowUpDown, MoreHorizontal, User, Calendar, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from "sonner";
 import { PatientsListProps } from '../types';
 import { PatientStatistics } from './PatientStatistics';
 
 export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
   
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -18,23 +16,23 @@ export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPati
   );
 
   const handleAddPatient = () => {
-    toast({
-      title: "Add Patient",
+    toast.info("Add Patient", {
       description: "Opening new patient form",
+      duration: 3000
     });
   };
 
   const handleScheduleAppointment = (patientId: number) => {
-    toast({
-      title: "Schedule Appointment",
+    toast.info("Schedule Appointment", {
       description: "Opening appointment scheduler",
+      duration: 3000
     });
   };
 
   const handleViewOptions = (patientId: number) => {
-    toast({
-      title: "More Options",
+    toast.info("More Options", {
       description: "Opening additional options menu",
+      duration: 3000
     });
   };
   
@@ -205,3 +203,4 @@ export const PatientsList: React.FC<PatientsListProps> = ({ patients, onViewPati
     </div>
   );
 };
+

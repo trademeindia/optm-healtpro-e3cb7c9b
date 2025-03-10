@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from "sonner";
 import MedicalRecordsTabs from '@/components/patient/MedicalRecordsTabs';
 import DeleteConfirmDialog from './patient-history/DeleteConfirmDialog';
 import AddRecordDialog from './patient-history/AddRecordDialog';
@@ -9,7 +9,6 @@ import MainContent from './patient-history/MainContent';
 import { PatientHistoryProps, RecordFormData } from './patient-history/types';
 
 const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpdate }) => {
-  const { toast } = useToast();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showAddRecordDialog, setShowAddRecordDialog] = useState(false);
   const [recordType, setRecordType] = useState('');
@@ -28,9 +27,9 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   };
 
   const handleRecordSubmit = () => {
-    toast({
-      title: "Record Added",
+    toast.success("Record Added", {
       description: `${recordForm.name} has been added to the patient's records.`,
+      duration: 3000
     });
     setShowAddRecordDialog(false);
     setRecordForm({
@@ -67,24 +66,24 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
 
   const handleRegionSelect = (region: string) => {
     setSelectedRegion(region);
-    toast({
-      title: "Region Selected",
+    toast.success("Region Selected", {
       description: `You selected the ${region} region.`,
+      duration: 3000
     });
   };
 
   const handleAssignTests = () => {
-    toast({
-      title: "Tests Assigned",
+    toast.success("Tests Assigned", {
       description: "Lab tests have been assigned to this patient.",
+      duration: 3000
     });
   };
 
   const handleDeleteConfirm = () => {
     setShowDeleteConfirm(false);
-    toast({
-      title: "Record Deleted",
+    toast.success("Record Deleted", {
       description: "The patient record has been permanently deleted.",
+      duration: 3000
     });
     onClose();
   };
