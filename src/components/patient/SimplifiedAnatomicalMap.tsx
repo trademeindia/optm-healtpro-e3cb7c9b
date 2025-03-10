@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
 import MapVisualization from '@/components/patient/anatomical-map/MapVisualization';
+import { HotSpot } from '@/components/patient/anatomical-map/types';
 
 interface SimplifiedAnatomicalMapProps {
   patientId: number;
@@ -15,14 +16,35 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
 }) => {
   const [activeSystem, setActiveSystem] = useState("skeletal");
   const [zoom, setZoom] = useState(1);
-  const [activeHotspot, setActiveHotspot] = useState<any>(null);
+  const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  // Mock hotspots data
-  const hotspots = [
-    { id: 1, name: "Shoulder", x: 50, y: 25, description: "Right shoulder area" },
-    { id: 2, name: "Lower Back", x: 50, y: 60, description: "Lumbar region" },
-    { id: 3, name: "Knee", x: 45, y: 80, description: "Left knee joint" }
+  // Updated hotspots data to match the HotSpot type
+  const hotspots: HotSpot[] = [
+    { 
+      id: '1', 
+      region: 'Shoulder', 
+      size: 10, 
+      color: '#FF4500', 
+      label: 'Right shoulder area',
+      description: 'Right shoulder area'
+    },
+    { 
+      id: '2', 
+      region: 'Lower Back', 
+      size: 10, 
+      color: '#FFA500', 
+      label: 'Lumbar region',
+      description: 'Lumbar region'
+    },
+    { 
+      id: '3', 
+      region: 'Knee', 
+      size: 10, 
+      color: '#00FF00', 
+      label: 'Left knee joint',
+      description: 'Left knee joint'
+    }
   ];
 
   const handleZoomIn = () => {
@@ -42,10 +64,10 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
     setImageLoaded(true);
   };
 
-  const handleHotspotClick = (hotspot: any) => {
+  const handleHotspotClick = (hotspot: HotSpot) => {
     setActiveHotspot(hotspot);
     if (onRegionSelect) {
-      onRegionSelect(hotspot.name);
+      onRegionSelect(hotspot.region);
     }
   };
 
@@ -96,7 +118,7 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
         <div className="flex-1 mt-4 md:mt-0">
           {activeHotspot ? (
             <div className="h-full p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-2">{activeHotspot.name}</h3>
+              <h3 className="text-lg font-medium mb-2">{activeHotspot.region}</h3>
               <p className="text-muted-foreground mb-4">{activeHotspot.description}</p>
               <div className="space-y-4">
                 <div>
