@@ -1,5 +1,7 @@
 
-import { useToast as useToastHook, toast as toastFunction } from "sonner";
+import { toast as toastFunction } from "sonner";
 
-export const useToast = useToastHook;
+// Export the toast function from sonner directly
 export const toast = toastFunction;
+
+// Since sonner doesn't export useToast, we don't need to import or re-export it

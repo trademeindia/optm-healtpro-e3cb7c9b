@@ -17,7 +17,7 @@ import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import NotFound from './pages/NotFound';
 import PatientDashboard from './pages/PatientDashboard';
-import PatientReportsPage from './pages/PatientReportsPage';
+import { PatientReportsPage } from './pages/PatientReportsPage';
 import OAuthCallback from './pages/OAuthCallback';
 import HealthAppsPage from './pages/HealthAppsPage';
 import AIAnalysisPage from './pages/AIAnalysisPage';

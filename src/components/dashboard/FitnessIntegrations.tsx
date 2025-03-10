@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   CheckCircle, 
   XCircle, 
@@ -39,7 +38,6 @@ const FitnessIntegrations: React.FC<FitnessIntegrationsProps> = ({
   onRefresh,
   className,
 }) => {
-  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<FitnessProvider | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,17 +57,16 @@ const FitnessIntegrations: React.FC<FitnessIntegrationsProps> = ({
     try {
       const success = await onConnect(selectedProvider.id);
       if (success) {
-        toast({
-          title: "Successfully connected",
+        toast.success("Successfully connected", {
           description: `Your ${selectedProvider.name} account has been connected and data is being synced.`,
+          duration: 3000
         });
         setIsOpen(false);
       }
     } catch (error) {
-      toast({
-        title: "Connection failed",
+      toast.error("Connection failed", {
         description: "There was an error connecting to the service. Please try again.",
-        variant: "destructive",
+        duration: 3000
       });
     } finally {
       setIsLoading(false);
@@ -81,16 +78,15 @@ const FitnessIntegrations: React.FC<FitnessIntegrationsProps> = ({
     try {
       const success = await onDisconnect(provider.id);
       if (success) {
-        toast({
-          title: "Disconnected",
+        toast.success("Disconnected", {
           description: `Your ${provider.name} account has been disconnected.`,
+          duration: 3000
         });
       }
     } catch (error) {
-      toast({
-        title: "Disconnection failed",
+      toast.error("Disconnection failed", {
         description: "There was an error disconnecting the service. Please try again.",
-        variant: "destructive",
+        duration: 3000
       });
     } finally {
       setIsLoading(false);
@@ -102,16 +98,15 @@ const FitnessIntegrations: React.FC<FitnessIntegrationsProps> = ({
     try {
       const success = await onRefresh(provider.id);
       if (success) {
-        toast({
-          title: "Data refreshed",
+        toast.success("Data refreshed", {
           description: `Your ${provider.name} data has been refreshed.`,
+          duration: 3000
         });
       }
     } catch (error) {
-      toast({
-        title: "Refresh failed",
+      toast.error("Refresh failed", {
         description: "There was an error refreshing your data. Please try again.",
-        variant: "destructive",
+        duration: 3000
       });
     } finally {
       setIsLoading(false);

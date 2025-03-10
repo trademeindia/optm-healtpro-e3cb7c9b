@@ -22,7 +22,6 @@ export interface FitnessData {
 }
 
 const useFitnessIntegration = () => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [providers, setProviders] = useState<FitnessProvider[]>([]);
   const [fitnessData, setFitnessData] = useState<FitnessData>({});
