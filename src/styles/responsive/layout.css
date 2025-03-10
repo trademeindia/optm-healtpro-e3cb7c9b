@@ -21,6 +21,17 @@
     white-space: nowrap;
     width: 100%;
   }
+  
+  /* Ensure tables don't overflow their container */
+  table {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Better spacing for table cells on mobile */
+  td, th {
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 /* General fix for overflow issues */
@@ -48,4 +59,58 @@ html, body {
 /* Ensure dropdowns appear above other elements */
 .select-menu, .dropdown-menu {
   z-index: 50 !important;
+}
+
+/* Dashboard layout grid improvements */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+
+/* Better responsive behavior for patient cards */
+@media (max-width: 768px) {
+  .patient-card {
+    padding: 0.75rem;
+  }
+  
+  .patient-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .patient-avatar {
+    margin-bottom: 0.5rem;
+    margin-right: 0;
+  }
+  
+  .patient-name {
+    font-size: 1rem;
+  }
+  
+  .patient-table-wrapper {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+    padding: 0 1rem;
+  }
+}
+
+/* Content wrapper improvements */
+.content-wrapper {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .content-wrapper {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-wrapper {
+    padding: 0 2rem;
+  }
 }

@@ -14,7 +14,7 @@ export const PatientsTable: React.FC<PatientsTableProps> = ({
   children
 }) => {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto responsive-table">
       <table className="w-full border-collapse">
         {children}
       </table>
