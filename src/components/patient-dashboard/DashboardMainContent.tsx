@@ -11,7 +11,6 @@ import MessageYourDoctor from '@/components/patient-dashboard/MessageYourDoctor'
 import MedicalDocuments from '@/components/patient-dashboard/MedicalDocuments';
 import PersonalInformation from '@/components/patient-dashboard/PersonalInformation';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
-import { formatAppointments } from '@/utils/appointmentUtils';
 
 interface HealthMetricData {
   value: number | string;
@@ -61,9 +60,6 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   handleConfirmAppointment,
   handleRescheduleAppointment
 }) => {
-  // Format appointments for the UpcomingAppointments component
-  const formattedAppointments = formatAppointments(upcomingAppointments);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       {/* Health metrics section */}
@@ -105,8 +101,12 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       {/* Activity tracker */}
       <div className="md:col-span-2">
         <ActivityTracker
+          title="Daily Activity"
           data={activityData.data}
-          currentSteps={activityData.currentValue}
+          unit="steps"
+          currentValue={activityData.currentValue}
+          source={activityData.source}
+          lastSync={activityData.lastSync}
         />
       </div>
 
@@ -131,7 +131,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       {/* Upcoming appointments */}
       <div className="md:col-span-1">
         <UpcomingAppointments
-          appointments={formattedAppointments}
+          appointments={upcomingAppointments}
           onConfirm={handleConfirmAppointment}
           onReschedule={handleRescheduleAppointment}
         />

@@ -31,12 +31,11 @@ export const useAppointmentHandlers = () => {
   };
 };
 
-export const formatAppointments = (appointments: Appointment[]) => {
-  return appointments.map(appointment => ({
-    id: appointment.id,
-    date: appointment.date,
-    time: appointment.time,
-    doctor: appointment.doctorName,
-    type: appointment.type
-  }));
+/**
+ * Format appointments for UI consumption
+ * Returns a properly typed array for UI components
+ */
+export const formatAppointments = (appointments: Appointment[]): Appointment[] => {
+  // Return the appointments directly as they already match the Appointment type
+  return appointments;
 };

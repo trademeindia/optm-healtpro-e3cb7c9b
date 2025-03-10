@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
@@ -7,8 +6,7 @@ import { mockActivityData } from '@/data/mockActivityData';
 import { mockTreatmentTasks } from '@/data/mockTreatmentTasks';
 import { mockAppointments } from '@/data/mockAppointments';
 import { processHealthMetrics } from '@/utils/healthMetricsUtils';
-import { useAppointmentHandlers } from '@/utils/appointmentUtils';
-import { Appointment } from '@/services/calendar/types';
+import { useAppointmentHandlers, formatAppointments } from '@/utils/appointmentUtils';
 
 export const usePatientDashboard = () => {
   const { toast } = useToast();
@@ -51,11 +49,15 @@ export const usePatientDashboard = () => {
   };
   
   const hasConnectedApps = providers.some(p => p.isConnected);
+  
+  // Format appointments for consistent usage across components
+  const formattedAppointments = formatAppointments(mockAppointments);
 
   return {
     activityData: steps,
     treatmentTasks: mockTreatmentTasks,
-    upcomingAppointments: mockAppointments,
+    upcomingAppointments: mockAppointments, // Keep original appointments for internal use
+    formattedAppointments, // Add formatted appointments for UI components
     healthMetrics,
     hasConnectedApps,
     biologicalAge: mockBiologicalAge,

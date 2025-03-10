@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 
-interface ActivityTrackerProps {
+export interface ActivityTrackerProps {
   title: string;
   data: { day: string; value: number }[];
   unit: string;
