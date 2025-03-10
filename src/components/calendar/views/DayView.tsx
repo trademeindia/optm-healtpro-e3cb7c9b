@@ -11,6 +11,14 @@ const DayView: React.FC<CalendarViewProps> = ({
   getEventsForHour,
   onEventClick
 }) => {
+  // Function to safely format dates, handling string or Date objects
+  const safeFormatDate = (date: string | Date, formatString: string) => {
+    if (typeof date === 'string') {
+      return formatDate(new Date(date), formatString);
+    }
+    return formatDate(date, formatString);
+  };
+
   return (
     <div className="border rounded-md overflow-hidden">
       <div className="grid grid-cols-1 divide-y">
@@ -37,7 +45,7 @@ const DayView: React.FC<CalendarViewProps> = ({
                         {event.isAvailable ? 'Available' : 'Booked'}
                       </div>
                       <div className="text-xs">
-                        {formatDate(event.start, "h:mm a")} - {formatDate(event.end, "h:mm a")}
+                        {safeFormatDate(event.start, "h:mm a")} - {safeFormatDate(event.end, "h:mm a")}
                       </div>
                     </div>
                   ))}

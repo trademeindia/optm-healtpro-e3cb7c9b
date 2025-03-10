@@ -2,6 +2,14 @@
 import { CalendarEvent } from './types';
 import { formatDate } from '@/lib/utils';
 
+// Helper function to ensure we're working with Date objects
+const ensureDate = (dateValue: string | Date): Date => {
+  if (typeof dateValue === 'string') {
+    return new Date(dateValue);
+  }
+  return dateValue;
+};
+
 export function generateMockEvents(baseDate: Date): CalendarEvent[] {
   const events: CalendarEvent[] = [];
   const startOfWeek = new Date(baseDate);
@@ -95,14 +103,14 @@ export function generateMockEvents(baseDate: Date): CalendarEvent[] {
 
 export function mapEventsToAppointments(events: CalendarEvent[]): any[] {
   return events
-    .filter(event => !event.isAvailable && event.start > new Date())
-    .sort((a, b) => a.start.getTime() - b.start.getTime())
+    .filter(event => !event.isAvailable && ensureDate(event.start) > new Date())
+    .sort((a, b) => ensureDate(a.start).getTime() - ensureDate(b.start).getTime())
     .slice(0, 5)
     .map(event => ({
       id: event.id,
       title: event.title,
-      date: formatDate(event.start, "MMMM d, yyyy"),
-      time: formatDate(event.start, "h:mm a") + " - " + formatDate(event.end, "h:mm a"),
+      date: formatDate(ensureDate(event.start), "MMMM d, yyyy"),
+      time: formatDate(ensureDate(event.start), "h:mm a") + " - " + formatDate(ensureDate(event.end), "h:mm a"),
       patientName: event.patientName,
       patientId: event.patientId,
       type: event.type || "Consultation",
