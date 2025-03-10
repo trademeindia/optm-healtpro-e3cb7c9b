@@ -2,50 +2,70 @@
 /* Fix dashboard grid on smaller screens */
 @media (max-width: 1024px) {
   .dashboard-grid {
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
+    @apply flex flex-col p-4;
   }
   
   .dashboard-grid > div {
-    margin-bottom: 1rem;
-    width: 100%;
+    @apply mb-4 w-full;
   }
 }
 
 /* Fix table layouts on mobile */
 @media (max-width: 640px) {
   .responsive-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    width: 100%;
+    @apply block overflow-x-auto whitespace-nowrap w-full;
   }
 }
 
 /* General fix for overflow issues */
 html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: relative;
+  @apply w-full h-full overflow-x-hidden overflow-y-auto relative;
 }
 
 /* Fix content overflow */
 .overflow-container {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  height: 100%;
-  width: 100%;
+  @apply overflow-y-auto -webkit-overflow-scrolling-touch h-full w-full;
 }
 
 /* Ensure proper z-index for popups/modals */
 .popup, .modal {
-  z-index: 100;
+  @apply z-[100];
 }
 
 /* Ensure dropdowns appear above other elements */
 .select-menu, .dropdown-menu {
-  z-index: 50 !important;
+  @apply z-50;
+}
+
+/* Dashboard specific styles */
+.dashboard-container {
+  @apply h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900;
+}
+
+.dashboard-content {
+  @apply flex-1 overflow-y-auto;
+}
+
+.dashboard-header {
+  @apply sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700;
+}
+
+.dashboard-tabs {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm;
+}
+
+.dashboard-tab-content {
+  @apply p-6;
+}
+
+/* Fix tab alignment and responsiveness */
+.dashboard-tabs-list {
+  @apply flex flex-wrap gap-2 p-2 bg-gray-50 dark:bg-gray-900 rounded-t-lg;
+}
+
+.dashboard-tab-trigger {
+  @apply flex items-center gap-2 px-4 py-2 rounded-md transition-colors
+         hover:bg-gray-100 dark:hover:bg-gray-700
+         data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800
+         data-[state=active]:shadow-sm;
 }
