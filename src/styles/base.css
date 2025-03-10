@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -90,16 +89,19 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground antialiased min-h-screen w-full;
-  }
-  
-  /* Make the app more responsive on smaller screens */
   html, body {
-    @apply w-full min-h-screen touch-manipulation text-base overflow-x-hidden;
+    @apply w-full min-h-screen overflow-x-hidden overflow-y-auto;
   }
 
-  #root {
-    @apply w-full min-h-screen;
+  body {
+    @apply bg-background text-foreground antialiased;
   }
+}
+
+.glass-morphism {
+  @apply backdrop-blur-md bg-white/90 dark:bg-gray-950/90 shadow-lg;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80;
 }
