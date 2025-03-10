@@ -2,6 +2,7 @@
 import React from 'react';
 import VitalSignCard from './VitalSignCard';
 import { Heart, Activity, Thermometer, Wind } from 'lucide-react';
+import { CardGrid } from '@/components/ui/card-grid';
 
 interface VitalSignsProps {
   vitalSigns?: Array<{
@@ -50,7 +51,7 @@ const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
   return (
     <div>
       <h3 className="font-medium text-sm mb-3">Vital signs</h3>
-      <div className="grid grid-cols-2 gap-3">
+      <CardGrid columns={2} gap="sm">
         {vitals.map((vital, index) => (
           <VitalSignCard
             key={index}
@@ -61,7 +62,7 @@ const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
             icon={vital.icon}
           />
         ))}
-      </div>
+      </CardGrid>
     </div>
   );
 };

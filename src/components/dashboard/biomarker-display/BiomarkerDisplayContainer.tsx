@@ -4,6 +4,7 @@ import BiomarkerCard from './BiomarkerCard';
 import BiomarkerDetailDialog from './BiomarkerDetailDialog';
 import EmptyBiomarkerState from './EmptyBiomarkerState';
 import { Biomarker } from './types';
+import { CardGrid } from '@/components/ui/card-grid';
 
 interface BiomarkerDisplayContainerProps {
   biomarkers: Biomarker[];
@@ -18,7 +19,7 @@ const BiomarkerDisplayContainer: React.FC<BiomarkerDisplayContainerProps> = ({ b
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <CardGrid columns="responsive" gap="md">
         {biomarkers.map((biomarker) => (
           <BiomarkerCard 
             key={biomarker.id}
@@ -26,7 +27,7 @@ const BiomarkerDisplayContainer: React.FC<BiomarkerDisplayContainerProps> = ({ b
             onSelectBiomarker={setSelectedBiomarker} 
           />
         ))}
-      </div>
+      </CardGrid>
 
       <BiomarkerDetailDialog 
         biomarker={selectedBiomarker} 

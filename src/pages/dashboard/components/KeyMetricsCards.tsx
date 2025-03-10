@@ -3,10 +3,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, MessageSquare, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { CardGrid } from '@/components/ui/card-grid';
 
 const KeyMetricsCards: React.FC = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <CardGrid columns={4} gap="md" className="mb-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -92,7 +93,7 @@ const KeyMetricsCards: React.FC = () => {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </CardGrid>
   );
 };
 

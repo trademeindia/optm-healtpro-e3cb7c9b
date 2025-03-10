@@ -16,6 +16,7 @@ import MessageYourDoctor from './MessageYourDoctor';
 import HealthSyncButton from './HealthSyncButton';
 import BiologicalAge from '@/components/dashboard/BiologicalAge';
 import { Heart, Activity, Thermometer, Droplet } from 'lucide-react';
+import { CardGrid } from '@/components/ui/card-grid';
 
 interface DashboardMainContentProps {
   healthMetrics: {
@@ -105,7 +106,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
         />
 
         {/* Health Metrics */}
-        <div className="grid grid-cols-2 gap-4">
+        <CardGrid columns={2} gap="sm">
           <HealthMetric
             title="Heart Rate"
             value={healthMetrics.heartRate.value}
@@ -157,7 +158,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
             lastSync={healthMetrics.oxygen.lastSync}
             isConnected={!!healthMetrics.oxygen.source}
           />
-        </div>
+        </CardGrid>
         
         {/* Treatment Plan */}
         <TreatmentPlan

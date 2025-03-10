@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlayCircle, ArrowRight, FileText, Smartphone, Calendar, Activity } from 'lucide-react';
+import { CardGrid } from '@/components/ui/card-grid';
 
 interface HelpContentProps {
   searchQuery: string;
@@ -56,7 +57,7 @@ const HelpContent: React.FC<HelpContentProps> = ({ searchQuery }) => {
           Welcome to our platform! Here are some resources to help you get started:
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <CardGrid columns={2} gap="md" className="mb-6">
           {filteredGuides.map(guide => (
             <Card key={guide.id}>
               <CardHeader className="flex flex-row items-center gap-4">
@@ -73,7 +74,7 @@ const HelpContent: React.FC<HelpContentProps> = ({ searchQuery }) => {
               </CardFooter>
             </Card>
           ))}
-        </div>
+        </CardGrid>
         
         <div className="bg-primary/5 rounded-lg p-4 flex items-center gap-4">
           <div className="bg-primary/10 rounded-full p-2">
