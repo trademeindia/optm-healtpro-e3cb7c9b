@@ -11,13 +11,22 @@ import MessageYourDoctor from '@/components/patient-dashboard/MessageYourDoctor'
 import MedicalDocuments from '@/components/patient-dashboard/MedicalDocuments';
 import PersonalInformation from '@/components/patient-dashboard/PersonalInformation';
 import SymptomTracker from '@/components/dashboard/SymptomTracker';
+import { formatAppointments } from '@/utils/appointmentUtils';
+
+interface HealthMetricData {
+  value: number | string;
+  unit: string;
+  change: number;
+  source?: string;
+  lastSync?: string;
+}
 
 interface DashboardMainContentProps {
   healthMetrics: {
-    heartRate: { value: number; unit: string; change: number };
-    bloodPressure: { value: string; unit: string; change: number };
-    temperature: { value: number; unit: string; change: number };
-    oxygen: { value: number; unit: string; change: number };
+    heartRate: HealthMetricData;
+    bloodPressure: HealthMetricData;
+    temperature: HealthMetricData;
+    oxygen: HealthMetricData;
   };
   activityData: {
     data: { day: string; value: number }[];
@@ -35,7 +44,7 @@ interface DashboardMainContentProps {
   biologicalAge: number;
   chronologicalAge: number;
   hasConnectedApps: boolean;
-  onSyncData: () => void;
+  onSyncData: () => Promise<void>;
   handleConfirmAppointment: (id: string) => void;
   handleRescheduleAppointment: (id: string) => void;
 }
@@ -53,13 +62,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   handleRescheduleAppointment
 }) => {
   // Format appointments for the UpcomingAppointments component
-  const formattedAppointments = upcomingAppointments.map(appointment => ({
-    id: appointment.id,
-    date: appointment.date,
-    time: appointment.time,
-    doctor: appointment.doctorName,
-    type: appointment.type
-  }));
+  const formattedAppointments = formatAppointments(upcomingAppointments);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -67,25 +70,25 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <HealthMetric
           title="Heart Rate"
-          value={healthMetrics.heartRate.value}
+          value={Number(healthMetrics.heartRate.value)}
           unit={healthMetrics.heartRate.unit}
           change={healthMetrics.heartRate.change}
         />
         <HealthMetric
           title="Blood Pressure"
-          value={healthMetrics.bloodPressure.value}
+          value={healthMetrics.bloodPressure.value.toString()}
           unit={healthMetrics.bloodPressure.unit}
           change={healthMetrics.bloodPressure.change}
         />
         <HealthMetric
           title="Temperature"
-          value={healthMetrics.temperature.value}
+          value={Number(healthMetrics.temperature.value)}
           unit={healthMetrics.temperature.unit}
           change={healthMetrics.temperature.change}
         />
         <HealthMetric
           title="Oxygen Saturation"
-          value={healthMetrics.oxygen.value}
+          value={Number(healthMetrics.oxygen.value)}
           unit={healthMetrics.oxygen.unit}
           change={healthMetrics.oxygen.change}
         />
@@ -102,7 +105,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       {/* Activity tracker */}
       <div className="md:col-span-2">
         <ActivityTracker
-          activityData={activityData.data}
+          data={activityData.data}
           currentSteps={activityData.currentValue}
         />
       </div>
@@ -111,13 +114,18 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       <div className="md:col-span-1">
         <HealthSyncButton
           hasConnectedApps={hasConnectedApps}
-          onSyncData={onSyncData}
+          onSyncData={async () => { await onSyncData(); }}
         />
       </div>
 
       {/* Treatment plan */}
       <div className="md:col-span-2">
-        <TreatmentPlan tasks={treatmentTasks} />
+        <TreatmentPlan 
+          title="Today's Treatment Plan" 
+          date={new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          tasks={treatmentTasks}
+          progress={treatmentTasks.filter(task => task.completed).length / treatmentTasks.length}
+        />
       </div>
 
       {/* Upcoming appointments */}
