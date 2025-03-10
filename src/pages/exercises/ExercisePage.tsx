@@ -55,7 +55,7 @@ const ExercisePage: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 overflow-container">
           <div className="mb-6 pl-10 lg:pl-0">
             <h1 className="text-2xl font-bold">Exercise Therapy</h1>
             <p className="text-sm text-muted-foreground">
@@ -63,9 +63,9 @@ const ExercisePage: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
             {/* Main content - exercises and posture monitor */}
-            <div className="lg:col-span-8 space-y-6">
+            <div className="lg:col-span-8 space-y-4 md:space-y-6">
               <ExerciseContent 
                 showMonitor={showMonitor}
                 selectedExercise={selectedExercise}
@@ -79,7 +79,7 @@ const ExercisePage: React.FC = () => {
             </div>
             
             {/* Right column - progress tracking */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-4 md:space-y-6">
               <ProgressTracking 
                 muscleGroups={muscleGroups}
                 progressData={progressData}
