@@ -95,7 +95,7 @@ export function generateMockEvents(baseDate: Date): CalendarEvent[] {
 
 export function mapEventsToAppointments(events: CalendarEvent[]): any[] {
   return events
-    .filter(event => !event.isAvailable && new Date(event.start) > new Date())
+    .filter(event => !event.isAvailable && event.start > new Date())
     .sort((a, b) => a.start.getTime() - b.start.getTime())
     .slice(0, 5)
     .map(event => ({
