@@ -12,7 +12,7 @@ export interface Patient {
   lastVisit: string;
   nextVisit: string;
   medicalRecords?: any[];
-  biomarkers?: any[];
+  biomarkers?: any[]; // Added biomarkers property to fix the type error
 }
 
 export interface PatientsListProps {
