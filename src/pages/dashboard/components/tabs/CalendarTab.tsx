@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, RefreshCw, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,22 +26,27 @@ const CalendarTab: React.FC = () => {
     upcomingAppointments
   } = useCalendarIntegration();
 
-  // Ensure appointments data is valid
   const validAppointments = upcomingAppointments || [];
 
-  // Handle calendar connection with proper error handling
   const handleConnectCalendar = async () => {
     if (isConnecting) return;
     
     try {
       setIsConnecting(true);
       console.info("Starting calendar authorization process");
-      await authorizeCalendar();
+      const result = await authorizeCalendar();
+      
+      if (!result) {
+        throw new Error("Calendar authorization failed");
+      }
+      
       console.info("Calendar authorization successful");
       toast.success("Calendar connected successfully", {
         description: "Your Google Calendar has been connected",
         duration: 3000
       });
+      
+      await fetchEvents();
     } catch (error) {
       console.error("Calendar connection error:", error);
       toast.error("Failed to connect calendar", {
@@ -65,7 +69,6 @@ const CalendarTab: React.FC = () => {
     setIsCreateDialogOpen(true);
   };
 
-  // Safely handle refresh with error handling
   const handleRefresh = async () => {
     try {
       await refreshCalendar();
@@ -142,16 +145,17 @@ const CalendarTab: React.FC = () => {
                 onDateSelect={setSelectedDate}
               />
             ) : (
-              <div className="border border-dashed rounded-lg py-12 flex items-center justify-center">
-                <div className="text-center">
-                  <Calendar className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">Connect Google Calendar</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Connect your Google Calendar to manage appointments
+              <div className="border border-dashed rounded-lg p-8 flex items-center justify-center">
+                <div className="text-center max-w-sm">
+                  <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Connect Google Calendar</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Connect your Google Calendar to manage appointments and sync your schedule
                   </p>
                   <Button 
                     onClick={handleConnectCalendar} 
                     disabled={isConnecting}
+                    className="w-full"
                   >
                     {isConnecting ? (
                       <>
@@ -159,7 +163,10 @@ const CalendarTab: React.FC = () => {
                         Connecting...
                       </>
                     ) : (
-                      'Connect Calendar'
+                      <>
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Connect Calendar
+                      </>
                     )}
                   </Button>
                 </div>

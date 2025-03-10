@@ -36,7 +36,6 @@ export const useCalendarIntegration = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [error, setError] = useState<string | null>(null);
 
-  // Mock Google OAuth flow - in a real app, this would connect to Google OAuth
   const authorizeCalendar = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -50,30 +49,21 @@ export const useCalendarIntegration = () => {
       // In a real app, this would redirect to Google OAuth
       setIsAuthorized(true);
       
-      toast.success("Calendar Connected", {
-        description: "Your Google Calendar has been successfully connected",
-        duration: 3000
-      });
-      
       console.log("Calendar authorization successful");
       
       // Immediately fetch events after authorization
       await fetchEvents();
+      return true;
     } catch (error: any) {
       console.error("Authorization error:", error);
       setError(error.message || "Failed to connect to calendar");
       setIsAuthorized(false);
-      
-      toast.error("Connection Failed", {
-        description: "Could not connect to Google Calendar. Please try again.",
-        duration: 3000
-      });
+      return false;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchEvents]);
 
-  // Mock data fetch for demo
   const fetchEvents = useCallback(async () => {
     if (!isAuthorized) return;
     
@@ -142,14 +132,12 @@ export const useCalendarIntegration = () => {
     });
   }, [isAuthorized, fetchEvents]);
 
-  // Fetch events when the component mounts or when isAuthorized changes
   useEffect(() => {
     if (isAuthorized) {
       fetchEvents();
     }
   }, [isAuthorized, fetchEvents]);
 
-  // Refetch when the selected date changes
   useEffect(() => {
     if (isAuthorized) {
       fetchEvents();
@@ -170,7 +158,6 @@ export const useCalendarIntegration = () => {
   };
 };
 
-// Helper function to generate mock events for demo purposes
 function generateMockEvents(baseDate: Date): CalendarEvent[] {
   const events: CalendarEvent[] = [];
   const startOfWeek = new Date(baseDate);
