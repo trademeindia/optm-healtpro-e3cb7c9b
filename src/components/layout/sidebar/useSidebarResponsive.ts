@@ -8,17 +8,24 @@ export const useSidebarResponsive = () => {
   // Check if mobile on mount and when window resizes
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth < 1024) {
+      const mobileView = window.innerWidth < 1024;
+      setIsMobile(mobileView);
+      
+      // Only auto-close sidebar on mobile
+      if (mobileView) {
         setIsOpen(false);
       } else {
         setIsOpen(true);
       }
     };
     
+    // Initial check
     checkIfMobile();
+    
+    // Set up listener for window resize
     window.addEventListener('resize', checkIfMobile);
     
+    // Clean up listener when component unmounts
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
