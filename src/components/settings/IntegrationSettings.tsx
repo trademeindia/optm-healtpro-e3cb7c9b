@@ -1,10 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Smartphone, Watch, Activity, Heart, Dumbbell, Bluetooth } from 'lucide-react';
-import GoogleCalendarSettings from './GoogleCalendarSettings';
 
 const IntegrationSettings: React.FC = () => {
   const { toast } = useToast();
@@ -28,8 +28,6 @@ const IntegrationSettings: React.FC = () => {
       <h2 className="text-lg font-semibold mb-4">Health App Integrations</h2>
       
       <div className="space-y-6">
-        <GoogleCalendarSettings />
-        
         <div className="border rounded-lg p-4">
           <h3 className="font-medium mb-3">Connected Health Apps</h3>
           <div className="space-y-4">

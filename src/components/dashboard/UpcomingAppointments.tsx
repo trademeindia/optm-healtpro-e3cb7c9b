@@ -4,22 +4,27 @@ import { Calendar, Clock, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Appointment } from '@/services/calendar/types'; // Import the correct type
+
+interface Appointment {
+  id: string;
+  patientName: string;
+  patientId: number;
+  time: string;
+  date: string;
+  type: string;
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+}
 
 interface UpcomingAppointmentsProps {
   appointments: Appointment[];
   className?: string;
   onViewAll?: () => void;
-  onConfirm?: (id: string) => void;
-  onReschedule?: (id: string) => void;
 }
 
 const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
   appointments,
   className,
   onViewAll,
-  onConfirm,
-  onReschedule,
 }) => {
   const getStatusColor = (status: Appointment['status']) => {
     switch (status) {
@@ -74,28 +79,6 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
           <Button variant="ghost" className="w-full mt-4" onClick={onViewAll}>
             View All Appointments
           </Button>
-        )}
-        
-        {/* Add confirmation and rescheduling buttons if handlers provided */}
-        {onConfirm && onReschedule && appointments.length > 0 && (
-          <div className="flex gap-2 mt-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-              onClick={() => appointments[0] && onConfirm(appointments[0].id)}
-            >
-              Confirm Next
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-              onClick={() => appointments[0] && onReschedule(appointments[0].id)}
-            >
-              Reschedule
-            </Button>
-          </div>
         )}
       </CardContent>
     </Card>

@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 
-export interface ActivityTrackerProps {
+interface ActivityTrackerProps {
   title: string;
   data: { day: string; value: number }[];
   unit: string;
-  currentValue: number;  // This is the key property that was mismatched
+  currentValue: number;
   source?: string;
   lastSync?: string;
   className?: string;

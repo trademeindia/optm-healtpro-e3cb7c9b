@@ -3,7 +3,7 @@ import React from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
 import DashboardMainContent from '@/components/patient-dashboard/DashboardMainContent';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
@@ -28,14 +28,14 @@ const PatientDashboard: React.FC = () => {
   const initialTab = 'dashboard';
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-64">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="mb-6">
+          <div className="mb-6 pl-10 lg:pl-0">
             <h1 className="text-2xl font-bold">My Health Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Welcome back, {user?.name || 'Patient'}
@@ -45,7 +45,7 @@ const PatientDashboard: React.FC = () => {
           <SymptomProvider>
             <DashboardTabs
               initialTab={initialTab}
-              upcomingAppointments={upcomingAppointments}
+              upcomingAppointments={upcomingAppointments || []}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
             >
@@ -53,7 +53,7 @@ const PatientDashboard: React.FC = () => {
                 healthMetrics={healthMetrics}
                 activityData={activityData}
                 treatmentTasks={treatmentTasks}
-                upcomingAppointments={upcomingAppointments}
+                upcomingAppointments={upcomingAppointments || []}
                 biologicalAge={biologicalAge}
                 chronologicalAge={chronologicalAge}
                 hasConnectedApps={hasConnectedApps}

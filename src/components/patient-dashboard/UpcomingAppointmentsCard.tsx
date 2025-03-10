@@ -1,94 +1,53 @@
 
-import React, { useState } from 'react';
-import { Calendar, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { AppointmentService } from '@/services/calendar/appointmentService';
-import { Appointment } from '@/services/calendar/googleCalendarService';
+
+interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  doctor: string;
+  type: string;
+}
 
 interface UpcomingAppointmentsCardProps {
   upcomingAppointments: Appointment[];
   className?: string;
   onConfirmAppointment?: (id: string) => void;
   onRescheduleAppointment?: (id: string) => void;
-  onLoadAppointments?: () => void;
 }
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   upcomingAppointments,
   className,
   onConfirmAppointment,
-  onRescheduleAppointment,
-  onLoadAppointments
+  onRescheduleAppointment
 }) => {
   const { toast } = useToast();
-  const [processingAppointments, setProcessingAppointments] = useState<Record<string, boolean>>({});
 
   // Function to handle appointment confirmation
-  const handleConfirmAppointment = async (id: string) => {
-    setProcessingAppointments(prev => ({ ...prev, [id]: true }));
-    
-    try {
-      if (onConfirmAppointment) {
-        onConfirmAppointment(id);
-      } else {
-        const success = await AppointmentService.confirmAppointment(id);
-        if (success) {
-          toast({
-            title: "Appointment Confirmed",
-            description: "Your appointment has been confirmed and added to your calendar.",
-          });
-          
-          // Refresh appointments if needed
-          if (onLoadAppointments) {
-            onLoadAppointments();
-          }
-        } else {
-          throw new Error("Failed to confirm appointment");
-        }
-      }
-    } catch (error) {
-      console.error("Error confirming appointment:", error);
+  const handleConfirmAppointment = (id: string) => {
+    if (onConfirmAppointment) {
+      onConfirmAppointment(id);
+    } else {
       toast({
-        title: "Confirmation Failed",
-        description: "There was a problem confirming your appointment.",
-        variant: "destructive",
+        title: "Appointment Confirmed",
+        description: "Your appointment has been confirmed.",
       });
-    } finally {
-      setProcessingAppointments(prev => ({ ...prev, [id]: false }));
     }
   };
 
   // Function to handle appointment rescheduling
-  const handleRescheduleAppointment = async (id: string) => {
-    setProcessingAppointments(prev => ({ ...prev, [id]: true }));
-    
-    try {
-      if (onRescheduleAppointment) {
-        onRescheduleAppointment(id);
-      } else {
-        toast({
-          title: "Reschedule Requested",
-          description: "Your request to reschedule has been sent.",
-        });
-        
-        // In a real implementation, this would open a reschedule dialog
-        // For now, we'll just simulate it
-        
-        // Refresh appointments if needed
-        if (onLoadAppointments) {
-          onLoadAppointments();
-        }
-      }
-    } catch (error) {
-      console.error("Error rescheduling appointment:", error);
+  const handleRescheduleAppointment = (id: string) => {
+    if (onRescheduleAppointment) {
+      onRescheduleAppointment(id);
+    } else {
       toast({
-        title: "Reschedule Failed",
-        description: "There was a problem requesting to reschedule your appointment.",
-        variant: "destructive",
+        title: "Reschedule Requested",
+        description: "Your request to reschedule has been sent.",
       });
-    } finally {
-      setProcessingAppointments(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -106,52 +65,28 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                     {appointment.date} at {appointment.time}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {appointment.doctorName}
+                    {appointment.doctor}
                   </p>
-                  <div className="mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      appointment.status === 'confirmed' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300' 
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300'
-                    }`}>
-                      {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                    </span>
-                    {appointment.googleEventId && (
-                      <span className="text-xs ml-2 text-muted-foreground">
-                        Synced with Calendar
-                      </span>
-                    )}
-                  </div>
                 </div>
                 <div className="bg-primary/10 text-primary p-2 rounded-full">
                   <Calendar className="h-4 w-4" />
                 </div>
               </div>
               <div className="flex gap-2">
-                {appointment.status !== 'confirmed' && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs flex-1"
-                    onClick={() => handleConfirmAppointment(appointment.id)}
-                    disabled={processingAppointments[appointment.id]}
-                  >
-                    {processingAppointments[appointment.id] ? (
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    ) : null}
-                    Confirm
-                  </Button>
-                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs flex-1"
+                  onClick={() => handleConfirmAppointment(appointment.id)}
+                >
+                  Confirm
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   className="text-xs flex-1"
                   onClick={() => handleRescheduleAppointment(appointment.id)}
-                  disabled={processingAppointments[appointment.id]}
                 >
-                  {processingAppointments[appointment.id] ? (
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  ) : null}
                   Reschedule
                 </Button>
               </div>
