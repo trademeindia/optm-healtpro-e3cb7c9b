@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import HealthMetric from '@/components/dashboard/HealthMetric';
@@ -65,9 +64,9 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   handleRescheduleAppointment
 }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
       {/* Left column */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="lg:col-span-3 space-y-4 md:space-y-6">
         <PersonalInformation />
         
         {/* Activity Tracker with fitness data if available */}
@@ -92,7 +91,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       </div>
       
       {/* Middle column - health metrics and treatment */}
-      <div className="lg:col-span-5 space-y-6">
+      <div className="lg:col-span-5 space-y-4 md:space-y-6">
         {/* Health Data Sync Button */}
         <HealthSyncButton 
           hasConnectedApps={hasConnectedApps}
@@ -173,10 +172,10 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       </div>
       
       {/* Right column - symptom tracker, documents, messages */}
-      <div className="lg:col-span-4 space-y-6">
+      <div className="lg:col-span-4 space-y-4 md:space-y-6">
         {/* Progress Chart (moved from tabs to right panel) */}
         <div className="glass-morphism rounded-2xl p-6">
-          <SymptomProgressChart />
+          <SymptomProgressChart className="w-full" />
         </div>
         
         {/* Symptom Tracker - Now connected via SymptomContext */}

@@ -29,3 +29,17 @@
     border-radius: 3px;
   }
 }
+
+/* Fix tab overflow issues */
+.tabs-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure tabs have proper spacing on mobile */
+@media (max-width: 480px) {
+  .tab-trigger {
+    min-width: auto;
+    padding: 0.5rem 0.75rem;
+  }
+}

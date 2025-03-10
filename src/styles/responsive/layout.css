@@ -35,9 +35,9 @@ html, body {
 /* Fix content overflow */
 .overflow-container {
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   height: 100%;
   width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Ensure proper z-index for popups/modals */

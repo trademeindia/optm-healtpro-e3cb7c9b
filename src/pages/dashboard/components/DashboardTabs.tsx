@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { AlertCircle, Bookmark } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { DashboardData } from '../types/dashboardTypes';
 import OverviewTab from './tabs/OverviewTab';
 import PatientsTab from './tabs/PatientsTab';
@@ -15,9 +15,9 @@ interface DashboardTabsProps {
   setActiveTab: (tab: string) => void;
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
-  selectedPatient: any;
+  selectedPatient: DashboardData['patients'][0] | null;
   handleClosePatientHistory: () => void;
-  handleUpdatePatient: (patient: any) => void;
+  handleUpdatePatient: (patient: DashboardData['patients'][0]) => void;
   handleViewPatient: (patientId: number) => void;
   dashboardData: DashboardData;
 }
@@ -121,7 +121,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
       onValueChange={handleTabChange}
       className="w-full"
     >
-      <div className="overflow-x-auto pb-2 -mx-4 px-4">
+      <div className="overflow-x-auto tabs-container pb-2 -mx-4 px-4">
         <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 w-full flex flex-nowrap min-w-max">
           <TabsTrigger value="overview" className="rounded-md flex-1 whitespace-nowrap">
             Overview
