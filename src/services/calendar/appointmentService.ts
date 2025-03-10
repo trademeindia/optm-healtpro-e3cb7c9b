@@ -1,48 +1,89 @@
-import { Appointment, GoogleCalendarService } from './googleCalendarService';
-import { storeInLocalStorage, getFromLocalStorage } from '../storage/localStorageService';
 
-/**
- * Service to handle appointment operations
- */
+import { v4 as uuidv4 } from 'uuid';
+import { Appointment, CreateAppointmentRequest } from './types';
+import { supabase } from '@/integrations/supabase/client';
+
+// In-memory store for appointments (used as fallback when Supabase is not available)
+let localAppointments: Appointment[] = [
+  {
+    id: '1',
+    type: 'Check-up',
+    date: 'March 15, 2025',
+    time: '10:00 AM',
+    doctorName: 'Dr. Sarah Johnson',
+    patientName: 'John Doe',
+    patientId: 'patient-123',
+    status: 'scheduled'
+  },
+  {
+    id: '2',
+    type: 'Follow-up',
+    date: 'March 22, 2025',
+    time: '2:30 PM',
+    doctorName: 'Dr. Michael Chen',
+    patientName: 'John Doe',
+    patientId: 'patient-123',
+    status: 'confirmed',
+    googleEventId: 'google-event-123'
+  }
+];
+
 export class AppointmentService {
-  private static readonly APPOINTMENTS_KEY = 'appointments';
-
   /**
-   * Get all appointments
+   * Get all appointments for the current patient
    */
   static getAppointments(): Appointment[] {
-    return getFromLocalStorage(this.APPOINTMENTS_KEY);
+    console.log('Getting appointments from service');
+    try {
+      // First try to get from localStorage
+      const storedAppointments = localStorage.getItem('appointments');
+      if (storedAppointments) {
+        const parsed = JSON.parse(storedAppointments);
+        console.log('Found appointments in localStorage:', parsed);
+        return parsed;
+      }
+    } catch (error) {
+      console.error('Error retrieving appointments from localStorage:', error);
+    }
+    
+    // Return default appointments if nothing in localStorage
+    console.log('Using default appointments');
+    return localAppointments;
   }
-
-  /**
-   * Get appointment by ID
-   */
-  static getAppointmentById(id: string): Appointment | null {
-    const appointments = this.getAppointments();
-    return appointments.find(appointment => appointment.id === id) || null;
-  }
-
+  
   /**
    * Create a new appointment
    */
-  static async createAppointment(appointment: Omit<Appointment, 'id' | 'googleEventId'>): Promise<Appointment | null> {
+  static async createAppointment(appointmentData: CreateAppointmentRequest): Promise<Appointment | null> {
     try {
-      const id = 'appointment-' + Date.now();
+      console.log('Creating appointment:', appointmentData);
+      
+      // Create new appointment with unique ID
       const newAppointment: Appointment = {
-        ...appointment,
-        id
+        ...appointmentData,
+        id: uuidv4()
       };
-
-      // Try to create a Google Calendar event if user is authenticated
-      if (GoogleCalendarService.isAuthenticated()) {
-        const eventId = await GoogleCalendarService.createEvent(newAppointment);
-        if (eventId) {
-          newAppointment.googleEventId = eventId;
+      
+      // Try to store in Supabase if available
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // In a real app, we would insert into Supabase here
+          console.log('Would store appointment in Supabase for user:', user.id);
         }
+      } catch (error) {
+        console.error('Supabase error, falling back to local storage:', error);
       }
-
-      // Store appointment
-      storeInLocalStorage(this.APPOINTMENTS_KEY, newAppointment);
+      
+      // Store in localStorage as fallback
+      const currentAppointments = this.getAppointments();
+      const updatedAppointments = [newAppointment, ...currentAppointments];
+      
+      localStorage.setItem('appointments', JSON.stringify(updatedAppointments));
+      console.log('Appointment created and saved to localStorage');
+      
+      // Also update our in-memory store
+      localAppointments = updatedAppointments;
       
       return newAppointment;
     } catch (error) {
@@ -50,96 +91,47 @@ export class AppointmentService {
       return null;
     }
   }
-
-  /**
-   * Update an existing appointment
-   */
-  static async updateAppointment(appointment: Appointment): Promise<boolean> {
-    try {
-      // Store appointment
-      storeInLocalStorage(this.APPOINTMENTS_KEY, appointment);
-      
-      // Update Google Calendar event if exists
-      if (appointment.googleEventId && GoogleCalendarService.isAuthenticated()) {
-        await GoogleCalendarService.updateEvent(appointment);
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error updating appointment:', error);
-      return false;
-    }
-  }
-
+  
   /**
    * Confirm an appointment
    */
   static async confirmAppointment(id: string): Promise<boolean> {
     try {
-      const appointment = this.getAppointmentById(id);
-      if (!appointment) {
-        return false;
-      }
-
-      const updatedAppointment = {
-        ...appointment,
-        status: 'confirmed' as const
-      };
-
-      return this.updateAppointment(updatedAppointment);
+      console.log('Confirming appointment:', id);
+      const appointments = this.getAppointments();
+      const updatedAppointments = appointments.map(appointment => 
+        appointment.id === id 
+          ? { ...appointment, status: 'confirmed' as const } 
+          : appointment
+      );
+      
+      localStorage.setItem('appointments', JSON.stringify(updatedAppointments));
+      localAppointments = updatedAppointments;
+      
+      return true;
     } catch (error) {
       console.error('Error confirming appointment:', error);
       return false;
     }
   }
-
-  /**
-   * Cancel an appointment
-   */
-  static async cancelAppointment(id: string): Promise<boolean> {
-    try {
-      const appointment = this.getAppointmentById(id);
-      if (!appointment) {
-        return false;
-      }
-
-      const updatedAppointment = {
-        ...appointment,
-        status: 'cancelled' as const
-      };
-
-      const result = await this.updateAppointment(updatedAppointment);
-      
-      // Delete from Google Calendar if needed
-      if (result && appointment.googleEventId && GoogleCalendarService.isAuthenticated()) {
-        await GoogleCalendarService.deleteEvent(appointment.googleEventId);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      return false;
-    }
-  }
-
+  
   /**
    * Reschedule an appointment
    */
   static async rescheduleAppointment(id: string, newDate: string, newTime: string): Promise<boolean> {
     try {
-      const appointment = this.getAppointmentById(id);
-      if (!appointment) {
-        return false;
-      }
-
-      const updatedAppointment = {
-        ...appointment,
-        date: newDate,
-        time: newTime,
-        status: 'scheduled' as const
-      };
-
-      return this.updateAppointment(updatedAppointment);
+      console.log('Rescheduling appointment:', id, newDate, newTime);
+      const appointments = this.getAppointments();
+      const updatedAppointments = appointments.map(appointment => 
+        appointment.id === id 
+          ? { ...appointment, date: newDate, time: newTime } 
+          : appointment
+      );
+      
+      localStorage.setItem('appointments', JSON.stringify(updatedAppointments));
+      localAppointments = updatedAppointments;
+      
+      return true;
     } catch (error) {
       console.error('Error rescheduling appointment:', error);
       return false;

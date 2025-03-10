@@ -7,6 +7,7 @@ import AppointmentsList from './components/AppointmentsList';
 import AppointmentsDashboard from '@/components/dashboard/AppointmentsDashboard';
 import { useAppointments } from './hooks/useAppointments';
 import NewAppointmentModal from './components/NewAppointmentModal';
+import { useToast } from '@/hooks/use-toast';
 
 const AppointmentsPage: React.FC = () => {
   const {
@@ -21,12 +22,35 @@ const AppointmentsPage: React.FC = () => {
     handleCreateAppointment
   } = useAppointments();
   
+  const { toast } = useToast();
   const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
   
   useEffect(() => {
     loadAppointments();
     checkCalendarConnection();
   }, []);
+  
+  const openNewAppointmentModal = () => {
+    setIsNewAppointmentModalOpen(true);
+  };
+  
+  const handleScheduleAppointment = async (appointmentData: any) => {
+    try {
+      await handleCreateAppointment(appointmentData);
+      setIsNewAppointmentModalOpen(false);
+      toast({
+        title: "Appointment Scheduled",
+        description: `Your appointment has been scheduled for ${appointmentData.date} at ${appointmentData.time}.`,
+      });
+    } catch (error) {
+      console.error('Failed to schedule appointment:', error);
+      toast({
+        title: "Scheduling Failed",
+        description: "There was a problem scheduling your appointment.",
+        variant: "destructive"
+      });
+    }
+  };
   
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -41,7 +65,7 @@ const AppointmentsPage: React.FC = () => {
             calendarConnected={calendarConnected}
             onRefresh={loadAppointments}
             onConnectCalendar={handleConnectCalendar}
-            onNewAppointment={() => setIsNewAppointmentModalOpen(true)}
+            onNewAppointment={openNewAppointmentModal}
           />
           
           <div className="max-w-7xl mx-auto">
@@ -61,7 +85,7 @@ const AppointmentsPage: React.FC = () => {
               calendarConnected={calendarConnected}
               onConfirmAppointment={handleConfirmAppointment}
               onRescheduleAppointment={handleRescheduleAppointment}
-              onCreateAppointment={handleCreateAppointment}
+              onCreateAppointment={openNewAppointmentModal}
             />
           </div>
         </main>
@@ -70,7 +94,7 @@ const AppointmentsPage: React.FC = () => {
       <NewAppointmentModal 
         isOpen={isNewAppointmentModalOpen}
         onClose={() => setIsNewAppointmentModalOpen(false)}
-        onSchedule={handleCreateAppointment}
+        onSchedule={handleScheduleAppointment}
       />
     </div>
   );

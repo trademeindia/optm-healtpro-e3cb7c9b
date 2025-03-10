@@ -16,6 +16,7 @@ export const useAppointments = () => {
     setIsLoading(true);
     try {
       const appointments = AppointmentService.getAppointments();
+      console.log('Loaded appointments:', appointments);
       setAppointments(appointments);
     } catch (error) {
       console.error('Error loading appointments:', error);
@@ -32,12 +33,14 @@ export const useAppointments = () => {
   // Check if calendar is connected
   const checkCalendarConnection = () => {
     const isConnected = GoogleCalendarService.isAuthenticated();
+    console.log('Calendar connected status:', isConnected);
     setCalendarConnected(isConnected);
   };
   
   // Function to handle appointment confirmation
   const handleConfirmAppointment = async (id: string) => {
     try {
+      console.log('Confirming appointment:', id);
       const success = await AppointmentService.confirmAppointment(id);
       if (success) {
         toast({
@@ -61,6 +64,7 @@ export const useAppointments = () => {
   // Function to handle appointment rescheduling
   const handleRescheduleAppointment = async (id: string, newDate?: string, newTime?: string) => {
     try {
+      console.log('Rescheduling appointment:', id, newDate, newTime);
       if (newDate && newTime) {
         // If we have a new date and time, actually reschedule the appointment
         const success = await AppointmentService.rescheduleAppointment(id, newDate, newTime);
@@ -95,6 +99,7 @@ export const useAppointments = () => {
   // Function to connect to Google Calendar
   const handleConnectCalendar = async () => {
     try {
+      console.log('Connecting to Google Calendar');
       const success = await GoogleCalendarService.authenticate();
       if (success) {
         setCalendarConnected(true);
@@ -127,6 +132,7 @@ export const useAppointments = () => {
     notes?: string;
   }) => {
     try {
+      console.log('Creating new appointment:', appointmentData);
       // Create appointment object
       const newAppointment = {
         ...appointmentData,
@@ -144,6 +150,7 @@ export const useAppointments = () => {
         
         // Reload appointments to include the new one
         loadAppointments();
+        return createdAppointment;
       } else {
         throw new Error("Failed to schedule appointment");
       }

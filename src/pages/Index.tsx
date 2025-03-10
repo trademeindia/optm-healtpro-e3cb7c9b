@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
+import { CircleNotch } from 'lucide-react';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +13,11 @@ const Index: React.FC = () => {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
         // Redirect based on user role
-        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+        if (user.role === 'doctor') {
+          navigate('/dashboard');
+        } else {
+          navigate('/patient-dashboard');
+        }
       } else {
         console.log('Index page: User not authenticated, redirecting to login');
         navigate('/login');
@@ -22,7 +27,10 @@ const Index: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="animate-pulse">Redirecting...</div>
+      <div className="flex flex-col items-center gap-4">
+        <CircleNotch className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Redirecting...</p>
+      </div>
     </div>
   );
 };

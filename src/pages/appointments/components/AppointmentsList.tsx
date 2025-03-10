@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Appointment } from '@/services/calendar/googleCalendarService';
 import { useToast } from '@/hooks/use-toast';
 import RescheduleModal from './RescheduleModal';
-import NewAppointmentModal from './NewAppointmentModal';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -13,7 +12,7 @@ interface AppointmentsListProps {
   calendarConnected: boolean;
   onConfirmAppointment: (id: string) => void;
   onRescheduleAppointment: (id: string, date: string, time: string) => Promise<void>;
-  onCreateAppointment: (appointmentData: any) => Promise<void>;
+  onCreateAppointment: () => void;
 }
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
@@ -27,7 +26,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const { toast } = useToast();
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-  const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
 
   const handleRescheduleClick = (id: string) => {
     setSelectedAppointmentId(id);
@@ -37,10 +35,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const closeRescheduleModal = () => {
     setIsRescheduleModalOpen(false);
     setSelectedAppointmentId(null);
-  };
-
-  const handleNewAppointmentClick = () => {
-    setIsNewAppointmentModalOpen(true);
   };
 
   return (
@@ -107,7 +101,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           ) : (
             <div className="text-center p-6">
               <p className="text-muted-foreground">No upcoming appointments scheduled</p>
-              <Button className="mt-4" onClick={handleNewAppointmentClick}>
+              <Button className="mt-4" onClick={onCreateAppointment}>
                 <Plus className="h-4 w-4 mr-2" />
                 Schedule Your First Appointment
               </Button>
@@ -128,12 +122,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         isOpen={isRescheduleModalOpen}
         onClose={closeRescheduleModal}
         onReschedule={onRescheduleAppointment}
-      />
-
-      <NewAppointmentModal 
-        isOpen={isNewAppointmentModalOpen}
-        onClose={() => setIsNewAppointmentModalOpen(false)}
-        onSchedule={onCreateAppointment}
       />
     </>
   );

@@ -1,61 +1,48 @@
 
-import { CalendarAuthService } from './calendarAuthService';
-import { CalendarEventService } from './calendarEventService';
-import { Appointment, GoogleCalendarEvent } from './types';
+export interface Appointment {
+  id: string;
+  type: string;
+  date: string;
+  time: string;
+  doctorName: string;
+  patientName: string;
+  patientId: string;
+  notes?: string;
+  status: 'scheduled' | 'confirmed' | 'canceled' | 'completed';
+  googleEventId?: string;
+}
 
-/**
- * Facade service to handle Google Calendar operations
- */
 export class GoogleCalendarService {
+  private static readonly LOCAL_STORAGE_KEY = 'google_calendar_connected';
+
   /**
    * Check if the user is authenticated with Google Calendar
    */
   static isAuthenticated(): boolean {
-    return CalendarAuthService.isAuthenticated();
+    return localStorage.getItem(this.LOCAL_STORAGE_KEY) === 'true';
   }
-
+  
   /**
    * Authenticate with Google Calendar
+   * In a real app, this would redirect to Google OAuth
    */
   static async authenticate(): Promise<boolean> {
-    return CalendarAuthService.authenticate();
+    // Simulate successful authentication
+    localStorage.setItem(this.LOCAL_STORAGE_KEY, 'true');
+    return true;
   }
-
+  
   /**
-   * Disconnect from Google Calendar
+   * Sync an appointment with Google Calendar
+   * In a real app, this would create a Google Calendar event
    */
-  static disconnect(): boolean {
-    return CalendarAuthService.disconnect();
-  }
-
-  /**
-   * Create a calendar event from an appointment
-   */
-  static async createEvent(appointment: Appointment): Promise<string | null> {
-    return CalendarEventService.createEvent(appointment);
-  }
-
-  /**
-   * Update a calendar event
-   */
-  static async updateEvent(appointment: Appointment): Promise<boolean> {
-    return CalendarEventService.updateEvent(appointment);
-  }
-
-  /**
-   * Delete a calendar event
-   */
-  static async deleteEvent(eventId: string): Promise<boolean> {
-    return CalendarEventService.deleteEvent(eventId);
-  }
-
-  /**
-   * Get all calendar events
-   */
-  static async getEvents(): Promise<GoogleCalendarEvent[]> {
-    return CalendarEventService.getEvents();
+  static async syncAppointment(appointment: Appointment): Promise<string | null> {
+    // Simulate creating an event in Google Calendar
+    console.log('Syncing appointment with Google Calendar:', appointment);
+    
+    // In a real app, we would call the Google Calendar API here
+    const googleEventId = `google-event-${appointment.id}`;
+    
+    return googleEventId;
   }
 }
-
-// Re-export types for backward compatibility
-export type { Appointment, GoogleCalendarEvent } from './types';
