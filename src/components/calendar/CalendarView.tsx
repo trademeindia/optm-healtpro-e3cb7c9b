@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
@@ -10,6 +9,8 @@ import EditAppointmentDialog from './EditAppointmentDialog';
 import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
 import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
 import { useCalendarEventManager } from '@/hooks/calendar/useCalendarEventManager';
+import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
+import { Appointment } from '@/types/appointment';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month';
@@ -59,25 +60,20 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     handleDeleteEvent
   } = useCalendarEventManager(onEventsChange);
 
-  // Expose the openCreateDialog method to parent components via ref
   useImperativeHandle(ref, () => ({
     openCreateDialog: (date: Date) => {
       openCreateDialog(date);
     }
   }));
 
-  // Handler for when an event is clicked
   const handleEventClick = (event: CalendarEvent) => {
     if (event.isAvailable) {
-      // If it's an available slot, open the create dialog
       openCreateDialog(event.start instanceof Date ? event.start : new Date(event.start));
     } else {
-      // If it's a booked appointment, open the details dialog
       openEventDetails(event);
     }
   };
 
-  // Handler for booking from the details dialog
   const handleBookFromDetails = () => {
     if (selectedEvent) {
       closeEventDetails();
@@ -85,15 +81,24 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     }
   };
 
-  // Handle successful event creation
   const handleEventCreated = async (eventData: Partial<CalendarEvent>) => {
     const success = await handleCreateEvent(eventData);
     if (success) {
       closeCreateDialog();
-      // Force refresh calendar data
       onEventsChange();
     }
     return success;
+  };
+
+  const renderEventContent = (event: CalendarEvent) => {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="font-medium truncate">{event.title}</div>
+        {event.status && (
+          <AppointmentStatusIndicator status={event.status as AppointmentStatus} />
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
