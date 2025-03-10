@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Calendar, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleCalendarService, signInToGoogleCalendar, signOutFromGoogleCalendar } from '@/services/calendar/googleCalendarService';
+import { GoogleCalendarService } from '@/services/calendar/googleCalendarService';
+import { signInToGoogleCalendar, signOutFromGoogleCalendar } from '@/services/calendar/googleCalendarApi';
 
 const GoogleCalendarSettings: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
