@@ -21,7 +21,7 @@ import { PatientReportsPage } from './pages/PatientReportsPage';
 import OAuthCallback from './pages/OAuthCallback';
 import HealthAppsPage from './pages/HealthAppsPage';
 import AIAnalysisPage from './pages/AIAnalysisPage';
-import { AuthProvider } from './contexts/auth';
+import { AuthProvider } from './contexts/auth'; // Fix import path
 
 // Create a client
 const queryClient = new QueryClient();

@@ -36,6 +36,11 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           duration: 3000
         });
         
+        // Navigate to the appropriate dashboard
+        setTimeout(() => {
+          navigate(isDemoDoctor ? '/dashboard' : '/patient-dashboard');
+        }, 500);
+        
         return demoUser;
       }
       

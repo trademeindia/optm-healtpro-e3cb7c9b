@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: email,
           name: email === 'doctor@example.com' ? 'Dr. Demo Account' : 'Patient Demo',
           role: email === 'doctor@example.com' ? 'doctor' : 'patient',
+          provider: 'email',
           picture: null
         };
         

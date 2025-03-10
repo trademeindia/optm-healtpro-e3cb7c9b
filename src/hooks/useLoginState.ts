@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth'; // Fix the import path
 
 export const useLoginState = () => {
   const [email, setEmail] = useState('');

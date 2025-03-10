@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bell, Search, Settings, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/auth'; // Fix import path
 import { 
   DropdownMenu,
   DropdownMenuContent,
