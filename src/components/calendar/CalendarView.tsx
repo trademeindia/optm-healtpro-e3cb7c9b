@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDetailsDialog from './AppointmentDetailsDialog';
 import CalendarNavigation from './CalendarNavigation';
@@ -20,14 +20,14 @@ interface CalendarViewProps {
   onEventsChange: () => void;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({
+const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, CalendarViewProps>(({
   view,
   events,
   isLoading,
   selectedDate,
   onDateSelect,
   onEventsChange
-}) => {
+}, ref) => {
   const {
     visibleDates,
     visibleHours,
@@ -59,6 +59,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     handleDeleteEvent
   } = useCalendarEventManager(onEventsChange);
 
+  // Expose the openCreateDialog method to parent components via ref
+  useImperativeHandle(ref, () => ({
+    openCreateDialog: (date: Date) => {
+      openCreateDialog(date);
+    }
+  }));
+
   // Handler for when an event is clicked
   const handleEventClick = (event: CalendarEvent) => {
     if (event.isAvailable) {
@@ -76,6 +83,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       closeEventDetails();
       openEditDialog(selectedEvent);
     }
+  };
+
+  // Handle successful event creation
+  const handleEventCreated = async (eventData: Partial<CalendarEvent>) => {
+    const success = await handleCreateEvent(eventData);
+    if (success) {
+      closeCreateDialog();
+      // Force refresh calendar data
+      onEventsChange();
+    }
+    return success;
   };
 
   if (isLoading) {
@@ -116,7 +134,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       <CreateAppointmentDialog
         open={createDialogOpen}
         onClose={closeCreateDialog}
-        onCreated={(eventData) => handleCreateEvent(eventData)}
+        onCreated={handleEventCreated}
         selectedDate={selectedDate}
       />
 
@@ -131,6 +149,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       )}
     </div>
   );
-};
+});
+
+CalendarView.displayName = 'CalendarView';
 
 export default CalendarView;

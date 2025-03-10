@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import ConnectCalendarCard from './ConnectCalendarCard';
 import CalendarView from './CalendarView';
@@ -17,6 +17,7 @@ interface CalendarViewWrapperProps {
   onConnectCalendar: () => Promise<void>;
   isConnecting: boolean;
   onEventsChange?: () => void;
+  calendarViewRef?: React.RefObject<any>;
 }
 
 const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
@@ -29,7 +30,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   onDateSelect,
   onConnectCalendar,
   isConnecting,
-  onEventsChange = () => {}
+  onEventsChange = () => {},
+  calendarViewRef
 }) => {
   return (
     <div className="lg:col-span-2">
@@ -51,6 +53,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                 
                 <TabsContent value="day" className="mt-0">
                   <CalendarView
+                    ref={calendarViewRef}
                     view="day"
                     events={calendarData}
                     isLoading={isLoading}
@@ -62,6 +65,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                 
                 <TabsContent value="week" className="mt-0">
                   <CalendarView
+                    ref={calendarViewRef}
                     view="week"
                     events={calendarData}
                     isLoading={isLoading}
@@ -73,6 +77,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                 
                 <TabsContent value="month" className="mt-0">
                   <CalendarView
+                    ref={calendarViewRef}
                     view="month"
                     events={calendarData}
                     isLoading={isLoading}

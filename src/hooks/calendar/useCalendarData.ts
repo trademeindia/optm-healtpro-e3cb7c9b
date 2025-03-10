@@ -67,11 +67,6 @@ export function useCalendarData(isAuthorized: boolean) {
     setLastRefresh(Date.now());
     
     await fetchEvents();
-    
-    toast.success("Calendar refreshed", {
-      description: "Your calendar data has been updated",
-      duration: 3000
-    });
   }, [isAuthorized, fetchEvents]);
 
   // Fetch events when authorization status or selected date changes

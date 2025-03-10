@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -9,6 +9,8 @@ import AppointmentsCard from '@/components/calendar/AppointmentsCard';
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
   const [isConnecting, setIsConnecting] = useState(false);
+  const calendarViewRef = useRef<any>(null);
+  
   const { 
     isLoading, 
     isAuthorized, 
@@ -54,9 +56,12 @@ const CalendarTab: React.FC = () => {
   };
 
   const handleCreateAppointment = () => {
-    // This is intentionally left empty as the functionality is 
-    // handled within CalendarViewWrapper via the CalendarView component
-    console.log("Create appointment button clicked");
+    // Open the create appointment dialog in the CalendarView component
+    if (calendarViewRef.current && calendarViewRef.current.openCreateDialog) {
+      calendarViewRef.current.openCreateDialog(selectedDate);
+    } else {
+      console.log("Create appointment button clicked, but ref not available");
+    }
   };
 
   const handleRefresh = async () => {
@@ -95,6 +100,7 @@ const CalendarTab: React.FC = () => {
           onConnectCalendar={handleConnectCalendar}
           isConnecting={isConnecting}
           onEventsChange={refreshCalendar}
+          calendarViewRef={calendarViewRef}
         />
 
         <div className="space-y-6">
