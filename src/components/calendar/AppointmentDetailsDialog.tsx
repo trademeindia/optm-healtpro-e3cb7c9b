@@ -24,7 +24,7 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
   const { user } = useAuth();
   const isDoctor = user?.role === 'doctor';
   
-  // Convert string dates to Date objects if needed
+  // Convert string dates to Date objects
   const startDate = typeof event.start === 'string' ? new Date(event.start) : event.start;
   const endDate = typeof event.end === 'string' ? new Date(event.end) : event.end;
 
@@ -32,11 +32,9 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
     return formatDate(date, "h:mm a");
   };
 
-  // Calculate duration in minutes ensuring we have Date objects
+  // Calculate duration in minutes
   const getDurationInMinutes = () => {
-    const start = startDate instanceof Date ? startDate : new Date(startDate);
-    const end = endDate instanceof Date ? endDate : new Date(endDate);
-    return Math.round((end.getTime() - start.getTime()) / 60000);
+    return Math.round((endDate.getTime() - startDate.getTime()) / 60000);
   };
 
   return (
