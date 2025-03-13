@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { User, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { User, Clock } from 'lucide-react';
 
 interface Appointment {
   id: string;
