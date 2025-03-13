@@ -86,7 +86,7 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     }
   };
 
-  // Wrapper for handleUpdateEvent that adapts to the expected signature
+  // Create an adapter function for handleUpdateEvent that adapts to the expected signature
   const handleUpdateEventWrapper = async (eventData: Partial<CalendarEvent>) => {
     if (!eventData.id) {
       console.error("Cannot update event without an ID");

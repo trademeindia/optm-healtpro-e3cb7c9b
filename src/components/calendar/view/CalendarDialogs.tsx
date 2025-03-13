@@ -40,7 +40,7 @@ const CalendarDialogs: React.FC<CalendarDialogsProps> = ({
         <EditAppointmentDialog
           open={editDialogOpen}
           onClose={closeEditDialog}
-          onUpdate={(eventData) => onUpdateEvent(eventData)}
+          onUpdate={onUpdateEvent}
           onDelete={onDeleteEvent}
           event={editingEvent}
         />
