@@ -3,7 +3,6 @@ import React, { RefObject } from 'react';
 import { CalendarEvent, UpcomingAppointment } from '@/hooks/calendar/types';
 import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';
 import AppointmentsCard from '@/components/calendar/AppointmentsCard';
-import { User } from '@/contexts/auth/types';
 
 interface CalendarGridProps {
   isAuthorized: boolean;
@@ -21,7 +20,6 @@ interface CalendarGridProps {
   reloadCalendarIframe: () => void;
   validAppointments: UpcomingAppointment[];
   refreshCalendar: () => Promise<void>;
-  currentUser?: User;
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -39,8 +37,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   publicCalendarUrl,
   reloadCalendarIframe,
   validAppointments,
-  refreshCalendar,
-  currentUser
+  refreshCalendar
 }) => {
   // Create a wrapper function to adapt Promise<boolean> to Promise<void>
   const handleConnectCalendar = async () => {

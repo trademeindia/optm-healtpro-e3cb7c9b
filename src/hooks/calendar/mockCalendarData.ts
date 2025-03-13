@@ -95,7 +95,7 @@ const generateRandomAppointment = (date: Date, isAvailable = false): CalendarEve
   };
 };
 
-export const generateMockEvents = (referenceDate: Date, changeCounter: number = 0): CalendarEvent[] => {
+export const generateMockEvents = (referenceDate: Date): CalendarEvent[] => {
   const events: CalendarEvent[] = [];
   
   // Generate events for the past week up to next week
@@ -122,16 +122,6 @@ export const generateMockEvents = (referenceDate: Date, changeCounter: number = 
   for (let i = 0; i < numTodayEvents; i++) {
     const isAvailable = Math.random() > 0.8; // 20% chance of available slots today
     events.push(generateRandomAppointment(today, isAvailable));
-  }
-  
-  // If changeCounter is provided and greater than 0, add extra events based on the counter
-  if (changeCounter > 0) {
-    const extraEvents = changeCounter > 5 ? 5 : changeCounter;
-    
-    for (let i = 0; i < extraEvents; i++) {
-      const futureDate = addDays(today, i + 1);
-      events.push(generateRandomAppointment(futureDate, false));
-    }
   }
   
   return events;
