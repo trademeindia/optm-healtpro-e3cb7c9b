@@ -2,25 +2,39 @@
 import { Patient } from '@/types/medicalData';
 import { supabase } from '@/integrations/supabase/client';
 import { storeInLocalStorage, getFromLocalStorage, getItemByIdFromLocalStorage } from '../storage/localStorageService';
+import { User } from '@/contexts/auth/types';
+import { hasPermission } from '@/utils/rbac';
 
 /**
- * Service to handle patient data operations
+ * Service to handle patient data operations with RBAC controls
  */
 export class PatientService {
   /**
    * Retrieves patient data from Supabase if available, otherwise from localStorage
+   * Applies role-based access controls
    */
-  static async getPatientData(patientId: string): Promise<Patient | null> {
+  static async getPatientData(patientId: string, currentUser?: User | null): Promise<Patient | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          console.log("No authenticated user, cannot retrieve patient data");
+          return null;
+        }
+      }
       
-      if (!user) {
-        console.log("No authenticated user, cannot retrieve patient data");
-        return null;
+      // Apply role-based access control
+      if (currentUser && currentUser.role === 'patient') {
+        // Patient can only access their own data
+        if (currentUser.patientId !== patientId && currentUser.id !== patientId) {
+          console.log("Access denied: Patient attempting to access another patient's data");
+          return null;
+        }
       }
       
       // Get from localStorage instead of Supabase due to schema mismatch
-      const patient = this.getPatientFromLocalStorage(patientId, user.id);
+      const patient = this.getPatientFromLocalStorage(patientId, currentUser?.id || 'anonymous');
       
       return patient;
     } catch (error) {
@@ -107,5 +121,46 @@ export class PatientService {
       affectedBodyParts: stored.affectedBodyParts || [],
       recommendations: stored.recommendations || []
     };
+  }
+  
+  /**
+   * Get all patients according to user's role-based permissions
+   */
+  static async getAllPatients(currentUser: User | null): Promise<Patient[]> {
+    if (!currentUser) {
+      return [];
+    }
+    
+    try {
+      const patientsData = getFromLocalStorage('patients');
+      
+      // Apply role-based filtering
+      let filteredPatients: any[] = [];
+      
+      if (hasPermission(currentUser, 'PATIENTS', 'VIEW_ALL')) {
+        // Admin and doctors can see all patients
+        filteredPatients = patientsData;
+      } else if (hasPermission(currentUser, 'PATIENTS', 'VIEW_OWN')) {
+        // Patients can only see their own data
+        filteredPatients = patientsData.filter((p: any) => 
+          p.id === currentUser.patientId || p.id === currentUser.id
+        );
+      }
+      
+      // Map to patient objects
+      return filteredPatients.map((p: any) => ({
+        id: p.id,
+        name: p.name || 'Unknown Patient',
+        biomarkers: [],
+        symptoms: [],
+        anatomicalMappings: [],
+        reports: [],
+        analyses: []
+      }));
+      
+    } catch (error) {
+      console.error("Error getting all patients:", error);
+      return [];
+    }
   }
 }

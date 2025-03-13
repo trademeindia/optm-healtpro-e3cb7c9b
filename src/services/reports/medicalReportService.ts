@@ -2,23 +2,38 @@
 import { MedicalReport, MedicalAnalysis, Patient } from '@/types/medicalData';
 import { DataSyncService } from '../dataSyncService';
 import { storeInLocalStorage, getFromLocalStorage } from '../storage/localStorageService';
-import { callOpenAI } from '../ai/openaiClient';
+import { User } from '@/contexts/auth/types';
+import { hasPermission } from '@/utils/rbac';
 
 /**
- * Service for handling medical report operations
+ * Service for handling medical report operations with role-based access control
  */
 export class MedicalReportService {
   /**
    * Uploads a medical report file to storage and processes it
+   * Checks for appropriate permissions
    */
   static async uploadAndProcessReport(
     file: File,
-    patientId: string
+    patientId: string,
+    currentUser?: User | null
   ): Promise<{
     report: MedicalReport;
     analysis: MedicalAnalysis;
   } | null> {
     try {
+      // Permission check
+      if (currentUser) {
+        const canUpload = 
+          hasPermission(currentUser, 'REPORTS', 'CREATE') || 
+          (currentUser.role === 'patient' && (currentUser.patientId === patientId || currentUser.id === patientId));
+          
+        if (!canUpload) {
+          console.error("Permission denied: User cannot upload reports for this patient");
+          return null;
+        }
+      }
+      
       console.log(`Uploading medical report for patient: ${patientId}`);
       
       // 1. Get file content
@@ -62,9 +77,18 @@ export class MedicalReportService {
   }
   
   /**
-   * Get all reports for a patient from localStorage
+   * Get all reports for a patient from localStorage with role-based access control
    */
-  static getPatientReports(patientId: string): MedicalReport[] {
+  static getPatientReports(patientId: string, currentUser?: User | null): MedicalReport[] {
+    // Permission check
+    if (currentUser && currentUser.role === 'patient') {
+      // Patients can only access their own reports
+      if (currentUser.patientId !== patientId && currentUser.id !== patientId) {
+        console.error("Permission denied: Patient attempting to access another patient's reports");
+        return [];
+      }
+    }
+    
     const allReports = getFromLocalStorage('reports');
     return allReports.filter((r: MedicalReport) => r.patientId === patientId);
   }

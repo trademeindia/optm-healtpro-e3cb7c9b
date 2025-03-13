@@ -26,10 +26,15 @@ export const useAuthSession = () => {
               const completeUser: User = {
                 id: demoUser.id || `demo-${Date.now()}`,
                 email: demoUser.email,
-                name: demoUser.name || (demoUser.email === 'doctor@example.com' ? 'Dr. Demo Account' : 'Patient Demo'),
+                name: demoUser.name || (
+                  demoUser.email === 'admin@example.com' ? 'Admin Demo Account' : 
+                  demoUser.email === 'doctor@example.com' ? 'Dr. Demo Account' : 
+                  'Patient Demo'
+                ),
                 role: demoUser.role,
                 provider: demoUser.provider || 'email',
-                picture: demoUser.picture || null
+                picture: demoUser.picture || null,
+                patientId: demoUser.patientId || (demoUser.role === 'patient' ? 'demo-patient-id-123' : undefined)
               };
               
               setUser(completeUser);
@@ -100,7 +105,7 @@ export const useAuthSession = () => {
     setUser(newUser);
     
     // If this is a demo user, store in localStorage
-    if (newUser && (newUser.email === 'doctor@example.com' || newUser.email === 'patient@example.com')) {
+    if (newUser && ['admin@example.com', 'doctor@example.com', 'patient@example.com'].includes(newUser.email)) {
       localStorage.setItem('demoUser', JSON.stringify(newUser));
       console.log('Stored demo user in localStorage:', newUser.email);
     } else if (newUser === null) {

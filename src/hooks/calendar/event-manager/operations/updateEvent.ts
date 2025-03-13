@@ -9,11 +9,33 @@ export const updateEvent = async (
   validateEventData: (data: Partial<CalendarEvent>) => boolean,
   onEventChange?: () => void,
   setIsEditing?: (value: boolean) => void,
-  closeEditDialog?: () => void
+  closeEditDialog?: () => void,
+  currentUser?: any // Add current user for permission checks
 ): Promise<boolean> => {
   try {
     if (!validateEventData(eventData)) {
       throw new Error("Invalid appointment data");
+    }
+    
+    // Role-based permission check
+    if (currentUser && currentUser.role === 'patient') {
+      // Check if this event belongs to the patient
+      const patientId = (eventData as any).patientId;
+      const patientName = eventData.patientName;
+      
+      if (patientId && patientId !== currentUser.patientId && 
+          (!patientName || !patientName.includes(currentUser.name))) {
+        toast.error("Access denied", {
+          description: "You don't have permission to update this appointment",
+          duration: 3000
+        });
+        return false;
+      }
+      
+      // Ensure patient name is preserved
+      if (!eventData.patientName || !eventData.patientName.includes(currentUser.name)) {
+        eventData.patientName = currentUser.name;
+      }
     }
     
     // Add color based on type if updating type

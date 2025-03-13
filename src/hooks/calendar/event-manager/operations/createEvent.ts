@@ -3,16 +3,31 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { CalendarEvent } from '../../types';
 import { getAppointmentColor } from '../utils/appointmentColors';
+import { useAuth } from '@/contexts/auth';
 
 export const createEvent = async (
   eventData: Partial<CalendarEvent>,
   validateEventData: (data: Partial<CalendarEvent>) => boolean,
   onEventChange?: () => void,
-  setIsCreating?: (value: boolean) => void
+  setIsCreating?: (value: boolean) => void,
+  currentUser?: any // Pass the current user from useAuth for permissions
 ): Promise<boolean> => {
   try {
     if (!validateEventData(eventData)) {
       throw new Error("Invalid appointment data");
+    }
+    
+    // Check if user has permission to create this type of event
+    if (currentUser && currentUser.role === 'patient') {
+      // Patients can only create appointments for themselves
+      // Ensure the patient name matches their own name
+      if (!eventData.patientName || !eventData.patientName.includes(currentUser.name)) {
+        eventData.patientName = currentUser.name;
+        console.log("Auto-assigning patient name to current user:", currentUser.name);
+      }
+      
+      // Add patient metadata for filtering
+      (eventData as any).patientId = currentUser.patientId || currentUser.id;
     }
     
     // Add a unique ID to the event

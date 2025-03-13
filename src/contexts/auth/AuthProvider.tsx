@@ -56,26 +56,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      if ((email === 'doctor@example.com' || email === 'patient@example.com') && password === 'password123') {
-        console.log('Demo login attempt:', email);
-        
+      // Handle demo accounts with predefined roles and IDs
+      if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
-          id: `demo-${Date.now()}`,
+          id: `demo-admin-${Date.now()}`,
           email: email,
-          name: email === 'doctor@example.com' ? 'Dr. Demo Account' : 'Patient Demo',
-          role: email === 'doctor@example.com' ? 'doctor' : 'patient',
+          name: 'Admin Demo Account',
+          role: 'admin',
           provider: 'email',
           picture: null
         };
         
-        // Set the user in state and localStorage
         setUser(demoUser);
+        toast.success('Admin demo login successful');
+        return demoUser;
+      }
+      else if (email === 'doctor@example.com' && password === 'password123') {
+        const demoUser: User = {
+          id: `demo-doctor-${Date.now()}`,
+          email: email,
+          name: 'Dr. Demo Account',
+          role: 'doctor',
+          provider: 'email',
+          picture: null
+        };
         
+        setUser(demoUser);
         toast.success('Demo login successful');
+        return demoUser;
+      }
+      else if (email === 'patient@example.com' && password === 'password123') {
+        const demoUser: User = {
+          id: `demo-patient-${Date.now()}`,
+          email: email,
+          name: 'Patient Demo',
+          role: 'patient',
+          provider: 'email',
+          picture: null,
+          patientId: 'demo-patient-id-123' // Link to patient records
+        };
         
+        setUser(demoUser);
+        toast.success('Demo login successful');
         return demoUser;
       }
       
+      // Regular login for non-demo users
       return await loginBase(email, password);
     } catch (error) {
       console.error('Login error:', error);

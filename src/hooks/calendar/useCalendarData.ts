@@ -3,11 +3,13 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent, UpcomingAppointment } from './types';
 import { generateMockEvents, mapEventsToAppointments } from './mockCalendarData';
+import { useAuth } from '@/contexts/auth';
 
 // Using the public URL as an identifier for the specific calendar
 const CALENDAR_ID = '9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5@group.calendar.google.com';
 
 export function useCalendarData(isAuthorized: boolean) {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState<CalendarEvent[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
@@ -37,11 +39,29 @@ export function useCalendarData(isAuthorized: boolean) {
       // Generate some mock data - in production, this would be real data from the API
       const mockEvents = generateMockEvents(selectedDate);
       
-      console.log(`Fetched ${mockEvents.length} calendar events`);
-      setCalendarData(mockEvents);
+      // Apply role-based access control to filter events
+      let filteredEvents = mockEvents;
+      
+      if (user && user.role === 'patient' && user.patientId) {
+        // Patient can only see their own appointments
+        filteredEvents = mockEvents.filter(event => {
+          // Check for events with matching patient ID or name that might belong to this patient
+          const eventPatientId = (event as any).patientId;
+          
+          // Filter logic: either the patientId matches, or the patient name contains the user's name
+          // This is a simplification - in a real app, you would have proper patient IDs
+          return (eventPatientId && eventPatientId === user.patientId) || 
+                 (event.patientName && event.patientName.includes(user.name));
+        });
+        
+        console.log(`Filtered ${mockEvents.length} events to ${filteredEvents.length} for patient user`);
+      }
+      
+      console.log(`Fetched ${filteredEvents.length} calendar events`);
+      setCalendarData(filteredEvents);
       
       // Update upcoming appointments
-      const upcoming = mapEventsToAppointments(mockEvents);
+      const upcoming = mapEventsToAppointments(filteredEvents);
       setUpcomingAppointments(upcoming);
       
       // Signal that calendar data is updated
@@ -58,7 +78,7 @@ export function useCalendarData(isAuthorized: boolean) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [isAuthorized, selectedDate]);
+  }, [isAuthorized, selectedDate, user]);
 
   const refreshCalendar = useCallback(async () => {
     if (!isAuthorized) {

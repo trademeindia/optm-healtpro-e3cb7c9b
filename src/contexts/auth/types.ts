@@ -1,7 +1,7 @@
 
 import { Provider } from '@supabase/supabase-js';
 
-export type UserRole = 'doctor' | 'patient';
+export type UserRole = 'admin' | 'doctor' | 'patient';
 export type AuthProviderType = Provider | 'email';
 
 export type User = {
@@ -11,6 +11,7 @@ export type User = {
   role: UserRole;
   provider?: AuthProviderType;
   picture?: string | null;
+  patientId?: string; // Added to link patient users to their records
 };
 
 export type AuthContextType = {
