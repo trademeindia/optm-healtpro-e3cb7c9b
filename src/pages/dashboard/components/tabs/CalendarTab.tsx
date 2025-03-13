@@ -1,17 +1,16 @@
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
+import { useCalendarRefresh } from '@/hooks/calendar/useCalendarRefresh';
+import { useCalendarConnection } from '@/hooks/calendar/useCalendarConnection';
+import { useCalendarEventListeners } from '@/hooks/calendar/useCalendarEvents';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
-import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';
-import AppointmentsCard from '@/components/calendar/AppointmentsCard';
+import CalendarGrid from '@/components/calendar/CalendarGrid';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
-  const [isConnecting, setIsConnecting] = useState(false);
   const calendarViewRef = useRef<any>(null);
-  const connectionAttemptedRef = useRef(false);
-  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const { 
     isLoading, 
@@ -28,108 +27,37 @@ const CalendarTab: React.FC = () => {
 
   const validAppointments = upcomingAppointments || [];
 
-  // Debounced refresh function to prevent multiple refreshes
-  const debouncedRefresh = useCallback(() => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
+  // Use our new hooks
+  const { debouncedRefresh, handleManualRefresh, cleanupRefresh } = useCalendarRefresh(refreshCalendar);
+  const { isConnecting, handleConnectCalendar } = useCalendarConnection(isAuthorized, isLoading, authorizeCalendar);
+  
+  // Setup event listeners
+  useCalendarEventListeners(debouncedRefresh, refreshCalendar);
+
+  // Initial refresh when authorized
+  useEffect(() => {
+    if (isAuthorized) {
+      refreshCalendar();
     }
     
-    refreshTimeoutRef.current = setTimeout(() => {
-      console.log("Executing debounced calendar refresh");
-      refreshCalendar();
-    }, 1200);
-  }, [refreshCalendar]);
+    return cleanupRefresh;
+  }, [isAuthorized, refreshCalendar, cleanupRefresh]);
 
-  // Auto-connect to calendar if needed (only once per session)
-  useEffect(() => {
-    const autoConnectCalendar = async () => {
-      // Only attempt auto-connect once and only if not already connected
-      if (!isAuthorized && !isLoading && !connectionAttemptedRef.current && !isConnecting) {
-        console.log("Attempting automatic calendar reconnection");
-        connectionAttemptedRef.current = true;
-        setIsConnecting(true);
-        
-        try {
-          await authorizeCalendar();
-          console.log("Auto-reconnection to calendar successful");
-        } catch (error) {
-          console.error("Auto-reconnection failed:", error);
-        } finally {
-          setIsConnecting(false);
-        }
-      }
-    };
+  const handleConnect = async () => {
+    const success = await handleConnectCalendar();
     
-    autoConnectCalendar();
-  }, [isAuthorized, isLoading, authorizeCalendar, isConnecting]);
-
-  // Set up a periodic refresh for the calendar data when authorized
-  useEffect(() => {
-    if (!isAuthorized) return;
-    
-    // Initial fetch
-    refreshCalendar();
-    
-    // Set up a periodic refresh (every 2 minutes)
-    const refreshInterval = setInterval(() => {
-      console.log("Performing automatic calendar refresh");
-      refreshCalendar();
-    }, 2 * 60 * 1000); // 2 minutes
-    
-    return () => {
-      clearInterval(refreshInterval);
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
-    };
-  }, [isAuthorized, refreshCalendar]);
-
-  // Listen for calendar update events
-  useEffect(() => {
-    const handleCalendarEvent = () => {
-      console.log("Calendar event received in CalendarTab");
-      debouncedRefresh();
-    };
-    
-    // Also listen for appointment creation events
-    window.addEventListener('appointment-created', handleCalendarEvent);
-    window.addEventListener('appointment-updated', handleCalendarEvent);
-    window.addEventListener('calendar-updated', handleCalendarEvent);
-    
-    return () => {
-      window.removeEventListener('appointment-created', handleCalendarEvent);
-      window.removeEventListener('appointment-updated', handleCalendarEvent);
-      window.removeEventListener('calendar-updated', handleCalendarEvent);
-    };
-  }, [debouncedRefresh]);
-
-  const handleConnectCalendar = async () => {
-    if (isConnecting) return;
-    
-    try {
-      setIsConnecting(true);
-      console.info("Starting calendar authorization process");
-      const result = await authorizeCalendar();
-      
-      if (!result) {
-        throw new Error("Calendar authorization failed");
-      }
-      
-      console.info("Calendar authorization successful");
+    if (success) {
       toast.success("Calendar connected successfully", {
         description: "Your Google Calendar has been connected",
         duration: 3000
       });
       
       await fetchEvents();
-    } catch (error) {
-      console.error("Calendar connection error:", error);
+    } else {
       toast.error("Failed to connect calendar", {
         description: "Please try again or check your network connection",
         duration: 5000
       });
-    } finally {
-      setIsConnecting(false);
     }
   };
 
@@ -143,17 +71,13 @@ const CalendarTab: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    try {
-      console.log("Manually refreshing calendar data...");
-      await refreshCalendar();
+    const success = await handleManualRefresh();
+    
+    if (success) {
       toast.success("Calendar refreshed", {
         duration: 2000
       });
-      
-      // Dispatch a calendar-updated event to ensure all components refresh
-      window.dispatchEvent(new Event('calendar-updated'));
-    } catch (error) {
-      console.error("Error refreshing calendar:", error);
+    } else {
       toast.error("Failed to refresh calendar", {
         duration: 3000
       });
@@ -175,34 +99,23 @@ const CalendarTab: React.FC = () => {
         onCreateAppointment={handleCreateAppointment}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div className="lg:col-span-2">
-          <CalendarViewWrapper 
-            isAuthorized={isAuthorized}
-            isLoading={isLoading}
-            selectedView={selectedView}
-            setSelectedView={setSelectedView}
-            calendarData={calendarData}
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            onConnectCalendar={handleConnectCalendar}
-            isConnecting={isConnecting}
-            onEventsChange={debouncedRefresh}
-            calendarViewRef={calendarViewRef}
-            publicCalendarUrl={publicCalendarUrl}
-            reloadCalendarIframe={reloadCalendarIframe}
-          />
-        </div>
-
-        <div className="h-full">
-          <AppointmentsCard 
-            isLoading={isLoading}
-            isAuthorized={isAuthorized}
-            appointments={validAppointments}
-            onRefresh={refreshCalendar}
-          />
-        </div>
-      </div>
+      <CalendarGrid
+        isAuthorized={isAuthorized}
+        isLoading={isLoading}
+        selectedView={selectedView}
+        setSelectedView={setSelectedView}
+        calendarData={calendarData}
+        selectedDate={selectedDate}
+        onDateSelect={setSelectedDate}
+        onConnectCalendar={handleConnect}
+        isConnecting={isConnecting}
+        onEventsChange={debouncedRefresh}
+        calendarViewRef={calendarViewRef}
+        publicCalendarUrl={publicCalendarUrl}
+        reloadCalendarIframe={reloadCalendarIframe}
+        validAppointments={validAppointments}
+        refreshCalendar={refreshCalendar}
+      />
     </div>
   );
 };
