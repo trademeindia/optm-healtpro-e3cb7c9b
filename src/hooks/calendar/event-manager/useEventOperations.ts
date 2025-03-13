@@ -5,6 +5,23 @@ import { v4 as uuidv4 } from 'uuid';
 import { CalendarEvent } from '../types';
 import { useEventValidator } from './useEventValidator';
 import { EventOperations } from './types';
+import { appointmentTypes } from '@/components/calendar/appointments/appointmentConstants';
+
+// Helper function to get color based on appointment type
+const getAppointmentColor = (type: string): string => {
+  switch (type) {
+    case "New Appointment":
+      return "#4285F4"; // Blue
+    case "Check Up":
+      return "#0F9D58"; // Green
+    case "Review":
+      return "#F4B400"; // Yellow
+    case "Treatment":
+      return "#DB4437"; // Red
+    default:
+      return "#4285F4"; // Default blue
+  }
+};
 
 export const useEventOperations = (
   onEventChange?: () => void,
@@ -34,6 +51,7 @@ export const useEventOperations = (
         patientName: eventData.patientName || '',
         type: eventData.type || '',
         status: 'scheduled',
+        color: getAppointmentColor(eventData.type || ''),
         ...(eventData as any)
       };
       
@@ -42,6 +60,7 @@ export const useEventOperations = (
       // Simulate API call to create event in Google Calendar
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      let googleCalendarSyncSuccess = true;
       try {
         // This is where we would make the actual API call to Google Calendar
         console.log('Syncing appointment to Google Calendar:', {
@@ -49,18 +68,16 @@ export const useEventOperations = (
           description: completeEventData.description,
           start: { dateTime: completeEventData.start },
           end: { dateTime: completeEventData.end },
-          location: completeEventData.location
+          location: completeEventData.location,
+          colorId: completeEventData.color
         });
         
         // Simulate successful API call
         console.log('Successfully synced with Google Calendar');
       } catch (googleError) {
         console.error('Google Calendar sync error:', googleError);
+        googleCalendarSyncSuccess = false;
         // Still continue with local appointment creation even if Google sync fails
-        toast.error('Google Calendar sync failed', {
-          description: 'The appointment was saved locally, but failed to sync with Google Calendar.',
-          duration: 5000
-        });
       }
       
       // Dispatch a custom event to notify about appointment creation
@@ -77,11 +94,18 @@ export const useEventOperations = (
       // Dispatch a calendar-updated event
       window.dispatchEvent(new Event('calendar-updated'));
       
-      // Show a success message with the appointment details
-      toast.success(`Appointment created: ${completeEventData.title}`, {
-        description: `${new Date(completeEventData.start).toLocaleString()} - ${new Date(completeEventData.end).toLocaleTimeString()}`,
-        duration: 3000
-      });
+      // Show appropriate success/error message
+      if (googleCalendarSyncSuccess) {
+        toast.success(`Appointment created: ${completeEventData.title}`, {
+          description: `${new Date(completeEventData.start).toLocaleString()} - ${new Date(completeEventData.end).toLocaleTimeString()}`,
+          duration: 3000
+        });
+      } else {
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was saved locally, but failed to sync with Google Calendar. Please try again.',
+          duration: 5000
+        });
+      }
       
       return true;
     } catch (error) {
@@ -109,6 +133,11 @@ export const useEventOperations = (
         throw new Error("Invalid appointment data");
       }
       
+      // Add color based on type if updating type
+      if (eventData.type) {
+        eventData.color = getAppointmentColor(eventData.type);
+      }
+      
       // In a real app, this would be an API call
       console.log('Updating event:', eventId, {
         title: eventData.title,
@@ -117,12 +146,14 @@ export const useEventOperations = (
         type: eventData.type,
         patientName: eventData.patientName,
         location: eventData.location,
-        status: eventData.status || 'scheduled'
+        status: eventData.status || 'scheduled',
+        color: eventData.color
       });
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      let googleCalendarSyncSuccess = true;
       try {
         // This is where we would update the event in Google Calendar
         console.log('Syncing updated appointment to Google Calendar for ID:', eventId);
@@ -131,10 +162,7 @@ export const useEventOperations = (
         console.log('Successfully updated in Google Calendar');
       } catch (googleError) {
         console.error('Google Calendar update error:', googleError);
-        toast.error('Google Calendar sync failed', {
-          description: 'The appointment was updated locally, but failed to sync with Google Calendar.',
-          duration: 5000
-        });
+        googleCalendarSyncSuccess = false;
       }
       
       // Dispatch a custom event to notify about appointment update
@@ -145,10 +173,17 @@ export const useEventOperations = (
       // Dispatch a calendar-updated event
       window.dispatchEvent(new Event('calendar-updated'));
       
-      toast.success('Appointment updated successfully', {
-        description: 'Your appointment details have been updated',
-        duration: 3000
-      });
+      if (googleCalendarSyncSuccess) {
+        toast.success('Appointment updated successfully', {
+          description: 'Your appointment details have been updated',
+          duration: 3000
+        });
+      } else {
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was updated locally, but failed to sync with Google Calendar.',
+          duration: 5000
+        });
+      }
       
       // Notify parent components that events have changed
       if (onEventChange) {
@@ -180,6 +215,7 @@ export const useEventOperations = (
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      let googleCalendarSyncSuccess = true;
       try {
         // This is where we would delete the event from Google Calendar
         console.log('Removing appointment from Google Calendar for ID:', eventId);
@@ -188,10 +224,7 @@ export const useEventOperations = (
         console.log('Successfully deleted from Google Calendar');
       } catch (googleError) {
         console.error('Google Calendar deletion error:', googleError);
-        toast.error('Google Calendar sync failed', {
-          description: 'The appointment was deleted locally, but failed to remove from Google Calendar.',
-          duration: 5000
-        });
+        googleCalendarSyncSuccess = false;
       }
       
       // Dispatch a custom event to notify about appointment deletion
@@ -202,10 +235,17 @@ export const useEventOperations = (
       // Dispatch a calendar-updated event
       window.dispatchEvent(new Event('calendar-updated'));
       
-      toast.success('Appointment deleted successfully', {
-        description: 'The appointment has been removed from your calendar',
-        duration: 3000
-      });
+      if (googleCalendarSyncSuccess) {
+        toast.success('Appointment deleted successfully', {
+          description: 'The appointment has been removed from your calendar',
+          duration: 3000
+        });
+      } else {
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was deleted locally, but failed to remove from Google Calendar.',
+          duration: 5000
+        });
+      }
       
       // Notify parent components that events have changed
       if (onEventChange) {

@@ -72,6 +72,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
         console.log("Calendar update event received, reloading iframe");
         reloadIframe();
       };
+      
+      // Listen for all appointment-related events to trigger iframe reload
       window.addEventListener('calendar-updated', handleCalendarUpdate);
       window.addEventListener('appointment-created', handleCalendarUpdate);
       window.addEventListener('appointment-updated', handleCalendarUpdate);
@@ -163,6 +165,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                   frameBorder="0" 
                   scrolling="no"
                   title="Google Calendar"
+                  onLoad={() => console.log("Main Google Calendar iframe loaded")}
+                  onError={() => console.error("Error loading main Google Calendar iframe")}
                 ></iframe>
               </CardContent>
             </Card>
