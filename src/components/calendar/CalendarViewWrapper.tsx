@@ -76,7 +76,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
         <Card className="shadow-sm">
           <CardContent className="p-6">
             <ConnectCalendarCard 
-              onConnectCalendar={onConnectCalendar}
+              onConnect={onConnectCalendar}
               isConnecting={isConnecting}
             />
           </CardContent>
@@ -104,7 +104,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     events={calendarData}
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
-                    onEventChange={onEventsChange}
+                    onEventsChange={onEventsChange}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 
@@ -115,7 +116,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     events={calendarData}
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
-                    onEventChange={onEventsChange}
+                    onEventsChange={onEventsChange}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 
@@ -126,7 +128,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     events={calendarData}
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
-                    onEventChange={onEventsChange}
+                    onEventsChange={onEventsChange}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
               </CardContent>

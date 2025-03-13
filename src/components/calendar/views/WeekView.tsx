@@ -44,16 +44,22 @@ const WeekView: React.FC<CalendarViewProps> = ({
               const events = getEventsForHour(date, hour);
               return (
                 <div key={dayIndex} className="p-1 min-h-[60px] relative border-r last:border-r-0">
-                  {events.map((event, eventIndex) => (
-                    <div
-                      key={eventIndex}
-                      onClick={() => onEventClick(event)}
-                      className="bg-primary/80 text-primary-foreground rounded-md p-1 mb-1 text-xs cursor-pointer hover:bg-primary transition-colors overflow-hidden"
-                    >
-                      <div className="font-medium truncate">{event.title}</div>
-                      <div className="truncate">{formatDate(event.start, 'h:mm a')} - {formatDate(event.end, 'h:mm a')}</div>
-                    </div>
-                  ))}
+                  {events.map((event, eventIndex) => {
+                    // Convert event.start and event.end to Date objects if they're strings
+                    const startDate = event.start instanceof Date ? event.start : new Date(event.start);
+                    const endDate = event.end instanceof Date ? event.end : new Date(event.end);
+                    
+                    return (
+                      <div
+                        key={eventIndex}
+                        onClick={() => onEventClick(event)}
+                        className="bg-primary/80 text-primary-foreground rounded-md p-1 mb-1 text-xs cursor-pointer hover:bg-primary transition-colors overflow-hidden"
+                      >
+                        <div className="font-medium truncate">{event.title}</div>
+                        <div className="truncate">{formatDate(startDate, 'h:mm a')} - {formatDate(endDate, 'h:mm a')}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
