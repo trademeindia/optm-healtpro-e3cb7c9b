@@ -6,12 +6,16 @@ import { DashboardMainContentProps } from './dashboard-layout/types';
 
 const DashboardMainContent: React.FC<DashboardMainContentProps> = (props) => {
   return (
-    <div className="grid grid-cols-1 gap-4 md:gap-6">
+    <div className="w-full space-y-6">
       {/* Mobile layout - Stack everything in one column */}
-      <MobileLayout {...props} />
+      <div className="block md:hidden">
+        <MobileLayout {...props} />
+      </div>
       
       {/* Desktop layout - Three column grid */}
-      <DesktopLayout {...props} />
+      <div className="hidden md:block">
+        <DesktopLayout {...props} />
+      </div>
     </div>
   );
 };

@@ -49,8 +49,11 @@ const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
   const vitals = vitalSigns || defaultVitals;
 
   return (
-    <div>
-      <h3 className="font-medium text-sm mb-3">Vital signs</h3>
+    <div className="bg-card rounded-lg p-4 border border-border/30 shadow-sm">
+      <h3 className="font-medium text-sm mb-3 flex items-center">
+        <Activity className="h-4 w-4 mr-2 text-primary" />
+        Vital signs
+      </h3>
       <CardGrid columns={2} gap="sm">
         {vitals.map((vital, index) => (
           <VitalSignCard
