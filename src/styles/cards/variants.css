@@ -124,17 +124,14 @@
   overflow: hidden;
 }
 
-/* Fixed version - separate the group utility */
-.card-with-overlay {
-  @apply relative overflow-hidden;
-}
-
-/* Don't use @apply with group utility - instead use the class directly */
-.card-with-overlay-group {
-  /* The group class will be added directly in HTML where needed */
-}
+/* 
+  Note: The group class needs to be added directly in HTML
+  Example usage:
+  <div class="card-with-overlay group">
+    <div class="card-overlay">Overlay content</div>
+  </div>
+*/
 
 .card-overlay {
   @apply absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity;
 }
-
