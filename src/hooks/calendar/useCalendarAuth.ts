@@ -6,7 +6,7 @@ export function useCalendarAuth() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calendarAuthStorage, setCalendarAuthStorage] = useLocalStorage('calendar-auth', 'false');
+  const [calendarAuthStorage, setCalendarAuthStorage] = useLocalStorage<string>('calendar-auth', 'false');
   
   // Set the public calendar URL to the one provided by the user
   const publicCalendarUrl = 'https://calendar.google.com/calendar/ical/9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com/public/basic.ics';
