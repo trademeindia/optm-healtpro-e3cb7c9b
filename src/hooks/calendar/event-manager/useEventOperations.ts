@@ -80,19 +80,23 @@ export const useEventOperations = (
         // Still continue with local appointment creation even if Google sync fails
       }
       
-      // Dispatch a custom event to notify about appointment creation
+      // First dispatch a custom event to notify about appointment creation
       window.dispatchEvent(new CustomEvent('appointment-created', { 
         detail: completeEventData 
       }));
       
+      // Then dispatch a calendar-updated event
+      setTimeout(() => {
+        window.dispatchEvent(new Event('calendar-updated'));
+      }, 500);
+      
       // Notify parent components that events have changed
       if (onEventChange) {
         console.log("Triggering calendar refresh after create");
-        onEventChange();
+        setTimeout(() => {
+          onEventChange();
+        }, 1000); // Add delay to allow Google Calendar iframe to reload first
       }
-      
-      // Dispatch a calendar-updated event
-      window.dispatchEvent(new Event('calendar-updated'));
       
       // Show appropriate success/error message
       if (googleCalendarSyncSuccess) {

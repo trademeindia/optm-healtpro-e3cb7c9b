@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -11,6 +11,7 @@ const CalendarTab: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const calendarViewRef = useRef<any>(null);
   const connectionAttemptedRef = useRef(false);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const { 
     isLoading, 
@@ -26,6 +27,18 @@ const CalendarTab: React.FC = () => {
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
+
+  // Debounced refresh function to prevent multiple refreshes
+  const debouncedRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+    
+    refreshTimeoutRef.current = setTimeout(() => {
+      console.log("Executing debounced calendar refresh");
+      refreshCalendar();
+    }, 1200);
+  }, [refreshCalendar]);
 
   // Auto-connect to calendar if needed (only once per session)
   useEffect(() => {
@@ -63,25 +76,32 @@ const CalendarTab: React.FC = () => {
       refreshCalendar();
     }, 2 * 60 * 1000); // 2 minutes
     
-    return () => clearInterval(refreshInterval);
+    return () => {
+      clearInterval(refreshInterval);
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
   }, [isAuthorized, refreshCalendar]);
 
   // Listen for calendar update events
   useEffect(() => {
     const handleCalendarEvent = () => {
       console.log("Calendar event received in CalendarTab");
-      refreshCalendar();
+      debouncedRefresh();
     };
     
     // Also listen for appointment creation events
     window.addEventListener('appointment-created', handleCalendarEvent);
     window.addEventListener('appointment-updated', handleCalendarEvent);
+    window.addEventListener('calendar-updated', handleCalendarEvent);
     
     return () => {
       window.removeEventListener('appointment-created', handleCalendarEvent);
       window.removeEventListener('appointment-updated', handleCalendarEvent);
+      window.removeEventListener('calendar-updated', handleCalendarEvent);
     };
-  }, [refreshCalendar]);
+  }, [debouncedRefresh]);
 
   const handleConnectCalendar = async () => {
     if (isConnecting) return;
@@ -140,6 +160,11 @@ const CalendarTab: React.FC = () => {
     }
   };
 
+  // Function to explicitly reload the iframe
+  const reloadCalendarIframe = () => {
+    window.dispatchEvent(new Event('calendar-updated'));
+  };
+
   return (
     <div className="space-y-4 md:space-y-6 pb-4">
       <CalendarHeader 
@@ -162,9 +187,10 @@ const CalendarTab: React.FC = () => {
             onDateSelect={setSelectedDate}
             onConnectCalendar={handleConnectCalendar}
             isConnecting={isConnecting}
-            onEventsChange={handleRefresh}
+            onEventsChange={debouncedRefresh}
             calendarViewRef={calendarViewRef}
             publicCalendarUrl={publicCalendarUrl}
+            reloadCalendarIframe={reloadCalendarIframe}
           />
         </div>
 
@@ -174,7 +200,6 @@ const CalendarTab: React.FC = () => {
             isAuthorized={isAuthorized}
             appointments={validAppointments}
             onRefresh={refreshCalendar}
-            publicCalendarUrl={publicCalendarUrl}
           />
         </div>
       </div>
