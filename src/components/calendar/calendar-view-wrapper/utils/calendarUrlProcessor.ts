@@ -20,6 +20,11 @@ export const getDisplayUrl = (url: string): string | null => {
       return url;
     }
     
+    // Handle exact calendar ID from the user-provided credentials
+    if (url.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5')) {
+      return `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC`;
+    }
+    
     // Handle calendar.google.com URLs directly
     if (url.includes('calendar.google.com')) {
       // If it's already in a reasonable format
@@ -74,6 +79,11 @@ export const getDisplayUrl = (url: string): string | null => {
  */
 export const getFallbackDisplayUrl = (publicCalendarUrl: string): string | null => {
   try {
+    // Check for the specific calendar ID
+    if (publicCalendarUrl.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5')) {
+      return `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC`;
+    }
+    
     // Extract calendar ID using a different pattern
     const idMatch = publicCalendarUrl.match(/([a-zA-Z0-9]{20,})/);
     if (idMatch && idMatch[1]) {
@@ -86,4 +96,3 @@ export const getFallbackDisplayUrl = (publicCalendarUrl: string): string | null 
     return null;
   }
 };
-

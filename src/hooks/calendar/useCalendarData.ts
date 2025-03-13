@@ -1,11 +1,10 @@
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent, UpcomingAppointment } from './types';
 import { generateMockEvents, mapEventsToAppointments } from './mockCalendarData';
 import { useAuth } from '@/contexts/auth';
 
-// Using the public URL as an identifier for the specific calendar
+// Updated calendar ID from the user-provided credentials
 const CALENDAR_ID = '9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5@group.calendar.google.com';
 
 export function useCalendarData(isAuthorized: boolean) {
@@ -31,8 +30,7 @@ export function useCalendarData(isAuthorized: boolean) {
     try {
       console.log("Fetching calendar events...");
       
-      // In a real implementation, we would use the calendar ID to fetch events
-      // from Google Calendar API, but never expose the secret token in client code
+      // Log the calendar ID we're using
       console.log(`Fetching events for calendar: ${CALENDAR_ID}`);
       
       // Simulate API call delay

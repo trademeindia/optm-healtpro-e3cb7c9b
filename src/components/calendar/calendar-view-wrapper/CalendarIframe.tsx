@@ -25,10 +25,15 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   const reloadingRef = useRef(false);
   const lastReloadTimeRef = useRef(0);
 
+  // Use the explicit calendar URL if we have the known calendar ID
+  const manuallySetUrl = publicCalendarUrl?.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5') 
+    ? `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC` 
+    : null;
+  
   // Process URLs to find a displayable format
-  const displayUrl = getDisplayUrl(publicCalendarUrl);
-  const fallbackUrl = displayUrl ? null : getFallbackDisplayUrl(publicCalendarUrl);
-  const finalUrl = displayUrl || fallbackUrl || "about:blank";
+  const processedUrl = manuallySetUrl || getDisplayUrl(publicCalendarUrl);
+  const fallbackUrl = processedUrl ? null : getFallbackDisplayUrl(publicCalendarUrl);
+  const finalUrl = processedUrl || fallbackUrl || "about:blank";
   
   // Setup a function to reload the iframe when needed
   const reloadIframe = useCallback(() => {
