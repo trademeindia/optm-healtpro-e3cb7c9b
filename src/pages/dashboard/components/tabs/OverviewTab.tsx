@@ -1,7 +1,6 @@
-
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus, Calendar, MessageSquare, FileText, BarChart2, HelpCircle } from 'lucide-react';
 import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
 import TherapySchedules from '@/components/dashboard/TherapySchedules';
 import ClinicMessages from '@/components/dashboard/ClinicMessages';
@@ -11,6 +10,8 @@ import MiniCalendar from '@/components/dashboard/MiniCalendar';
 import { AppointmentsDashboard } from '@/components/dashboard/appointments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Use lazy loading for non-critical components
 const LazyClinicDocuments = lazy(() => import('@/components/dashboard/ClinicDocuments'));
@@ -72,12 +73,16 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onViewAllDocuments,
   onUpload
 }) => {
+  const [showAddPatientDialog, setShowAddPatientDialog] = useState(false);
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
+  const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
+
   // Handler for quick action buttons
   const handleQuickAction = (action: string) => {
     switch(action) {
       case "Add Patient":
         toast.info("Opening add patient form", { duration: 3000 });
-        // Add redirect or dialog opening logic here
+        setShowAddPatientDialog(true);
         break;
       case "Schedule":
         toast.info("Opening appointment scheduler", { duration: 3000 });
@@ -93,11 +98,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         break;
       case "Analytics":
         toast.info("Opening analytics dashboard", { duration: 3000 });
-        // Add analytics navigation logic here
+        setShowAnalyticsDialog(true);
         break;
       case "Help":
         toast.info("Opening help center", { duration: 3000 });
-        // Add help center navigation logic here
+        setShowHelpDialog(true);
         break;
       default:
         toast.info(`${action} action initiated`, { duration: 3000 });
@@ -106,6 +111,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const handleRetry = () => {
     window.location.reload();
+  };
+
+  // Define quick action icons
+  const getActionIcon = (action: string) => {
+    switch(action) {
+      case "Add Patient": return <Plus className="h-5 w-5 text-primary" />;
+      case "Schedule": return <Calendar className="h-5 w-5 text-primary" />;
+      case "Message": return <MessageSquare className="h-5 w-5 text-primary" />;
+      case "Reports": return <FileText className="h-5 w-5 text-primary" />;
+      case "Analytics": return <BarChart2 className="h-5 w-5 text-primary" />;
+      case "Help": return <HelpCircle className="h-5 w-5 text-primary" />;
+      default: return null;
+    }
   };
 
   return (
@@ -118,6 +136,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             onClick={() => handleQuickAction(action)}
           >
             <CardContent className="p-4 flex flex-col items-center justify-center text-center h-24">
+              <div className="mb-2">{getActionIcon(action)}</div>
               <div className="text-lg font-semibold">{action}</div>
             </CardContent>
           </Card>
@@ -185,6 +204,124 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           </Suspense>
         </div>
       </div>
+
+      <Dialog open={showAddPatientDialog} onOpenChange={setShowAddPatientDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Patient</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground mb-4">
+              This is where you would add a new patient form. You can integrate with your existing patient registration system.
+            </p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">First Name</label>
+                  <input className="w-full px-3 py-2 border rounded-md" placeholder="Enter first name" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Last Name</label>
+                  <input className="w-full px-3 py-2 border rounded-md" placeholder="Enter last name" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Email</label>
+                <input className="w-full px-3 py-2 border rounded-md" placeholder="patient@example.com" type="email" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Phone</label>
+                <input className="w-full px-3 py-2 border rounded-md" placeholder="(123) 456-7890" />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowAddPatientDialog(false)}>Cancel</Button>
+              <Button onClick={() => {
+                toast.success("Patient added successfully!");
+                setShowAddPatientDialog(false);
+              }}>Add Patient</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Help Center</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Getting Started</h3>
+                <p className="text-sm text-muted-foreground">Learn the basics of using the dashboard and managing your clinic.</p>
+                <Button variant="link" className="px-0 text-primary">View Guide</Button>
+              </div>
+              
+              <div className="p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Patient Management</h3>
+                <p className="text-sm text-muted-foreground">Learn how to add, edit, and manage patient records.</p>
+                <Button variant="link" className="px-0 text-primary">View Guide</Button>
+              </div>
+              
+              <div className="p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Contact Support</h3>
+                <p className="text-sm text-muted-foreground">Need more help? Our support team is available 24/7.</p>
+                <Button variant="link" className="px-0 text-primary">Contact Support</Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAnalyticsDialog} onOpenChange={setShowAnalyticsDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Clinic Analytics</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-6">
+              <div className="grid grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Total Patients</p>
+                    <p className="text-2xl font-bold mt-1">243</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Appointments</p>
+                    <p className="text-2xl font-bold mt-1">38</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Revenue</p>
+                    <p className="text-2xl font-bold mt-1">$5,230</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-sm font-medium mb-3">Monthly Patient Visits</h3>
+                <div className="h-40 bg-muted rounded-md flex items-center justify-center">
+                  <p className="text-muted-foreground">Chart visualization would appear here</p>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={() => {
+                  toast.info("Redirecting to full analytics dashboard");
+                  setShowAnalyticsDialog(false);
+                }}
+                className="w-full"
+              >
+                View Full Analytics Dashboard
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
