@@ -15,6 +15,22 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   const iframeMountedRef = useRef(false);
   const iframeLoadingRef = useRef(false);
 
+  // Process iCal URL to make it displayable in an iframe if needed
+  const getDisplayUrl = (url: string) => {
+    // If the URL is an iCal URL, convert it to the embed format
+    if (url.includes('/ical/') && url.endsWith('.ics')) {
+      // Extract the calendar ID from the iCal URL
+      const match = url.match(/calendar\/ical\/([^\/]+)/);
+      if (match && match[1]) {
+        const calendarId = match[1];
+        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=Asia%2FKolkata`;
+      }
+    }
+    return url;
+  };
+
+  const displayUrl = getDisplayUrl(publicCalendarUrl);
+
   // Setup a function to reload the iframe when needed
   const reloadIframe = () => {
     // Only reload if we're not already reloading
@@ -84,7 +100,7 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
           )}
           <iframe 
             ref={iframeRef}
-            src={publicCalendarUrl}
+            src={displayUrl}
             className="w-full border-0"
             height="450" 
             frameBorder="0" 
