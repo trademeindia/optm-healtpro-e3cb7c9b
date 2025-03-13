@@ -1,11 +1,10 @@
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent, UpcomingAppointment } from './types';
 import { generateMockEvents, mapEventsToAppointments } from './mockCalendarData';
 import { useAuth } from '@/contexts/auth';
-
-// Updated calendar ID from the user-provided credentials
-const CALENDAR_ID = '9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5@group.calendar.google.com';
+import { GOOGLE_CALENDAR_ID } from './useCalendarAuth';
 
 export function useCalendarData(isAuthorized: boolean) {
   const { user } = useAuth();
@@ -31,12 +30,17 @@ export function useCalendarData(isAuthorized: boolean) {
       console.log("Fetching calendar events...");
       
       // Log the calendar ID we're using
-      console.log(`Fetching events for calendar: ${CALENDAR_ID}`);
+      console.log(`Fetching events for calendar: ${GOOGLE_CALENDAR_ID}`);
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Generate some mock data - in production, this would be real data from the API
+      // In a real implementation, we would:
+      // 1. Make API call to Google Calendar using tokens from auth
+      // 2. Map the response to our CalendarEvent type
+      // 3. Handle pagination if needed
+      
+      // For demo, we generate mock data
       const mockEvents = generateMockEvents(selectedDate);
       
       // Apply role-based access control to filter events

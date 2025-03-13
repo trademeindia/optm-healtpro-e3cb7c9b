@@ -1,11 +1,8 @@
 
 import { useState, useCallback } from 'react';
 import { CalendarEvent } from '../types';
-import { EventManagerState, DialogActions } from './types';
 
-export const useDialogState = (): EventManagerState & DialogActions => {
-  const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+export const useDialogState = () => {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -25,18 +22,19 @@ export const useDialogState = (): EventManagerState & DialogActions => {
 
   const closeEditDialog = useCallback(() => {
     setEditDialogOpen(false);
-    setEditingEvent(null);
+    // Don't immediately clear the editing event to prevent UI flicker during dialog transitions
+    setTimeout(() => {
+      setEditingEvent(null);
+    }, 300);
   }, []);
 
   return {
-    isCreating,
-    isEditing,
     editingEvent,
     createDialogOpen,
     editDialogOpen,
     openCreateDialog,
     closeCreateDialog,
     openEditDialog,
-    closeEditDialog,
+    closeEditDialog
   };
 };

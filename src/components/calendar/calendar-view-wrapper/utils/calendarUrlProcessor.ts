@@ -2,6 +2,7 @@
 /**
  * Utility functions for processing calendar URLs
  */
+import { GOOGLE_CALENDAR_ID } from '@/hooks/calendar/useCalendarAuth';
 
 /**
  * Process an iCal URL to make it displayable in an iframe
@@ -21,8 +22,8 @@ export const getDisplayUrl = (url: string): string | null => {
     }
     
     // Handle exact calendar ID from the user-provided credentials
-    if (url.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5')) {
-      return `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC`;
+    if (url.includes(GOOGLE_CALENDAR_ID) || url.includes(encodeURIComponent(GOOGLE_CALENDAR_ID))) {
+      return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC`;
     }
     
     // Handle calendar.google.com URLs directly
@@ -80,8 +81,8 @@ export const getDisplayUrl = (url: string): string | null => {
 export const getFallbackDisplayUrl = (publicCalendarUrl: string): string | null => {
   try {
     // Check for the specific calendar ID
-    if (publicCalendarUrl.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5')) {
-      return `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC`;
+    if (publicCalendarUrl.includes(GOOGLE_CALENDAR_ID)) {
+      return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC`;
     }
     
     // Extract calendar ID using a different pattern

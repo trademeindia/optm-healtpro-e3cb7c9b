@@ -2,6 +2,10 @@
 import { toast } from 'sonner';
 import { CalendarEvent } from '../../types';
 import { getAppointmentColor } from '../utils/appointmentColors';
+import { GOOGLE_CALENDAR_ID } from '../../useCalendarAuth';
+
+// Number of sync retry attempts
+const MAX_SYNC_RETRIES = 3;
 
 export const updateEvent = async (
   eventId: string,
@@ -55,19 +59,39 @@ export const updateEvent = async (
       color: eventData.color
     });
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // For debugging: log the calendar being used
+    console.log(`Updating event in calendar: ${GOOGLE_CALENDAR_ID}`);
     
-    let googleCalendarSyncSuccess = true;
-    try {
-      // This is where we would update the event in Google Calendar
-      console.log('Syncing updated appointment to Google Calendar for ID:', eventId);
-      
-      // Simulate successful API call
-      console.log('Successfully updated in Google Calendar');
-    } catch (googleError) {
-      console.error('Google Calendar update error:', googleError);
-      googleCalendarSyncSuccess = false;
+    let googleCalendarSyncSuccess = false;
+    let retryCount = 0;
+    
+    // Retry loop for Google Calendar sync
+    while (!googleCalendarSyncSuccess && retryCount < MAX_SYNC_RETRIES) {
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // In a real implementation, we would:
+        // 1. Get the Google Calendar event ID associated with this event
+        // 2. Use the Google Calendar API to update the event
+        // 3. Handle the response and any errors
+        
+        // Mock successful update
+        googleCalendarSyncSuccess = true;
+        console.log('Successfully updated in Google Calendar');
+        break;
+      } catch (googleError) {
+        retryCount++;
+        console.error(`Google Calendar update error (attempt ${retryCount}/${MAX_SYNC_RETRIES}):`, googleError);
+        
+        if (retryCount >= MAX_SYNC_RETRIES) {
+          // Final attempt failed
+          throw new Error('Failed to sync update with Google Calendar after multiple attempts');
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, retryCount)));
+      }
     }
     
     // Dispatch a custom event to notify about appointment update
@@ -102,12 +126,12 @@ export const updateEvent = async (
       });
     }
     
-    return true;
+    return googleCalendarSyncSuccess;
   } catch (error) {
     console.error('Error updating event:', error);
     
     toast.error('Failed to update appointment', {
-      description: 'There was an error updating your appointment. Please try again.',
+      description: error instanceof Error ? error.message : 'There was an error updating your appointment. Please try again.',
       duration: 3000
     });
     

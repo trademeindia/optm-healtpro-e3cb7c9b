@@ -3,6 +3,10 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { CalendarEvent } from '../../types';
 import { getAppointmentColor } from '../utils/appointmentColors';
+import { GOOGLE_CALENDAR_ID } from '../../useCalendarAuth';
+
+// Number of sync retry attempts
+const MAX_SYNC_RETRIES = 3;
 
 export const createEvent = async (
   eventData: Partial<CalendarEvent>,
@@ -56,32 +60,48 @@ export const createEvent = async (
     
     console.log('Creating event with data:', completeEventData);
     
-    // Simulate API call to create event in Google Calendar
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // In a real app, this would be an API call to your backend
+    // which would then use Google Calendar API to create the event
+    let googleCalendarSyncSuccess = false;
+    let retryCount = 0;
     
-    let googleCalendarSyncSuccess = true;
-    try {
-      // This is where we would make the actual API call to Google Calendar
-      // For demo purposes, we're simulating the Google Calendar API call
-      console.log('Syncing appointment to Google Calendar:', {
-        summary: completeEventData.title,
-        description: completeEventData.description,
-        start: { 
-          dateTime: completeEventData.start instanceof Date 
-            ? completeEventData.start.toISOString() 
-            : new Date(completeEventData.start).toISOString() 
-        },
-        end: { 
-          dateTime: completeEventData.end instanceof Date 
-            ? completeEventData.end.toISOString() 
-            : new Date(completeEventData.end).toISOString() 
-        },
-        location: completeEventData.location,
-        colorId: completeEventData.color
-      });
-      
-      // Dispatch a single event with small delay to prevent UI flicker and issues
-      setTimeout(() => {
+    // Retry loop for Google Calendar sync
+    while (!googleCalendarSyncSuccess && retryCount < MAX_SYNC_RETRIES) {
+      try {
+        // Simulate API call to create event in Google Calendar
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // This is where we would make the actual API call to Google Calendar
+        // For demo purposes, we're simulating the Google Calendar API call
+        console.log('Syncing appointment to Google Calendar:', {
+          summary: completeEventData.title,
+          description: completeEventData.description,
+          start: { 
+            dateTime: completeEventData.start instanceof Date 
+              ? completeEventData.start.toISOString() 
+              : new Date(completeEventData.start).toISOString() 
+          },
+          end: { 
+            dateTime: completeEventData.end instanceof Date 
+              ? completeEventData.end.toISOString() 
+              : new Date(completeEventData.end).toISOString() 
+          },
+          location: completeEventData.location,
+          colorId: completeEventData.color
+        });
+        
+        // In a real implementation:
+        // 1. We would use the Google Calendar API via fetch/axios
+        // 2. We would handle the response properly
+        // 3. We would store the Google Calendar event ID for future updates
+        
+        // Mock a successful response
+        googleCalendarSyncSuccess = true;
+        
+        // For debugging: log the calendar being used
+        console.log(`Event created in calendar: ${GOOGLE_CALENDAR_ID}`);
+        
+        // Broadcast event creation to update the UI
         window.dispatchEvent(new CustomEvent('calendar-data-updated', {
           detail: { 
             action: 'create', 
@@ -91,20 +111,30 @@ export const createEvent = async (
         }));
         
         console.log('Successfully synced with Google Calendar');
-      }, 500); // Small delay to let the UI settle
-      
-    } catch (googleError) {
-      console.error('Google Calendar sync error:', googleError);
-      googleCalendarSyncSuccess = false;
-      // Still continue with local appointment creation even if Google sync fails
+        break;
+      } catch (googleError) {
+        retryCount++;
+        console.error(`Google Calendar sync error (attempt ${retryCount}/${MAX_SYNC_RETRIES}):`, googleError);
+        
+        if (retryCount >= MAX_SYNC_RETRIES) {
+          // Final attempt failed
+          throw new Error('Failed to sync with Google Calendar after multiple attempts');
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, retryCount)));
+      }
     }
     
-    // Add a small delay before triggering calendar refresh to prevent UI flicker
+    // Trigger calendar refresh to update the UI
     if (onEventChange) {
       setTimeout(() => {
         console.log("Triggering calendar refresh after create");
         onEventChange();
-      }, 1000);
+        
+        // Also dispatch the calendar-updated event to ensure iframe gets refreshed
+        window.dispatchEvent(new Event('calendar-updated'));
+      }, 500);
     }
     
     // Show appropriate success/error message
@@ -120,12 +150,12 @@ export const createEvent = async (
       });
     }
     
-    return true;
+    return googleCalendarSyncSuccess;
   } catch (error) {
     console.error('Error creating event:', error);
     
     toast.error('Failed to create appointment', {
-      description: 'There was an error creating your appointment. Please try again.',
+      description: error instanceof Error ? error.message : 'There was an error creating your appointment. Please try again.',
       duration: 5000
     });
     

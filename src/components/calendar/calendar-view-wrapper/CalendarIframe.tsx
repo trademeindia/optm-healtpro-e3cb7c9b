@@ -7,6 +7,7 @@ import CalendarError from './components/CalendarError';
 import CalendarFrame from './components/CalendarFrame';
 import { getDisplayUrl, getFallbackDisplayUrl } from './utils/calendarUrlProcessor';
 import { handleCalendarReload, setupCalendarEventListeners } from './utils/calendarReloadHandler';
+import { GOOGLE_CALENDAR_ID } from '@/hooks/calendar/useCalendarAuth';
 
 interface CalendarIframeProps {
   publicCalendarUrl: string;
@@ -25,9 +26,9 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   const reloadingRef = useRef(false);
   const lastReloadTimeRef = useRef(0);
 
-  // Use the explicit calendar URL if we have the known calendar ID
-  const manuallySetUrl = publicCalendarUrl?.includes('9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5') 
-    ? `https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=UTC` 
+  // Use the explicit calendar URL for our known calendar ID
+  const manuallySetUrl = publicCalendarUrl?.includes(GOOGLE_CALENDAR_ID) || publicCalendarUrl?.includes(encodeURIComponent(GOOGLE_CALENDAR_ID))
+    ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC` 
     : null;
   
   // Process URLs to find a displayable format
@@ -91,6 +92,7 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
             src={finalUrl} 
             onLoad={handleIframeLoad} 
             onError={handleIframeError} 
+            ref={iframeRef}
           />
         </div>
       </CardContent>
