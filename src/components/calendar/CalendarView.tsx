@@ -1,7 +1,7 @@
 
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
-import AppointmentDetailsDialog from './AppointmentDetailsDialog';
+import { AppointmentDetailsDialog } from './appointment-details';
 import CalendarNavigation from './CalendarNavigation';
 import CalendarViewRenderer from './CalendarViewRenderer';
 import CalendarSkeleton from './CalendarSkeleton';
