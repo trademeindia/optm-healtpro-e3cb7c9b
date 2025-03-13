@@ -150,6 +150,7 @@ const CalendarTab: React.FC = () => {
             isAuthorized={isAuthorized}
             appointments={validAppointments}
             onRefresh={refreshCalendar}
+            publicCalendarUrl={publicCalendarUrl}
           />
         </div>
       </div>

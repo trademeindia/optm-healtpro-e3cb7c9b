@@ -4,19 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import AppointmentsList from '@/components/calendar/AppointmentsList';
 import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
 import { Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AppointmentsCardProps {
   isLoading: boolean;
   isAuthorized: boolean;
   appointments: UpcomingAppointment[];
   onRefresh?: () => Promise<void>;
+  publicCalendarUrl?: string;
 }
 
 const AppointmentsCard: React.FC<AppointmentsCardProps> = ({
   isLoading,
   isAuthorized,
   appointments,
-  onRefresh
+  onRefresh,
+  publicCalendarUrl
 }) => {
   // Listen for calendar-updated events to refresh the appointments list automatically
   useEffect(() => {
@@ -54,13 +57,47 @@ const AppointmentsCard: React.FC<AppointmentsCardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-4 max-h-[calc(100vh-22rem)] overflow-y-auto">
-        <AppointmentsList 
-          appointments={appointments}
-          isLoading={isLoading} 
-          isAuthorized={isAuthorized}
-        />
-      </CardContent>
+      
+      <Tabs defaultValue="list" className="w-full">
+        <div className="px-4 pt-2">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="list">Appointments List</TabsTrigger>
+            <TabsTrigger value="calendar">Google Calendar</TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="list" className="m-0">
+          <CardContent className="p-4 pt-4 max-h-[calc(100vh-22rem)] overflow-y-auto">
+            <AppointmentsList 
+              appointments={appointments}
+              isLoading={isLoading} 
+              isAuthorized={isAuthorized}
+            />
+          </CardContent>
+        </TabsContent>
+        
+        <TabsContent value="calendar" className="m-0">
+          <CardContent className="p-0 h-[calc(100vh-22rem)]">
+            {isAuthorized && publicCalendarUrl ? (
+              <iframe 
+                src={publicCalendarUrl}
+                style={{ border: 0 }}
+                width="100%" 
+                height="100%" 
+                frameBorder="0" 
+                scrolling="no"
+                title="Google Calendar"
+              ></iframe>
+            ) : (
+              <div className="flex items-center justify-center h-full p-4 text-center text-muted-foreground">
+                {isAuthorized 
+                  ? "Calendar URL not available. Please connect your Google Calendar."
+                  : "Please connect your Google Calendar to view your schedule."}
+              </div>
+            )}
+          </CardContent>
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 };
