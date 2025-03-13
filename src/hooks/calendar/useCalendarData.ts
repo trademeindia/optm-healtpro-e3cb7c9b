@@ -72,12 +72,15 @@ export function useCalendarData(isAuthorized: boolean) {
     
     console.log("Refreshing calendar data...");
     toast.info("Refreshing calendar data...");
+    
+    // Force a refresh by setting a new timestamp
     setLastRefresh(Date.now());
   }, [isAuthorized]);
 
   // Load calendar data when authorized or refresh is triggered
   useEffect(() => {
     if (isAuthorized) {
+      console.log("Calendar data refresh triggered at:", new Date(lastRefresh).toISOString());
       fetchEvents();
     }
   }, [isAuthorized, selectedDate, fetchEvents, lastRefresh]);

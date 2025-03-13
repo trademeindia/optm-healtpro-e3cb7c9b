@@ -67,6 +67,7 @@ const CalendarTab: React.FC = () => {
 
   const handleRefresh = async () => {
     try {
+      console.log("Manually refreshing calendar data...");
       await refreshCalendar();
       toast.success("Calendar refreshed", {
         duration: 2000

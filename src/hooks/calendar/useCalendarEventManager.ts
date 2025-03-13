@@ -85,6 +85,12 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
         onEventChange();
       }
       
+      // Show a success message with the appointment details
+      toast.success(`Appointment created: ${completeEventData.title}`, {
+        description: `${new Date(completeEventData.start).toLocaleString()} - ${new Date(completeEventData.end).toLocaleTimeString()}`,
+        duration: 3000
+      });
+      
       return true;
     } catch (error) {
       console.error('Error creating event:', error);

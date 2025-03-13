@@ -90,11 +90,11 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                 </TabsContent>
               </Tabs>
               
-              {/* Display embedded calendar if URL is provided */}
+              {/* Enhanced embedded Google Calendar with better dimensions */}
               {publicCalendarUrl && (
                 <div className="mt-6 pt-6 border-t">
                   <h3 className="text-base font-medium mb-3">Google Calendar View</h3>
-                  <div className="aspect-video w-full bg-muted/30 border rounded-lg overflow-hidden">
+                  <div className="w-full h-[600px] bg-muted/30 border rounded-lg overflow-hidden">
                     <iframe 
                       src={publicCalendarUrl}
                       style={{ border: 0 }} 
