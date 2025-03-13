@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { AppointmentCard, type Appointment } from './appointments';
@@ -17,6 +17,36 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
+  const [appointments, setAppointments] = useState<Appointment[]>(upcomingAppointments || []);
+
+  // Update appointments when props change
+  useEffect(() => {
+    setAppointments(upcomingAppointments || []);
+  }, [upcomingAppointments]);
+
+  // Listen for appointment changes
+  useEffect(() => {
+    const handleAppointmentCreated = () => {
+      console.log("Appointment created event detected in UpcomingAppointmentsCard");
+      // We don't need to do anything here because the parent component will update the props
+    };
+
+    const handleCalendarUpdated = () => {
+      console.log("Calendar updated event detected in UpcomingAppointmentsCard");
+      // We don't need to do anything here because the parent component will update the props
+    };
+
+    window.addEventListener('appointment-created', handleAppointmentCreated);
+    window.addEventListener('calendar-updated', handleCalendarUpdated);
+    window.addEventListener('calendar-data-updated', handleCalendarUpdated);
+
+    return () => {
+      window.removeEventListener('appointment-created', handleAppointmentCreated);
+      window.removeEventListener('calendar-updated', handleCalendarUpdated);
+      window.removeEventListener('calendar-data-updated', handleCalendarUpdated);
+    };
+  }, []);
+
   // Function to handle appointment confirmation
   const handleConfirmAppointment = (id: string) => {
     if (onConfirmAppointment) {
@@ -43,8 +73,8 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
     <div className={`glass-morphism rounded-2xl p-4 md:p-6 ${className}`}>
       <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
       <div className="space-y-4">
-        {upcomingAppointments.length > 0 ? (
-          upcomingAppointments.map(appointment => (
+        {appointments.length > 0 ? (
+          appointments.map(appointment => (
             <AppointmentCard
               key={appointment.id}
               appointment={appointment}

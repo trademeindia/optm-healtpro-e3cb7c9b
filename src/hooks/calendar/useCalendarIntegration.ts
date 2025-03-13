@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { useCalendarAuth } from './useCalendarAuth';
 import { useCalendarData } from './useCalendarData';
 import { CalendarEvent, UpcomingAppointment } from './types';
@@ -32,9 +32,19 @@ export const useCalendarIntegration = () => {
   // Enhanced refresh that ensures we fetch new data
   const enhancedRefresh = useCallback(async () => {
     console.log("Enhanced calendar refresh triggered");
+    
+    // First refresh
     await refreshCalendar();
-    // We don't need to call fetchEvents explicitly as it's triggered by the refreshCalendar
-    // function through the lastRefresh state update
+    
+    // Second refresh after a delay to ensure everything is updated
+    setTimeout(async () => {
+      console.log("Executing second refresh to ensure data consistency");
+      await refreshCalendar();
+      
+      // Dispatch events to notify all components
+      window.dispatchEvent(new Event('calendar-updated'));
+      window.dispatchEvent(new Event('calendar-data-updated'));
+    }, 1000);
   }, [refreshCalendar]);
 
   // Combine loading states and errors
@@ -52,6 +62,7 @@ export const useCalendarIntegration = () => {
     selectedDate,
     setSelectedDate,
     publicCalendarUrl,
-    error
+    error,
+    user
   };
 };

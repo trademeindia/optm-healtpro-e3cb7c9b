@@ -17,6 +17,7 @@ export function useCalendarData(isAuthorized: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const isRefreshingRef = useRef(false);
+  const appointmentChanges = useRef(0);
 
   const fetchEvents = useCallback(async () => {
     // Don't fetch if not authorized or already fetching
@@ -37,7 +38,7 @@ export function useCalendarData(isAuthorized: boolean) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Generate some mock data - in production, this would be real data from the API
-      const mockEvents = generateMockEvents(selectedDate);
+      const mockEvents = generateMockEvents(selectedDate, appointmentChanges.current);
       
       // Apply role-based access control to filter events
       let filteredEvents = mockEvents;
@@ -78,7 +79,7 @@ export function useCalendarData(isAuthorized: boolean) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [isAuthorized, selectedDate, user]);
+  }, [isAuthorized, selectedDate, user, appointmentChanges.current]);
 
   const refreshCalendar = useCallback(async () => {
     if (!isAuthorized) {
@@ -94,6 +95,9 @@ export function useCalendarData(isAuthorized: boolean) {
     }
     
     console.log("Refreshing calendar data...");
+    
+    // Increment the change counter to ensure different mock data
+    appointmentChanges.current += 1;
     
     // Force a refresh by setting a new timestamp 
     // This will trigger the useEffect below
@@ -111,27 +115,49 @@ export function useCalendarData(isAuthorized: boolean) {
     }
   }, [isAuthorized, fetchEvents, lastRefresh]);
   
-  // Listen for specific appointment events
+  // Listen for specific appointment events with more robust event handling
   useEffect(() => {
     if (isAuthorized) {
-      const handleAppointmentCreated = () => {
+      const handleAppointmentCreated = (event: Event) => {
         console.log("Appointment created event detected, refreshing calendar data");
+        
+        // Get details from the custom event if available
+        const customEvent = event as CustomEvent;
+        if (customEvent.detail) {
+          console.log("New appointment details:", customEvent.detail);
+        }
+        
+        // Increment the change counter
+        appointmentChanges.current += 1;
+        
         // Set slight delay to ensure all systems have processed the new data
         setTimeout(() => refreshCalendar(), 300);
       };
       
       const handleAppointmentUpdated = () => {
         console.log("Appointment updated event detected, refreshing calendar data");
+        
+        // Increment the change counter
+        appointmentChanges.current += 1;
+        
         // Set slight delay to ensure all systems have processed the new data
+        setTimeout(() => refreshCalendar(), 300);
+      };
+      
+      // Listen for direct calendar update events
+      const handleCalendarUpdated = () => {
+        console.log("Calendar updated event detected, refreshing calendar data");
         setTimeout(() => refreshCalendar(), 300);
       };
       
       window.addEventListener('appointment-created', handleAppointmentCreated);
       window.addEventListener('appointment-updated', handleAppointmentUpdated);
+      window.addEventListener('calendar-updated', handleCalendarUpdated);
       
       return () => {
         window.removeEventListener('appointment-created', handleAppointmentCreated);
         window.removeEventListener('appointment-updated', handleAppointmentUpdated);
+        window.removeEventListener('calendar-updated', handleCalendarUpdated);
       };
     }
   }, [isAuthorized, refreshCalendar]);
