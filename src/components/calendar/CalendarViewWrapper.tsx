@@ -38,6 +38,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   reloadCalendarIframe
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeMountedRef = useRef(false);
 
   // Setup a function to reload the iframe when needed
   const reloadIframe = () => {
@@ -55,6 +56,14 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
     }
   };
 
+  // Initial mount/load for iframe
+  useEffect(() => {
+    if (isAuthorized && publicCalendarUrl && !iframeMountedRef.current) {
+      iframeMountedRef.current = true;
+      console.log("Calendar iframe mounted initially");
+    }
+  }, [isAuthorized, publicCalendarUrl]);
+
   // Add event listener for calendar changes
   useEffect(() => {
     if (isAuthorized && publicCalendarUrl) {
@@ -64,8 +73,15 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
         reloadIframe();
       };
       window.addEventListener('calendar-updated', handleCalendarUpdate);
+      window.addEventListener('appointment-created', handleCalendarUpdate);
+      window.addEventListener('appointment-updated', handleCalendarUpdate);
+      window.addEventListener('appointment-deleted', handleCalendarUpdate);
+      
       return () => {
         window.removeEventListener('calendar-updated', handleCalendarUpdate);
+        window.removeEventListener('appointment-created', handleCalendarUpdate);
+        window.removeEventListener('appointment-updated', handleCalendarUpdate);
+        window.removeEventListener('appointment-deleted', handleCalendarUpdate);
       };
     }
   }, [isAuthorized, publicCalendarUrl]);

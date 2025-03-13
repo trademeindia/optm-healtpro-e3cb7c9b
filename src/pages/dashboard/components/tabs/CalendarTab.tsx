@@ -10,6 +10,7 @@ const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
   const [isConnecting, setIsConnecting] = useState(false);
   const calendarViewRef = useRef<any>(null);
+  const connectionAttemptedRef = useRef(false);
   
   const { 
     isLoading, 
@@ -25,6 +26,29 @@ const CalendarTab: React.FC = () => {
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
+
+  // Auto-connect to calendar if needed (only once per session)
+  useEffect(() => {
+    const autoConnectCalendar = async () => {
+      // Only attempt auto-connect once and only if not already connected
+      if (!isAuthorized && !isLoading && !connectionAttemptedRef.current && !isConnecting) {
+        console.log("Attempting automatic calendar reconnection");
+        connectionAttemptedRef.current = true;
+        setIsConnecting(true);
+        
+        try {
+          await authorizeCalendar();
+          console.log("Auto-reconnection to calendar successful");
+        } catch (error) {
+          console.error("Auto-reconnection failed:", error);
+        } finally {
+          setIsConnecting(false);
+        }
+      }
+    };
+    
+    autoConnectCalendar();
+  }, [isAuthorized, isLoading, authorizeCalendar, isConnecting]);
 
   // Set up a periodic refresh for the calendar data when authorized
   useEffect(() => {

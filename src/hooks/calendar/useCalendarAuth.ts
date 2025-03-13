@@ -1,14 +1,33 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 
 // Use the public calendar URL provided by the user
 const PUBLIC_GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=Asia%2FKolkata';
+const CALENDAR_AUTH_KEY = 'calendar_auth_status';
 
 export function useCalendarAuth() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Load authorization state from localStorage on initialization
+  useEffect(() => {
+    const savedAuth = localStorage.getItem(CALENDAR_AUTH_KEY);
+    const isAuth = savedAuth === 'true';
+    setIsAuthorized(isAuth);
+    setIsLoading(false);
+    
+    console.log("Calendar authorization loaded from storage:", isAuth);
+  }, []);
+  
+  // Save authorization state to localStorage whenever it changes
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem(CALENDAR_AUTH_KEY, isAuthorized.toString());
+      console.log("Calendar authorization saved to storage:", isAuthorized);
+    }
+  }, [isAuthorized, isLoading]);
   
   const authorizeCalendar = useCallback(async () => {
     setIsLoading(true);
