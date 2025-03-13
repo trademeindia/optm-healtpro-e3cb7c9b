@@ -13,6 +13,13 @@ interface DateSelectorProps {
 }
 
 const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
+  const handleDateSelect = (newDate: Date | undefined) => {
+    if (newDate && setDate) {
+      console.log("Date selected:", newDate);
+      setDate(newDate);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor="date">Date</Label>
@@ -33,7 +40,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(newDate) => newDate && setDate && setDate(newDate)}
+            onSelect={handleDateSelect}
             initialFocus
             className="p-3 pointer-events-auto"
           />

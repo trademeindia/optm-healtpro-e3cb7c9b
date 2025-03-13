@@ -1,11 +1,16 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { parse, set, isValid, isBefore, addMinutes, format } from 'date-fns';
 
 export const useAppointmentDates = (initialDate: Date) => {
   const [date, setDate] = useState<Date>(initialDate);
   const [startTime, setStartTime] = useState<string>("9:00 AM");
   const [endTime, setEndTime] = useState<string>("9:30 AM");
+
+  useEffect(() => {
+    // When initialDate changes, update the date state
+    setDate(initialDate);
+  }, [initialDate]);
 
   const parseTimeToDate = useCallback((baseDate: Date, timeString: string): Date => {
     try {

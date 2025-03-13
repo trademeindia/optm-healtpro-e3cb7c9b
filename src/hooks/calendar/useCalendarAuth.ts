@@ -44,15 +44,29 @@ export function useCalendarAuth() {
       // In a real app, this would be an OAuth flow to Google Calendar API
       setIsAuthorized(true);
       
-      // Dispatch an event to notify components about successful calendar authorization
+      // Dispatch multiple events to ensure all components are aware of the authorization
+      // Event for components that specifically listen for authorization events
       window.dispatchEvent(new CustomEvent('calendar-authorized', {
-        detail: { success: true }
+        detail: { success: true, timestamp: new Date().toISOString() }
+      }));
+      
+      // Event for components that listen for general calendar updates
+      window.dispatchEvent(new CustomEvent('calendar-updated', {
+        detail: { action: 'authorize', timestamp: new Date().toISOString() }
       }));
       
       console.log("Calendar authorization successful");
       
       // Trigger immediate calendar refresh
-      window.dispatchEvent(new Event('calendar-updated'));
+      window.dispatchEvent(new CustomEvent('calendar-data-updated', {
+        detail: { timestamp: new Date().toISOString() }
+      }));
+      
+      // Additional refresh after a short delay to ensure all components are updated
+      setTimeout(() => {
+        window.dispatchEvent(new Event('calendar-updated'));
+        console.log("Secondary refresh after authorization");
+      }, 1000);
       
       return true;
     } catch (error: any) {

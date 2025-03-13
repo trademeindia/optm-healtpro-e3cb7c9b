@@ -29,6 +29,15 @@ export const createEvent = async (
       (eventData as any).patientId = currentUser.patientId || currentUser.id;
     }
     
+    // Ensure start and end dates are properly formatted as Date objects
+    if (eventData.start && !(eventData.start instanceof Date)) {
+      eventData.start = new Date(eventData.start);
+    }
+    
+    if (eventData.end && !(eventData.end instanceof Date)) {
+      eventData.end = new Date(eventData.end);
+    }
+    
     // Add a unique ID to the event
     const completeEventData: CalendarEvent = {
       id: uuidv4(),
@@ -71,12 +80,20 @@ export const createEvent = async (
         colorId: completeEventData.color
       });
       
-      // Trigger events to update any UI that displays calendar events
+      // Ensure the AppointmentsList component refreshes by dispatching a detailed event
       window.dispatchEvent(new CustomEvent('appointment-created', { 
         detail: completeEventData 
       }));
       
-      window.dispatchEvent(new Event('calendar-updated'));
+      // Trigger a general calendar refresh event
+      window.dispatchEvent(new CustomEvent('calendar-updated', {
+        detail: { action: 'create', appointment: completeEventData }
+      }));
+      
+      // Dispatch an additional event to force refresh of any appointment UI components
+      window.dispatchEvent(new CustomEvent('calendar-data-updated', {
+        detail: { timestamp: new Date().toISOString() }
+      }));
       
       // Simulate successful API call
       console.log('Successfully synced with Google Calendar');
@@ -96,6 +113,13 @@ export const createEvent = async (
         window.dispatchEvent(new Event('calendar-updated'));
         onEventChange(); // Call again for good measure
       }, 500);
+      
+      // Schedule one more refresh after a longer delay to ensure everything is updated
+      setTimeout(() => {
+        window.dispatchEvent(new Event('calendar-updated'));
+        onEventChange();
+        console.log("Final refresh after appointment creation");
+      }, 1500);
     }
     
     // Show appropriate success/error message
