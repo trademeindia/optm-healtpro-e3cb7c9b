@@ -1,17 +1,15 @@
 
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { CalendarEvent } from '@/hooks/calendar/types';
-import { AppointmentDetailsDialog } from './appointment-details';
 import CalendarNavigation from './CalendarNavigation';
 import CalendarViewRenderer from './CalendarViewRenderer';
 import CalendarSkeleton from './CalendarSkeleton';
-import CreateAppointmentDialog from './CreateAppointmentDialog';
-import EditAppointmentDialog from './EditAppointmentDialog';
 import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
 import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
-import { useCalendarEventManager } from '@/hooks/calendar/useCalendarEventManager';
-import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
+import { useCalendarEventManager } from '@/hooks/calendar/event-manager';
 import { AppointmentStatus } from '@/types/appointment';
+import { CalendarEventDetails, CalendarDialogs } from './view';
+import useCalendarViewHandlers from './view/useCalendarViewHandlers';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month';
@@ -61,52 +59,32 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     handleDeleteEvent
   } = useCalendarEventManager(onEventsChange);
 
+  const {
+    handleEventClick,
+    handleBookFromDetails,
+    handleEventCreated,
+    handleStatusChanged
+  } = useCalendarViewHandlers({
+    openEventDetails,
+    closeEventDetails,
+    openCreateDialog,
+    closeCreateDialog,
+    onEventsChange
+  });
+
   useImperativeHandle(ref, () => ({
-    openCreateDialog: (date: Date) => {
-      openCreateDialog(date);
-    }
+    openCreateDialog
   }));
 
-  const handleEventClick = (event: CalendarEvent) => {
-    if (event.isAvailable) {
-      openCreateDialog(event.start instanceof Date ? event.start : new Date(event.start));
-    } else {
-      openEventDetails(event);
+  const handleCreateEventWrapper = async (eventData: Partial<CalendarEvent>) => {
+    return handleEventCreated(handleCreateEvent, eventData);
+  };
+
+  const handleEditFromDetails = () => {
+    const eventToEdit = handleBookFromDetails(selectedEvent);
+    if (eventToEdit) {
+      openEditDialog(eventToEdit);
     }
-  };
-
-  const handleBookFromDetails = () => {
-    if (selectedEvent) {
-      closeEventDetails();
-      openEditDialog(selectedEvent);
-    }
-  };
-
-  const handleEventCreated = async (eventData: Partial<CalendarEvent>) => {
-    const success = await handleCreateEvent(eventData);
-    if (success) {
-      closeCreateDialog();
-      onEventsChange();
-    }
-    return success;
-  };
-
-  const handleStatusChanged = () => {
-    console.log("Appointment status changed, refreshing calendar");
-    onEventsChange();
-  };
-
-  const renderEventContent = (event: CalendarEvent) => {
-    return (
-      <div className="flex flex-col gap-1">
-        <div className="font-medium truncate">{event.title}</div>
-        {event.status && (
-          <AppointmentStatusIndicator 
-            status={event.status as AppointmentStatus} 
-          />
-        )}
-      </div>
-    );
   };
 
   if (isLoading) {
@@ -135,32 +113,25 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
         isToday={isToday}
       />
       
-      {selectedEvent && (
-        <AppointmentDetailsDialog
-          open={isDetailsOpen}
-          onClose={closeEventDetails}
-          event={selectedEvent}
-          onEdit={handleBookFromDetails}
-          onStatusChange={handleStatusChanged}
-        />
-      )}
-
-      <CreateAppointmentDialog
-        open={createDialogOpen}
-        onClose={closeCreateDialog}
-        onCreated={handleEventCreated}
-        selectedDate={selectedDate}
+      <CalendarEventDetails
+        selectedEvent={selectedEvent}
+        isDetailsOpen={isDetailsOpen}
+        closeEventDetails={closeEventDetails}
+        onEdit={handleEditFromDetails}
+        onStatusChange={handleStatusChanged}
       />
 
-      {editingEvent && (
-        <EditAppointmentDialog
-          open={editDialogOpen}
-          onClose={closeEditDialog}
-          onUpdate={handleUpdateEvent}
-          onDelete={handleDeleteEvent}
-          event={editingEvent}
-        />
-      )}
+      <CalendarDialogs
+        createDialogOpen={createDialogOpen}
+        editDialogOpen={editDialogOpen}
+        editingEvent={editingEvent}
+        selectedDate={selectedDate}
+        closeCreateDialog={closeCreateDialog}
+        closeEditDialog={closeEditDialog}
+        onCreateEvent={handleCreateEventWrapper}
+        onUpdateEvent={handleUpdateEvent}
+        onDeleteEvent={handleDeleteEvent}
+      />
     </div>
   );
 });

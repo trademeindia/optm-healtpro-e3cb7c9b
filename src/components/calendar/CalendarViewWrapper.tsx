@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import ConnectCalendarCard from './ConnectCalendarCard';
 import CalendarViewContent from './calendar-view-wrapper/CalendarViewContent';
 import CalendarIframe from './calendar-view-wrapper/CalendarIframe';
+import { CalendarEvent } from '@/hooks/calendar/types';
 
 interface CalendarViewWrapperProps {
   isAuthorized: boolean;
