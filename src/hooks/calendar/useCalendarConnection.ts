@@ -29,7 +29,8 @@ export function useCalendarConnection(
       }
     };
     
-    autoConnectCalendar();
+    // Uncomment the line below to enable auto-connect
+    // autoConnectCalendar();
   }, [isAuthorized, isLoading, authorizeCalendar, isConnecting]);
 
   const handleConnectCalendar = async () => {

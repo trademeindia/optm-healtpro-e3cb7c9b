@@ -23,6 +23,7 @@ export const getDisplayUrl = (url: string): string | null => {
     
     // Handle exact calendar ID from the user-provided credentials
     if (url.includes(GOOGLE_CALENDAR_ID) || url.includes(encodeURIComponent(GOOGLE_CALENDAR_ID))) {
+      console.log("Found matching calendar ID in URL, using direct embed URL");
       return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC`;
     }
     
@@ -34,6 +35,7 @@ export const getDisplayUrl = (url: string): string | null => {
         const match = url.match(/calendar\/ical\/([^\/]+)/);
         if (match && match[1]) {
           const calendarId = decodeURIComponent(match[1]);
+          console.log("Extracted calendar ID from iCal URL:", calendarId);
           return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=UTC`;
         }
       }
@@ -43,6 +45,7 @@ export const getDisplayUrl = (url: string): string | null => {
         const idMatch = url.match(/([a-zA-Z0-9_-]+(?:%40|@)group\.calendar\.google\.com)/i);
         if (idMatch && idMatch[1]) {
           const calendarId = idMatch[1].replace('%40', '@');
+          console.log("Extracted calendar ID from basic.ics URL:", calendarId);
           return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=UTC`;
         }
       }
@@ -51,12 +54,14 @@ export const getDisplayUrl = (url: string): string | null => {
     // Fallback method: try to extract an email-like ID
     const emailMatch = url.match(/([a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.[a-zA-Z0-9_.-]+)/i);
     if (emailMatch && emailMatch[1]) {
+      console.log("Extracted email-like calendar ID:", emailMatch[1]);
       return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(emailMatch[1])}&ctz=UTC`;
     }
     
     // Another fallback: look for a long alphanumeric string that might be a calendar ID
     const idMatch = url.match(/([a-zA-Z0-9]{20,})/);
     if (idMatch && idMatch[1]) {
+      console.log("Extracted long alphanumeric calendar ID:", idMatch[1]);
       return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(idMatch[1])}%40group.calendar.google.com&ctz=UTC`;
     }
     
@@ -64,10 +69,12 @@ export const getDisplayUrl = (url: string): string | null => {
     if (url.endsWith('.ics')) {
       // Remove the .ics extension and add the embed parameters
       const baseUrl = url.replace('.ics', '');
+      console.log("Processing .ics URL to embed format");
       return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(baseUrl)}&ctz=UTC`;
     }
     
     // Last resort: direct embed with the URL as the src parameter
+    console.log("Using URL directly as embed parameter");
     return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(url)}&ctz=UTC`;
   } catch (err) {
     console.error("Error processing calendar URL:", err);
@@ -82,6 +89,7 @@ export const getFallbackDisplayUrl = (publicCalendarUrl: string): string | null 
   try {
     // Check for the specific calendar ID
     if (publicCalendarUrl.includes(GOOGLE_CALENDAR_ID)) {
+      console.log("Using fallback with exact calendar ID");
       return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC`;
     }
     
@@ -89,8 +97,16 @@ export const getFallbackDisplayUrl = (publicCalendarUrl: string): string | null 
     const idMatch = publicCalendarUrl.match(/([a-zA-Z0-9]{20,})/);
     if (idMatch && idMatch[1]) {
       const calId = idMatch[1];
+      console.log("Using fallback with extracted calendar ID:", calId);
       return `https://calendar.google.com/calendar/embed?src=${calId}%40group.calendar.google.com&ctz=UTC`;
     }
+    
+    // Direct embed fallback
+    if (publicCalendarUrl) {
+      console.log("Using direct URL fallback");
+      return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(publicCalendarUrl)}&ctz=UTC`;
+    }
+    
     return null;
   } catch (err) {
     console.error("Error in fallback URL generation:", err);

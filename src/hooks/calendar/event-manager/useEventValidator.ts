@@ -41,8 +41,11 @@ export const useEventValidator = () => {
         return false;
       }
 
-      // Add any additional validation rules specific to your application
-      
+      // Verify appointment type is valid if present
+      if (data.appointmentType && typeof data.appointmentType === 'string') {
+        // Any additional validation for appointment type could go here
+      }
+
       return true;
     } catch (error) {
       console.error("Event validation error:", error);

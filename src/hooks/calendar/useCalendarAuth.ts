@@ -14,10 +14,17 @@ export function useCalendarAuth() {
   
   // Initialize auth state from storage
   useEffect(() => {
-    const isAuth = calendarAuthStorage === 'true';
-    setIsAuthorized(isAuth);
-    console.log("Calendar authorization saved to storage:", isAuth);
-    setIsLoading(false);
+    try {
+      const isAuth = calendarAuthStorage === 'true';
+      setIsAuthorized(isAuth);
+      console.log("Calendar authorization saved to storage:", isAuth);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error loading calendar auth state:", err);
+      // Fallback to unauthorized if there's an error
+      setIsAuthorized(false);
+      setIsLoading(false);
+    }
   }, [calendarAuthStorage]);
 
   // Google Calendar authorization - in a real app, would use OAuth
@@ -41,6 +48,9 @@ export function useCalendarAuth() {
       setCalendarAuthStorage('true');
       setIsAuthorized(true);
       
+      // Dispatch a global event that calendar was connected
+      window.dispatchEvent(new CustomEvent('calendar-connected'));
+      
       return true;
     } catch (error: any) {
       console.error("Calendar authorization error:", error);
@@ -61,6 +71,9 @@ export function useCalendarAuth() {
       // Clear auth state
       setCalendarAuthStorage('false');
       setIsAuthorized(false);
+      
+      // Dispatch a global event that calendar was disconnected
+      window.dispatchEvent(new CustomEvent('calendar-disconnected'));
       
       return true;
     } catch (error: any) {

@@ -39,11 +39,28 @@ const CalendarTab: React.FC = () => {
   // Initial refresh when authorized
   useEffect(() => {
     if (isAuthorized) {
+      console.log("Calendar is authorized, triggering initial refresh");
       refreshCalendar();
+    } else {
+      console.log("Calendar is not authorized yet");
     }
     
     return cleanupRefresh;
   }, [isAuthorized, refreshCalendar, cleanupRefresh]);
+
+  // Listen for calendar connection events
+  useEffect(() => {
+    const handleCalendarConnected = () => {
+      console.log("Calendar connection event detected");
+      toast.success("Calendar connected successfully");
+      refreshCalendar();
+    };
+
+    window.addEventListener('calendar-connected', handleCalendarConnected);
+    return () => {
+      window.removeEventListener('calendar-connected', handleCalendarConnected);
+    };
+  }, [refreshCalendar]);
 
   const handleConnect = async () => {
     const success = await handleConnectCalendar();
