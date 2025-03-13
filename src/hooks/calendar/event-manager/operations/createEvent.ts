@@ -62,16 +62,18 @@ export const createEvent = async (
     }));
     
     // Then dispatch a calendar-updated event
-    setTimeout(() => {
-      window.dispatchEvent(new Event('calendar-updated'));
-    }, 500);
+    window.dispatchEvent(new Event('calendar-updated'));
     
-    // Notify parent components that events have changed
+    // Force a refresh of the calendar data to ensure the new appointment shows up in all places
     if (onEventChange) {
       console.log("Triggering calendar refresh after create");
+      onEventChange();
+      
+      // Additional delay to ensure all components refresh
       setTimeout(() => {
-        onEventChange();
-      }, 1000); // Add delay to allow Google Calendar iframe to reload first
+        window.dispatchEvent(new Event('calendar-updated'));
+        onEventChange(); // Call again for good measure
+      }, 500);
     }
     
     // Show appropriate success/error message

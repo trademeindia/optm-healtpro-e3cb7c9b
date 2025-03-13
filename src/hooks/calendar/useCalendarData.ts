@@ -44,6 +44,9 @@ export function useCalendarData(isAuthorized: boolean) {
       const upcoming = mapEventsToAppointments(mockEvents);
       setUpcomingAppointments(upcoming);
       
+      // Signal that calendar data is updated
+      window.dispatchEvent(new Event('calendar-data-updated'));
+      
     } catch (error: any) {
       console.error("Error fetching events:", error);
       setError(error.message || "Failed to fetch calendar data");
@@ -71,10 +74,13 @@ export function useCalendarData(isAuthorized: boolean) {
     }
     
     console.log("Refreshing calendar data...");
-    toast.info("Refreshing calendar data...");
     
-    // Force a refresh by setting a new timestamp
+    // Force a refresh by setting a new timestamp 
+    // This will trigger the useEffect below
     setLastRefresh(Date.now());
+    
+    // Also dispatch an event to notify other components about the refresh
+    window.dispatchEvent(new Event('calendar-updated'));
   }, [isAuthorized]);
 
   // Load calendar data when authorized or refresh is triggered
@@ -83,7 +89,32 @@ export function useCalendarData(isAuthorized: boolean) {
       console.log("Calendar data refresh triggered at:", new Date(lastRefresh).toISOString());
       fetchEvents();
     }
-  }, [isAuthorized, selectedDate, fetchEvents, lastRefresh]);
+  }, [isAuthorized, fetchEvents, lastRefresh]);
+  
+  // Listen for specific appointment events
+  useEffect(() => {
+    if (isAuthorized) {
+      const handleAppointmentCreated = () => {
+        console.log("Appointment created event detected, refreshing calendar data");
+        // Set slight delay to ensure all systems have processed the new data
+        setTimeout(() => refreshCalendar(), 300);
+      };
+      
+      const handleAppointmentUpdated = () => {
+        console.log("Appointment updated event detected, refreshing calendar data");
+        // Set slight delay to ensure all systems have processed the new data
+        setTimeout(() => refreshCalendar(), 300);
+      };
+      
+      window.addEventListener('appointment-created', handleAppointmentCreated);
+      window.addEventListener('appointment-updated', handleAppointmentUpdated);
+      
+      return () => {
+        window.removeEventListener('appointment-created', handleAppointmentCreated);
+        window.removeEventListener('appointment-updated', handleAppointmentUpdated);
+      };
+    }
+  }, [isAuthorized, refreshCalendar]);
 
   return {
     isLoading,

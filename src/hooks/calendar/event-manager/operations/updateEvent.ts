@@ -56,6 +56,18 @@ export const updateEvent = async (
     // Dispatch a calendar-updated event
     window.dispatchEvent(new Event('calendar-updated'));
     
+    // Force a refresh of the calendar data to ensure the updated appointment shows up in all places
+    if (onEventChange) {
+      console.log("Triggering calendar refresh after update");
+      onEventChange();
+      
+      // Additional delay to ensure all components refresh
+      setTimeout(() => {
+        window.dispatchEvent(new Event('calendar-updated'));
+        onEventChange(); // Call again for good measure
+      }, 500);
+    }
+    
     if (googleCalendarSyncSuccess) {
       toast.success('Appointment updated successfully', {
         description: 'Your appointment details have been updated',
@@ -66,12 +78,6 @@ export const updateEvent = async (
         description: 'The appointment was updated locally, but failed to sync with Google Calendar.',
         duration: 5000
       });
-    }
-    
-    // Notify parent components that events have changed
-    if (onEventChange) {
-      console.log("Triggering calendar refresh after update");
-      onEventChange();
     }
     
     return true;
