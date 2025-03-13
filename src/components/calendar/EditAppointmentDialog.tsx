@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface EditAppointmentDialogProps {
   open: boolean;
   onClose: () => void;
-  onUpdate: (eventId: string, eventData: Partial<CalendarEvent>) => Promise<boolean>;
+  onUpdate: (eventData: Partial<CalendarEvent>) => Promise<boolean>;
   onDelete: (eventId: string) => Promise<boolean>;
   event: CalendarEvent;
 }
@@ -95,7 +95,8 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     setIsLoading(true);
     
     try {
-      const success = await onUpdate(event.id, {
+      const success = await onUpdate({
+        id: event.id,
         title: `${type} - ${patient}`,
         start: date,
         end: date,

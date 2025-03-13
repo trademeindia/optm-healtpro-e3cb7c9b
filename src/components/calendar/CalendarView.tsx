@@ -7,7 +7,6 @@ import CalendarSkeleton from './CalendarSkeleton';
 import { useCalendarDates } from '@/hooks/calendar/useCalendarDates';
 import { useCalendarEvents } from '@/hooks/calendar/useCalendarEvents';
 import { useCalendarEventManager } from '@/hooks/calendar/event-manager';
-import { AppointmentStatus } from '@/types/appointment';
 import { CalendarEventDetails, CalendarDialogs } from './view';
 import useCalendarViewHandlers from './view/useCalendarViewHandlers';
 
@@ -87,6 +86,16 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     }
   };
 
+  // Wrapper for handleUpdateEvent that adapts to the expected signature
+  const handleUpdateEventWrapper = async (eventData: Partial<CalendarEvent>) => {
+    if (!eventData.id) {
+      console.error("Cannot update event without an ID");
+      return false;
+    }
+    const eventId = eventData.id;
+    return handleUpdateEvent(eventId, eventData);
+  };
+
   if (isLoading) {
     return <CalendarSkeleton />;
   }
@@ -129,7 +138,7 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
         closeCreateDialog={closeCreateDialog}
         closeEditDialog={closeEditDialog}
         onCreateEvent={handleCreateEventWrapper}
-        onUpdateEvent={handleUpdateEvent}
+        onUpdateEvent={handleUpdateEventWrapper}
         onDeleteEvent={handleDeleteEvent}
       />
     </div>
