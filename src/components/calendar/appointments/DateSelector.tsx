@@ -29,12 +29,13 @@ const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
             {date ? formatDate(date, "MMMM d, yyyy") : "Select date"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
+        <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(date) => date && setDate && setDate(date)}
+            onSelect={(newDate) => newDate && setDate && setDate(newDate)}
             initialFocus
+            className="p-3 pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

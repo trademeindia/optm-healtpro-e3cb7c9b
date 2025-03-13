@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { CalendarEvent } from '../../types';
 import { getAppointmentColor } from '../utils/appointmentColors';
-import { useAuth } from '@/contexts/auth';
 
 export const createEvent = async (
   eventData: Partial<CalendarEvent>,
@@ -54,14 +53,30 @@ export const createEvent = async (
     let googleCalendarSyncSuccess = true;
     try {
       // This is where we would make the actual API call to Google Calendar
+      // For demo purposes, we're simulating the Google Calendar API call
       console.log('Syncing appointment to Google Calendar:', {
         summary: completeEventData.title,
         description: completeEventData.description,
-        start: { dateTime: completeEventData.start },
-        end: { dateTime: completeEventData.end },
+        start: { 
+          dateTime: completeEventData.start instanceof Date 
+            ? completeEventData.start.toISOString() 
+            : new Date(completeEventData.start).toISOString() 
+        },
+        end: { 
+          dateTime: completeEventData.end instanceof Date 
+            ? completeEventData.end.toISOString() 
+            : new Date(completeEventData.end).toISOString() 
+        },
         location: completeEventData.location,
         colorId: completeEventData.color
       });
+      
+      // Trigger events to update any UI that displays calendar events
+      window.dispatchEvent(new CustomEvent('appointment-created', { 
+        detail: completeEventData 
+      }));
+      
+      window.dispatchEvent(new Event('calendar-updated'));
       
       // Simulate successful API call
       console.log('Successfully synced with Google Calendar');
@@ -70,14 +85,6 @@ export const createEvent = async (
       googleCalendarSyncSuccess = false;
       // Still continue with local appointment creation even if Google sync fails
     }
-    
-    // First dispatch a custom event to notify about appointment creation
-    window.dispatchEvent(new CustomEvent('appointment-created', { 
-      detail: completeEventData 
-    }));
-    
-    // Then dispatch a calendar-updated event
-    window.dispatchEvent(new Event('calendar-updated'));
     
     // Force a refresh of the calendar data to ensure the new appointment shows up in all places
     if (onEventChange) {

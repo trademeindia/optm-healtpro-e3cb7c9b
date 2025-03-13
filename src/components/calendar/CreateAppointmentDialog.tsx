@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDialogForm from './appointments/AppointmentDialogForm';
 import AppointmentDialogActions from './appointments/AppointmentDialogActions';
@@ -137,6 +137,9 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Create Appointment</DialogTitle>
+          <DialogDescription>
+            Schedule a new appointment by selecting details below
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
