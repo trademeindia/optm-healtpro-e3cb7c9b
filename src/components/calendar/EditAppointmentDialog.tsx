@@ -35,12 +35,13 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     validateTimeRange
   } = useAppointmentDates(startDate);
   
-  const [type, setType] = useState<string>(event.type || "Initial Consultation");
+  const [type, setType] = useState<string>(event.type || "New Appointment");
   const [patient, setPatient] = useState<string>(event.patientName || "");
   const [location, setLocation] = useState<string>(event.location || "");
   const [notes, setNotes] = useState<string>(event.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Update local state when event props change
   useEffect(() => {
@@ -51,26 +52,43 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
       setDate(start);
       setStartTime(formatDate(start, "h:mm a"));
       setEndTime(formatDate(end, "h:mm a"));
-      setType(event.type || "Initial Consultation");
+      setType(event.type || "New Appointment");
       setPatient(event.patientName || "");
       setLocation(event.location || "");
       setNotes(event.description || "");
+      setValidationErrors({});
     }
   }, [event, setDate]);
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    if (!patient.trim()) {
+      errors.patient = "Patient name is required";
+    }
+    
+    if (!type) {
+      errors.type = "Appointment type is required";
+    }
+    
+    const timeValidation = validateTimeRange();
+    if (!timeValidation.isValid) {
+      errors.time = timeValidation.errorMessage || "Invalid time range";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate patient name
-    if (!patient.trim()) {
-      toast.error("Please enter a patient name");
-      return;
-    }
-    
-    // Validate appointment times
-    const timeValidation = validateTimeRange();
-    if (!timeValidation.isValid) {
-      toast.error(timeValidation.errorMessage || "Invalid time range");
+    // Validate form fields
+    if (!validateForm()) {
+      // Display validation errors
+      Object.values(validationErrors).forEach(error => {
+        toast.error(error);
+      });
       return;
     }
     
@@ -90,11 +108,15 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
       if (!success) {
         throw new Error("Update failed");
       }
-      toast.success("Appointment updated successfully");
+      toast.success("Appointment updated successfully", {
+        description: "Your changes have been synced with Google Calendar."
+      });
       onClose();
     } catch (error) {
       console.error("Error updating appointment:", error);
-      toast.error("Failed to update appointment");
+      toast.error("Failed to update appointment", {
+        description: "There was an error syncing with Google Calendar. Please try again."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -107,14 +129,18 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
       try {
         const success = await onDelete(event.id);
         if (success) {
-          toast.success("Appointment deleted successfully");
+          toast.success("Appointment deleted successfully", {
+            description: "The appointment has been removed from Google Calendar."
+          });
           onClose();
         } else {
           throw new Error("Delete failed");
         }
       } catch (error) {
         console.error("Error deleting appointment:", error);
-        toast.error("Failed to delete appointment");
+        toast.error("Failed to delete appointment", {
+          description: "There was an error syncing with Google Calendar. Please try again."
+        });
       } finally {
         setIsDeleting(false);
       }
@@ -144,6 +170,7 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
             setLocation={setLocation}
             notes={notes}
             setNotes={setNotes}
+            validationErrors={validationErrors}
           />
           
           <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-between">

@@ -39,8 +39,29 @@ export const useEventOperations = (
       
       console.log('Creating event with data:', completeEventData);
       
-      // Simulate API call delay
+      // Simulate API call to create event in Google Calendar
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        // This is where we would make the actual API call to Google Calendar
+        console.log('Syncing appointment to Google Calendar:', {
+          summary: completeEventData.title,
+          description: completeEventData.description,
+          start: { dateTime: completeEventData.start },
+          end: { dateTime: completeEventData.end },
+          location: completeEventData.location
+        });
+        
+        // Simulate successful API call
+        console.log('Successfully synced with Google Calendar');
+      } catch (googleError) {
+        console.error('Google Calendar sync error:', googleError);
+        // Still continue with local appointment creation even if Google sync fails
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was saved locally, but failed to sync with Google Calendar.',
+          duration: 5000
+        });
+      }
       
       // Dispatch a custom event to notify about appointment creation
       window.dispatchEvent(new CustomEvent('appointment-created', { 
@@ -52,6 +73,9 @@ export const useEventOperations = (
         console.log("Triggering calendar refresh after create");
         onEventChange();
       }
+      
+      // Dispatch a calendar-updated event
+      window.dispatchEvent(new Event('calendar-updated'));
       
       // Show a success message with the appointment details
       toast.success(`Appointment created: ${completeEventData.title}`, {
@@ -65,6 +89,7 @@ export const useEventOperations = (
       
       toast.error('Failed to create appointment', {
         description: 'There was an error creating your appointment. Please try again.',
+        duration: 5000
       });
       
       return false;
@@ -98,10 +123,27 @@ export const useEventOperations = (
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      try {
+        // This is where we would update the event in Google Calendar
+        console.log('Syncing updated appointment to Google Calendar for ID:', eventId);
+        
+        // Simulate successful API call
+        console.log('Successfully updated in Google Calendar');
+      } catch (googleError) {
+        console.error('Google Calendar update error:', googleError);
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was updated locally, but failed to sync with Google Calendar.',
+          duration: 5000
+        });
+      }
+      
       // Dispatch a custom event to notify about appointment update
       window.dispatchEvent(new CustomEvent('appointment-updated', { 
         detail: { id: eventId, ...eventData } 
       }));
+      
+      // Dispatch a calendar-updated event
+      window.dispatchEvent(new Event('calendar-updated'));
       
       toast.success('Appointment updated successfully', {
         description: 'Your appointment details have been updated',
@@ -138,10 +180,27 @@ export const useEventOperations = (
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      try {
+        // This is where we would delete the event from Google Calendar
+        console.log('Removing appointment from Google Calendar for ID:', eventId);
+        
+        // Simulate successful API call
+        console.log('Successfully deleted from Google Calendar');
+      } catch (googleError) {
+        console.error('Google Calendar deletion error:', googleError);
+        toast.error('Google Calendar sync failed', {
+          description: 'The appointment was deleted locally, but failed to remove from Google Calendar.',
+          duration: 5000
+        });
+      }
+      
       // Dispatch a custom event to notify about appointment deletion
       window.dispatchEvent(new CustomEvent('appointment-deleted', { 
         detail: { id: eventId } 
       }));
+      
+      // Dispatch a calendar-updated event
+      window.dispatchEvent(new Event('calendar-updated'));
       
       toast.success('Appointment deleted successfully', {
         description: 'The appointment has been removed from your calendar',

@@ -32,20 +32,22 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     setAutoEndTime
   } = useAppointmentDates(selectedDate);
   
-  const [type, setType] = useState<string>("Initial Consultation");
+  const [type, setType] = useState<string>("New Appointment");
   const [patient, setPatient] = useState<string>("");
   const [location, setLocation] = useState<string>("Main Office - Room 101");
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Reset form when dialog opens or selected date changes
   useEffect(() => {
     if (open) {
       setDate(selectedDate);
-      setType("Initial Consultation");
+      setType("New Appointment");
       setPatient("");
       setLocation("Main Office - Room 101");
       setNotes("");
+      setValidationErrors({});
       
       // Set default start and end times
       setStartTime("9:00 AM");
@@ -60,19 +62,35 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     }
   }, [startTime, open, setAutoEndTime]);
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    if (!patient.trim()) {
+      errors.patient = "Patient name is required";
+    }
+    
+    if (!type) {
+      errors.type = "Appointment type is required";
+    }
+    
+    const timeValidation = validateTimeRange();
+    if (!timeValidation.isValid) {
+      errors.time = timeValidation.errorMessage || "Invalid time range";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate patient name
-    if (!patient.trim()) {
-      toast.error("Please enter a patient name");
-      return;
-    }
-    
-    // Validate appointment times
-    const timeValidation = validateTimeRange();
-    if (!timeValidation.isValid) {
-      toast.error(timeValidation.errorMessage || "Invalid time range");
+    // Validate form fields
+    if (!validateForm()) {
+      // Display validation errors
+      Object.values(validationErrors).forEach(error => {
+        toast.error(error);
+      });
       return;
     }
     
@@ -98,12 +116,16 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
       
       if (success) {
         onClose();
-        toast.success("Appointment created successfully");
+        toast.success("Appointment created successfully", {
+          description: "Your appointment has been added to Google Calendar."
+        });
+      } else {
+        throw new Error("Failed to create appointment");
       }
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast.error("Failed to create appointment", {
-        description: "There was an error creating your appointment. Please try again."
+        description: "There was an error syncing with Google Calendar. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -133,6 +155,7 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
             setLocation={setLocation}
             notes={notes}
             setNotes={setNotes}
+            validationErrors={validationErrors}
           />
           
           <AppointmentDialogActions

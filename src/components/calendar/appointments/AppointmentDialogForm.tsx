@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { appointmentTypes, timeSlots, locations } from './appointmentConstants';
 import DateSelector from './DateSelector';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AppointmentDialogFormProps {
   date: Date;
@@ -22,6 +23,7 @@ interface AppointmentDialogFormProps {
   setLocation: (location: string) => void;
   notes: string;
   setNotes: (notes: string) => void;
+  validationErrors?: Record<string, string>;
 }
 
 const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
@@ -39,6 +41,7 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
   setLocation,
   notes,
   setNotes,
+  validationErrors = {}
 }) => {
   return (
     <div className="space-y-4 py-4">
@@ -46,9 +49,11 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
         <DateSelector date={date} setDate={setDate} />
         
         <div className="space-y-2">
-          <Label htmlFor="type">Appointment Type</Label>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger id="type">
+          <Label htmlFor="type" className="flex items-center">
+            Appointment Type <span className="text-red-500 ml-1">*</span>
+          </Label>
+          <Select value={type} onValueChange={setType} required>
+            <SelectTrigger id="type" className={validationErrors.type ? "border-red-500" : ""}>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -57,12 +62,15 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
               ))}
             </SelectContent>
           </Select>
+          {validationErrors.type && (
+            <p className="text-sm text-red-500 mt-1">{validationErrors.type}</p>
+          )}
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="start-time">Start Time</Label>
           <Select value={startTime} onValueChange={setStartTime}>
-            <SelectTrigger id="start-time">
+            <SelectTrigger id="start-time" className={validationErrors.time ? "border-red-500" : ""}>
               <SelectValue placeholder="Select start time" />
             </SelectTrigger>
             <SelectContent>
@@ -76,7 +84,7 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="end-time">End Time</Label>
           <Select value={endTime} onValueChange={setEndTime}>
-            <SelectTrigger id="end-time">
+            <SelectTrigger id="end-time" className={validationErrors.time ? "border-red-500" : ""}>
               <SelectValue placeholder="Select end time" />
             </SelectTrigger>
             <SelectContent>
@@ -85,16 +93,26 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
               ))}
             </SelectContent>
           </Select>
+          {validationErrors.time && (
+            <p className="text-sm text-red-500 mt-1">{validationErrors.time}</p>
+          )}
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="patient">Patient Name</Label>
+          <Label htmlFor="patient" className="flex items-center">
+            Patient Name <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Input 
             id="patient" 
             placeholder="Enter patient name" 
             value={patient} 
             onChange={(e) => setPatient(e.target.value)}
+            className={validationErrors.patient ? "border-red-500" : ""}
+            required
           />
+          {validationErrors.patient && (
+            <p className="text-sm text-red-500 mt-1">{validationErrors.patient}</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -122,6 +140,14 @@ const AppointmentDialogForm: React.FC<AppointmentDialogFormProps> = ({
           rows={3}
         />
       </div>
+
+      {Object.keys(validationErrors).length > 0 && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>
+            Please correct the errors above before submitting.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
