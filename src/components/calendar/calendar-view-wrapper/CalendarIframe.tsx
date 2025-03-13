@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CalendarIframeProps {
@@ -14,18 +14,16 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeMountedRef = useRef(false);
   const iframeLoadingRef = useRef(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const refreshCountRef = useRef(0);
 
   // Process iCal URL to make it displayable in an iframe if needed
   const getDisplayUrl = (url: string) => {
     // If the URL is an iCal URL, convert it to the embed format
-    if (url.includes('/ical/') || url.endsWith('.ics')) {
-      // Extract the calendar ID from the iCal URL - this works for Google Calendar iCal URLs
-      const match = url.match(/([a-f0-9]+)(%40|\@)group\.calendar\.google\.com/);
+    if (url.includes('/ical/') && url.endsWith('.ics')) {
+      // Extract the calendar ID from the iCal URL
+      const match = url.match(/calendar\/ical\/([^\/]+)/);
       if (match && match[1]) {
-        const calendarId = `${match[1]}%40group.calendar.google.com`;
-        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=local`;
+        const calendarId = match[1];
+        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=Asia%2FKolkata`;
       }
     }
     return url;
@@ -39,8 +37,6 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
     if (iframeRef.current && !iframeLoadingRef.current) {
       console.log("Reloading Google Calendar iframe directly");
       iframeLoadingRef.current = true;
-      setIsLoading(true);
-      refreshCountRef.current += 1;
       
       // Store the current src
       const src = iframeRef.current.src;
@@ -50,17 +46,10 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       
       setTimeout(() => {
         if (iframeRef.current) {
-          // Add a timestamp to bust cache
-          const cacheBuster = `&_refresh=${Date.now()}_${refreshCountRef.current}`;
-          const newSrc = src.includes('?') 
-            ? `${src}&${cacheBuster}` 
-            : `${src}?${cacheBuster}`;
-          
-          iframeRef.current.src = newSrc;
+          iframeRef.current.src = src;
         }
         setTimeout(() => {
           iframeLoadingRef.current = false;
-          setIsLoading(false);
         }, 1000); // Allow time for the iframe to fully load
       }, 100);
     } else if (reloadCalendarIframe) {
@@ -82,7 +71,7 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       // Add event listener for custom reload events
       const handleCalendarUpdate = () => {
         console.log("Calendar update event received, reloading iframe");
-        setTimeout(reloadIframe, 300); // Add slight delay to ensure data is updated
+        reloadIframe();
       };
       
       // Listen for all appointment-related events to trigger iframe reload
@@ -90,14 +79,12 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       window.addEventListener('appointment-created', handleCalendarUpdate);
       window.addEventListener('appointment-updated', handleCalendarUpdate);
       window.addEventListener('appointment-deleted', handleCalendarUpdate);
-      window.addEventListener('calendar-data-updated', handleCalendarUpdate);
       
       return () => {
         window.removeEventListener('calendar-updated', handleCalendarUpdate);
         window.removeEventListener('appointment-created', handleCalendarUpdate);
         window.removeEventListener('appointment-updated', handleCalendarUpdate);
         window.removeEventListener('appointment-deleted', handleCalendarUpdate);
-        window.removeEventListener('calendar-data-updated', handleCalendarUpdate);
       };
     }
   }, [publicCalendarUrl]);
@@ -106,7 +93,7 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
     <Card className="shadow-sm overflow-hidden border border-border/30">
       <CardContent className="p-0">
         <div className="relative">
-          {(isLoading || iframeLoadingRef.current) && (
+          {iframeLoadingRef.current && (
             <div className="absolute inset-0 bg-background/70 flex items-center justify-center z-10">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>
@@ -122,12 +109,10 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
             onLoad={() => {
               console.log("Main Google Calendar iframe loaded");
               iframeLoadingRef.current = false;
-              setIsLoading(false);
             }}
             onError={() => {
               console.error("Error loading main Google Calendar iframe");
               iframeLoadingRef.current = false;
-              setIsLoading(false);
             }}
           ></iframe>
         </div>

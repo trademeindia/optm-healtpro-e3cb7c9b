@@ -22,14 +22,13 @@ const CalendarTab: React.FC = () => {
     selectedDate,
     setSelectedDate,
     upcomingAppointments,
-    publicCalendarUrl,
-    user
+    publicCalendarUrl
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
 
-  // Use our hooks for calendar functionality
-  const { debouncedRefresh, handleManualRefresh, cleanupRefresh, isRefreshing } = useCalendarRefresh(refreshCalendar);
+  // Use our new hooks
+  const { debouncedRefresh, handleManualRefresh, cleanupRefresh } = useCalendarRefresh(refreshCalendar);
   const { isConnecting, handleConnectCalendar } = useCalendarConnection(isAuthorized, isLoading, authorizeCalendar);
   
   // Setup event listeners
@@ -38,30 +37,11 @@ const CalendarTab: React.FC = () => {
   // Initial refresh when authorized
   useEffect(() => {
     if (isAuthorized) {
-      console.log("Initial calendar refresh on authorization");
       refreshCalendar();
     }
     
     return cleanupRefresh;
   }, [isAuthorized, refreshCalendar, cleanupRefresh]);
-
-  // Refresh when appointments are created or updated
-  useEffect(() => {
-    const handleAppointmentEvent = () => {
-      console.log("Appointment event detected in CalendarTab, triggering refresh");
-      debouncedRefresh();
-    };
-    
-    window.addEventListener('appointment-created', handleAppointmentEvent);
-    window.addEventListener('appointment-updated', handleAppointmentEvent);
-    window.addEventListener('calendar-updated', handleAppointmentEvent);
-    
-    return () => {
-      window.removeEventListener('appointment-created', handleAppointmentEvent);
-      window.removeEventListener('appointment-updated', handleAppointmentEvent);
-      window.removeEventListener('calendar-updated', handleAppointmentEvent);
-    };
-  }, [debouncedRefresh]);
 
   const handleConnect = async () => {
     const success = await handleConnectCalendar();
@@ -89,9 +69,6 @@ const CalendarTab: React.FC = () => {
       calendarViewRef.current.openCreateDialog(selectedDate);
     } else {
       console.log("Create appointment button clicked, but ref not available");
-      toast.error("Could not open appointment creation dialog", {
-        description: "Please try again or refresh the page"
-      });
     }
   };
 
@@ -102,11 +79,6 @@ const CalendarTab: React.FC = () => {
       toast.success("Calendar refreshed", {
         duration: 2000
       });
-      
-      // Force a refresh of the appointments UI
-      setTimeout(() => {
-        window.dispatchEvent(new Event('calendar-data-updated'));
-      }, 500);
     } else {
       toast.error("Failed to refresh calendar", {
         duration: 3000
@@ -116,19 +88,13 @@ const CalendarTab: React.FC = () => {
 
   // Function to explicitly reload the iframe
   const reloadCalendarIframe = () => {
-    console.log("Reloading calendar iframe from CalendarTab");
     window.dispatchEvent(new Event('calendar-updated'));
-    
-    // Also refresh the data
-    setTimeout(() => {
-      debouncedRefresh();
-    }, 300);
   };
 
   return (
     <div className="space-y-4 md:space-y-6 pb-4">
       <CalendarHeader 
-        isLoading={isLoading || isRefreshing}
+        isLoading={isLoading}
         isAuthorized={isAuthorized}
         isConnecting={isConnecting}
         onRefresh={handleRefresh}
@@ -137,7 +103,7 @@ const CalendarTab: React.FC = () => {
 
       <CalendarGrid
         isAuthorized={isAuthorized}
-        isLoading={isLoading || isRefreshing}
+        isLoading={isLoading}
         selectedView={selectedView}
         setSelectedView={setSelectedView}
         calendarData={calendarData}
@@ -151,7 +117,6 @@ const CalendarTab: React.FC = () => {
         reloadCalendarIframe={reloadCalendarIframe}
         validAppointments={validAppointments}
         refreshCalendar={refreshCalendar}
-        currentUser={user}
       />
     </div>
   );

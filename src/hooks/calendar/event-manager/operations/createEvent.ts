@@ -89,12 +89,6 @@ export const createEvent = async (
         window.dispatchEvent(new Event('calendar-updated'));
         onEventChange(); // Call again for good measure
       }, 500);
-      
-      // Call one more time after a longer delay to ensure everything is updated
-      setTimeout(() => {
-        window.dispatchEvent(new Event('calendar-updated'));
-        onEventChange();
-      }, 1500);
     }
     
     // Show appropriate success/error message
