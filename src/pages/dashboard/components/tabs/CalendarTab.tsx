@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -25,6 +25,39 @@ const CalendarTab: React.FC = () => {
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
+
+  // Set up a periodic refresh for the calendar data when authorized
+  useEffect(() => {
+    if (!isAuthorized) return;
+    
+    // Initial fetch
+    refreshCalendar();
+    
+    // Set up a periodic refresh (every 2 minutes)
+    const refreshInterval = setInterval(() => {
+      console.log("Performing automatic calendar refresh");
+      refreshCalendar();
+    }, 2 * 60 * 1000); // 2 minutes
+    
+    return () => clearInterval(refreshInterval);
+  }, [isAuthorized, refreshCalendar]);
+
+  // Listen for calendar update events
+  useEffect(() => {
+    const handleCalendarEvent = () => {
+      console.log("Calendar event received in CalendarTab");
+      refreshCalendar();
+    };
+    
+    // Also listen for appointment creation events
+    window.addEventListener('appointment-created', handleCalendarEvent);
+    window.addEventListener('appointment-updated', handleCalendarEvent);
+    
+    return () => {
+      window.removeEventListener('appointment-created', handleCalendarEvent);
+      window.removeEventListener('appointment-updated', handleCalendarEvent);
+    };
+  }, [refreshCalendar]);
 
   const handleConnectCalendar = async () => {
     if (isConnecting) return;
@@ -72,6 +105,9 @@ const CalendarTab: React.FC = () => {
       toast.success("Calendar refreshed", {
         duration: 2000
       });
+      
+      // Dispatch a calendar-updated event to ensure all components refresh
+      window.dispatchEvent(new Event('calendar-updated'));
     } catch (error) {
       console.error("Error refreshing calendar:", error);
       toast.error("Failed to refresh calendar", {
@@ -102,17 +138,18 @@ const CalendarTab: React.FC = () => {
             onDateSelect={setSelectedDate}
             onConnectCalendar={handleConnectCalendar}
             isConnecting={isConnecting}
-            onEventsChange={refreshCalendar}
+            onEventsChange={handleRefresh}
             calendarViewRef={calendarViewRef}
             publicCalendarUrl={publicCalendarUrl}
           />
         </div>
 
-        <div>
+        <div className="h-full">
           <AppointmentsCard 
             isLoading={isLoading}
             isAuthorized={isAuthorized}
             appointments={validAppointments}
+            onRefresh={refreshCalendar}
           />
         </div>
       </div>

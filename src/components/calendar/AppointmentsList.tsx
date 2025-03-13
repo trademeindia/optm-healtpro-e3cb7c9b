@@ -59,25 +59,33 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   if (!appointments || appointments.length === 0) {
     return (
-      <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-3">
+      <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-3">
         <div className="bg-primary/10 p-3 rounded-full">
           <Calendar className="h-6 w-6 text-primary" />
         </div>
         <p>No upcoming appointments scheduled</p>
+        <p className="text-xs text-muted-foreground mt-1">Click "New Appointment" to create one</p>
       </div>
     );
   }
 
+  // Sort appointments by date/time (most recent first)
+  const sortedAppointments = [...appointments].sort((a, b) => {
+    const dateA = new Date(`${a.date} ${a.time}`);
+    const dateB = new Date(`${b.date} ${b.time}`);
+    return dateA.getTime() - dateB.getTime();
+  });
+
   return (
     <div className="space-y-4">
-      {appointments.map((appointment) => (
+      {sortedAppointments.map((appointment) => (
         <div 
           key={appointment.id} 
           className="border rounded-lg p-4 hover:bg-muted/5 transition-colors duration-200 hover:shadow-sm"
         >
           <div className="space-y-3">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium text-foreground">{appointment.title}</h4>
+              <h4 className="font-medium text-foreground break-words">{appointment.title}</h4>
               {appointment.status && (
                 <AppointmentStatusIndicator status={appointment.status} />
               )}

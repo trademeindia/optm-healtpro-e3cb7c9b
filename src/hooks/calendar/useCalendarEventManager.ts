@@ -79,6 +79,11 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Dispatch a custom event to notify about appointment creation
+      window.dispatchEvent(new CustomEvent('appointment-created', { 
+        detail: completeEventData 
+      }));
+      
       // Notify parent components that events have changed
       if (onEventChange) {
         console.log("Triggering calendar refresh after create");
@@ -130,6 +135,11 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Dispatch a custom event to notify about appointment update
+      window.dispatchEvent(new CustomEvent('appointment-updated', { 
+        detail: { id: eventId, ...eventData } 
+      }));
+      
       toast.success('Appointment updated successfully', {
         description: 'Your appointment details have been updated',
         duration: 3000
@@ -164,6 +174,11 @@ export const useCalendarEventManager = (onEventChange?: () => void) => {
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Dispatch a custom event to notify about appointment deletion
+      window.dispatchEvent(new CustomEvent('appointment-deleted', { 
+        detail: { id: eventId } 
+      }));
       
       toast.success('Appointment deleted successfully', {
         description: 'The appointment has been removed from your calendar',
