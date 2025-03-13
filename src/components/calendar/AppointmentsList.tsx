@@ -27,16 +27,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="border rounded-lg p-4">
+          <div key={i} className="border rounded-lg p-4 animate-pulse">
             <div className="space-y-3">
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
               <div className="flex gap-2 items-center">
-                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-4 rounded-full" />
                 <Skeleton className="h-4 w-1/3" />
               </div>
               <div className="flex gap-2 items-center">
-                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-4 rounded-full" />
                 <Skeleton className="h-4 w-1/4" />
               </div>
             </div>
@@ -48,17 +48,22 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   if (!isAuthorized) {
     return (
-      <div className="text-center py-6 text-muted-foreground flex flex-col items-center gap-2">
-        <AlertCircle className="h-5 w-5 text-muted-foreground mb-1" />
-        Connect your calendar to view appointments
+      <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-3">
+        <div className="bg-muted/20 p-3 rounded-full">
+          <AlertCircle className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p>Connect your calendar to view appointments</p>
       </div>
     );
   }
 
   if (!appointments || appointments.length === 0) {
     return (
-      <div className="text-center py-6 text-muted-foreground">
-        No upcoming appointments scheduled
+      <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-3">
+        <div className="bg-primary/10 p-3 rounded-full">
+          <Calendar className="h-6 w-6 text-primary" />
+        </div>
+        <p>No upcoming appointments scheduled</p>
       </div>
     );
   }
@@ -66,10 +71,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   return (
     <div className="space-y-4">
       {appointments.map((appointment) => (
-        <div key={appointment.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-          <div className="space-y-2">
+        <div 
+          key={appointment.id} 
+          className="border rounded-lg p-4 hover:bg-muted/5 transition-colors duration-200 hover:shadow-sm"
+        >
+          <div className="space-y-3">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium">{appointment.title}</h4>
+              <h4 className="font-medium text-foreground">{appointment.title}</h4>
               {appointment.status && (
                 <AppointmentStatusIndicator status={appointment.status} />
               )}
@@ -77,35 +85,37 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             
             <p className="text-sm text-muted-foreground">{appointment.type}</p>
             
-            <div className="flex gap-2 items-center text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{appointment.date}</span>
-            </div>
-            
-            <div className="flex gap-2 items-center text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{appointment.time}</span>
-            </div>
-            
-            {appointment.patientName && (
+            <div className="flex flex-col gap-2 pt-1">
               <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <User className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{appointment.patientName}</span>
+                <Calendar className="h-4 w-4 flex-shrink-0 text-primary" />
+                <span className="truncate">{appointment.date}</span>
               </div>
-            )}
-            
-            {appointment.location && (
+              
               <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{appointment.location}</span>
+                <Clock className="h-4 w-4 flex-shrink-0 text-primary" />
+                <span className="truncate">{appointment.time}</span>
               </div>
-            )}
+              
+              {appointment.patientName && (
+                <div className="flex gap-2 items-center text-sm text-muted-foreground">
+                  <User className="h-4 w-4 flex-shrink-0 text-primary" />
+                  <span className="truncate">{appointment.patientName}</span>
+                </div>
+              )}
+              
+              {appointment.location && (
+                <div className="flex gap-2 items-center text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
+                  <span className="truncate">{appointment.location}</span>
+                </div>
+              )}
+            </div>
             
             <div className="pt-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full hover:bg-primary/10 hover:text-primary"
                 onClick={() => handleViewDetails(appointment)}
               >
                 View Details

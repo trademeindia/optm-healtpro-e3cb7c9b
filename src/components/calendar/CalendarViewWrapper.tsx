@@ -73,7 +73,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   return (
     <div className="flex flex-col space-y-6">
       {!isAuthorized ? (
-        <Card className="shadow-sm">
+        <Card className="shadow-sm hover:shadow-md transition-all duration-200">
           <CardContent className="p-6">
             <ConnectCalendarCard 
               onConnect={onConnectCalendar}
@@ -83,11 +83,11 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
         </Card>
       ) : (
         <>
-          <Card className="shadow-sm overflow-hidden">
+          <Card className="shadow-sm overflow-hidden border border-border/30 hover:shadow-md transition-all duration-200">
             <Tabs value={selectedView} onValueChange={(value) => setSelectedView(value as any)}>
               <div className="bg-muted/30 border-b px-4 py-2">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Calendar</h2>
+                  <h2 className="text-lg font-semibold text-foreground">Calendar</h2>
                   <TabsList className="bg-background/50">
                     <TabsTrigger value="day">Day</TabsTrigger>
                     <TabsTrigger value="week">Week</TabsTrigger>
@@ -137,7 +137,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
           </Card>
           
           {publicCalendarUrl && (
-            <Card className="shadow-sm overflow-hidden">
+            <Card className="shadow-sm overflow-hidden border border-border/30">
               <CardContent className="p-0">
                 <iframe 
                   ref={iframeRef}
