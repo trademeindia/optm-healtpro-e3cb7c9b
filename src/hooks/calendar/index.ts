@@ -12,4 +12,3 @@ export * from './useAppointmentDates';
 export * from './useCalendarRefresh';
 export * from './useCalendarConnection';
 export * from './event-manager';
-

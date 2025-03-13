@@ -2,7 +2,6 @@
 import { useState, useCallback } from 'react';
 import { CalendarEvent } from './types';
 import { useEventFilters } from './useEventFilters';
-import { useCalendarEventListeners as useEventListeners } from './useEventListeners';
 
 export function useCalendarEvents(events: CalendarEvent[]) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -30,5 +29,4 @@ export function useCalendarEvents(events: CalendarEvent[]) {
   };
 }
 
-// Re-export the event listeners hook for backward compatibility
-export { useEventListeners as useCalendarEventListeners } from './useEventListeners';
+// We're not re-exporting useEventListeners here anymore to avoid naming conflicts
