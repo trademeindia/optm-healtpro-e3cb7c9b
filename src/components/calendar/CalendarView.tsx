@@ -20,6 +20,7 @@ interface CalendarViewProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
   onEventsChange: () => void;
+  reloadCalendarIframe?: () => void;
 }
 
 const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, CalendarViewProps>(({
@@ -28,7 +29,8 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
   isLoading,
   selectedDate,
   onDateSelect,
-  onEventsChange
+  onEventsChange,
+  reloadCalendarIframe
 }, ref) => {
   const {
     visibleDates,
@@ -59,7 +61,7 @@ const CalendarView = forwardRef<{ openCreateDialog: (date: Date) => void }, Cale
     handleCreateEvent,
     handleUpdateEvent,
     handleDeleteEvent
-  } = useCalendarEventManager(onEventsChange);
+  } = useCalendarEventManager(onEventsChange, reloadCalendarIframe);
 
   useImperativeHandle(ref, () => ({
     openCreateDialog: (date: Date) => {

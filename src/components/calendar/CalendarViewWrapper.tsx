@@ -1,5 +1,5 @@
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import ConnectCalendarCard from './ConnectCalendarCard';
 import CalendarView from './CalendarView';
@@ -19,6 +19,7 @@ interface CalendarViewWrapperProps {
   onEventsChange?: () => void;
   calendarViewRef?: React.RefObject<any>;
   publicCalendarUrl?: string;
+  reloadCalendarIframe?: () => void;
 }
 
 const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
@@ -33,8 +34,44 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   isConnecting,
   onEventsChange = () => {},
   calendarViewRef,
-  publicCalendarUrl
+  publicCalendarUrl,
+  reloadCalendarIframe
 }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  
+  // Setup a function to reload the iframe when needed
+  const reloadIframe = () => {
+    if (iframeRef.current) {
+      console.log("Reloading Google Calendar iframe directly");
+      const src = iframeRef.current.src;
+      iframeRef.current.src = '';
+      setTimeout(() => {
+        if (iframeRef.current) {
+          iframeRef.current.src = src;
+        }
+      }, 100);
+    } else if (reloadCalendarIframe) {
+      reloadCalendarIframe();
+    }
+  };
+  
+  // Add event listener for calendar changes
+  useEffect(() => {
+    if (isAuthorized && publicCalendarUrl) {
+      // Add event listener for custom reload events
+      const handleCalendarUpdate = () => {
+        console.log("Calendar update event received, reloading iframe");
+        reloadIframe();
+      };
+      
+      window.addEventListener('calendar-updated', handleCalendarUpdate);
+      
+      return () => {
+        window.removeEventListener('calendar-updated', handleCalendarUpdate);
+      };
+    }
+  }, [isAuthorized, publicCalendarUrl]);
+
   return (
     <div className="lg:col-span-2">
       <Card>
@@ -62,6 +99,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
                     onEventsChange={onEventsChange}
+                    reloadCalendarIframe={reloadIframe}
                   />
                 </TabsContent>
                 
@@ -74,6 +112,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
                     onEventsChange={onEventsChange}
+                    reloadCalendarIframe={reloadIframe}
                   />
                 </TabsContent>
                 
@@ -86,6 +125,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                     selectedDate={selectedDate}
                     onDateSelect={onDateSelect}
                     onEventsChange={onEventsChange}
+                    reloadCalendarIframe={reloadIframe}
                   />
                 </TabsContent>
               </Tabs>
@@ -96,6 +136,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                   <h3 className="text-base font-medium mb-3">Google Calendar View</h3>
                   <div className="w-full h-[600px] bg-muted/30 border rounded-lg overflow-hidden">
                     <iframe 
+                      ref={iframeRef}
                       src={publicCalendarUrl}
                       style={{ border: 0 }} 
                       width="100%" 
@@ -103,6 +144,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                       frameBorder="0" 
                       scrolling="no"
                       title="Google Calendar"
+                      onLoad={() => console.log("Google Calendar iframe loaded")}
                     />
                   </div>
                 </div>

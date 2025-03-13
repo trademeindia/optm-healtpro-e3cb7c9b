@@ -15,6 +15,24 @@ export function useCalendarData(isAuthorized: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const isRefreshingRef = useRef(false);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Function to reload the iframe
+  const reloadCalendarIframe = useCallback(() => {
+    // Find any iframe in the document that matches our Google Calendar URL
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      if (iframe.src && iframe.src.includes('calendar.google.com')) {
+        console.log("Reloading Google Calendar iframe");
+        // Force iframe reload by setting the src again
+        const currentSrc = iframe.src;
+        iframe.src = '';
+        setTimeout(() => {
+          iframe.src = currentSrc;
+        }, 100);
+      }
+    });
+  }, []);
 
   const fetchEvents = useCallback(async () => {
     // Don't fetch if not authorized or already fetching
@@ -44,6 +62,9 @@ export function useCalendarData(isAuthorized: boolean) {
       const upcoming = mapEventsToAppointments(mockEvents);
       setUpcomingAppointments(upcoming);
       
+      // Attempt to reload the iframe to show updated Google Calendar
+      reloadCalendarIframe();
+      
     } catch (error: any) {
       console.error("Error fetching events:", error);
       setError(error.message || "Failed to fetch calendar data");
@@ -55,7 +76,7 @@ export function useCalendarData(isAuthorized: boolean) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [isAuthorized, selectedDate]);
+  }, [isAuthorized, selectedDate, reloadCalendarIframe]);
 
   const refreshCalendar = useCallback(async () => {
     if (!isAuthorized) {
@@ -75,7 +96,10 @@ export function useCalendarData(isAuthorized: boolean) {
     
     // Force a refresh by setting a new timestamp
     setLastRefresh(Date.now());
-  }, [isAuthorized]);
+    
+    // Immediately try to reload the iframe
+    reloadCalendarIframe();
+  }, [isAuthorized, reloadCalendarIframe]);
 
   // Load calendar data when authorized or refresh is triggered
   useEffect(() => {
@@ -93,6 +117,7 @@ export function useCalendarData(isAuthorized: boolean) {
     setSelectedDate,
     fetchEvents,
     refreshCalendar,
-    error
+    error,
+    reloadCalendarIframe
   };
 }
