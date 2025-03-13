@@ -1,9 +1,10 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { CalendarEvent } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
-export const useCalendarEventManager = (onEventChange?: () => void, reloadCalendarIframe?: () => void) => {
+export const useCalendarEventManager = (onEventChange?: () => void) => {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -84,12 +85,6 @@ export const useCalendarEventManager = (onEventChange?: () => void, reloadCalend
         onEventChange();
       }
       
-      // Reload the Google Calendar iframe to show the new appointment
-      if (reloadCalendarIframe) {
-        console.log("Reloading calendar iframe after creating event");
-        reloadCalendarIframe();
-      }
-      
       // Show a success message with the appointment details
       toast.success(`Appointment created: ${completeEventData.title}`, {
         description: `${new Date(completeEventData.start).toLocaleString()} - ${new Date(completeEventData.end).toLocaleTimeString()}`,
@@ -108,7 +103,7 @@ export const useCalendarEventManager = (onEventChange?: () => void, reloadCalend
     } finally {
       setIsCreating(false);
     }
-  }, [validateEventData, onEventChange, reloadCalendarIframe]);
+  }, [validateEventData, onEventChange]);
 
   const handleUpdateEvent = useCallback(async (
     eventId: string, 

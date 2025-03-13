@@ -21,8 +21,7 @@ const CalendarTab: React.FC = () => {
     selectedDate,
     setSelectedDate,
     upcomingAppointments,
-    publicCalendarUrl,
-    reloadCalendarIframe
+    publicCalendarUrl
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
@@ -70,13 +69,6 @@ const CalendarTab: React.FC = () => {
     try {
       console.log("Manually refreshing calendar data...");
       await refreshCalendar();
-      
-      // Force reload of the calendar iframe
-      if (reloadCalendarIframe) {
-        console.log("Forcing calendar iframe reload");
-        reloadCalendarIframe();
-      }
-      
       toast.success("Calendar refreshed", {
         duration: 2000
       });
@@ -112,7 +104,6 @@ const CalendarTab: React.FC = () => {
           onEventsChange={refreshCalendar}
           calendarViewRef={calendarViewRef}
           publicCalendarUrl={publicCalendarUrl}
-          reloadCalendarIframe={reloadCalendarIframe}
         />
 
         <div className="space-y-6">

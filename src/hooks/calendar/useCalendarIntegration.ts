@@ -26,18 +26,13 @@ export const useCalendarIntegration = () => {
     setSelectedDate,
     fetchEvents,
     refreshCalendar,
-    error: dataError,
-    reloadCalendarIframe
+    error: dataError
   } = useCalendarData(isAuthorized);
 
   // Enhanced refresh that ensures we fetch new data
   const enhancedRefresh = useCallback(async () => {
     console.log("Enhanced calendar refresh triggered");
     await refreshCalendar();
-    
-    // Dispatch a custom event to notify that calendar has been updated
-    window.dispatchEvent(new CustomEvent('calendar-updated'));
-    
     // We don't need to call fetchEvents explicitly as it's triggered by the refreshCalendar
     // function through the lastRefresh state update
   }, [refreshCalendar]);
@@ -57,7 +52,6 @@ export const useCalendarIntegration = () => {
     selectedDate,
     setSelectedDate,
     publicCalendarUrl,
-    error,
-    reloadCalendarIframe
+    error
   };
 };
