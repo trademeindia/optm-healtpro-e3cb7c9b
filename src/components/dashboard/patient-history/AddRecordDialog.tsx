@@ -38,6 +38,16 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
     }
   };
 
+  const handleSubmitButtonClick = () => {
+    // Validate required fields before submission
+    if (!recordForm.name || !recordForm.date) {
+      // You could add more specific validation here
+      alert('Please fill in all required fields');
+      return;
+    }
+    onSubmit();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -51,7 +61,7 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
         <div className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1">
-              Record Name
+              Record Name <span className="text-red-500">*</span>
             </label>
             <Input
               id="name"
@@ -59,12 +69,13 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
               value={recordForm.name}
               onChange={onInputChange}
               placeholder={getNamePlaceholder()}
+              required
             />
           </div>
 
           <div>
             <label htmlFor="date" className="block text-sm font-medium mb-1">
-              Date
+              Date <span className="text-red-500">*</span>
             </label>
             <Input
               id="date"
@@ -72,6 +83,7 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
               type="date"
               value={recordForm.date}
               onChange={onInputChange}
+              required
             />
           </div>
 
@@ -127,17 +139,18 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
               <div className="border-2 border-dashed rounded-md p-4">
                 <div className="flex flex-col items-center">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Click to browse or drag and drop
+                    {recordForm.file ? recordForm.file.name : 'Click to browse or drag and drop'}
                   </p>
                   <Button variant="outline" size="sm" onClick={() => document.getElementById('file-upload')?.click()}>
                     <Plus className="h-4 w-4 mr-1" />
-                    Select File
+                    {recordForm.file ? 'Change File' : 'Select File'}
                   </Button>
                   <input
                     id="file-upload"
                     type="file"
                     className="hidden"
                     onChange={onFileChange}
+                    accept=".pdf,.jpg,.jpeg,.png"
                   />
                 </div>
               </div>
@@ -149,7 +162,7 @@ const AddRecordDialog: React.FC<AddRecordDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit}>
+          <Button onClick={handleSubmitButtonClick}>
             Add Record
           </Button>
         </DialogFooter>

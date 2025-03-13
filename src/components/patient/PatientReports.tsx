@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Upload, AlertTriangle, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,13 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import { v4 as uuidv4 } from 'uuid';
+import { 
+  storeInLocalStorage, 
+  getFromLocalStorage,
+  storeFileInLocalStorage,
+  getFileFromLocalStorage 
+} from '@/services/storage/localStorageService';
 
 interface Report {
   id: string;
@@ -22,36 +28,11 @@ interface Report {
   fileSize: string;
   content?: string;
   url?: string;
+  fileId?: string;
 }
 
 const PatientReports: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: '1',
-      title: 'MRI Scan Results',
-      date: '2023-05-15',
-      fileType: 'PDF',
-      fileSize: '2.4 MB',
-      url: '/sample-report.pdf'
-    },
-    {
-      id: '2',
-      title: 'Blood Test Results',
-      date: '2023-06-02',
-      fileType: 'PDF',
-      fileSize: '1.2 MB',
-      url: '/sample-report.pdf'
-    },
-    {
-      id: '3',
-      title: 'X-Ray Results',
-      date: '2023-06-10',
-      fileType: 'Image',
-      fileSize: '3.5 MB',
-      url: '/sample-image.jpg'
-    }
-  ]);
-
+  const [reports, setReports] = useState<Report[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [currentReport, setCurrentReport] = useState<Report | null>(null);
@@ -59,10 +40,34 @@ const PatientReports: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const storedReports = getFromLocalStorage('patient_reports');
+    console.log('Loading reports from storage:', storedReports.length);
+    setReports(storedReports);
+  }, []);
 
-  const handleViewReport = (report: Report) => {
-    setCurrentReport(report);
-    setViewOpen(true);
+  const handleViewReport = async (report: Report) => {
+    try {
+      if (report.fileId) {
+        const fileData = getFileFromLocalStorage('patient_reports', report.fileId);
+        if (fileData && fileData.data) {
+          const reportWithUrl = {
+            ...report,
+            url: fileData.data
+          };
+          setCurrentReport(reportWithUrl);
+        } else {
+          setCurrentReport(report);
+        }
+      } else {
+        setCurrentReport(report);
+      }
+      setViewOpen(true);
+    } catch (error) {
+      console.error('Error viewing report:', error);
+      toast.error('Could not load report data');
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -93,14 +98,12 @@ const PatientReports: React.FC = () => {
   const validateAndProcessFile = (file: File) => {
     setFileError(null);
     
-    // Check file type
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
       setFileError('Only PDF and image files (JPEG, PNG) are allowed');
       return;
     }
     
-    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setFileError('File size must be less than 10MB');
       return;
@@ -109,39 +112,57 @@ const PatientReports: React.FC = () => {
     setUploadedFile(file);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!uploadedFile) {
       setFileError('Please select a file to upload');
       return;
     }
 
-    // Simulate upload process
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          
-          // Add the new report
-          const newReport: Report = {
-            id: String(Date.now()),
-            title: uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')),
-            date: new Date().toISOString().split('T')[0],
-            fileType: uploadedFile.type.includes('pdf') ? 'PDF' : 'Image',
-            fileSize: `${(uploadedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-            url: URL.createObjectURL(uploadedFile)
-          };
-          
-          setReports(prev => [...prev, newReport]);
-          setUploadedFile(null);
-          setUploadOpen(false);
-          
-          toast.success('Report uploaded successfully');
-          return 0;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    try {
+      setUploadProgress(0);
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const reportId = uuidv4();
+      const fileId = uuidv4();
+
+      await storeFileInLocalStorage('patient_reports', fileId, uploadedFile);
+
+      const newReport: Report = {
+        id: reportId,
+        title: uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || uploadedFile.name,
+        date: new Date().toISOString().split('T')[0],
+        fileType: uploadedFile.type.includes('pdf') ? 'PDF' : 'Image',
+        fileSize: `${(uploadedFile.size / (1024 * 1024)).toFixed(1)} MB`,
+        fileId: fileId
+      };
+
+      storeInLocalStorage('patient_reports', newReport);
+
+      setReports(prev => [...prev, newReport]);
+      setUploadedFile(null);
+      
+      setUploadProgress(100);
+      
+      setTimeout(() => {
+        setUploadOpen(false);
+        setUploadProgress(0);
+        toast.success('Report uploaded successfully');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload file');
+      setUploadProgress(0);
+      clearInterval();
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -213,7 +234,6 @@ const PatientReports: React.FC = () => {
         </div>
       )}
       
-      {/* View Report Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -223,31 +243,43 @@ const PatientReports: React.FC = () => {
           </DialogHeader>
           <div className="mt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-              <span>{formatDate(currentReport?.date || '')}</span>
+              <span>{currentReport?.date ? formatDate(currentReport.date) : 'Unknown date'}</span>
               <span>•</span>
-              <span>{currentReport?.fileType}</span>
+              <span>{currentReport?.fileType || 'Unknown type'}</span>
               <span>•</span>
-              <span>{currentReport?.fileSize}</span>
+              <span>{currentReport?.fileSize || 'Unknown size'}</span>
             </div>
             
             {currentReport?.fileType === 'PDF' ? (
               <div className="bg-muted p-4 rounded-md text-center">
                 <FileText className="h-10 w-10 mx-auto mb-2 text-primary" />
                 <p className="mb-3">PDF document preview</p>
-                <Button asChild size="sm">
-                  <a href={currentReport.url} target="_blank" rel="noopener noreferrer">
-                    Open PDF
-                  </a>
-                </Button>
+                {currentReport.url ? (
+                  <Button asChild size="sm">
+                    <a 
+                      href={currentReport.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      Open PDF
+                    </a>
+                  </Button>
+                ) : (
+                  <p className="text-muted-foreground">PDF preview not available</p>
+                )}
               </div>
             ) : (
-              currentReport?.url && (
+              currentReport?.url ? (
                 <div className="rounded-md overflow-hidden bg-muted">
                   <img 
                     src={currentReport.url} 
                     alt={currentReport.title} 
                     className="max-h-[60vh] mx-auto object-contain"
                   />
+                </div>
+              ) : (
+                <div className="bg-muted p-4 rounded-md text-center">
+                  <p className="text-muted-foreground">Image preview not available</p>
                 </div>
               )
             )}
@@ -256,16 +288,17 @@ const PatientReports: React.FC = () => {
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-            <Button asChild>
-              <a href={currentReport?.url} download={currentReport?.title}>
-                Download
-              </a>
-            </Button>
+            {currentReport?.url && (
+              <Button asChild>
+                <a href={currentReport.url} download={currentReport.title}>
+                  Download
+                </a>
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Upload Dialog */}
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
         <DialogContent>
           <DialogHeader>
@@ -325,7 +358,7 @@ const PatientReports: React.FC = () => {
             </div>
           )}
           
-          {uploadProgress > 0 && uploadProgress < 100 && (
+          {uploadProgress > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Uploading...</span>
@@ -339,7 +372,9 @@ const PatientReports: React.FC = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleUpload} disabled={!uploadedFile}>Upload Report</Button>
+            <Button onClick={handleUpload} disabled={!uploadedFile || uploadProgress > 0}>
+              Upload Report
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

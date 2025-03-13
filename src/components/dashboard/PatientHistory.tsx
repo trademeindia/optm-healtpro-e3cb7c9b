@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 import MedicalRecordsTabs from '@/components/patient/MedicalRecordsTabs';
 import DeleteConfirmDialog from './patient-history/DeleteConfirmDialog';
 import AddRecordDialog from './patient-history/AddRecordDialog';
 import HeaderActions from './patient-history/HeaderActions';
 import MainContent from './patient-history/MainContent';
 import { PatientHistoryProps, RecordFormData } from './patient-history/types';
+import { storeInLocalStorage, storeFileInLocalStorage } from '@/services/storage/localStorageService';
 
 const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpdate }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -24,21 +26,78 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({ patient, onClose, onUpd
   const handleAddRecord = (type: string) => {
     setRecordType(type);
     setShowAddRecordDialog(true);
-  };
-
-  const handleRecordSubmit = () => {
-    toast.success("Record Added", {
-      description: `${recordForm.name} has been added to the patient's records.`,
-      duration: 3000
-    });
-    setShowAddRecordDialog(false);
+    // Reset the form when opening 
     setRecordForm({
       name: '',
-      date: '',
+      date: new Date().toISOString().split('T')[0], // Set today's date as default
       type: '',
       notes: '',
       file: null
     });
+  };
+
+  const handleRecordSubmit = async () => {
+    try {
+      // Generate unique IDs for the record
+      const recordId = uuidv4();
+      let fileId = null;
+      
+      // If there's a file, upload it first
+      if (recordForm.file) {
+        fileId = uuidv4();
+        await storeFileInLocalStorage('patient_records', fileId, recordForm.file);
+      }
+      
+      // Create record object
+      const newRecord = {
+        id: recordId,
+        patientId: patient.id,
+        name: recordForm.name,
+        date: recordForm.date,
+        type: recordType,
+        recordType: recordForm.type || recordType,
+        notes: recordForm.notes,
+        fileId: fileId,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      
+      // Store the record
+      storeInLocalStorage('patient_records', newRecord);
+      
+      // Show success message
+      toast.success("Record Added", {
+        description: `${recordForm.name} has been added to the patient's records.`,
+        duration: 3000
+      });
+      
+      // Close dialog and reset form
+      setShowAddRecordDialog(false);
+      setRecordForm({
+        name: '',
+        date: '',
+        type: '',
+        notes: '',
+        file: null
+      });
+      
+      // Update patient to reflect changes
+      if (onUpdate && typeof onUpdate === 'function') {
+        // In a real app, we would fetch the updated patient data
+        // For now, we'll just close the dialog
+        onUpdate({
+          ...patient,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error adding record:", error);
+      toast.error("Failed to add record", {
+        description: "There was a problem saving this record. Please try again.",
+        duration: 3000
+      });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
