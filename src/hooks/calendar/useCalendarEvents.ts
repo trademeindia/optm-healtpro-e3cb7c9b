@@ -54,35 +54,45 @@ export function useCalendarEventListeners(
   debouncedRefresh: () => void,
   refreshCalendar: () => Promise<void>
 ) {
-  // Set up a periodic refresh for the calendar data when authorized
+  // FIXED: Reduced refresh frequency to prevent UI flickering
   useEffect(() => {    
-    // Set up a periodic refresh (every 2 minutes)
+    // Set up a periodic refresh (every 5 minutes instead of 2)
     const refreshInterval = setInterval(() => {
       console.log("Performing automatic calendar refresh");
       refreshCalendar();
-    }, 2 * 60 * 1000); // 2 minutes
+    }, 5 * 60 * 1000); // 5 minutes
     
     return () => {
       clearInterval(refreshInterval);
     };
   }, [refreshCalendar]);
 
-  // Listen for calendar update events
+  // Listen for calendar update events with debouncing
   useEffect(() => {
+    // Track if a refresh is already scheduled
+    let refreshTimeout: NodeJS.Timeout | null = null;
+    
     const handleCalendarEvent = () => {
       console.log("Calendar event received in CalendarTab");
-      debouncedRefresh();
+      
+      // Clear any existing timeout to debounce rapid events
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+      
+      // Set a new timeout to debounce rapid events
+      refreshTimeout = setTimeout(() => {
+        debouncedRefresh();
+        refreshTimeout = null;
+      }, 1000); // 1 second debounce
     };
     
-    // Also listen for appointment creation events
-    window.addEventListener('appointment-created', handleCalendarEvent);
-    window.addEventListener('appointment-updated', handleCalendarEvent);
-    window.addEventListener('calendar-updated', handleCalendarEvent);
+    // Listen for calendar events
+    window.addEventListener('calendar-data-updated', handleCalendarEvent);
     
     return () => {
-      window.removeEventListener('appointment-created', handleCalendarEvent);
-      window.removeEventListener('appointment-updated', handleCalendarEvent);
-      window.removeEventListener('calendar-updated', handleCalendarEvent);
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+      window.removeEventListener('calendar-data-updated', handleCalendarEvent);
     };
   }, [debouncedRefresh]);
 }

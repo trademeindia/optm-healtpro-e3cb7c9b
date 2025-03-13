@@ -18,6 +18,7 @@ export function useCalendarData(isAuthorized: boolean) {
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const isRefreshingRef = useRef(false);
   const appointmentChanges = useRef(0);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchEvents = useCallback(async () => {
     // Don't fetch if not authorized or already fetching
@@ -65,9 +66,6 @@ export function useCalendarData(isAuthorized: boolean) {
       const upcoming = mapEventsToAppointments(filteredEvents);
       setUpcomingAppointments(upcoming);
       
-      // Signal that calendar data is updated
-      window.dispatchEvent(new Event('calendar-data-updated'));
-      
     } catch (error: any) {
       console.error("Error fetching events:", error);
       setError(error.message || "Failed to fetch calendar data");
@@ -94,15 +92,21 @@ export function useCalendarData(isAuthorized: boolean) {
       return;
     }
     
-    console.log("Refreshing calendar data...");
-    appointmentChanges.current += 1;
+    // Clear any existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
     
-    // Force a refresh by setting a new timestamp 
-    // This will trigger the useEffect below
-    setLastRefresh(Date.now());
+    // Debounce multiple rapid refresh calls
+    debounceTimeoutRef.current = setTimeout(() => {
+      console.log("Refreshing calendar data...");
+      appointmentChanges.current += 1;
+      
+      // Force a refresh by setting a new timestamp 
+      setLastRefresh(Date.now());
+      debounceTimeoutRef.current = null;
+    }, 500); // 500ms debounce
     
-    // Also dispatch an event to notify other components about the refresh
-    window.dispatchEvent(new Event('calendar-updated'));
   }, [isAuthorized]);
 
   // Load calendar data when authorized or refresh is triggered
@@ -113,30 +117,14 @@ export function useCalendarData(isAuthorized: boolean) {
     }
   }, [isAuthorized, fetchEvents, lastRefresh]);
   
-  // Listen for specific appointment events
+  // Clean up any timeouts when component unmounts
   useEffect(() => {
-    if (isAuthorized) {
-      const handleAppointmentCreated = () => {
-        console.log("Appointment created event detected, refreshing calendar data");
-        // Set slight delay to ensure all systems have processed the new data
-        setTimeout(() => refreshCalendar(), 300);
-      };
-      
-      const handleAppointmentUpdated = () => {
-        console.log("Appointment updated event detected, refreshing calendar data");
-        // Set slight delay to ensure all systems have processed the new data
-        setTimeout(() => refreshCalendar(), 300);
-      };
-      
-      window.addEventListener('appointment-created', handleAppointmentCreated);
-      window.addEventListener('appointment-updated', handleAppointmentUpdated);
-      
-      return () => {
-        window.removeEventListener('appointment-created', handleAppointmentCreated);
-        window.removeEventListener('appointment-updated', handleAppointmentUpdated);
-      };
-    }
-  }, [isAuthorized, refreshCalendar]);
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     isLoading,

@@ -26,6 +26,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
       <Popover>
         <PopoverTrigger asChild>
           <Button
+            id="date"
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal",
@@ -42,6 +43,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
+            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
             className="p-3 pointer-events-auto"
           />
         </PopoverContent>

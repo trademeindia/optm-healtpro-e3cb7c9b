@@ -80,19 +80,14 @@ export const createEvent = async (
         colorId: completeEventData.color
       });
       
-      // Ensure the AppointmentsList component refreshes by dispatching a detailed event
-      window.dispatchEvent(new CustomEvent('appointment-created', { 
-        detail: completeEventData 
-      }));
-      
-      // Trigger a general calendar refresh event
-      window.dispatchEvent(new CustomEvent('calendar-updated', {
-        detail: { action: 'create', appointment: completeEventData }
-      }));
-      
-      // Dispatch an additional event to force refresh of any appointment UI components
+      // Dispatch a single event to notify all components about the new appointment
+      // FIXED: Reduced multiple event dispatches to a single one with all needed data
       window.dispatchEvent(new CustomEvent('calendar-data-updated', {
-        detail: { timestamp: new Date().toISOString() }
+        detail: { 
+          action: 'create', 
+          appointment: completeEventData,
+          timestamp: new Date().toISOString() 
+        }
       }));
       
       // Simulate successful API call
@@ -103,23 +98,11 @@ export const createEvent = async (
       // Still continue with local appointment creation even if Google sync fails
     }
     
-    // Force a refresh of the calendar data to ensure the new appointment shows up in all places
+    // Trigger a single refresh to update UI
+    // FIXED: Removed multiple refresh calls that were causing infinite loops
     if (onEventChange) {
       console.log("Triggering calendar refresh after create");
       onEventChange();
-      
-      // Additional delay to ensure all components refresh
-      setTimeout(() => {
-        window.dispatchEvent(new Event('calendar-updated'));
-        onEventChange(); // Call again for good measure
-      }, 500);
-      
-      // Schedule one more refresh after a longer delay to ensure everything is updated
-      setTimeout(() => {
-        window.dispatchEvent(new Event('calendar-updated'));
-        onEventChange();
-        console.log("Final refresh after appointment creation");
-      }, 1500);
     }
     
     // Show appropriate success/error message
