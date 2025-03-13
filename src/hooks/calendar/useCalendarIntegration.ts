@@ -14,6 +14,7 @@ export const useCalendarIntegration = () => {
     isAuthorized, 
     isLoading: isAuthLoading, 
     error: authError, 
+    publicCalendarUrl,
     authorizeCalendar 
   } = useCalendarAuth();
   
@@ -50,6 +51,7 @@ export const useCalendarIntegration = () => {
     refreshCalendar: enhancedRefresh,
     selectedDate,
     setSelectedDate,
+    publicCalendarUrl,
     error
   };
 };

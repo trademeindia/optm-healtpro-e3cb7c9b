@@ -20,7 +20,8 @@ const CalendarTab: React.FC = () => {
     refreshCalendar,
     selectedDate,
     setSelectedDate,
-    upcomingAppointments
+    upcomingAppointments,
+    publicCalendarUrl
   } = useCalendarIntegration();
 
   const validAppointments = upcomingAppointments || [];
@@ -101,6 +102,7 @@ const CalendarTab: React.FC = () => {
           isConnecting={isConnecting}
           onEventsChange={refreshCalendar}
           calendarViewRef={calendarViewRef}
+          publicCalendarUrl={publicCalendarUrl}
         />
 
         <div className="space-y-6">

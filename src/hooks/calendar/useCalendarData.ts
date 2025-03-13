@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 import { CalendarEvent, UpcomingAppointment } from './types';
 import { generateMockEvents, mapEventsToAppointments } from './mockCalendarData';
 
+// Using the public URL as an identifier for the specific calendar
+const CALENDAR_ID = '9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5@group.calendar.google.com';
+
 export function useCalendarData(isAuthorized: boolean) {
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState<CalendarEvent[]>([]);
@@ -24,10 +27,14 @@ export function useCalendarData(isAuthorized: boolean) {
     try {
       console.log("Fetching calendar events...");
       
+      // In a real implementation, we would use the calendar ID to fetch events
+      // from Google Calendar API, but never expose the secret token in client code
+      console.log(`Fetching events for calendar: ${CALENDAR_ID}`);
+      
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Generate some mock data
+      // Generate some mock data - in production, this would be real data from the API
       const mockEvents = generateMockEvents(selectedDate);
       
       console.log(`Fetched ${mockEvents.length} calendar events`);

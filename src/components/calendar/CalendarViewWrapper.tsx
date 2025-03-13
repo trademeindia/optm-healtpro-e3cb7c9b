@@ -18,6 +18,7 @@ interface CalendarViewWrapperProps {
   isConnecting: boolean;
   onEventsChange?: () => void;
   calendarViewRef?: React.RefObject<any>;
+  publicCalendarUrl?: string;
 }
 
 const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
@@ -31,7 +32,8 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   onConnectCalendar,
   isConnecting,
   onEventsChange = () => {},
-  calendarViewRef
+  calendarViewRef,
+  publicCalendarUrl
 }) => {
   return (
     <div className="lg:col-span-2">
@@ -87,6 +89,24 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                   />
                 </TabsContent>
               </Tabs>
+              
+              {/* Display embedded calendar if URL is provided */}
+              {publicCalendarUrl && (
+                <div className="mt-6 pt-6 border-t">
+                  <h3 className="text-base font-medium mb-3">Google Calendar View</h3>
+                  <div className="aspect-video w-full bg-muted/30 border rounded-lg overflow-hidden">
+                    <iframe 
+                      src={publicCalendarUrl}
+                      style={{ border: 0 }} 
+                      width="100%" 
+                      height="100%" 
+                      frameBorder="0" 
+                      scrolling="no"
+                      title="Google Calendar"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
