@@ -120,9 +120,20 @@
 
 /* Card with hover overlay */
 .card-with-overlay {
-  @apply relative overflow-hidden group;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fixed version - separate the group utility */
+.card-with-overlay {
+  @apply relative overflow-hidden;
+}
+
+.card-with-overlay-group {
+  @apply group;
 }
 
 .card-overlay {
   @apply absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity;
 }
+
