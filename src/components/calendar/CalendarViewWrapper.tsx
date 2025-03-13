@@ -141,7 +141,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
               <CardContent className="p-0">
                 <iframe 
                   ref={iframeRef}
-                  src={publicCalendarUrl}
+                  src="https://calendar.google.com/calendar/embed?src=9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com&ctz=Asia%2FKolkata"
                   className="w-full border-0"
                   height="450" 
                   frameBorder="0" 
