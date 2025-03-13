@@ -129,8 +129,9 @@
   @apply relative overflow-hidden;
 }
 
+/* Don't use @apply with group utility - instead use the class directly */
 .card-with-overlay-group {
-  @apply group;
+  /* The group class will be added directly in HTML where needed */
 }
 
 .card-overlay {
