@@ -1,8 +1,9 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 
-// Update to use the iCal URL provided by the user
-const PUBLIC_GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/ical/9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5%40group.calendar.google.com/public/basic.ics';
+// Update to use a more reliable embed URL format for the Google Calendar
+const PUBLIC_GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&ctz=America%2FNew_York';
 const CALENDAR_AUTH_KEY = 'calendar_auth_status';
 
 export function useCalendarAuth() {
