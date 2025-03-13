@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { forwardRef } from 'react';
 
 interface CalendarFrameProps {
   src: string;
@@ -7,21 +7,25 @@ interface CalendarFrameProps {
   onError: (e: React.SyntheticEvent<HTMLIFrameElement, Event>) => void;
 }
 
-const CalendarFrame: React.FC<CalendarFrameProps> = ({ src, onLoad, onError }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  
-  return (
-    <iframe 
-      ref={iframeRef}
-      src={src}
-      className="w-full h-full border-0"
-      frameBorder="0" 
-      scrolling="no"
-      title="Google Calendar"
-      onLoad={onLoad}
-      onError={onError}
-    />
-  );
-};
+// Using forwardRef to properly handle the ref passed from parent component
+const CalendarFrame = forwardRef<HTMLIFrameElement, CalendarFrameProps>(
+  ({ src, onLoad, onError }, ref) => {
+    return (
+      <iframe 
+        ref={ref}
+        src={src}
+        className="w-full h-full border-0"
+        frameBorder="0" 
+        scrolling="no"
+        title="Google Calendar"
+        onLoad={onLoad}
+        onError={onError}
+      />
+    );
+  }
+);
+
+// Display name for debugging purposes
+CalendarFrame.displayName = 'CalendarFrame';
 
 export default CalendarFrame;
