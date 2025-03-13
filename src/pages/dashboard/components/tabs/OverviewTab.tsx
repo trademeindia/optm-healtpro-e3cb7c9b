@@ -72,8 +72,36 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onViewAllDocuments,
   onUpload
 }) => {
+  // Handler for quick action buttons
   const handleQuickAction = (action: string) => {
-    toast.info(`${action} action initiated`, { duration: 3000 });
+    switch(action) {
+      case "Add Patient":
+        toast.info("Opening add patient form", { duration: 3000 });
+        // Add redirect or dialog opening logic here
+        break;
+      case "Schedule":
+        toast.info("Opening appointment scheduler", { duration: 3000 });
+        onViewFullCalendar();
+        break;
+      case "Message":
+        toast.info("Opening message center", { duration: 3000 });
+        onViewAllMessages();
+        break;
+      case "Reports":
+        toast.info("Opening reports center", { duration: 3000 });
+        onViewAllDocuments();
+        break;
+      case "Analytics":
+        toast.info("Opening analytics dashboard", { duration: 3000 });
+        // Add analytics navigation logic here
+        break;
+      case "Help":
+        toast.info("Opening help center", { duration: 3000 });
+        // Add help center navigation logic here
+        break;
+      default:
+        toast.info(`${action} action initiated`, { duration: 3000 });
+    }
   };
 
   const handleRetry = () => {
