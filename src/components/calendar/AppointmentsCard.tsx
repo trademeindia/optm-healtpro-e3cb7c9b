@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import AppointmentsList from '@/components/calendar/AppointmentsList';
 import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
 import { Calendar } from 'lucide-react';
+import { User } from '@/contexts/auth/types';
 
 interface AppointmentsCardProps {
   isLoading: boolean;
@@ -11,13 +12,15 @@ interface AppointmentsCardProps {
   appointments: UpcomingAppointment[];
   onRefresh?: () => Promise<void>;
   publicCalendarUrl?: string;
+  currentUser?: User;
 }
 
 const AppointmentsCard: React.FC<AppointmentsCardProps> = ({
   isLoading,
   isAuthorized,
   appointments,
-  onRefresh
+  onRefresh,
+  currentUser
 }) => {
   return (
     <Card className="shadow-sm hover:shadow-md transition-all duration-200 h-full overflow-hidden">
@@ -40,6 +43,7 @@ const AppointmentsCard: React.FC<AppointmentsCardProps> = ({
           appointments={appointments} 
           isLoading={isLoading} 
           isAuthorized={isAuthorized} 
+          currentUser={currentUser}
         />
       </CardContent>
     </Card>

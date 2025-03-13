@@ -17,6 +17,7 @@ export function useCalendarData(isAuthorized: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const isRefreshingRef = useRef(false);
+  const appointmentChanges = useRef(0);
 
   const fetchEvents = useCallback(async () => {
     // Don't fetch if not authorized or already fetching
@@ -94,6 +95,7 @@ export function useCalendarData(isAuthorized: boolean) {
     }
     
     console.log("Refreshing calendar data...");
+    appointmentChanges.current += 1;
     
     // Force a refresh by setting a new timestamp 
     // This will trigger the useEffect below

@@ -5,12 +5,14 @@ import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration'
 import { useCalendarRefresh } from '@/hooks/calendar/useCalendarRefresh';
 import { useCalendarConnection } from '@/hooks/calendar/useCalendarConnection';
 import { useCalendarEventListeners } from '@/hooks/calendar/useCalendarEvents';
+import { useAuth } from '@/contexts/auth';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
   const calendarViewRef = useRef<any>(null);
+  const { user } = useAuth();
   
   const { 
     isLoading, 
@@ -88,6 +90,7 @@ const CalendarTab: React.FC = () => {
 
   // Function to explicitly reload the iframe
   const reloadCalendarIframe = () => {
+    console.log("Reloading calendar iframe from CalendarTab");
     window.dispatchEvent(new Event('calendar-updated'));
   };
 
@@ -117,6 +120,7 @@ const CalendarTab: React.FC = () => {
         reloadCalendarIframe={reloadCalendarIframe}
         validAppointments={validAppointments}
         refreshCalendar={refreshCalendar}
+        currentUser={user}
       />
     </div>
   );

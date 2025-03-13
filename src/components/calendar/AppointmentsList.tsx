@@ -1,135 +1,100 @@
 
 import React from 'react';
-import { Calendar, Clock, User, MapPin, AlertCircle } from 'lucide-react';
-import { UpcomingAppointment } from '@/hooks/calendar/useCalendarIntegration';
+import { CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { AppointmentStatusIndicator } from './AppointmentStatusIndicator';
+import { UpcomingAppointment } from '@/hooks/calendar/types';
+import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
+import { format } from 'date-fns';
+import { User } from '@/contexts/auth/types';
 
 interface AppointmentsListProps {
   appointments: UpcomingAppointment[];
   isLoading: boolean;
   isAuthorized: boolean;
+  currentUser?: User;
 }
 
-const AppointmentsList: React.FC<AppointmentsListProps> = ({ 
+const AppointmentSkeleton = () => (
+  <div className="py-2 px-1">
+    <Skeleton className="h-5 w-2/3 mb-2" />
+    <Skeleton className="h-4 w-1/2 mb-2" />
+    <Skeleton className="h-4 w-1/3" />
+  </div>
+);
+
+const AppointmentsList: React.FC<AppointmentsListProps> = ({
   appointments,
   isLoading,
-  isAuthorized
+  isAuthorized,
+  currentUser
 }) => {
-  const handleViewDetails = (appointment: UpcomingAppointment) => {
-    if (!appointment) return;
-    toast.info(`Viewing details for ${appointment.title}`);
-  };
+  if (!isAuthorized) {
+    return (
+      <div className="py-8 text-center">
+        <CalendarClock className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+        <p className="text-muted-foreground">
+          Connect your calendar to see your appointments
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="border rounded-lg p-4 animate-pulse">
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <div className="flex gap-2 items-center">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-1/3" />
-              </div>
-              <div className="flex gap-2 items-center">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-1/4" />
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-3">
+        <AppointmentSkeleton />
+        <AppointmentSkeleton />
+        <AppointmentSkeleton />
       </div>
     );
   }
 
-  if (!isAuthorized) {
+  if (!appointments.length) {
     return (
-      <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-3">
-        <div className="bg-muted/20 p-3 rounded-full">
-          <AlertCircle className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p>Connect your calendar to view appointments</p>
+      <div className="py-8 text-center">
+        <CalendarClock className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+        <p className="text-muted-foreground">No upcoming appointments</p>
+        <Button variant="outline" size="sm" className="mt-4">
+          Book an Appointment
+        </Button>
       </div>
     );
   }
-
-  if (!appointments || appointments.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-3">
-        <div className="bg-primary/10 p-3 rounded-full">
-          <Calendar className="h-6 w-6 text-primary" />
-        </div>
-        <p>No upcoming appointments scheduled</p>
-        <p className="text-xs text-muted-foreground mt-1">Click "New Appointment" to create one</p>
-      </div>
-    );
-  }
-
-  // Sort appointments by date/time (most recent first)
-  const sortedAppointments = [...appointments].sort((a, b) => {
-    const dateA = new Date(`${a.date} ${a.time}`);
-    const dateB = new Date(`${b.date} ${b.time}`);
-    return dateA.getTime() - dateB.getTime();
-  });
 
   return (
-    <div className="space-y-4">
-      {sortedAppointments.map((appointment) => (
+    <div className="space-y-3">
+      {appointments.map((appointment) => (
         <div 
-          key={appointment.id} 
-          className="border rounded-lg p-4 hover:bg-muted/5 transition-colors duration-200 hover:shadow-sm"
+          key={appointment.id}
+          className="p-3 rounded-md border border-border/40 hover:shadow-sm transition-all cursor-pointer"
         >
-          <div className="space-y-3">
-            <div className="flex justify-between items-start">
-              <h4 className="font-medium text-foreground break-words">{appointment.title}</h4>
-              {appointment.status && (
-                <AppointmentStatusIndicator status={appointment.status} />
-              )}
-            </div>
-            
-            <p className="text-sm text-muted-foreground">{appointment.type}</p>
-            
-            <div className="flex flex-col gap-2 pt-1">
-              <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span className="truncate">{appointment.date}</span>
-              </div>
-              
-              <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                <Clock className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span className="truncate">{appointment.time}</span>
-              </div>
-              
-              {appointment.patientName && (
-                <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                  <User className="h-4 w-4 flex-shrink-0 text-primary" />
-                  <span className="truncate">{appointment.patientName}</span>
-                </div>
-              )}
-              
-              {appointment.location && (
-                <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
-                  <span className="truncate">{appointment.location}</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full hover:bg-primary/10 hover:text-primary"
-                onClick={() => handleViewDetails(appointment)}
-              >
-                View Details
-              </Button>
-            </div>
+          <div className="flex justify-between items-start mb-1">
+            <h4 className="font-medium text-sm">
+              {currentUser?.role === 'patient' ? 
+                appointment.type : 
+                `${appointment.patientName} - ${appointment.type}`
+              }
+            </h4>
+            <AppointmentStatusIndicator status={appointment.status} />
           </div>
+          
+          <div className="text-xs text-muted-foreground mb-1">
+            {format(appointment.date, 'PPP')} • {appointment.time} - {appointment.endTime}
+          </div>
+          
+          {appointment.location && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Location:</span> {appointment.location}
+            </div>
+          )}
+          
+          {appointment.notes && (
+            <div className="text-xs text-muted-foreground mt-2 bg-muted/30 p-1.5 rounded">
+              {appointment.notes}
+            </div>
+          )}
         </div>
       ))}
     </div>

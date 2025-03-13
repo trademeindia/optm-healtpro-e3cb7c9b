@@ -22,14 +22,35 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       // Extract the calendar ID from the iCal URL
       const match = url.match(/calendar\/ical\/([^\/]+)/);
       if (match && match[1]) {
-        const calendarId = match[1];
-        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=Asia%2FKolkata`;
+        const calendarId = encodeURIComponent(match[1]);
+        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
       }
     }
+    
+    // If it's already an embed URL, use it as is
+    if (url.includes('calendar/embed')) {
+      return url;
+    }
+    
+    // Handle the case where we have a basic.ics URL format
+    if (url.includes('.ics')) {
+      const calendarIdMatch = url.match(/([a-zA-Z0-9-_]+)%40/);
+      if (calendarIdMatch && calendarIdMatch[1]) {
+        const calendarId = `${calendarIdMatch[1]}%40group.calendar.google.com`;
+        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
+      }
+    }
+    
+    // Fallback - try to use the URL as is
     return url;
   };
 
   const displayUrl = getDisplayUrl(publicCalendarUrl);
+  
+  // For debugging
+  useEffect(() => {
+    console.log("Calendar iframe URL:", displayUrl);
+  }, [displayUrl]);
 
   // Setup a function to reload the iframe when needed
   const reloadIframe = () => {
@@ -89,6 +110,10 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
     }
   }, [publicCalendarUrl]);
 
+  if (!displayUrl) {
+    return null;
+  }
+
   return (
     <Card className="shadow-sm overflow-hidden border border-border/30">
       <CardContent className="p-0">
@@ -110,8 +135,8 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
               console.log("Main Google Calendar iframe loaded");
               iframeLoadingRef.current = false;
             }}
-            onError={() => {
-              console.error("Error loading main Google Calendar iframe");
+            onError={(e) => {
+              console.error("Error loading main Google Calendar iframe:", e);
               iframeLoadingRef.current = false;
             }}
           ></iframe>
