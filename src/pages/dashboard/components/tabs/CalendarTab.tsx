@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useCalendarIntegration } from '@/hooks/calendar/useCalendarIntegration';
 import { useCalendarRefresh } from '@/hooks/calendar/useCalendarRefresh';
 import { useCalendarConnection } from '@/hooks/calendar/useCalendarConnection';
-import { useCalendarEventListeners } from '@/hooks/calendar/useCalendarEvents';
+import { useCalendarEventListeners } from '@/hooks/calendar/useEventListeners';
 import { useAuth } from '@/contexts/auth';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
