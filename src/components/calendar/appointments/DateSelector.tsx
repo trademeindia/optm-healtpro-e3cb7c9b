@@ -16,7 +16,15 @@ const DateSelector: React.FC<DateSelectorProps> = ({ date, setDate }) => {
   const handleDateSelect = (newDate: Date | undefined) => {
     if (newDate && setDate) {
       console.log("Date selected:", newDate);
-      setDate(newDate);
+      // Ensure we're setting a full date object with time preserved
+      const updatedDate = new Date(newDate);
+      
+      // If the original date had time set, preserve it
+      if (date) {
+        updatedDate.setHours(date.getHours(), date.getMinutes(), date.getSeconds());
+      }
+      
+      setDate(updatedDate);
     }
   };
 

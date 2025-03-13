@@ -42,7 +42,8 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
   // Reset form when dialog opens or selected date changes
   useEffect(() => {
     if (open) {
-      setDate(selectedDate);
+      console.log("Reset form with selected date:", selectedDate);
+      setDate(new Date(selectedDate)); // Ensure we're using a new Date object
       setType("New Appointment");
       setPatient("");
       setLocation("Main Office - Room 101");
@@ -51,14 +52,18 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
       
       // Set default start and end times
       setStartTime("9:00 AM");
-      setEndTime("9:30 AM");
+      setTimeout(() => {
+        setEndTime("9:30 AM");
+      }, 50);
     }
   }, [open, selectedDate, setDate, setStartTime, setEndTime]);
 
   // Update end time when start time changes
   useEffect(() => {
     if (open && startTime) {
-      setAutoEndTime();
+      setTimeout(() => {
+        setAutoEndTime();
+      }, 50);
     }
   }, [startTime, open, setAutoEndTime]);
 
@@ -117,7 +122,7 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
       if (success) {
         onClose();
         toast.success("Appointment created successfully", {
-          description: "Your appointment has been added to Google Calendar."
+          description: "Your appointment has been added to the calendar."
         });
       } else {
         throw new Error("Failed to create appointment");
@@ -125,7 +130,7 @@ const CreateAppointmentDialog: React.FC<CreateAppointmentDialogProps> = ({
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast.error("Failed to create appointment", {
-        description: "There was an error syncing with Google Calendar. Please try again."
+        description: "There was an error adding your appointment. Please try again."
       });
     } finally {
       setIsLoading(false);

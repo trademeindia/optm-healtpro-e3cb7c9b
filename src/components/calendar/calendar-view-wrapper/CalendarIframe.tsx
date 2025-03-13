@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, RefreshCw } from 'lucide-react';
@@ -18,9 +18,11 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const reloadingRef = useRef(false);
+  const lastReloadTimeRef = useRef(0);
 
   // Process iCal URL to make it displayable in an iframe
-  const getDisplayUrl = (url: string) => {
+  const getDisplayUrl = useCallback((url: string) => {
     try {
       if (!url) {
         console.error("No calendar URL provided");
@@ -82,10 +84,10 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       setError("Failed to process calendar URL");
       return null;
     }
-  };
+  }, []);
 
   // Alternative method to try if main method fails
-  const getFallbackDisplayUrl = () => {
+  const getFallbackDisplayUrl = useCallback(() => {
     try {
       // Extract calendar ID using a different pattern
       const idMatch = publicCalendarUrl.match(/([a-zA-Z0-9]{20,})/);
@@ -98,24 +100,24 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       console.error("Error in fallback URL generation:", err);
       return null;
     }
-  };
+  }, [publicCalendarUrl]);
 
   const displayUrl = getDisplayUrl(publicCalendarUrl);
   const fallbackUrl = displayUrl ? null : getFallbackDisplayUrl();
   const finalUrl = displayUrl || fallbackUrl || "about:blank";
   
-  // For debugging
-  useEffect(() => {
-    console.log("Calendar iframe URL:", finalUrl);
-    
-    // Reset error state when URL changes
-    if (finalUrl !== "about:blank") {
-      setError(null);
-    }
-  }, [finalUrl]);
-
   // Setup a function to reload the iframe when needed
-  const reloadIframe = () => {
+  const reloadIframe = useCallback(() => {
+    // Prevent multiple reloads in quick succession
+    const now = Date.now();
+    if (reloadingRef.current || (now - lastReloadTimeRef.current < 3000)) {
+      console.log("Reload already in progress or too soon since last reload, skipping");
+      return;
+    }
+    
+    reloadingRef.current = true;
+    lastReloadTimeRef.current = now;
+    
     if (iframeRef.current) {
       setIsLoading(true);
       setError(null);
@@ -129,13 +131,30 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
       
       setTimeout(() => {
         if (iframeRef.current) {
-          iframeRef.current.src = src;
+          iframeRef.current.src = `${src}${src.includes('?') ? '&' : '?'}cachebust=${Date.now()}`;
+          
+          // Set a timeout to prevent permanent loading state if iframe fails to trigger onLoad
+          setTimeout(() => {
+            setIsLoading(false);
+            reloadingRef.current = false;
+          }, 5000);
         }
-      }, 100);
+      }, 200);
     } else if (reloadCalendarIframe) {
       reloadCalendarIframe();
+      
+      // Set a timeout to clear loading state in case the callback doesn't reset it
+      setTimeout(() => {
+        setIsLoading(false);
+        reloadingRef.current = false;
+      }, 3000);
     }
-  };
+    
+    // Safety timeout to ensure reloadingRef is reset
+    setTimeout(() => {
+      reloadingRef.current = false;
+    }, 5000);
+  }, [reloadCalendarIframe]);
 
   // Initial mount/load for iframe
   useEffect(() => {
@@ -145,30 +164,44 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
     }
   }, [publicCalendarUrl]);
 
-  // Add event listener for calendar changes
+  // Add event listener for calendar changes with debouncing to prevent rapid reloads
   useEffect(() => {
-    if (publicCalendarUrl) {
-      // Add event listener for custom reload events
-      const handleCalendarUpdate = () => {
+    if (!publicCalendarUrl) return;
+    
+    let reloadTimeout: NodeJS.Timeout | null = null;
+    
+    // Debounced reload handler to prevent multiple reloads
+    const handleCalendarUpdate = () => {
+      if (reloadTimeout) {
+        clearTimeout(reloadTimeout);
+      }
+      
+      reloadTimeout = setTimeout(() => {
         console.log("Calendar update event received, reloading iframe");
         reloadIframe();
-      };
-      
-      // Listen for all appointment-related events to trigger iframe reload
-      window.addEventListener('calendar-updated', handleCalendarUpdate);
-      window.addEventListener('appointment-created', handleCalendarUpdate);
-      window.addEventListener('appointment-updated', handleCalendarUpdate);
-      window.addEventListener('appointment-deleted', handleCalendarUpdate);
-      
-      return () => {
-        window.removeEventListener('calendar-updated', handleCalendarUpdate);
-        window.removeEventListener('appointment-created', handleCalendarUpdate);
-        window.removeEventListener('appointment-updated', handleCalendarUpdate);
-        window.removeEventListener('appointment-deleted', handleCalendarUpdate);
-      };
-    }
-  }, [publicCalendarUrl]);
+      }, 1500); // Debounce for 1.5 seconds
+    };
+    
+    // Use a single handler for all events to reduce listeners
+    const handleAnyAppointmentEvent = (event: Event) => {
+      console.log(`Handling calendar event: ${event.type}`);
+      handleCalendarUpdate();
+    };
+    
+    // Listen for all appointment-related events to trigger iframe reload
+    window.addEventListener('calendar-updated', handleAnyAppointmentEvent);
+    window.addEventListener('calendar-data-updated', handleAnyAppointmentEvent);
+    
+    return () => {
+      if (reloadTimeout) {
+        clearTimeout(reloadTimeout);
+      }
+      window.removeEventListener('calendar-updated', handleAnyAppointmentEvent);
+      window.removeEventListener('calendar-data-updated', handleAnyAppointmentEvent);
+    };
+  }, [publicCalendarUrl, reloadIframe]);
 
+  // JSX for empty or error state
   if (!finalUrl || finalUrl === "about:blank") {
     return (
       <Card className="shadow-sm overflow-hidden border border-border/30">
@@ -227,11 +260,13 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
             onLoad={() => {
               console.log("Google Calendar iframe loaded");
               setIsLoading(false);
+              reloadingRef.current = false;
             }}
             onError={(e) => {
               console.error("Error loading Google Calendar iframe:", e);
               setIsLoading(false);
               setError("Failed to load calendar");
+              reloadingRef.current = false;
             }}
           ></iframe>
         </div>

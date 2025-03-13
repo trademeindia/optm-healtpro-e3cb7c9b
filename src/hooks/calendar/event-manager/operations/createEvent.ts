@@ -80,29 +80,31 @@ export const createEvent = async (
         colorId: completeEventData.color
       });
       
-      // Dispatch a single event to notify all components about the new appointment
-      // FIXED: Reduced multiple event dispatches to a single one with all needed data
-      window.dispatchEvent(new CustomEvent('calendar-data-updated', {
-        detail: { 
-          action: 'create', 
-          appointment: completeEventData,
-          timestamp: new Date().toISOString() 
-        }
-      }));
+      // Dispatch a single event with small delay to prevent UI flicker and issues
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('calendar-data-updated', {
+          detail: { 
+            action: 'create', 
+            appointment: completeEventData,
+            timestamp: new Date().toISOString() 
+          }
+        }));
+        
+        console.log('Successfully synced with Google Calendar');
+      }, 500); // Small delay to let the UI settle
       
-      // Simulate successful API call
-      console.log('Successfully synced with Google Calendar');
     } catch (googleError) {
       console.error('Google Calendar sync error:', googleError);
       googleCalendarSyncSuccess = false;
       // Still continue with local appointment creation even if Google sync fails
     }
     
-    // Trigger a single refresh to update UI
-    // FIXED: Removed multiple refresh calls that were causing infinite loops
+    // Add a small delay before triggering calendar refresh to prevent UI flicker
     if (onEventChange) {
-      console.log("Triggering calendar refresh after create");
-      onEventChange();
+      setTimeout(() => {
+        console.log("Triggering calendar refresh after create");
+        onEventChange();
+      }, 1000);
     }
     
     // Show appropriate success/error message
