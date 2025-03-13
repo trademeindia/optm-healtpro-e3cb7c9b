@@ -6,7 +6,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpcomingAppointment } from '@/hooks/calendar/types';
 import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { User } from '@/contexts/auth/types';
 
 interface AppointmentsListProps {
@@ -65,38 +65,49 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   return (
     <div className="space-y-3">
-      {appointments.map((appointment) => (
-        <div 
-          key={appointment.id}
-          className="p-3 rounded-md border border-border/40 hover:shadow-sm transition-all cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-1">
-            <h4 className="font-medium text-sm">
-              {currentUser?.role === 'patient' ? 
-                appointment.type : 
-                `${appointment.patientName} - ${appointment.type}`
-              }
-            </h4>
-            <AppointmentStatusIndicator status={appointment.status} />
-          </div>
-          
-          <div className="text-xs text-muted-foreground mb-1">
-            {format(appointment.date, 'PPP')} • {appointment.time} - {appointment.endTime}
-          </div>
-          
-          {appointment.location && (
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Location:</span> {appointment.location}
+      {appointments.map((appointment) => {
+        // Format the appointment date
+        const appointmentDate = appointment.date instanceof Date ? 
+          appointment.date : 
+          new Date(appointment.date);
+
+        const formattedDate = isValid(appointmentDate) ? 
+          format(appointmentDate, 'PPP') : 
+          'Invalid date';
+
+        return (
+          <div 
+            key={appointment.id}
+            className="p-3 rounded-md border border-border/40 hover:shadow-sm transition-all cursor-pointer"
+          >
+            <div className="flex justify-between items-start mb-1">
+              <h4 className="font-medium text-sm">
+                {currentUser?.role === 'patient' ? 
+                  appointment.type : 
+                  `${appointment.patientName} - ${appointment.type}`
+                }
+              </h4>
+              <AppointmentStatusIndicator status={appointment.status} />
             </div>
-          )}
-          
-          {appointment.notes && (
-            <div className="text-xs text-muted-foreground mt-2 bg-muted/30 p-1.5 rounded">
-              {appointment.notes}
+            
+            <div className="text-xs text-muted-foreground mb-1">
+              {formattedDate} • {appointment.time} - {appointment.endTime}
             </div>
-          )}
-        </div>
-      ))}
+            
+            {appointment.location && (
+              <div className="text-xs text-muted-foreground">
+                <span className="font-medium">Location:</span> {appointment.location}
+              </div>
+            )}
+            
+            {appointment.notes && (
+              <div className="text-xs text-muted-foreground mt-2 bg-muted/30 p-1.5 rounded">
+                {appointment.notes}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

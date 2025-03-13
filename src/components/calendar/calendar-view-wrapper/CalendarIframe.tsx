@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CalendarIframeProps {
@@ -13,36 +13,43 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeMountedRef = useRef(false);
-  const iframeLoadingRef = useRef(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Process iCal URL to make it displayable in an iframe if needed
+  // Process iCal URL to make it displayable in an iframe
   const getDisplayUrl = (url: string) => {
-    // If the URL is an iCal URL, convert it to the embed format
-    if (url.includes('/ical/') && url.endsWith('.ics')) {
-      // Extract the calendar ID from the iCal URL
-      const match = url.match(/calendar\/ical\/([^\/]+)/);
-      if (match && match[1]) {
-        const calendarId = encodeURIComponent(match[1]);
-        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
+    try {
+      // If the URL is already an embed URL, use it as is
+      if (url.includes('calendar/embed')) {
+        return url;
       }
-    }
-    
-    // If it's already an embed URL, use it as is
-    if (url.includes('calendar/embed')) {
-      return url;
-    }
-    
-    // Handle the case where we have a basic.ics URL format
-    if (url.includes('.ics')) {
-      const calendarIdMatch = url.match(/([a-zA-Z0-9-_]+)%40/);
-      if (calendarIdMatch && calendarIdMatch[1]) {
-        const calendarId = `${calendarIdMatch[1]}%40group.calendar.google.com`;
-        return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
+      
+      // If the URL is an iCal URL, convert it to the embed format
+      if (url.includes('/ical/') && url.endsWith('.ics')) {
+        // Extract the calendar ID from the iCal URL
+        const match = url.match(/calendar\/ical\/([^\/]+)/);
+        if (match && match[1]) {
+          const calendarId = encodeURIComponent(match[1]);
+          return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
+        }
       }
+      
+      // Handle the case where we have a .ics URL format
+      if (url.includes('.ics')) {
+        const calendarIdMatch = url.match(/([a-zA-Z0-9-_]+)%40/);
+        if (calendarIdMatch && calendarIdMatch[1]) {
+          const calendarId = `${calendarIdMatch[1]}%40group.calendar.google.com`;
+          return `https://calendar.google.com/calendar/embed?src=${calendarId}&ctz=UTC`;
+        }
+      }
+      
+      // Default embed URL if we can't extract a proper calendar ID
+      return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(url)}&ctz=UTC`;
+    } catch (err) {
+      console.error("Error processing calendar URL:", err);
+      setError("Failed to process calendar URL");
+      return "about:blank";
     }
-    
-    // Fallback - try to use the URL as is
-    return url;
   };
 
   const displayUrl = getDisplayUrl(publicCalendarUrl);
@@ -54,24 +61,19 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
 
   // Setup a function to reload the iframe when needed
   const reloadIframe = () => {
-    // Only reload if we're not already reloading
-    if (iframeRef.current && !iframeLoadingRef.current) {
-      console.log("Reloading Google Calendar iframe directly");
-      iframeLoadingRef.current = true;
+    if (iframeRef.current) {
+      setIsLoading(true);
       
       // Store the current src
       const src = iframeRef.current.src;
       
       // Clear and reset iframe src to force reload
-      iframeRef.current.src = '';
+      iframeRef.current.src = 'about:blank';
       
       setTimeout(() => {
         if (iframeRef.current) {
           iframeRef.current.src = src;
         }
-        setTimeout(() => {
-          iframeLoadingRef.current = false;
-        }, 1000); // Allow time for the iframe to fully load
       }, 100);
     } else if (reloadCalendarIframe) {
       reloadCalendarIframe();
@@ -117,27 +119,40 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   return (
     <Card className="shadow-sm overflow-hidden border border-border/30">
       <CardContent className="p-0">
-        <div className="relative">
-          {iframeLoadingRef.current && (
+        <div className="relative h-[450px]">
+          {isLoading && (
             <div className="absolute inset-0 bg-background/70 flex items-center justify-center z-10">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>
           )}
+          
+          {error && (
+            <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center z-10">
+              <p className="text-destructive mb-2">{error}</p>
+              <button 
+                onClick={reloadIframe}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          
           <iframe 
             ref={iframeRef}
             src={displayUrl}
-            className="w-full border-0"
-            height="450" 
+            className="w-full h-full border-0"
             frameBorder="0" 
             scrolling="no"
             title="Google Calendar"
             onLoad={() => {
-              console.log("Main Google Calendar iframe loaded");
-              iframeLoadingRef.current = false;
+              console.log("Google Calendar iframe loaded");
+              setIsLoading(false);
             }}
             onError={(e) => {
-              console.error("Error loading main Google Calendar iframe:", e);
-              iframeLoadingRef.current = false;
+              console.error("Error loading Google Calendar iframe:", e);
+              setIsLoading(false);
+              setError("Failed to load calendar");
             }}
           ></iframe>
         </div>

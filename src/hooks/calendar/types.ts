@@ -17,6 +17,7 @@ export interface CalendarEvent {
   type?: string;
   color?: string;
   isAvailable?: boolean;
+  notes?: string;
 }
 
 export interface CalendarDate {
@@ -29,11 +30,13 @@ export interface CalendarDate {
 export interface UpcomingAppointment {
   id: string;
   title: string;
-  date: string;
+  date: Date | string;
   time: string;
+  endTime: string;
   patientName?: string;
   patientId?: string;
   type?: string;
   location?: string;
   status?: AppointmentStatus;
+  notes?: string;
 }
