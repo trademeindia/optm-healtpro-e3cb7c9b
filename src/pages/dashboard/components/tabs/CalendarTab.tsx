@@ -53,11 +53,13 @@ const CalendarTab: React.FC = () => {
       });
       
       await fetchEvents();
+      return true;
     } else {
       toast.error("Failed to connect calendar", {
         description: "Please try again or check your network connection",
         duration: 5000
       });
+      return false;
     }
   };
 

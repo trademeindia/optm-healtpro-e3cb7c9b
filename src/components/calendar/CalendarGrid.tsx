@@ -39,6 +39,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   validAppointments,
   refreshCalendar
 }) => {
+  // Create a wrapper function to adapt Promise<boolean> to Promise<void>
+  const handleConnectCalendar = async () => {
+    await onConnectCalendar();
+  };
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
       <div className="lg:col-span-2">
@@ -50,7 +55,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           calendarData={calendarData}
           selectedDate={selectedDate}
           onDateSelect={onDateSelect}
-          onConnectCalendar={onConnectCalendar}
+          onConnectCalendar={handleConnectCalendar}
           isConnecting={isConnecting}
           onEventsChange={onEventsChange}
           calendarViewRef={calendarViewRef}
