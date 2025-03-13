@@ -71,7 +71,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
   }, [isAuthorized, publicCalendarUrl]);
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-4 md:space-y-6 h-full">
       {!isAuthorized ? (
         <Card className="shadow-sm hover:shadow-md transition-all duration-200">
           <CardContent className="p-6">
@@ -85,9 +85,9 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
         <>
           <Card className="shadow-sm overflow-hidden border border-border/30 hover:shadow-md transition-all duration-200">
             <Tabs value={selectedView} onValueChange={(value) => setSelectedView(value as any)}>
-              <div className="bg-muted/30 border-b px-4 py-2">
+              <div className="bg-muted/30 border-b px-3 py-2 md:px-4">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-foreground">Calendar</h2>
+                  <h2 className="text-base md:text-lg font-semibold text-foreground">Calendar</h2>
                   <TabsList className="bg-background/50">
                     <TabsTrigger value="day">Day</TabsTrigger>
                     <TabsTrigger value="week">Week</TabsTrigger>
@@ -143,7 +143,7 @@ const CalendarViewWrapper: React.FC<CalendarViewWrapperProps> = ({
                   ref={iframeRef}
                   src={publicCalendarUrl}
                   className="w-full border-0"
-                  height="600" 
+                  height="450" 
                   frameBorder="0" 
                   scrolling="no"
                   title="Google Calendar"

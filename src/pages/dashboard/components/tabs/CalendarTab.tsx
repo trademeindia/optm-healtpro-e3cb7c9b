@@ -81,7 +81,7 @@ const CalendarTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 pb-4">
       <CalendarHeader 
         isLoading={isLoading}
         isAuthorized={isAuthorized}
@@ -90,23 +90,25 @@ const CalendarTab: React.FC = () => {
         onCreateAppointment={handleCreateAppointment}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <CalendarViewWrapper 
-          isAuthorized={isAuthorized}
-          isLoading={isLoading}
-          selectedView={selectedView}
-          setSelectedView={setSelectedView}
-          calendarData={calendarData}
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-          onConnectCalendar={handleConnectCalendar}
-          isConnecting={isConnecting}
-          onEventsChange={refreshCalendar}
-          calendarViewRef={calendarViewRef}
-          publicCalendarUrl={publicCalendarUrl}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="lg:col-span-2">
+          <CalendarViewWrapper 
+            isAuthorized={isAuthorized}
+            isLoading={isLoading}
+            selectedView={selectedView}
+            setSelectedView={setSelectedView}
+            calendarData={calendarData}
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            onConnectCalendar={handleConnectCalendar}
+            isConnecting={isConnecting}
+            onEventsChange={refreshCalendar}
+            calendarViewRef={calendarViewRef}
+            publicCalendarUrl={publicCalendarUrl}
+          />
+        </div>
 
-        <div className="space-y-6">
+        <div>
           <AppointmentsCard 
             isLoading={isLoading}
             isAuthorized={isAuthorized}

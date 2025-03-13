@@ -121,7 +121,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
       onValueChange={handleTabChange}
       className="w-full"
     >
-      <div className="overflow-x-auto tabs-container pb-2 -mx-4 px-4">
+      <div className="overflow-x-auto sticky top-0 bg-white dark:bg-gray-800 z-10 pb-2 -mx-4 px-4">
         <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 w-full flex flex-nowrap min-w-max">
           <TabsTrigger value="overview" className="rounded-md flex-1 whitespace-nowrap">
             Overview
@@ -142,7 +142,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsList>
       </div>
       
-      <div className="tab-content-container">
+      <div className="tab-content-container overflow-x-hidden">
         <TabsContent value="overview" className="mt-0">
           <OverviewTab 
             appointments={dashboardData.upcomingAppointments || []}

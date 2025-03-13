@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
             </div>
           
             {/* Tabs for detailed content */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 mb-8 overflow-hidden">
               <DashboardTabs 
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
