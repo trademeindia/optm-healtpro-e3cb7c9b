@@ -88,7 +88,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
       <AddPatientDialog 
         open={showAddPatientDialog} 
-        onOpenChange={setShowAddPatientDialog} 
+        onOpenChange={setShowAddPatientDialog}
         onAddPatient={handleAddPatient}
       />
 

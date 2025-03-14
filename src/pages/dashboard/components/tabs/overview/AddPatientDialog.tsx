@@ -17,6 +17,7 @@ interface Patient {
   icdCode?: string;
   nextAppointment?: string;
   status?: string;
+  nextVisit?: string;
 }
 
 interface AddPatientDialogProps {
@@ -73,7 +74,8 @@ const AddPatientDialog: React.FC<AddPatientDialogProps> = ({ open, onOpenChange,
       condition: condition || 'Unknown',
       icdCode: icdCode || 'N/A',
       status: 'active',
-      nextAppointment: 'Not scheduled'
+      nextAppointment: 'Not scheduled',
+      nextVisit: 'Not scheduled'
     };
     
     if (onAddPatient) {

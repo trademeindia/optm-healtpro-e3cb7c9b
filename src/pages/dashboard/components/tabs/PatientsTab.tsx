@@ -10,7 +10,7 @@ import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/loc
 import { v4 as uuidv4 } from 'uuid';
 import AddPatientDialog from './overview/AddPatientDialog';
 
-// Define a Patient interface that matches what we need
+// Define a Patient interface that matches all requirements
 interface Patient {
   id: number;
   name: string;
@@ -21,10 +21,10 @@ interface Patient {
   address: string;
   condition: string;
   lastVisit: string;
-  nextAppointment: string; // Required field
-  status: string; // Required field
+  nextVisit: string; // Required by the patients/types Patient
+  nextAppointment: string; // Required for our local usage
+  status: string; // Required for our local usage
   icdCode: string;
-  nextVisit?: string; // Optional now
   medicalRecords?: any[];
   biomarkers?: any[];
   isSample?: boolean;
@@ -71,7 +71,9 @@ const PatientsTab: React.FC = () => {
         const validPatients = storedPatients.map((patient: any) => ({
           ...patient,
           nextAppointment: patient.nextVisit || patient.nextAppointment || 'Not scheduled',
-          status: patient.status || 'active'
+          status: patient.status || 'active',
+          // Ensure nextVisit is always present
+          nextVisit: patient.nextVisit || patient.nextAppointment || 'Not scheduled'
         }));
         setPatients(validPatients);
       }
@@ -162,6 +164,8 @@ const PatientsTab: React.FC = () => {
         lastVisit: new Date().toISOString().split('T')[0], // Set today's date as default
         status: 'active',
         nextAppointment: 'Not scheduled',
+        // Ensure nextVisit is always present
+        nextVisit: 'Not scheduled',
         icdCode: newPatient.icdCode || 'N/A'
       } as Patient;
       
@@ -231,7 +235,7 @@ const PatientsTab: React.FC = () => {
         />
       ) : (
         <PatientsList 
-          patients={patients} 
+          patients={patients as any[]} 
           onViewPatient={handleViewPatient}
           isLoading={isLoading}
         />
