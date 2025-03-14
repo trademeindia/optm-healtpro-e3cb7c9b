@@ -20,7 +20,7 @@ export const useAnatomicalView = (
   // State for the active system, camera, rotation, etc.
   const [activeSystem, setActiveSystem] = useState('muscular-new');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 6]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 8]);
   
   // Mock hotspots data - this would come from an API in a real app
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
@@ -113,7 +113,7 @@ export const useAnatomicalView = (
   
   // Camera zoom controls
   const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 4)]);
+    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 5)]);
   };
   
   const handleZoomOut = () => {
@@ -121,7 +121,7 @@ export const useAnatomicalView = (
   };
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 6]);
+    setCameraPosition([0, 0, 8]);
     setIsRotating(false);
   };
   

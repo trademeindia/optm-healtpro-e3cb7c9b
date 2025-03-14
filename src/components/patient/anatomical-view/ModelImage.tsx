@@ -28,8 +28,8 @@ const ModelImage: React.FC<ModelImageProps> = ({ activeSystem }) => {
       rotation={[0, 0, 0]} 
       center 
       sprite 
-      scale={[1.5, 1.5, 1.5]} 
-      distanceFactor={8}
+      scale={[1.2, 1.2, 1.2]} 
+      distanceFactor={10}
       className="anatomy-model-wrapper"
     >
       <div className="anatomy-model-container">
