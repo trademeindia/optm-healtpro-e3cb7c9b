@@ -1,28 +1,37 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import PatientHistory from '@/components/dashboard/PatientHistory';
 import { PatientsList } from '@/pages/patients/components/PatientsList';
 import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
+import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
+import { v4 as uuidv4 } from 'uuid';
+import AddPatientDialog from './overview/AddPatientDialog';
 
-interface PatientsTabProps {
-  patients: any[];
-  selectedPatient: any;
-  onViewPatient: (patientId: number) => void;
-  onClosePatientHistory: () => void;
-  onUpdatePatient: (patient: any) => void;
+// Define a Patient interface that matches what we need
+interface Patient {
+  id: number;
+  name: string;
+  age: number;
+  gender: string;
+  email: string;
+  phone: string;
+  address: string;
+  condition: string;
+  lastVisit: string;
+  nextAppointment: string;
+  status: string;
+  icdCode: string;
 }
 
-const PatientsTab: React.FC<PatientsTabProps> = ({
-  patients,
-  selectedPatient,
-  onViewPatient,
-  onClosePatientHistory,
-  onUpdatePatient
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
+const PatientsTab: React.FC = () => {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [showAddPatient, setShowAddPatient] = useState(false);
   
   // Function to refresh patient data with better error handling
   const refreshPatientData = useCallback(async () => {
@@ -30,17 +39,33 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
     setHasError(false);
     
     try {
-      // In a real app, this would call an API or invalidate queries
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Load patients from localStorage
+      const storedPatients = getFromLocalStorage('patients');
       
-      // Check if patients data exists and has items
-      if (!patients || patients.length === 0) {
-        setHasError(true);
-        throw new Error("No patient data available");
+      // Load sample data if no patients exist (first time only)
+      if (storedPatients.length === 0) {
+        // Import sample data from the patients page
+        const { samplePatients } = await import('@/pages/patients/data/samplePatients');
+        
+        // Mark them as sample data
+        const markedSamplePatients = samplePatients.map(patient => ({
+          ...patient,
+          isSample: true
+        }));
+        
+        // Store sample patients
+        markedSamplePatients.forEach(patient => {
+          storeInLocalStorage('patients', patient);
+        });
+        
+        setPatients(markedSamplePatients);
+      } else {
+        console.log('Loaded patients from storage:', storedPatients.length);
+        setPatients(storedPatients);
       }
       
-      toast.success("Patient data refreshed", { 
-        description: "Latest patient information loaded",
+      toast.success("Patient data loaded", { 
+        description: "Latest patient information is ready",
         duration: 3000
       });
     } catch (error) {
@@ -53,17 +78,32 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [patients]);
+  }, []);
   
   // Auto-refresh patient data when tab is shown
   useEffect(() => {
     refreshPatientData();
-    return () => {};
   }, [refreshPatientData]);
   
+  const handleViewPatient = (patientId: number) => {
+    const patient = patients.find(p => p.id === patientId);
+    if (patient) {
+      setSelectedPatient(patient);
+    } else {
+      toast.error("Patient not found", {
+        description: "Could not find the selected patient",
+        duration: 3000
+      });
+    }
+  };
+  
+  const handleClosePatientHistory = () => {
+    setSelectedPatient(null);
+  };
+  
   // Handle patient update with proper sync
-  const handlePatientUpdate = async (patient: any) => {
-    if (!patient) {
+  const handlePatientUpdate = async (updatedPatient: Patient) => {
+    if (!updatedPatient) {
       toast.error("Invalid patient data", {
         description: "Cannot update with empty data",
         duration: 3000
@@ -73,13 +113,20 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
     
     try {
       setIsLoading(true);
-      // Call the parent update function
-      onUpdatePatient(patient);
       
-      // Ensure data is resynced after update
-      await refreshPatientData();
+      // Store the updated patient
+      storeInLocalStorage('patients', updatedPatient);
       
-      // Additional success feedback
+      // Update the local state
+      setPatients(prevPatients => 
+        prevPatients.map(p => 
+          p.id === updatedPatient.id ? updatedPatient : p
+        )
+      );
+      
+      // Update the selected patient
+      setSelectedPatient(updatedPatient);
+      
       toast.success("Patient record updated", {
         description: "Changes have been saved successfully",
         duration: 3000
@@ -92,6 +139,37 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleAddPatient = (newPatient: Partial<Patient>) => {
+    try {
+      const patientWithId = {
+        ...newPatient,
+        id: Date.now(),
+        lastVisit: new Date().toISOString().split('T')[0],
+        status: 'active',
+        icdCode: newPatient.icdCode || 'N/A'
+      } as Patient;
+      
+      // Store the new patient
+      storeInLocalStorage('patients', patientWithId);
+      
+      // Update the local state
+      setPatients(prev => [...prev, patientWithId]);
+      
+      toast.success("Patient added successfully", {
+        description: "New patient record has been created",
+        duration: 3000
+      });
+      
+      setShowAddPatient(false);
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      toast.error("Failed to add patient", {
+        description: "Please try again or contact support",
+        duration: 5000
+      });
     }
   };
   
@@ -114,7 +192,7 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
         <p className="text-muted-foreground mb-4">There was a problem loading the patient data</p>
         <button
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-          onClick={refreshPatientData}
+          onClick={() => refreshPatientData()}
         >
           Try Again
         </button>
@@ -124,19 +202,34 @@ const PatientsTab: React.FC<PatientsTabProps> = ({
   
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {!selectedPatient && (
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Patients</h2>
+          <Button onClick={() => setShowAddPatient(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Add Patient
+          </Button>
+        </div>
+      )}
+      
       {selectedPatient ? (
         <PatientHistory 
           patient={selectedPatient} 
-          onClose={onClosePatientHistory}
+          onClose={handleClosePatientHistory}
           onUpdate={handlePatientUpdate}
         />
       ) : (
         <PatientsList 
           patients={patients} 
-          onViewPatient={onViewPatient}
+          onViewPatient={handleViewPatient}
           isLoading={isLoading}
         />
       )}
+      
+      <AddPatientDialog 
+        open={showAddPatient} 
+        onOpenChange={setShowAddPatient}
+        onAddPatient={handleAddPatient}
+      />
     </div>
   );
 };

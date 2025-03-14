@@ -4,13 +4,15 @@
  * until the proper Supabase schema is set up
  */
 
+const STORAGE_PREFIX = 'medical_';
+
 /**
  * Store data in localStorage with a prefixed key
  */
 export const storeInLocalStorage = (key: string, data: any): void => {
   try {
     // Get existing data
-    const existingData = localStorage.getItem(`medical_${key}`);
+    const existingData = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
     let dataArray = existingData ? JSON.parse(existingData) : [];
     
     // Add new data
@@ -27,7 +29,7 @@ export const storeInLocalStorage = (key: string, data: any): void => {
     }
     
     // Store updated array
-    localStorage.setItem(`medical_${key}`, JSON.stringify(dataArray));
+    localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(dataArray));
     console.log(`Successfully stored data in ${key} storage:`, data.id);
   } catch (error) {
     console.error(`Error storing ${key} in localStorage:`, error);
@@ -39,7 +41,7 @@ export const storeInLocalStorage = (key: string, data: any): void => {
  */
 export const getFromLocalStorage = (key: string): any[] => {
   try {
-    const data = localStorage.getItem(`medical_${key}`);
+    const data = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
     const parsedData = data ? JSON.parse(data) : [];
     console.log(`Retrieved ${parsedData.length} items from ${key} storage`);
     return parsedData;
@@ -77,7 +79,7 @@ export const deleteItemFromLocalStorage = (key: string, id: string): boolean => 
       return false;
     }
     
-    localStorage.setItem(`medical_${key}`, JSON.stringify(filteredItems));
+    localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(filteredItems));
     console.log(`Deleted item ${id} from ${key} storage`);
     return true;
   } catch (error) {
@@ -137,5 +139,34 @@ export const getFileFromLocalStorage = (key: string, id: string): any | null => 
   } catch (error) {
     console.error(`Error retrieving file from localStorage:`, error);
     return null;
+  }
+};
+
+/**
+ * Get all files from localStorage
+ */
+export const getAllFilesFromLocalStorage = (key: string): any[] => {
+  try {
+    return getFromLocalStorage(`${key}_files`);
+  } catch (error) {
+    console.error(`Error retrieving all files from localStorage:`, error);
+    return [];
+  }
+};
+
+/**
+ * Clear sample data and replace with real data
+ */
+export const clearSampleDataIfNeeded = (key: string): void => {
+  try {
+    const realData = getFromLocalStorage(key);
+    // If we have real user-entered data, remove any sample/demo data
+    // This assumes sample data is marked with a property like "isSample: true"
+    if (realData.length > 0) {
+      const filteredData = realData.filter((item: any) => !item.isSample);
+      localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(filteredData));
+    }
+  } catch (error) {
+    console.error(`Error clearing sample data for ${key}:`, error);
   }
 };

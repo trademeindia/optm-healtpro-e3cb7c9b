@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FileText, Upload, AlertTriangle, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,8 @@ import {
   storeInLocalStorage, 
   getFromLocalStorage,
   storeFileInLocalStorage,
-  getFileFromLocalStorage 
+  getFileFromLocalStorage,
+  getAllFilesFromLocalStorage
 } from '@/services/storage/localStorageService';
 
 interface Report {
@@ -42,10 +44,15 @@ const PatientReports: React.FC = () => {
   const [fileError, setFileError] = useState<string | null>(null);
   
   useEffect(() => {
+    // Load reports from storage when component mounts
+    loadReports();
+  }, []);
+
+  const loadReports = () => {
     const storedReports = getFromLocalStorage('patient_reports');
     console.log('Loading reports from storage:', storedReports.length);
     setReports(storedReports);
-  }, []);
+  };
 
   const handleViewReport = async (report: Report) => {
     try {
@@ -146,15 +153,20 @@ const PatientReports: React.FC = () => {
 
       storeInLocalStorage('patient_reports', newReport);
 
+      // Update local state
       setReports(prev => [...prev, newReport]);
       setUploadedFile(null);
       
       setUploadProgress(100);
       
       setTimeout(() => {
+        clearInterval(interval); // Clear the interval
         setUploadOpen(false);
         setUploadProgress(0);
         toast.success('Report uploaded successfully');
+        
+        // Reload reports to ensure we have the latest data
+        loadReports();
       }, 500);
       
     } catch (error) {
