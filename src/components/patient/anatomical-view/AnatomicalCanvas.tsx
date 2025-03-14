@@ -34,7 +34,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   return (
     <div className="anatomy-canvas-container relative">
       <Canvas
-        camera={{ position: cameraPosition, fov: 60 }}
+        camera={{ position: cameraPosition, fov: 65 }}
         className="w-full h-full"
         resize={{ scroll: true, debounce: { scroll: 50, resize: 0 } }}
       >
@@ -56,8 +56,8 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
           enableRotate={!isEditMode}
           autoRotate={isRotating}
           autoRotateSpeed={1}
-          maxDistance={10}
-          minDistance={3}
+          maxDistance={12}
+          minDistance={4}
         />
         
         <AutoRotate isRotating={isRotating} />
