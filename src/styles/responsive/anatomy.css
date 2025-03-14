@@ -20,8 +20,8 @@
 
 .model-image {
   object-fit: contain !important;
-  max-width: 75% !important;
-  max-height: 75% !important;
+  max-width: 70% !important;
+  max-height: 70% !important;
   width: auto !important;
   height: auto !important;
   object-position: center !important;
@@ -51,8 +51,8 @@
   }
   
   .model-image {
-    max-height: 65%;
-    max-width: 65%;
+    max-height: 60%;
+    max-width: 60%;
   }
   
   .text-xs-mobile {
@@ -80,8 +80,8 @@
   }
   
   .model-image {
-    max-height: 70%;
-    max-width: 70%;
+    max-height: 65%;
+    max-width: 65%;
   }
 }
 
@@ -97,7 +97,7 @@
   }
   
   .model-image {
-    max-height: 75%;
-    max-width: 75%;
+    max-height: 70%;
+    max-width: 70%;
   }
 }

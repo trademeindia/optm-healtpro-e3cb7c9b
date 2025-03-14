@@ -30,7 +30,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   return (
     <div className="anatomy-canvas-container relative">
       <Canvas
-        camera={{ position: cameraPosition, fov: 50 }}
+        camera={{ position: cameraPosition, fov: 45 }}
         className="w-full h-full"
         resize={{ scroll: true, debounce: { scroll: 50, resize: 0 } }}
       >
