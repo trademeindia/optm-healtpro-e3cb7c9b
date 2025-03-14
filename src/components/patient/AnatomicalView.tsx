@@ -46,8 +46,6 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     setIsRotating,
     cameraPosition,
     hotspots,
-    handleZoomIn,
-    handleZoomOut,
     handleResetView,
     handleHotspotClick,
     activeHotspotDetails,
@@ -71,10 +69,9 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
           setIsRotating={setIsRotating}
           cameraPosition={cameraPosition}
           hotspots={hotspots}
-          handleZoomIn={handleZoomIn}
-          handleZoomOut={handleZoomOut}
           handleResetView={handleResetView}
           handleHotspotClick={handleHotspotClick}
+          isEditMode={isEditMode}
         />
         {activeHotspotDetails && (
           <DetailsPanel 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { BodySystem, Hotspot } from './types';
 import { getHotspotPosition, getSeverityColor, getSeverityLevel } from './utils';
@@ -98,14 +99,6 @@ export const useAnatomicalView = (
     setHotspots(mockHotspots);
   }, [selectedRegion, activeSystem]);
   
-  const handleZoomIn = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 5)]);
-  };
-  
-  const handleZoomOut = () => {
-    setCameraPosition(prev => [prev[0], prev[1], Math.min(prev[2] + 0.5, 12)]);
-  };
-  
   const handleResetView = () => {
     setCameraPosition([0, 0, 8]);
     setIsRotating(false);
@@ -127,8 +120,6 @@ export const useAnatomicalView = (
     setIsRotating,
     cameraPosition,
     hotspots,
-    handleZoomIn,
-    handleZoomOut,
     handleResetView,
     handleHotspotClick,
     activeHotspotDetails,
