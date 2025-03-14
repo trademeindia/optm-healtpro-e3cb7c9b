@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { AnatomicalCanvas, DetailsPanel, Header, IssuesCounter, useAnatomicalView } from './anatomical-view';
-import { AnatomicalViewProps } from './anatomical-view';
+import { AnatomicalViewProps } from './anatomical-view/types';
 
 const AnatomicalView: React.FC<AnatomicalViewProps> = ({
   selectedRegion,
   onSelectRegion,
-  patientId
+  patientId,
+  isEditMode = false
 }) => {
   // Track the internal selected region
   const [internalSelectedRegion, setInternalSelectedRegion] = useState<string | undefined>(selectedRegion);
@@ -39,12 +40,17 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
     handleHotspotClick,
     activeHotspotDetails,
     bodySystems
-  } = useAnatomicalView(internalSelectedRegion, handleRegionSelect, patientId);
+  } = useAnatomicalView(internalSelectedRegion, handleRegionSelect, patientId, isEditMode);
   
   return (
     <Card className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3">
-        <Header systems={bodySystems} activeSystem={activeSystem} onSystemChange={setActiveSystem} />
+        <Header 
+          systems={bodySystems} 
+          activeSystem={activeSystem} 
+          onSystemChange={setActiveSystem} 
+          isEditMode={isEditMode}
+        />
       </CardHeader>
       <CardContent className="flex-1 p-0 relative">
         <AnatomicalCanvas
@@ -57,9 +63,13 @@ const AnatomicalView: React.FC<AnatomicalViewProps> = ({
           handleZoomOut={handleZoomOut}
           handleResetView={handleResetView}
           handleHotspotClick={handleHotspotClick}
+          isEditMode={isEditMode}
         />
         {activeHotspotDetails && (
-          <DetailsPanel activeHotspotDetails={activeHotspotDetails} />
+          <DetailsPanel 
+            activeHotspotDetails={activeHotspotDetails} 
+            isEditMode={isEditMode}
+          />
         )}
         <IssuesCounter count={hotspots.length} />
       </CardContent>

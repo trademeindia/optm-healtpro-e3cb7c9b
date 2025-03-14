@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { BodySystem, Hotspot } from './types';
 import { getHotspotPosition, getSeverityColor, getSeverityLevel } from './utils';
+import { toast } from 'sonner';
 
 export const useAnatomicalView = (
   selectedRegion?: string, 
   onSelectRegion?: (region: string) => void,
-  patientId?: number
+  patientId?: number,
+  isEditMode: boolean = false
 ) => {
   // Available body systems
   const bodySystems: BodySystem[] = [
@@ -27,6 +29,27 @@ export const useAnatomicalView = (
   
   // Active hotspot details (when a hotspot is clicked)
   const [activeHotspotDetails, setActiveHotspotDetails] = useState<Hotspot | null>(null);
+  
+  // Add new hotspot in edit mode
+  const addHotspot = (position: [number, number, number], region: string) => {
+    if (isEditMode) {
+      const newHotspot: Hotspot = {
+        id: `hotspot-${Date.now()}`,
+        position,
+        label: `New Issue in ${region}`,
+        description: `New issue detected in ${region} area`,
+        severity: 'Mild',
+        color: '#FFAA00',
+        size: 0.08,
+        region: region
+      };
+      
+      setHotspots(prev => [...prev, newHotspot]);
+      toast.success("Hotspot Added", {
+        description: `New issue marker added to ${region} region.`
+      });
+    }
+  };
   
   // Generate mock hotspots data based on selected region and system
   useEffect(() => {
@@ -149,6 +172,8 @@ export const useAnatomicalView = (
     handleResetView,
     handleHotspotClick,
     activeHotspotDetails,
-    bodySystems
+    bodySystems,
+    addHotspot,
+    isEditMode
   };
 };
