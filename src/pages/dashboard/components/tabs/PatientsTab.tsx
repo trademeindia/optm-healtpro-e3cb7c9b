@@ -10,8 +10,9 @@ import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/loc
 import { v4 as uuidv4 } from 'uuid';
 import AddPatientDialog from './overview/AddPatientDialog';
 
-// Define a Patient interface that matches what we need
-interface Patient {
+// Define a extended Patient interface that matches the PatientsTab needs
+// This ensures compatibility with the various interfaces in the app
+interface DashboardPatient {
   id: number;
   name: string;
   age: number;
@@ -21,14 +22,18 @@ interface Patient {
   address: string;
   condition: string;
   lastVisit: string;
-  nextAppointment: string;
-  status: string;
+  nextVisit: string;
   icdCode: string;
+  status: string;
+  nextAppointment?: string; // Optional to accommodate different formats
+  biomarkers?: any[];
+  medicalRecords?: any[];
+  isSample?: boolean; // For sample data marking
 }
 
 const PatientsTab: React.FC = () => {
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [patients, setPatients] = useState<DashboardPatient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<DashboardPatient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showAddPatient, setShowAddPatient] = useState(false);
@@ -47,10 +52,12 @@ const PatientsTab: React.FC = () => {
         // Import sample data from the patients page
         const { samplePatients } = await import('@/pages/patients/data/samplePatients');
         
-        // Mark them as sample data
+        // Mark them as sample data and make sure they conform to our DashboardPatient type
         const markedSamplePatients = samplePatients.map(patient => ({
           ...patient,
-          isSample: true
+          isSample: true,
+          status: 'active', // Adding the required status field
+          nextAppointment: patient.nextVisit // Using nextVisit as nextAppointment
         }));
         
         // Store sample patients
@@ -58,10 +65,16 @@ const PatientsTab: React.FC = () => {
           storeInLocalStorage('patients', patient);
         });
         
-        setPatients(markedSamplePatients);
+        setPatients(markedSamplePatients as DashboardPatient[]);
       } else {
         console.log('Loaded patients from storage:', storedPatients.length);
-        setPatients(storedPatients);
+        // Ensure loaded patients match our required interface
+        const formattedPatients = storedPatients.map((patient: any) => ({
+          ...patient,
+          status: patient.status || 'active',
+          nextAppointment: patient.nextAppointment || patient.nextVisit
+        }));
+        setPatients(formattedPatients);
       }
       
       toast.success("Patient data loaded", { 
@@ -102,7 +115,7 @@ const PatientsTab: React.FC = () => {
   };
   
   // Handle patient update with proper sync
-  const handlePatientUpdate = async (updatedPatient: Patient) => {
+  const handlePatientUpdate = async (updatedPatient: DashboardPatient) => {
     if (!updatedPatient) {
       toast.error("Invalid patient data", {
         description: "Cannot update with empty data",
@@ -142,15 +155,17 @@ const PatientsTab: React.FC = () => {
     }
   };
   
-  const handleAddPatient = (newPatient: Partial<Patient>) => {
+  const handleAddPatient = (newPatient: Partial<DashboardPatient>) => {
     try {
       const patientWithId = {
         ...newPatient,
         id: Date.now(),
         lastVisit: new Date().toISOString().split('T')[0],
         status: 'active',
-        icdCode: newPatient.icdCode || 'N/A'
-      } as Patient;
+        icdCode: newPatient.icdCode || 'N/A',
+        nextAppointment: newPatient.nextVisit || 'Not scheduled',
+        nextVisit: newPatient.nextVisit || 'Not scheduled'
+      } as DashboardPatient;
       
       // Store the new patient
       storeInLocalStorage('patients', patientWithId);
@@ -213,13 +228,13 @@ const PatientsTab: React.FC = () => {
       
       {selectedPatient ? (
         <PatientHistory 
-          patient={selectedPatient} 
+          patient={selectedPatient as any} 
           onClose={handleClosePatientHistory}
-          onUpdate={handlePatientUpdate}
+          onUpdate={handlePatientUpdate as any}
         />
       ) : (
         <PatientsList 
-          patients={patients} 
+          patients={patients as any[]} 
           onViewPatient={handleViewPatient}
           isLoading={isLoading}
         />

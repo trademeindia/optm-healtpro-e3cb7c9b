@@ -87,6 +87,15 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     }
   };
 
+  // Mock function to handle adding a patient
+  const handleAddPatient = (newPatient: any) => {
+    toast.success("Patient added successfully", {
+      description: "New patient record has been created",
+      duration: 3000
+    });
+    setShowAddPatientDialog(false);
+  };
+
   return (
     <div className="space-y-6">
       <QuickActionsGrid 
@@ -120,7 +129,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
       <AddPatientDialog 
         open={showAddPatientDialog} 
-        onOpenChange={setShowAddPatientDialog} 
+        onOpenChange={setShowAddPatientDialog}
+        onAddPatient={handleAddPatient} 
       />
 
       <HelpDialog 

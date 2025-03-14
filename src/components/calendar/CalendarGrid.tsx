@@ -53,13 +53,13 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         // The toast is now handled in the useCalendarAuth hook
       }
       
-      return success;
+      // Don't return the boolean, just return void to match the expected type
+      return;
     } catch (error) {
       console.error("Error connecting calendar:", error);
       toast.error('Connection failed', {
         description: 'Could not connect to Google Calendar. Please try again.'
       });
-      return false;
     }
   };
   
