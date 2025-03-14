@@ -1,59 +1,39 @@
 
-import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
-import { HotspotProps } from './types';
+import React from 'react';
+import { AnatomicalMapping, Biomarker } from '@/types/medicalData';
 
-const Hotspot: React.FC<HotspotProps> = ({ 
-  position, 
-  color, 
-  size, 
-  onClick, 
-  label, 
-  description,
-  severity
-}) => {
-  const [hovered, setHovered] = useState(false);
+interface HotspotProps {
+  mapping: AnatomicalMapping;
+  biomarkers: Biomarker[];
+}
+
+const Hotspot: React.FC<HotspotProps> = ({ mapping, biomarkers }) => {
+  const { x, y } = mapping.coordinates;
+  
+  // Determine color based on severity
+  const getColor = (severity: number) => {
+    if (severity >= 8) return 'bg-red-500';
+    if (severity >= 5) return 'bg-amber-500';
+    return 'bg-yellow-400';
+  };
+  
+  // Determine size based on number of biomarkers
+  const getSize = (biomarkerCount: number) => {
+    if (biomarkerCount >= 3) return 'h-4 w-4';
+    if (biomarkerCount >= 2) return 'h-3 w-3';
+    return 'h-2 w-2';
+  };
   
   return (
-    <group position={position}>
-      <mesh
-        onClick={onClick}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <sphereGeometry args={[size, 16, 16]} />
-        <meshStandardMaterial 
-          color={color} 
-          transparent 
-          opacity={0.8} 
-          emissive={color} 
-          emissiveIntensity={hovered ? 1 : 0.5} 
-        />
-      </mesh>
-      
-      {hovered && (
-        <Html
-          position={[0, size + 0.1, 0]}
-          center
-          style={{
-            width: '160px',
-            pointerEvents: 'none',
-          }}
-        >
-          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-md p-2 text-sm border z-50">
-            <div className="font-semibold">{label}</div>
-            <div className="text-xs text-muted-foreground">{description}</div>
-            <div className={`text-xs mt-1 ${
-              severity === 'high' ? 'text-red-500' : 
-              severity === 'medium' ? 'text-orange-500' : 
-              'text-green-500'
-            }`}>
-              Severity: {severity}
-            </div>
-          </div>
-        </Html>
-      )}
-    </group>
+    <div 
+      className={`absolute rounded-full animate-pulse ${getColor(mapping.severity)} ${getSize(biomarkers.length)}`}
+      style={{ 
+        left: `${x}%`, 
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)',
+      }}
+      title={mapping.bodyPart}
+    />
   );
 };
 
