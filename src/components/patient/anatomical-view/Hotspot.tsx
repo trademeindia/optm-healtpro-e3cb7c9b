@@ -1,39 +1,32 @@
 
 import React from 'react';
-import { AnatomicalMapping, Biomarker } from '@/types/medicalData';
+import { HotspotProps } from './types';
 
-interface HotspotProps {
-  mapping: AnatomicalMapping;
-  biomarkers: Biomarker[];
-}
-
-const Hotspot: React.FC<HotspotProps> = ({ mapping, biomarkers }) => {
-  const { x, y } = mapping.coordinates;
-  
-  // Determine color based on severity
-  const getColor = (severity: number) => {
-    if (severity >= 8) return 'bg-red-500';
-    if (severity >= 5) return 'bg-amber-500';
-    return 'bg-yellow-400';
-  };
-  
-  // Determine size based on number of biomarkers
-  const getSize = (biomarkerCount: number) => {
-    if (biomarkerCount >= 3) return 'h-4 w-4';
-    if (biomarkerCount >= 2) return 'h-3 w-3';
-    return 'h-2 w-2';
-  };
-  
+const Hotspot: React.FC<HotspotProps> = ({ 
+  position, 
+  color, 
+  size, 
+  label, 
+  description, 
+  severity, 
+  onClick 
+}) => {
   return (
-    <div 
-      className={`absolute rounded-full animate-pulse ${getColor(mapping.severity)} ${getSize(biomarkers.length)}`}
-      style={{ 
-        left: `${x}%`, 
-        top: `${y}%`,
-        transform: 'translate(-50%, -50%)',
+    <mesh
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
       }}
-      title={mapping.bodyPart}
-    />
+    >
+      <sphereGeometry args={[size, 16, 16]} />
+      <meshStandardMaterial color={color} />
+      <Html distanceFactor={10} position={[0, size + 0.1, 0]} style={{ pointerEvents: 'none' }}>
+        <div className="bg-white/80 px-2 py-1 rounded text-xs text-center whitespace-nowrap">
+          {label}
+        </div>
+      </Html>
+    </mesh>
   );
 };
 

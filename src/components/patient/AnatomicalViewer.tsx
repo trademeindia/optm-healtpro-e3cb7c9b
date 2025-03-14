@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnatomicalMapping, Biomarker } from '@/types/medicalData';
 import SystemTabs from '@/components/patient/anatomical-map/SystemTabs';
 import EmptyState from './anatomical-view/EmptyState';
@@ -24,15 +23,15 @@ const AnatomicalViewer: React.FC<AnatomicalViewerProps> = ({ mappings, biomarker
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Anatomical Mapping</h2>
       
-      <Card>
-        <CardContent className="p-4">
+      <div className="card">
+        <div className="p-4">
           <SystemTabs activeSystem={activeSystem} onSystemChange={setActiveSystem} />
           <BodyMap 
             mappings={currentMappings}
             biomarkers={biomarkers}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       
       <MappingsList 
         mappings={currentMappings}

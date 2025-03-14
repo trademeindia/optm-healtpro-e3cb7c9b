@@ -1,4 +1,3 @@
-
 export interface Hotspot {
   id: string;
   position: [number, number, number];
@@ -35,8 +34,8 @@ export interface HotspotProps {
   position: [number, number, number];
   color: string;
   size: number;
-  onClick: () => void;
   label: string;
   description: string;
   severity: string;
+  onClick: () => void;
 }
