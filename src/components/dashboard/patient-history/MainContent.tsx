@@ -1,15 +1,19 @@
 
 import React from 'react';
-import { Grid } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { User, Heart, Activity, Calendar, FileText } from 'lucide-react';
 import PatientProfile from '@/components/patient/PatientProfile';
 import SimplifiedAnatomicalMap from '@/components/patient/SimplifiedAnatomicalMap';
+import PatientBiomarkers from '@/components/dashboard/PatientBiomarkers';
+import SymptomTracker from '@/components/dashboard/SymptomTracker';
+import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
 
 interface MainContentProps {
   patient: any;
-  selectedRegion: string;
-  onSelectRegion: (region: string) => void;
-  onAssignTests: () => void;
+  selectedRegion?: string;
+  onSelectRegion?: (region: string) => void;
+  onAssignTests?: () => void;
 }
 
 const MainContent: React.FC<MainContentProps> = ({
@@ -19,56 +23,65 @@ const MainContent: React.FC<MainContentProps> = ({
   onAssignTests
 }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-          <Tabs defaultValue="anatomical" className="w-full">
-            <div className="px-4 pt-4">
-              <TabsList className="w-full bg-gray-100 dark:bg-gray-700">
-                <TabsTrigger value="anatomical" className="flex-1">
-                  <Grid className="w-4 h-4 mr-2" />
-                  Anatomical Map
-                </TabsTrigger>
-                <TabsTrigger value="biomarkers" className="flex-1">Biomarkers</TabsTrigger>
-                <TabsTrigger value="symptoms" className="flex-1">Symptoms</TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <TabsContent value="anatomical" className="p-4">
-              <SimplifiedAnatomicalMap
-                patientId={patient.id}
-                onRegionSelect={onSelectRegion}
-              />
-            </TabsContent>
-            
-            <TabsContent value="biomarkers" className="p-4">
-              <div className="text-center p-6">
-                <h3 className="text-lg font-medium mb-2">Biomarker Data</h3>
-                <p className="text-muted-foreground">
-                  Patient biomarker data will be displayed here.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="symptoms" className="p-4">
-              <div className="text-center p-6">
-                <h3 className="text-lg font-medium mb-2">Symptom Tracking</h3>
-                <p className="text-muted-foreground">
-                  Patient symptom data will be displayed here.
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
+    <Card className="overflow-hidden">
+      <Tabs defaultValue="summary" className="w-full">
+        <div className="px-4 py-3 border-b">
+          <TabsList className="grid grid-cols-5">
+            <TabsTrigger value="summary" className="flex items-center gap-1">
+              <User className="h-4 w-4" />
+              <span className="hidden md:inline">Summary</span>
+            </TabsTrigger>
+            <TabsTrigger value="anatomical" className="flex items-center gap-1">
+              <Heart className="h-4 w-4" />
+              <span className="hidden md:inline">Anatomical</span>
+            </TabsTrigger>
+            <TabsTrigger value="biomarkers" className="flex items-center gap-1">
+              <Activity className="h-4 w-4" />
+              <span className="hidden md:inline">Biomarkers</span>
+            </TabsTrigger>
+            <TabsTrigger value="symptoms" className="flex items-center gap-1">
+              <FileText className="h-4 w-4" />
+              <span className="hidden md:inline">Symptoms</span>
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden md:inline">Appointments</span>
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </div>
-      
-      <div>
-        <PatientProfile
-          patient={patient}
-          onAssignTests={onAssignTests}
-        />
-      </div>
-    </div>
+        
+        <div className="p-4">
+          {/* Summary Tab */}
+          <TabsContent value="summary">
+            <PatientProfile patient={patient} showFullDetails={true} onAssignTests={onAssignTests} />
+          </TabsContent>
+          
+          {/* Anatomical Tab */}
+          <TabsContent value="anatomical">
+            <SimplifiedAnatomicalMap 
+              patientId={patient.id} 
+              onRegionSelect={onSelectRegion} 
+              patientBiomarkers={patient.biomarkers || []}
+            />
+          </TabsContent>
+          
+          {/* Biomarkers Tab */}
+          <TabsContent value="biomarkers">
+            <PatientBiomarkers biomarkers={patient.biomarkers || []} patientId={patient.id} />
+          </TabsContent>
+          
+          {/* Symptoms Tab */}
+          <TabsContent value="symptoms">
+            <SymptomTracker patientId={patient.id} />
+          </TabsContent>
+          
+          {/* Appointments Tab */}
+          <TabsContent value="appointments">
+            <UpcomingAppointments patientId={patient.id} />
+          </TabsContent>
+        </div>
+      </Tabs>
+    </Card>
   );
 };
 

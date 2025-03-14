@@ -6,20 +6,20 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import AnatomicalView from '@/components/patient/AnatomicalView';
 import { Hotspot } from '@/components/patient/anatomical-view/types';
 import { useAuth } from '@/contexts/auth';
-import { useMedicalData } from '@/contexts/MedicalDataContext';
 import { toast } from 'sonner';
 
 interface SimplifiedAnatomicalMapProps {
   patientId: number;
   onRegionSelect?: (region: string) => void;
+  patientBiomarkers?: any[];
 }
 
 const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
   patientId,
-  onRegionSelect
+  onRegionSelect,
+  patientBiomarkers = []
 }) => {
   const { user } = useAuth();
-  const { patient } = useMedicalData();
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(undefined);
   const [isEditMode, setIsEditMode] = useState(false);
   
@@ -99,12 +99,12 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
                 </div>
                 
                 {/* Show related biomarkers if available */}
-                {patient?.biomarkers?.length > 0 && (
+                {patientBiomarkers?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium mb-1">Related Biomarkers</h4>
                     <ul className="list-disc pl-5 text-sm">
-                      {patient.biomarkers
-                        .filter(b => b.affectedBodyParts.includes(selectedRegion.toLowerCase()))
+                      {patientBiomarkers
+                        .filter(b => b.affectedBodyParts?.includes(selectedRegion.toLowerCase()))
                         .slice(0, 3)
                         .map((biomarker, index) => (
                           <li key={index}>{biomarker.name}</li>
