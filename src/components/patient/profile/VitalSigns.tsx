@@ -5,6 +5,7 @@ import { Heart, Activity, Thermometer, Wind } from 'lucide-react';
 import { CardGrid } from '@/components/ui/card-grid';
 
 interface VitalSignsProps {
+  patient: any;
   vitalSigns?: Array<{
     label: string;
     value: string;
@@ -14,7 +15,8 @@ interface VitalSignsProps {
   }>;
 }
 
-const VitalSigns: React.FC<VitalSignsProps> = ({ vitalSigns }) => {
+const VitalSigns: React.FC<VitalSignsProps> = ({ patient, vitalSigns }) => {
+  // Generate some default vital signs based on the patient
   const defaultVitals = [
     {
       label: 'Heart Rate',

@@ -5,15 +5,40 @@ import { Badge } from '@/components/ui/badge';
 import ActivityScoreItem from './ActivityScoreItem';
 
 interface ActivityScoreProps {
-  score: number;
-  activityScores: Array<{
+  patient: any;
+  score?: number;
+  activityScores?: Array<{
     label: string;
     value: string;
     unit: string;
   }>;
 }
 
-const ActivityScore: React.FC<ActivityScoreProps> = ({ score, activityScores }) => {
+const ActivityScore: React.FC<ActivityScoreProps> = ({ 
+  patient, 
+  score = 65, 
+  activityScores 
+}) => {
+  const defaultActivityScores = [
+    {
+      label: "Daily Steps",
+      value: "7,234",
+      unit: "steps"
+    },
+    {
+      label: "Active Time",
+      value: "42",
+      unit: "min"
+    },
+    {
+      label: "Health Score",
+      value: "72",
+      unit: "%"
+    }
+  ];
+
+  const displayActivityScores = activityScores || defaultActivityScores;
+  
   const getScoreStatus = (score: number) => {
     if (score < 40) return { label: 'Low', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 hover:bg-red-100 dark:hover:bg-red-900' };
     if (score < 70) return { label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 hover:bg-yellow-100 dark:hover:bg-yellow-900' };
@@ -35,7 +60,7 @@ const ActivityScore: React.FC<ActivityScoreProps> = ({ score, activityScores }) 
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">
-        {activityScores.map((score, index) => (
+        {displayActivityScores.map((score, index) => (
           <ActivityScoreItem 
             key={index} 
             label={score.label} 

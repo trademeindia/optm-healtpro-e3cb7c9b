@@ -21,7 +21,7 @@ const MainContent: React.FC<MainContentProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-        <SymptomProvider patientId={patient.id}>
+        <SymptomProvider>
           <Tabs defaultValue="anatomical-view" className="w-full">
             <div className="px-4 pt-4">
               <TabsList className="w-full justify-start mb-2 overflow-x-auto">
