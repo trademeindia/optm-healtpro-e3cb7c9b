@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Clock, User, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -20,12 +19,14 @@ interface UpcomingAppointmentsProps {
   appointments: Appointment[];
   className?: string;
   onViewAll?: () => void;
+  patientId?: number | string;
 }
 
 const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
   appointments,
   className,
   onViewAll,
+  patientId
 }) => {
   const getStatusColor = (status: Appointment['status']) => {
     switch (status) {
@@ -45,6 +46,11 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
     }
   };
 
+  // Filter appointments by patientId if provided
+  const filteredAppointments = patientId 
+    ? appointments.filter(appointment => appointment.patientId === Number(patientId))
+    : appointments;
+
   return (
     <Card className={cn("h-full", className)}>
       <CardHeader className="pb-3">
@@ -52,17 +58,17 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
           <div>
             <CardTitle className="text-xl">Upcoming Appointments</CardTitle>
             <CardDescription>
-              Patient appointments scheduled for the coming days
+              {patientId ? "Patient appointments scheduled for the coming days" : "Appointments scheduled for the coming days"}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
         <div className="space-y-4">
-          {appointments.length === 0 ? (
+          {filteredAppointments.length === 0 ? (
             <p className="text-center text-muted-foreground py-6">No upcoming appointments</p>
           ) : (
-            appointments.slice(0, 5).map((appointment) => (
+            filteredAppointments.slice(0, 5).map((appointment) => (
               <div 
                 key={appointment.id} 
                 className="flex items-start gap-4 border-b border-gray-100 dark:border-gray-800 pb-4 last:border-0 last:pb-0 transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded-lg -mx-2"
@@ -92,7 +98,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
           )}
         </div>
       </CardContent>
-      {appointments.length > 5 && (
+      {filteredAppointments.length > 5 && (
         <CardFooter className="pt-0">
           <Button 
             variant="ghost" 

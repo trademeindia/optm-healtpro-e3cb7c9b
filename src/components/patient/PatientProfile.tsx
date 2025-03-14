@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import PatientHeader from './profile/PatientHeader';
@@ -21,9 +20,14 @@ interface PatientProfileProps {
     nextVisit: string;
   };
   onAssignTests?: () => void;
+  showFullDetails?: boolean;
 }
 
-const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onAssignTests }) => {
+const PatientProfile: React.FC<PatientProfileProps> = ({ 
+  patient, 
+  onAssignTests,
+  showFullDetails = true 
+}) => {
   // Mock data for vital signs with status
   const vitalSigns = [
     { 
@@ -82,24 +86,30 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onAssignTests 
       <div className="p-4">
         <VitalSigns vitalSigns={vitalSigns} />
 
-        <Button 
-          className="w-full mt-4"
-          onClick={onAssignTests}
-        >
-          Assign tests
-        </Button>
+        {showFullDetails && (
+          <Button 
+            className="w-full mt-4"
+            onClick={onAssignTests}
+          >
+            Assign tests
+          </Button>
+        )}
 
         <div className="mt-6">
           <ActivityScore score={69} activityScores={activityScores} />
         </div>
 
-        <div className="mt-6">
-          <AiTips tips={aiTips} />
-        </div>
+        {showFullDetails && (
+          <div className="mt-6">
+            <AiTips tips={aiTips} />
+          </div>
+        )}
 
-        <Button variant="outline" className="w-full mt-4">
-          All activities
-        </Button>
+        {showFullDetails && (
+          <Button variant="outline" className="w-full mt-4">
+            All activities
+          </Button>
+        )}
       </div>
     </div>
   );

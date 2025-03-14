@@ -12,11 +12,15 @@ import {
   SymptomList, 
   PainTrend, 
   bodyRegions,
-  SymptomTrackerProps,
+  SymptomTrackerProps as BaseSymptomTrackerProps,
 } from './symptom-tracker';
 import { getPainLevelColor } from './symptom-tracker/utils';
 
-const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className }) => {
+interface SymptomTrackerProps extends BaseSymptomTrackerProps {
+  patientId?: number | string;
+}
+
+const SymptomTracker: React.FC<SymptomTrackerProps> = ({ className, patientId }) => {
   const { symptoms, addSymptom } = useSymptoms();
   
   const [newSymptom, setNewSymptom] = useState<Partial<SymptomEntry>>({

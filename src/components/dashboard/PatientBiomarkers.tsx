@@ -24,11 +24,13 @@ interface Biomarker {
 interface PatientBiomarkersProps {
   biomarkers: Biomarker[];
   onAddBiomarker?: () => void;
+  patientId?: number | string;
 }
 
 const PatientBiomarkers: React.FC<PatientBiomarkersProps> = ({ 
   biomarkers,
-  onAddBiomarker
+  onAddBiomarker,
+  patientId
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
