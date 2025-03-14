@@ -18,7 +18,7 @@ export const useAnatomicalView = (
   
   const [activeSystem, setActiveSystem] = useState('muscular-new');
   const [isRotating, setIsRotating] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 8]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 9.5]);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [activeHotspotDetails, setActiveHotspotDetails] = useState<Hotspot | null>(null);
   
@@ -100,7 +100,7 @@ export const useAnatomicalView = (
   }, [selectedRegion, activeSystem]);
   
   const handleResetView = () => {
-    setCameraPosition([0, 0, 8]);
+    setCameraPosition([0, 0, 9.5]);
     setIsRotating(false);
   };
   
