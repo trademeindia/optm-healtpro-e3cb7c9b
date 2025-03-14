@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
-import MapVisualization from '@/components/patient/anatomical-map/MapVisualization';
-import { HotSpot } from '@/components/patient/anatomical-map/types';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import AnatomicalView from '@/components/patient/AnatomicalView';
+import { Hotspot } from '@/components/patient/anatomical-view/types';
 
 interface SimplifiedAnatomicalMapProps {
   patientId: number;
@@ -14,60 +15,13 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
   patientId,
   onRegionSelect 
 }) => {
-  const [activeSystem, setActiveSystem] = useState("skeletal");
-  const [zoom, setZoom] = useState(1);
-  const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(undefined);
   
-  // Updated hotspots data to match the HotSpot type
-  const hotspots: HotSpot[] = [
-    { 
-      id: '1', 
-      region: 'Shoulder', 
-      size: 10, 
-      color: '#FF4500', 
-      label: 'Right shoulder area',
-      description: 'Right shoulder area'
-    },
-    { 
-      id: '2', 
-      region: 'Lower Back', 
-      size: 10, 
-      color: '#FFA500', 
-      label: 'Lumbar region',
-      description: 'Lumbar region'
-    },
-    { 
-      id: '3', 
-      region: 'Knee', 
-      size: 10, 
-      color: '#00FF00', 
-      label: 'Left knee joint',
-      description: 'Left knee joint'
-    }
-  ];
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.1, 1.5));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
-  };
-
-  const handleReset = () => {
-    setZoom(1);
-    setActiveHotspot(null);
-  };
-
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    setImageLoaded(true);
-  };
-
-  const handleHotspotClick = (hotspot: HotSpot) => {
-    setActiveHotspot(hotspot);
+  // Handle region selection and propagate to parent if needed
+  const handleRegionSelect = (region: string) => {
+    setSelectedRegion(region);
     if (onRegionSelect) {
-      onRegionSelect(hotspot.region);
+      onRegionSelect(region);
     }
   };
 
@@ -75,51 +29,22 @@ const SimplifiedAnatomicalMap: React.FC<SimplifiedAnatomicalMapProps> = ({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Anatomical Map</h3>
-        <div className="flex items-center gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleZoomOut}
-            disabled={zoom <= 0.5}
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleZoomIn}
-            disabled={zoom >= 1.5}
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleReset}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-4 h-[600px] md:h-[400px]">
         <div className="flex-1">
-          <MapVisualization
-            activeSystem={activeSystem}
-            zoom={zoom}
-            hotspots={hotspots}
-            activeHotspot={activeHotspot}
-            imageLoaded={imageLoaded}
-            onImageLoad={handleImageLoad}
-            onHotspotClick={handleHotspotClick}
+          <AnatomicalView
+            selectedRegion={selectedRegion}
+            onSelectRegion={handleRegionSelect}
+            patientId={patientId}
           />
         </div>
         
         <div className="flex-1 mt-4 md:mt-0">
-          {activeHotspot ? (
+          {selectedRegion ? (
             <div className="h-full p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-2">{activeHotspot.region}</h3>
-              <p className="text-muted-foreground mb-4">{activeHotspot.description}</p>
+              <h3 className="text-lg font-medium mb-2">{selectedRegion}</h3>
+              <p className="text-muted-foreground mb-4">Selected anatomical region</p>
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium mb-1">Common Issues</h4>
