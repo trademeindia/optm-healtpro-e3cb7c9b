@@ -5,15 +5,24 @@ import { Hotspot } from './types';
 
 interface HotspotDetailsProps {
   hotspot: Hotspot;
+  isEditMode?: boolean;
 }
 
-const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot }) => {
+const HotspotDetails: React.FC<HotspotDetailsProps> = ({ 
+  hotspot,
+  isEditMode = false 
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="absolute bottom-4 left-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border max-w-[300px] z-10"
     >
+      {isEditMode && (
+        <div className="mb-2 text-xs bg-blue-100 dark:bg-blue-900 p-1 rounded text-blue-800 dark:text-blue-200">
+          Edit Mode Active
+        </div>
+      )}
       <div className="flex items-center gap-2 mb-1">
         <div 
           className="w-3 h-3 rounded-full" 
