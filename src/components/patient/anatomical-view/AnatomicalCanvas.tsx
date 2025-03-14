@@ -12,8 +12,6 @@ interface AnatomicalCanvasProps {
   setIsRotating: (isRotating: boolean) => void;
   cameraPosition: [number, number, number];
   hotspots: any[];
-  handleZoomIn: () => void;
-  handleZoomOut: () => void;
   handleResetView: () => void;
   handleHotspotClick: (id: string) => void;
   isEditMode?: boolean;
@@ -25,8 +23,6 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   setIsRotating,
   cameraPosition,
   hotspots,
-  handleZoomIn,
-  handleZoomOut,
   handleResetView,
   handleHotspotClick,
   isEditMode = false
@@ -51,7 +47,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
         </Suspense>
         
         <OrbitControls 
-          enableZoom={true}
+          enableZoom={false}
           enablePan={false}
           enableRotate={!isEditMode}
           autoRotate={isRotating}
@@ -66,8 +62,6 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
       </Canvas>
       
       <ViewControls
-        handleZoomIn={handleZoomIn}
-        handleZoomOut={handleZoomOut}
         handleResetView={handleResetView}
         isRotating={isRotating}
         setIsRotating={setIsRotating}

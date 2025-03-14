@@ -9,24 +9,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { 
   RotateCcw, 
-  ZoomIn, 
-  ZoomOut, 
   Target
 } from 'lucide-react';
 
 interface ViewControlsProps {
   isRotating: boolean;
   setIsRotating: (value: boolean) => void;
-  handleZoomIn: () => void;
-  handleZoomOut: () => void;
   handleResetView: () => void;
 }
 
 const ViewControls: React.FC<ViewControlsProps> = ({
   isRotating,
   setIsRotating,
-  handleZoomIn,
-  handleZoomOut,
   handleResetView
 }) => {
   return (
@@ -45,42 +39,6 @@ const ViewControls: React.FC<ViewControlsProps> = ({
           </TooltipTrigger>
           <TooltipContent>
             <p>{isRotating ? 'Stop rotation' : 'Auto-rotate'}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full bg-white dark:bg-gray-700 shadow-md"
-              onClick={handleZoomIn}
-            >
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Zoom in</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full bg-white dark:bg-gray-700 shadow-md"
-              onClick={handleZoomOut}
-            >
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Zoom out</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

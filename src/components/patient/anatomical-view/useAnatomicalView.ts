@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { BodySystem, Hotspot } from './types';
 import { getHotspotPosition, getSeverityColor, getSeverityLevel } from './utils';
@@ -8,7 +7,6 @@ export const useAnatomicalView = (
   onSelectRegion?: (region: string) => void,
   patientId?: number
 ) => {
-  // Available body systems
   const bodySystems: BodySystem[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'skeletal', label: 'Skeletal' },
@@ -17,26 +15,16 @@ export const useAnatomicalView = (
     { id: 'nervous', label: 'Nervous' }
   ];
   
-  // State for the active system, camera, rotation, etc.
   const [activeSystem, setActiveSystem] = useState('muscular-new');
   const [isRotating, setIsRotating] = useState(false);
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 8]);
-  
-  // Mock hotspots data - this would come from an API in a real app
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
-  
-  // Active hotspot details (when a hotspot is clicked)
   const [activeHotspotDetails, setActiveHotspotDetails] = useState<Hotspot | null>(null);
   
-  // Generate mock hotspots data based on selected region and system
   useEffect(() => {
-    // This would be replaced with an API call in a real application
-    // Sample hotspot data
     const mockHotspots: Hotspot[] = [];
     
-    // If a region is selected, add relevant hotspots
     if (selectedRegion) {
-      // Add region-specific hotspots
       mockHotspots.push({
         id: '1',
         position: getHotspotPosition(`${selectedRegion.toLowerCase()}`),
@@ -49,7 +37,6 @@ export const useAnatomicalView = (
       });
     }
     
-    // Add some common health issues based on anatomical system
     if (activeSystem === 'muscular' || activeSystem === 'muscular-new') {
       mockHotspots.push(
         {
@@ -111,7 +98,6 @@ export const useAnatomicalView = (
     setHotspots(mockHotspots);
   }, [selectedRegion, activeSystem]);
   
-  // Camera zoom controls
   const handleZoomIn = () => {
     setCameraPosition(prev => [prev[0], prev[1], Math.max(prev[2] - 0.5, 5)]);
   };
@@ -125,13 +111,10 @@ export const useAnatomicalView = (
     setIsRotating(false);
   };
   
-  // Hotspot click handler
   const handleHotspotClick = (id: string) => {
     const hotspot = hotspots.find(h => h.id === id);
     setActiveHotspotDetails(hotspot || null);
     
-    // If this hotspot is in a different region than the currently selected one,
-    // update the selected region
     if (hotspot && hotspot.region !== selectedRegion && onSelectRegion) {
       onSelectRegion(hotspot.region);
     }
