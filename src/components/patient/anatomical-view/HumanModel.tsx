@@ -26,7 +26,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
   }
 
   return (
-    <group>
+    <group position={[0, 0, 0]}>
       <ModelImage activeSystem={activeSystem} />
       <HotspotsGroup 
         hotspots={hotspots} 

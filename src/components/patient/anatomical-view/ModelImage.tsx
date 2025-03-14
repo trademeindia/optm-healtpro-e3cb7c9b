@@ -28,9 +28,9 @@ const ModelImage: React.FC<ModelImageProps> = ({ activeSystem }) => {
       rotation={[0, 0, 0]} 
       center 
       sprite 
-      scale={[1.5, 1.5, 1.5]} 
-      distanceFactor={10}
-      className="w-full h-full flex items-center justify-center"
+      scale={[2, 2, 2]} 
+      distanceFactor={5}
+      className="anatomy-model-wrapper"
     >
       <div className="anatomy-model-container">
         <img 

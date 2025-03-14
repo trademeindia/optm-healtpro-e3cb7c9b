@@ -36,6 +36,7 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
       <Canvas
         camera={{ position: cameraPosition, fov: 50 }}
         className="w-full h-full"
+        resize={{ scroll: true, debounce: { scroll: 50, resize: 0 } }}
       >
         <ambientLight intensity={1.5} />
         <pointLight position={[10, 10, 10]} intensity={0.8} />
