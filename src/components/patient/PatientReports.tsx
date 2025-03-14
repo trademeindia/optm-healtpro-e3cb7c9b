@@ -161,7 +161,6 @@ const PatientReports: React.FC = () => {
       console.error('Error uploading file:', error);
       toast.error('Failed to upload file');
       setUploadProgress(0);
-      clearInterval();
     }
   };
 
