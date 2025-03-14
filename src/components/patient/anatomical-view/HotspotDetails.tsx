@@ -5,9 +5,10 @@ import { Hotspot } from './types';
 
 interface HotspotDetailsProps {
   hotspot: Hotspot;
+  isEditMode?: boolean;
 }
 
-const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot }) => {
+const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot, isEditMode = false }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -34,6 +35,11 @@ const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot }) => {
       }`}>
         Severity: {hotspot.severity}
       </div>
+      {isEditMode && (
+        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <span className="text-xs text-amber-600 font-medium">Edit mode: Click to modify</span>
+        </div>
+      )}
     </motion.div>
   );
 };

@@ -4,12 +4,16 @@ import { Html } from '@react-three/drei';
 import { HotspotProps } from './types';
 import { AnatomicalMapping, Biomarker } from '@/types/medicalData';
 
+interface HotspotComponentProps extends HotspotProps {
+  isEditMode?: boolean;
+}
+
 // We now handle both the 3D model hotspots and the 2D anatomical map hotspots
 // through interface overloading
-const Hotspot = (props: HotspotProps | { mapping: AnatomicalMapping; biomarkers: Biomarker[] }) => {
+const Hotspot = (props: HotspotComponentProps | { mapping: AnatomicalMapping; biomarkers: Biomarker[] }) => {
   // If it's a 3D hotspot from the anatomical view
   if ('position' in props && 'color' in props) {
-    const { position, color, size, label, onClick } = props;
+    const { position, color, size, label, onClick, isEditMode = false } = props;
     return (
       <mesh
         position={position}
@@ -19,10 +23,11 @@ const Hotspot = (props: HotspotProps | { mapping: AnatomicalMapping; biomarkers:
         }}
       >
         <sphereGeometry args={[size, 16, 16]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial color={isEditMode ? '#FFB800' : color} />
         <Html distanceFactor={10} position={[0, size + 0.1, 0]} style={{ pointerEvents: 'none' }}>
-          <div className="bg-white/80 px-2 py-1 rounded text-xs text-center whitespace-nowrap">
+          <div className={`px-2 py-1 rounded text-xs text-center whitespace-nowrap ${isEditMode ? 'bg-amber-100/90 text-amber-800' : 'bg-white/80'}`}>
             {label}
+            {isEditMode && <span className="ml-1">✏️</span>}
           </div>
         </Html>
       </mesh>
