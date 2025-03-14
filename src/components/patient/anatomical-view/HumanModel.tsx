@@ -14,11 +14,12 @@ const HumanModel: React.FC<HumanModelProps> = ({
   const [modelLoaded, setModelLoaded] = useState(false);
   
   useEffect(() => {
+    // Simulate loading time for the model
     const timer = setTimeout(() => {
       setModelLoaded(true);
-    }, 1000);
+    }, 800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [activeSystem]); // Reset loading when system changes
   
   if (!modelLoaded) {
     return <LoadingSpinner />;

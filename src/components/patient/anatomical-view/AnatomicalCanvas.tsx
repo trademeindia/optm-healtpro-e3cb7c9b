@@ -1,13 +1,15 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { HumanModel, ViewControls, AutoRotate } from '.';
+import HumanModel from './HumanModel';
+import ViewControls from './ViewControls';
+import AutoRotate from './AutoRotate';
 
 interface AnatomicalCanvasProps {
   activeSystem: string;
   isRotating: boolean;
-  setIsRotating: (value: boolean) => void;
+  setIsRotating: (isRotating: boolean) => void;
   cameraPosition: [number, number, number];
   hotspots: any[];
   handleZoomIn: () => void;
@@ -32,24 +34,29 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   return (
     <div className="anatomy-canvas-container relative">
       <Canvas
+        camera={{ position: cameraPosition, fov: 50 }}
         className="w-full h-full"
-        camera={{ position: cameraPosition, fov: 60 }}
       >
-        <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <pointLight position={[-10, -10, -10]} />
+        <ambientLight intensity={1.5} />
+        <pointLight position={[10, 10, 10]} intensity={0.8} />
         
-        <HumanModel 
-          activeSystem={activeSystem} 
-          hotspots={hotspots} 
-          onHotspotClick={handleHotspotClick}
-          isEditMode={isEditMode}
-        />
+        <Suspense fallback={null}>
+          <HumanModel 
+            activeSystem={activeSystem}
+            hotspots={hotspots}
+            onHotspotClick={handleHotspotClick}
+            isEditMode={isEditMode}
+          />
+        </Suspense>
         
         <OrbitControls 
-          enablePan={true} 
-          enableZoom={true} 
-          enableRotate={!isRotating}
+          enableZoom={true}
+          enablePan={false}
+          enableRotate={!isEditMode}
+          autoRotate={isRotating}
+          autoRotateSpeed={1}
+          maxDistance={7}
+          minDistance={2.5}
         />
         
         <AutoRotate isRotating={isRotating} />

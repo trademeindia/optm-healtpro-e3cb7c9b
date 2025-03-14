@@ -22,8 +22,17 @@ const ModelImage: React.FC<ModelImageProps> = ({ activeSystem }) => {
   };
 
   return (
-    <Html transform position={[0, 0, 0]} rotation={[0, 0, 0]} center sprite scale={[1.25, 1.25, 1.25]} distanceFactor={10}>
-      <div className="anatomy-model-container flex items-center justify-center">
+    <Html 
+      transform 
+      position={[0, 0, 0]} 
+      rotation={[0, 0, 0]} 
+      center 
+      sprite 
+      scale={[1.5, 1.5, 1.5]} 
+      distanceFactor={10}
+      className="w-full h-full flex items-center justify-center"
+    >
+      <div className="anatomy-model-container">
         <img 
           src={getSystemImage()} 
           alt="Anatomical model" 
