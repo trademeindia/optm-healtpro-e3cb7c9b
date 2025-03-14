@@ -56,6 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
+      console.log(`Attempting login for: ${email}`);
+      
       // Handle demo accounts with predefined roles and IDs
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {

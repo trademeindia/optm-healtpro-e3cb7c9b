@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
@@ -9,6 +8,7 @@ export const useAuthSession = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('useAuthSession: Initializing auth state');
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
@@ -39,6 +39,7 @@ export const useAuthSession = () => {
               
               setUser(completeUser);
               setIsLoading(false);
+              console.log('Auth initialized with demo user:', completeUser.email);
               return;
             }
           } catch (e) {
@@ -47,6 +48,7 @@ export const useAuthSession = () => {
           }
         }
         
+        console.log('No demo user found, checking Supabase session');
         // Otherwise, check Supabase session
         const { data, error } = await supabase.auth.getSession();
         
@@ -60,8 +62,9 @@ export const useAuthSession = () => {
           console.log('Supabase session found, loading user profile');
           const formattedUser = await formatUser(data.session.user);
           setUser(formattedUser);
+          console.log('Auth initialized with Supabase user:', formattedUser.email);
         } else {
-          console.log('No active session found');
+          console.log('No active session found, auth initialization complete');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);

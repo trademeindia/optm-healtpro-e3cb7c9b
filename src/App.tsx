@@ -27,6 +27,7 @@ import { AuthProvider } from './contexts/auth';
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('App component rendering');
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
