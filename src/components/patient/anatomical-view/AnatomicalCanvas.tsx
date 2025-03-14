@@ -1,25 +1,22 @@
 
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
-import AutoRotate from './AutoRotate';
+import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import HumanModel from './HumanModel';
-import LoadingSpinner from './LoadingSpinner';
+import AutoRotate from './AutoRotate';
+import ViewControls from './ViewControls';
 import { Hotspot } from './types';
 
 interface AnatomicalCanvasProps {
   activeSystem: string;
   isRotating: boolean;
-  setIsRotating: (rotating: boolean) => void;
+  setIsRotating: (value: boolean) => void;
   cameraPosition: [number, number, number];
   hotspots: Hotspot[];
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleResetView: () => void;
   handleHotspotClick: (id: string) => void;
-  isEditMode?: boolean;
 }
 
 const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
@@ -31,78 +28,44 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   handleZoomIn,
   handleZoomOut,
   handleResetView,
-  handleHotspotClick,
-  isEditMode = false
+  handleHotspotClick
 }) => {
   return (
-    <div className="relative h-full w-full">
-      <Canvas camera={{ position: cameraPosition, fov: 50 }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={0.5} />
-        <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} />
-        <Suspense fallback={<LoadingSpinner />}>
-          <HumanModel
-            activeSystem={activeSystem}
+    <div className="w-full h-full relative flex items-center justify-center anatomy-canvas-container">
+      <Canvas 
+        style={{ width: '100%', height: '100%' }}
+        camera={{ position: [0, 0, 3.5], fov: 40 }} // Adjusted for better initial view
+      >
+        <Suspense fallback={null}>
+          <PerspectiveCamera makeDefault position={cameraPosition} />
+          <ambientLight intensity={0.8} />
+          <pointLight position={[10, 10, 10]} intensity={0.8} />
+          <OrbitControls 
+            enableZoom={true} 
+            enablePan={true}
+            enableRotate={!isRotating}
+            minDistance={2.5}
+            maxDistance={7}
+            minPolarAngle={Math.PI / 6} // Limit how far user can orbit vertically
+            maxPolarAngle={Math.PI - Math.PI / 6}
+          />
+          <HumanModel 
+            activeSystem={activeSystem} 
             hotspots={hotspots}
             onHotspotClick={handleHotspotClick}
-            isEditMode={isEditMode}
           />
+          <AutoRotate isRotating={isRotating} />
+          <Environment preset="city" />
         </Suspense>
-        <OrbitControls 
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          autoRotate={isRotating}
-          autoRotateSpeed={1}
-          target={[0, 0, 0]}
-        />
-        <AutoRotate isRotating={isRotating} />
       </Canvas>
       
-      {/* Controls overlay */}
-      <div className="absolute bottom-4 right-4 flex space-x-2">
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={handleZoomIn}
-          title="Zoom In"
-        >
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={handleZoomOut}
-          title="Zoom Out"
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={() => setIsRotating(!isRotating)}
-          className={isRotating ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
-          title={isRotating ? "Stop Rotation" : "Start Rotation"}
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={handleResetView}
-          title="Reset View"
-        >
-          <span className="text-xs font-medium">Reset</span>
-        </Button>
-      </div>
-      
-      {/* Edit mode instructions */}
-      {isEditMode && (
-        <div className="absolute top-4 left-4 bg-yellow-100 dark:bg-yellow-900 p-2 rounded text-xs">
-          <p className="font-semibold">Edit Mode</p>
-          <p>Click on the model to add new hotspots</p>
-        </div>
-      )}
+      <ViewControls 
+        isRotating={isRotating}
+        setIsRotating={setIsRotating}
+        handleZoomIn={handleZoomIn}
+        handleZoomOut={handleZoomOut}
+        handleResetView={handleResetView}
+      />
     </div>
   );
 };

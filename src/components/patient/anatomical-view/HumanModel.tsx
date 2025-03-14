@@ -8,8 +8,7 @@ import { HumanModelProps } from './types';
 const HumanModel: React.FC<HumanModelProps> = ({
   activeSystem,
   hotspots,
-  onHotspotClick,
-  isEditMode = false
+  onHotspotClick
 }) => {
   const [modelLoaded, setModelLoaded] = useState(false);
   
@@ -27,11 +26,7 @@ const HumanModel: React.FC<HumanModelProps> = ({
   return (
     <group>
       <ModelImage activeSystem={activeSystem} />
-      <HotspotsGroup 
-        hotspots={hotspots} 
-        onHotspotClick={onHotspotClick} 
-        isEditMode={isEditMode} 
-      />
+      <HotspotsGroup hotspots={hotspots} onHotspotClick={onHotspotClick} />
     </group>
   );
 };

@@ -13,14 +13,12 @@ export interface HumanModelProps {
   activeSystem: string;
   hotspots: Hotspot[];
   onHotspotClick: (id: string) => void;
-  isEditMode?: boolean;
 }
 
 export interface AnatomicalViewProps {
   selectedRegion?: string;
   onSelectRegion?: (region: string) => void;
   patientId?: number;
-  isEditMode?: boolean;
 }
 
 export interface BodySystem {
@@ -40,7 +38,6 @@ export interface HotspotProps {
   description: string;
   severity: string;
   onClick: () => void;
-  isEditMode?: boolean;
 }
 
 export interface ModelImageProps {
@@ -50,7 +47,6 @@ export interface ModelImageProps {
 export interface HotspotsGroupProps {
   hotspots: Hotspot[];
   onHotspotClick: (id: string) => void;
-  isEditMode?: boolean;
 }
 
 // The existing types file remains the same
