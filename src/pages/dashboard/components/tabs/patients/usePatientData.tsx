@@ -149,10 +149,10 @@ export function usePatientData() {
         ...newPatient,
         id: Date.now(),
         lastVisit: new Date().toISOString().split('T')[0], // Set today's date as default
-        status: 'active',
-        nextAppointment: 'Not scheduled',
+        status: newPatient.status || 'active',
+        nextAppointment: newPatient.nextAppointment || 'Not scheduled',
         // Ensure nextVisit is always present
-        nextVisit: 'Not scheduled',
+        nextVisit: newPatient.nextVisit || 'Not scheduled',
         icdCode: newPatient.icdCode || 'N/A'
       } as Patient;
       
