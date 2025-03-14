@@ -19,6 +19,7 @@ interface Document {
   size: string;
   fileId?: string;
   url?: string;
+  source?: string; // Add the source property to the Document interface
 }
 
 const MedicalDocuments: React.FC<MedicalDocumentsProps> = ({
