@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { CardTitle, CardDescription } from '@/components/ui/card';
-import { SystemSelector } from './';
 import { BodySystem } from './types';
-import { Badge } from '@/components/ui/badge';
+import SystemSelector from './SystemSelector';
 
 interface HeaderProps {
   systems: BodySystem[];
@@ -12,32 +10,32 @@ interface HeaderProps {
   isEditMode?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  systems, 
-  activeSystem, 
+const Header: React.FC<HeaderProps> = ({
+  systems,
+  activeSystem,
   onSystemChange,
   isEditMode = false
 }) => {
   return (
-    <div className="flex justify-between items-center">
-      <div>
-        <div className="flex items-center gap-2">
-          <CardTitle>3D Anatomical View</CardTitle>
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+      <div className="flex-1">
+        <h3 className="text-lg font-medium flex items-center">
+          Anatomical View
           {isEditMode && (
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-              Edit Mode Active
-            </Badge>
+            <span className="ml-2 text-xs font-normal px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+              Edit Mode
+            </span>
           )}
-        </div>
-        <CardDescription>
-          {isEditMode ? "Add or edit patient anatomical issues" : "Interactive visualization of patient issues"}
-        </CardDescription>
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Interactive 3D model showing affected areas
+        </p>
       </div>
       
       <SystemSelector 
-        systems={systems} 
-        activeSystem={activeSystem} 
-        onSystemChange={onSystemChange} 
+        systems={systems}
+        activeSystem={activeSystem}
+        onSystemChange={onSystemChange}
       />
     </div>
   );

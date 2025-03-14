@@ -1,16 +1,26 @@
 
-export { default as AnatomicalCanvas } from './AnatomicalCanvas';
-export { default as AutoRotate } from './AutoRotate';
-export { default as DetailsPanel } from './DetailsPanel';
-export { default as Header } from './Header';
-export { default as HotspotDetails } from './HotspotDetails';
-export { default as HumanModel } from './HumanModel';
-export { default as IssuesCounter } from './IssuesCounter';
-export { default as SystemSelector } from './SystemSelector';
-export { default as ViewControls } from './ViewControls';
-export { default as ModelImage } from './ModelImage';
-export { default as LoadingSpinner } from './LoadingSpinner';
-export { default as HotspotsGroup } from './HotspotsGroup';
-export * from './types';
-export * from './utils';
-export * from './useAnatomicalView';
+import AnatomicalView from '../AnatomicalView';
+import AnatomicalCanvas from './AnatomicalCanvas';
+import DetailsPanel from './DetailsPanel';
+import Header from './Header';
+import IssuesCounter from './IssuesCounter';
+import { useAnatomicalView } from './useAnatomicalView';
+import ViewControls from './ViewControls';
+import HumanModel from './HumanModel';
+import HotspotDetails from './HotspotDetails';
+import Hotspot from './Hotspot';
+import AutoRotate from './AutoRotate';
+
+export {
+  AnatomicalView,
+  AnatomicalCanvas,
+  DetailsPanel,
+  Header,
+  IssuesCounter,
+  useAnatomicalView,
+  ViewControls,
+  HumanModel,
+  HotspotDetails,
+  Hotspot,
+  AutoRotate
+};

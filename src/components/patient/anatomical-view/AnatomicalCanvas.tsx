@@ -1,22 +1,20 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
-import HumanModel from './HumanModel';
-import AutoRotate from './AutoRotate';
-import ViewControls from './ViewControls';
-import { Hotspot } from './types';
+import { OrbitControls } from '@react-three/drei';
+import { HumanModel, ViewControls, AutoRotate } from '.';
 
 interface AnatomicalCanvasProps {
   activeSystem: string;
   isRotating: boolean;
   setIsRotating: (value: boolean) => void;
   cameraPosition: [number, number, number];
-  hotspots: Hotspot[];
+  hotspots: any[];
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleResetView: () => void;
   handleHotspotClick: (id: string) => void;
+  isEditMode?: boolean;
 }
 
 const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
@@ -28,43 +26,41 @@ const AnatomicalCanvas: React.FC<AnatomicalCanvasProps> = ({
   handleZoomIn,
   handleZoomOut,
   handleResetView,
-  handleHotspotClick
+  handleHotspotClick,
+  isEditMode = false
 }) => {
   return (
-    <div className="w-full h-full relative flex items-center justify-center anatomy-canvas-container">
-      <Canvas 
-        style={{ width: '100%', height: '100%' }}
-        camera={{ position: [0, 0, 3.5], fov: 40 }} // Adjusted for better initial view
+    <div className="anatomy-canvas-container relative">
+      <Canvas
+        className="w-full h-full"
+        camera={{ position: cameraPosition, fov: 60 }}
       >
-        <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={cameraPosition} />
-          <ambientLight intensity={0.8} />
-          <pointLight position={[10, 10, 10]} intensity={0.8} />
-          <OrbitControls 
-            enableZoom={true} 
-            enablePan={true}
-            enableRotate={!isRotating}
-            minDistance={2.5}
-            maxDistance={7}
-            minPolarAngle={Math.PI / 6} // Limit how far user can orbit vertically
-            maxPolarAngle={Math.PI - Math.PI / 6}
-          />
-          <HumanModel 
-            activeSystem={activeSystem} 
-            hotspots={hotspots}
-            onHotspotClick={handleHotspotClick}
-          />
-          <AutoRotate isRotating={isRotating} />
-          <Environment preset="city" />
-        </Suspense>
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+        <pointLight position={[-10, -10, -10]} />
+        
+        <HumanModel 
+          activeSystem={activeSystem} 
+          hotspots={hotspots} 
+          onHotspotClick={handleHotspotClick}
+          isEditMode={isEditMode}
+        />
+        
+        <OrbitControls 
+          enablePan={true} 
+          enableZoom={true} 
+          enableRotate={!isRotating}
+        />
+        
+        <AutoRotate isRotating={isRotating} />
       </Canvas>
       
-      <ViewControls 
-        isRotating={isRotating}
-        setIsRotating={setIsRotating}
+      <ViewControls
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}
         handleResetView={handleResetView}
+        isRotating={isRotating}
+        setIsRotating={setIsRotating}
       />
     </div>
   );

@@ -9,7 +9,11 @@ interface HotspotsGroupProps {
   isEditMode?: boolean;
 }
 
-const HotspotsGroup: React.FC<HotspotsGroupProps> = ({ hotspots, onHotspotClick, isEditMode = false }) => {
+const HotspotsGroup: React.FC<HotspotsGroupProps> = ({ 
+  hotspots, 
+  onHotspotClick, 
+  isEditMode = false 
+}) => {
   return (
     <>
       {hotspots.map(hotspot => (
