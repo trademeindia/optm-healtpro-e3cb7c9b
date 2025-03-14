@@ -27,12 +27,14 @@ const AddPatientDialog: React.FC<AddPatientDialogProps> = ({
     () => onOpenChange(false)
   );
 
-  // Reset form when dialog opens/closes
+  // Only reset form when dialog closes
   useEffect(() => {
     if (!open) {
-      resetForm();
+      setTimeout(() => {
+        resetForm();
+      }, 100); // Add a small delay to avoid state updates during render
     }
-  }, [open, resetForm]);
+  }, [open]); // Only depend on open state, not resetForm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
