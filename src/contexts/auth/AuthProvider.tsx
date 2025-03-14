@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading: sessionLoading, setUser } = useAuthSession();
@@ -21,23 +20,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } = useAuthOperations();
 
   const isLoading = sessionLoading || operationsLoading;
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user ? `${user.email} (${user.role})` : 'null', 
       sessionLoading, 
-      operationsLoading 
+      operationsLoading,
+      isInitialized
     });
-  }, [user, sessionLoading, operationsLoading]);
+    
+    if (!sessionLoading && !isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [user, sessionLoading, operationsLoading, isInitialized]);
 
+  // Check Supabase session once on mount
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('Checking Supabase session...');
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error checking session:', error);
+        } else {
+          console.log('Supabase session check:', data.session ? 'active' : 'none');
         }
-        console.log('Supabase session check:', data.session ? 'active' : 'none');
       } catch (e) {
         console.error('Supabase session check failed:', e);
       }
@@ -54,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<User | null> => {
+  const login = useCallback(async (email: string, password: string): Promise<User | null> => {
     try {
       console.log(`Attempting login for: ${email}`);
       
@@ -110,9 +118,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error('Login failed. Please check your credentials and try again.');
       return null;
     }
-  };
+  }, [loginBase, setUser]);
 
-  const handleOAuthCallback = async (provider: string, code: string) => {
+  const handleOAuthCallback = useCallback(async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
       return await handleOAuthCallbackBase(provider, code, user);
@@ -121,7 +129,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error('OAuth authentication failed. Please try again.');
       throw error;
     }
-  };
+  }, [handleOAuthCallbackBase, user]);
+
+  // If still loading after initialization, return loading screen to avoid flash
+  if (!isInitialized && isLoading) {
+    console.log("Auth not yet initialized, showing loading screen");
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="text-foreground p-4 text-center">
+            <h2 className="text-xl font-medium">Initializing Authentication...</h2>
+            <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider
