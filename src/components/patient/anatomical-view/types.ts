@@ -1,4 +1,3 @@
-
 export interface Hotspot {
   id: string;
   position: [number, number, number];
@@ -49,3 +48,5 @@ export interface HotspotsGroupProps {
   hotspots: Hotspot[];
   onHotspotClick: (id: string) => void;
 }
+
+// The existing types file remains the same
