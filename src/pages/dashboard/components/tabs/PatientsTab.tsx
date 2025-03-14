@@ -21,9 +21,13 @@ interface Patient {
   address: string;
   condition: string;
   lastVisit: string;
-  nextAppointment: string;
-  status: string;
+  nextAppointment: string; // Required field
+  status: string; // Required field
   icdCode: string;
+  nextVisit?: string; // Optional now
+  medicalRecords?: any[];
+  biomarkers?: any[];
+  isSample?: boolean;
 }
 
 const PatientsTab: React.FC = () => {
@@ -47,9 +51,11 @@ const PatientsTab: React.FC = () => {
         // Import sample data from the patients page
         const { samplePatients } = await import('@/pages/patients/data/samplePatients');
         
-        // Mark them as sample data
+        // Mark them as sample data and ensure they have all required properties
         const markedSamplePatients = samplePatients.map(patient => ({
           ...patient,
+          nextAppointment: patient.nextVisit || 'Not scheduled',
+          status: patient.status || 'active',
           isSample: true
         }));
         
@@ -61,7 +67,13 @@ const PatientsTab: React.FC = () => {
         setPatients(markedSamplePatients);
       } else {
         console.log('Loaded patients from storage:', storedPatients.length);
-        setPatients(storedPatients);
+        // Ensure all stored patients have the required fields
+        const validPatients = storedPatients.map((patient: any) => ({
+          ...patient,
+          nextAppointment: patient.nextVisit || patient.nextAppointment || 'Not scheduled',
+          status: patient.status || 'active'
+        }));
+        setPatients(validPatients);
       }
       
       toast.success("Patient data loaded", { 
@@ -147,8 +159,9 @@ const PatientsTab: React.FC = () => {
       const patientWithId = {
         ...newPatient,
         id: Date.now(),
-        lastVisit: new Date().toISOString().split('T')[0],
+        lastVisit: new Date().toISOString().split('T')[0], // Set today's date as default
         status: 'active',
+        nextAppointment: 'Not scheduled',
         icdCode: newPatient.icdCode || 'N/A'
       } as Patient;
       
@@ -190,12 +203,11 @@ const PatientsTab: React.FC = () => {
         <AlertCircle className="h-10 w-10 text-destructive mb-4" />
         <h3 className="text-lg font-medium mb-2">Could not load patients</h3>
         <p className="text-muted-foreground mb-4">There was a problem loading the patient data</p>
-        <button
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+        <Button
           onClick={() => refreshPatientData()}
         >
           Try Again
-        </button>
+        </Button>
       </div>
     );
   }

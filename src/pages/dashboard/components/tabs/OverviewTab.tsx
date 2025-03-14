@@ -6,6 +6,7 @@ import DashboardGrid from './overview/DashboardGrid';
 import AddPatientDialog from './overview/AddPatientDialog';
 import HelpDialog from './overview/HelpDialog';
 import AnalyticsDialog from './overview/AnalyticsDialog';
+import { toast } from 'sonner';
 
 interface OverviewTabProps {
   appointments: any[];
@@ -46,6 +47,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
 
+  const handleAddPatient = (patient: any) => {
+    toast.success("Patient added from Overview", {
+      description: "Patient record created successfully",
+      duration: 3000
+    });
+    setShowAddPatientDialog(false);
+  };
+
   return (
     <div className="space-y-6">
       <QuickActionsGrid 
@@ -80,6 +89,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <AddPatientDialog 
         open={showAddPatientDialog} 
         onOpenChange={setShowAddPatientDialog} 
+        onAddPatient={handleAddPatient}
       />
 
       <HelpDialog 

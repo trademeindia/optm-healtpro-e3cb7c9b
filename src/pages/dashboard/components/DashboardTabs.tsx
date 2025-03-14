@@ -164,13 +164,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsContent>
         
         <TabsContent value="patients" className="mt-0">
-          <PatientsTab 
-            patients={dashboardData.patients || []}
-            selectedPatient={selectedPatient}
-            onViewPatient={handleViewPatient}
-            onClosePatientHistory={handleClosePatientHistory}
-            onUpdatePatient={handleUpdatePatient}
-          />
+          <PatientsTab />
         </TabsContent>
         
         <TabsContent value="reports" className="mt-0">

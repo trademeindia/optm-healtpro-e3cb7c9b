@@ -15,12 +15,14 @@ interface Patient {
   address: string;
   condition: string;
   icdCode?: string;
+  nextAppointment?: string;
+  status?: string;
 }
 
 interface AddPatientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddPatient: (patient: Partial<Patient>) => void;
+  onAddPatient?: (patient: Partial<Patient>) => void;
 }
 
 const AddPatientDialog: React.FC<AddPatientDialogProps> = ({ open, onOpenChange, onAddPatient }) => {
@@ -69,10 +71,20 @@ const AddPatientDialog: React.FC<AddPatientDialogProps> = ({ open, onOpenChange,
       gender,
       address,
       condition: condition || 'Unknown',
-      icdCode: icdCode || 'N/A'
+      icdCode: icdCode || 'N/A',
+      status: 'active',
+      nextAppointment: 'Not scheduled'
     };
     
-    onAddPatient(newPatient);
+    if (onAddPatient) {
+      onAddPatient(newPatient);
+    } else {
+      toast.info("Patient added", {
+        description: "Note: No handler was provided for this action",
+        duration: 3000
+      });
+      onOpenChange(false);
+    }
     
     // Reset form
     setFirstName('');
