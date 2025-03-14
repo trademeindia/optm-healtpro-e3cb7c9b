@@ -1,26 +1,12 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
+import { Patient as PatientType } from '@/pages/patients/types';
 
 // Define the Patient interface that matches all requirements
-export interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  gender: string;
-  email: string;
-  phone: string;
-  address: string;
-  condition: string;
-  lastVisit: string;
-  nextVisit: string; // Required by the patients/types Patient
+export interface Patient extends PatientType {
   nextAppointment: string; // Required for our local usage
   status: string; // Required for our local usage
-  icdCode: string;
-  medicalRecords?: any[];
-  biomarkers?: any[];
-  isSample?: boolean;
 }
 
 export function usePatientData() {
@@ -47,7 +33,7 @@ export function usePatientData() {
         const markedSamplePatients = samplePatients.map(patient => ({
           ...patient,
           nextAppointment: patient.nextVisit || 'Not scheduled',
-          status: patient.status || 'active',
+          status: 'active',
           isSample: true
         }));
         
@@ -56,7 +42,7 @@ export function usePatientData() {
           storeInLocalStorage('patients', patient);
         });
         
-        setPatients(markedSamplePatients);
+        setPatients(markedSamplePatients as Patient[]);
       } else {
         console.log('Loaded patients from storage:', storedPatients.length);
         // Ensure all stored patients have the required fields
@@ -67,7 +53,7 @@ export function usePatientData() {
           // Ensure nextVisit is always present
           nextVisit: patient.nextVisit || patient.nextAppointment || 'Not scheduled'
         }));
-        setPatients(validPatients);
+        setPatients(validPatients as Patient[]);
       }
       
       toast.success("Patient data loaded", { 
