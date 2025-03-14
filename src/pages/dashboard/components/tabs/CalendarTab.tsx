@@ -52,7 +52,6 @@ const CalendarTab: React.FC = () => {
   useEffect(() => {
     const handleCalendarConnected = () => {
       console.log("Calendar connection event detected");
-      toast.success("Calendar connected successfully");
       refreshCalendar();
     };
 
@@ -63,26 +62,32 @@ const CalendarTab: React.FC = () => {
   }, [refreshCalendar]);
 
   const handleConnect = async () => {
-    const success = await handleConnectCalendar();
-    
-    if (success) {
-      toast.success("Calendar connected successfully", {
-        description: "Your Google Calendar has been connected",
-        duration: 3000
-      });
+    console.log("Connect calendar button clicked");
+    try {
+      const success = await handleConnectCalendar();
       
-      await fetchEvents();
-      return true;
-    } else {
-      toast.error("Failed to connect calendar", {
-        description: "Please try again or check your network connection",
-        duration: 5000
-      });
+      if (success) {
+        // Toast is handled in useCalendarAuth
+        await fetchEvents();
+        return true;
+      } else {
+        console.error("Calendar connection failed");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error in handleConnect:", error);
       return false;
     }
   };
 
   const handleCreateAppointment = () => {
+    if (!isAuthorized) {
+      toast.error("Calendar not connected", {
+        description: "Please connect your Google Calendar first",
+      });
+      return;
+    }
+    
     // Open the create appointment dialog in the CalendarView component
     if (calendarViewRef.current && calendarViewRef.current.openCreateDialog) {
       calendarViewRef.current.openCreateDialog(selectedDate);
@@ -92,16 +97,19 @@ const CalendarTab: React.FC = () => {
   };
 
   const handleRefresh = async () => {
+    if (!isAuthorized) {
+      toast.error("Calendar not connected", {
+        description: "Please connect your Google Calendar first",
+      });
+      return;
+    }
+    
     const success = await handleManualRefresh();
     
     if (success) {
-      toast.success("Calendar refreshed", {
-        duration: 2000
-      });
+      toast.success("Calendar refreshed");
     } else {
-      toast.error("Failed to refresh calendar", {
-        duration: 3000
-      });
+      toast.error("Failed to refresh calendar");
     }
   };
 

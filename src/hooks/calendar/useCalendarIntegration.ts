@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { useCalendarAuth } from './useCalendarAuth';
 import { useCalendarData } from './useCalendarData';
 import { CalendarEvent, UpcomingAppointment } from './types';
@@ -32,10 +32,15 @@ export const useCalendarIntegration = () => {
   // Enhanced refresh that ensures we fetch new data
   const enhancedRefresh = useCallback(async () => {
     console.log("Enhanced calendar refresh triggered");
+    if (!isAuthorized) {
+      console.log("Calendar is not authorized, can't refresh");
+      return;
+    }
+    
     await refreshCalendar();
     // We don't need to call fetchEvents explicitly as it's triggered by the refreshCalendar
     // function through the lastRefresh state update
-  }, [refreshCalendar]);
+  }, [refreshCalendar, isAuthorized]);
 
   // Combine loading states and errors
   const isLoading = isAuthLoading || isDataLoading;

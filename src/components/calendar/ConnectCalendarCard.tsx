@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ConnectCalendarCardProps {
   isConnecting: boolean;
@@ -14,7 +15,15 @@ const ConnectCalendarCard: React.FC<ConnectCalendarCardProps> = ({
   onConnect
 }) => {
   return (
-    <div className="border border-dashed rounded-lg p-8 flex items-center justify-center">
+    <div className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center min-h-[350px]">
+      <Alert variant="destructive" className="mb-6 max-w-md">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Calendar not connected</AlertTitle>
+        <AlertDescription>
+          Please connect your Google Calendar first to view and manage appointments.
+        </AlertDescription>
+      </Alert>
+      
       <div className="text-center max-w-sm">
         <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-lg font-medium mb-2">Connect Google Calendar</h3>
@@ -24,6 +33,7 @@ const ConnectCalendarCard: React.FC<ConnectCalendarCardProps> = ({
         <Button 
           onClick={onConnect} 
           disabled={isConnecting}
+          size="lg"
           className="w-full"
         >
           {isConnecting ? (

@@ -4,6 +4,7 @@ import { CalendarEvent, UpcomingAppointment } from '@/hooks/calendar/types';
 import CalendarViewWrapper from '@/components/calendar/CalendarViewWrapper';
 import AppointmentsCard from '@/components/calendar/AppointmentsCard';
 import { User } from '@/contexts/auth/types';
+import { toast } from 'sonner';
 
 interface CalendarGridProps {
   isAuthorized: boolean;
@@ -42,9 +43,24 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   refreshCalendar,
   currentUser
 }) => {
-  // Create a wrapper function to adapt Promise<boolean> to Promise<void>
+  // Handle connection with feedback
   const handleConnectCalendar = async () => {
-    await onConnectCalendar();
+    try {
+      const success = await onConnectCalendar();
+      
+      if (success) {
+        console.log("Calendar connected successfully");
+        // The toast is now handled in the useCalendarAuth hook
+      }
+      
+      return success;
+    } catch (error) {
+      console.error("Error connecting calendar:", error);
+      toast.error('Connection failed', {
+        description: 'Could not connect to Google Calendar. Please try again.'
+      });
+      return false;
+    }
   };
   
   return (

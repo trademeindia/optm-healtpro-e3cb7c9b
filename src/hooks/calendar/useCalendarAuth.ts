@@ -1,10 +1,11 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { toast } from 'sonner';
 
 // Google Calendar ID to use across the application
 export const GOOGLE_CALENDAR_ID = '9a409a615a87e969d7841278f3c59968d682fc699d907ecf4d9472341743d1d5@group.calendar.google.com';
-export const GOOGLE_CALENDAR_URL = `https://calendar.google.com/calendar/ical/${encodeURIComponent(GOOGLE_CALENDAR_ID)}/public/basic.ics`;
+export const GOOGLE_CALENDAR_URL = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=UTC`;
 
 export function useCalendarAuth() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -17,7 +18,7 @@ export function useCalendarAuth() {
     try {
       const isAuth = calendarAuthStorage === 'true';
       setIsAuthorized(isAuth);
-      console.log("Calendar authorization saved to storage:", isAuth);
+      console.log("Calendar authorization loaded from storage:", isAuth);
       setIsLoading(false);
     } catch (err) {
       console.error("Error loading calendar auth state:", err);
@@ -51,10 +52,19 @@ export function useCalendarAuth() {
       // Dispatch a global event that calendar was connected
       window.dispatchEvent(new CustomEvent('calendar-connected'));
       
+      toast.success('Calendar connected successfully', {
+        description: 'Your Google Calendar has been connected'
+      });
+      
       return true;
     } catch (error: any) {
       console.error("Calendar authorization error:", error);
       setError(error.message || "Failed to authorize calendar");
+      
+      toast.error('Failed to connect calendar', {
+        description: error.message || "There was a problem connecting your calendar"
+      });
+      
       return false;
     } finally {
       setIsLoading(false);
@@ -75,10 +85,19 @@ export function useCalendarAuth() {
       // Dispatch a global event that calendar was disconnected
       window.dispatchEvent(new CustomEvent('calendar-disconnected'));
       
+      toast.success('Calendar disconnected', {
+        description: 'Your Google Calendar has been disconnected'
+      });
+      
       return true;
     } catch (error: any) {
       console.error("Calendar disconnect error:", error);
       setError(error.message || "Failed to disconnect calendar");
+      
+      toast.error('Failed to disconnect calendar', {
+        description: error.message || "There was a problem disconnecting your calendar"
+      });
+      
       return false;
     } finally {
       setIsLoading(false);

@@ -8,6 +8,8 @@ import CalendarFrame from './components/CalendarFrame';
 import { getDisplayUrl, getFallbackDisplayUrl } from './utils/calendarUrlProcessor';
 import { handleCalendarReload, setupCalendarEventListeners } from './utils/calendarReloadHandler';
 import { GOOGLE_CALENDAR_ID } from '@/hooks/calendar/useCalendarAuth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface CalendarIframeProps {
   publicCalendarUrl: string;
@@ -34,7 +36,7 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   // Process URLs to find a displayable format
   const processedUrl = manuallySetUrl || getDisplayUrl(publicCalendarUrl);
   const fallbackUrl = processedUrl ? null : getFallbackDisplayUrl(publicCalendarUrl);
-  const finalUrl = processedUrl || fallbackUrl || "about:blank";
+  const finalUrl = processedUrl || fallbackUrl || "";
   
   // Setup a function to reload the iframe when needed
   const reloadIframe = useCallback(() => {
@@ -78,8 +80,21 @@ const CalendarIframe: React.FC<CalendarIframeProps> = ({
   }, []);
 
   // Show empty state if URL is invalid
-  if (!finalUrl || finalUrl === "about:blank") {
-    return <CalendarEmptyState onReload={reloadIframe} />;
+  if (!finalUrl || finalUrl === "") {
+    return (
+      <Card className="shadow-sm border border-border/30">
+        <CardContent className="p-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Calendar not connected</AlertTitle>
+            <AlertDescription>
+              Please connect your Google Calendar to view and manage appointments.
+            </AlertDescription>
+          </Alert>
+          <CalendarEmptyState onReload={reloadIframe} />
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
