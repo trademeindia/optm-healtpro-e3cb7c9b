@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
       <div className="flex-1">
-        <h3 className="text-lg font-medium flex items-center">
+        <h3 className="text-lg font-medium flex items-center px-0 text-center">
           Anatomical View
           {isEditMode && <span className="ml-2 text-xs font-normal px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
               Edit Mode
