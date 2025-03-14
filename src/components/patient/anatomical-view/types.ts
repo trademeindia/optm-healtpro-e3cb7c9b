@@ -1,3 +1,4 @@
+
 export interface Hotspot {
   id: string;
   position: [number, number, number];
@@ -38,4 +39,13 @@ export interface HotspotProps {
   description: string;
   severity: string;
   onClick: () => void;
+}
+
+export interface ModelImageProps {
+  activeSystem: string;
+}
+
+export interface HotspotsGroupProps {
+  hotspots: Hotspot[];
+  onHotspotClick: (id: string) => void;
 }
