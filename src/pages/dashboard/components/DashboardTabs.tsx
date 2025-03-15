@@ -8,6 +8,7 @@ import PatientsTab from './tabs/PatientsTab';
 import ReportsTab from './tabs/ReportsTab';
 import AnalyticsTab from './tabs/AnalyticsTab';
 import CalendarTab from './tabs/CalendarTab';
+import RemindersTab from './tabs/RemindersTab';
 import { toast } from 'sonner';
 
 interface DashboardTabsProps {
@@ -80,9 +81,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
   };
 
   const handleAddReminder = () => {
-    toast.info("Add reminder feature will be available soon", {
-      duration: 3000
-    });
+    handleTabChange("reminders");
   };
 
   const handleToggleReminder = (id: string) => {
@@ -139,6 +138,9 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
           <TabsTrigger value="calendar" className="rounded-md flex-1 whitespace-nowrap">
             Calendar
           </TabsTrigger>
+          <TabsTrigger value="reminders" className="rounded-md flex-1 whitespace-nowrap">
+            Reminders
+          </TabsTrigger>
         </TabsList>
       </div>
       
@@ -177,6 +179,10 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
         
         <TabsContent value="calendar" className="mt-0">
           <CalendarTab />
+        </TabsContent>
+        
+        <TabsContent value="reminders" className="mt-0">
+          <RemindersTab />
         </TabsContent>
       </div>
     </Tabs>
