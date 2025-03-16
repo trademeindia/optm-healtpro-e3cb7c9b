@@ -6,24 +6,47 @@ import { PatientLoadingState, PatientErrorState } from './patients/PatientLoadin
 import { PatientListView } from './patients/PatientListView';
 import { usePatientsData } from './patients/usePatientsData';
 
-const PatientsTab: React.FC = () => {
+interface PatientsTabProps {
+  patients?: any[];
+  selectedPatient?: any;
+  onViewPatient?: (patientId: number) => void;
+  onClosePatientHistory?: () => void;
+  onUpdatePatient?: (patient: any) => void;
+}
+
+const PatientsTab: React.FC<PatientsTabProps> = ({
+  patients: externalPatients,
+  selectedPatient: externalSelectedPatient,
+  onViewPatient: externalHandleViewPatient,
+  onClosePatientHistory: externalHandleClosePatientHistory,
+  onUpdatePatient: externalHandlePatientUpdate
+}) => {
   const [showAddPatient, setShowAddPatient] = useState(false);
   const {
-    patients,
-    selectedPatient,
+    patients: internalPatients,
+    selectedPatient: internalSelectedPatient,
     isLoading,
     hasError,
     refreshPatientData,
-    handleViewPatient,
-    handleClosePatientHistory,
-    handlePatientUpdate,
+    handleViewPatient: internalHandleViewPatient,
+    handleClosePatientHistory: internalHandleClosePatientHistory,
+    handlePatientUpdate: internalHandlePatientUpdate,
     handleAddPatient
   } = usePatientsData();
   
-  // Auto-refresh patient data when tab is shown
+  // Use external props if provided, otherwise use internal state
+  const patients = externalPatients || internalPatients;
+  const selectedPatient = externalSelectedPatient || internalSelectedPatient;
+  const handleViewPatient = externalHandleViewPatient || internalHandleViewPatient;
+  const handleClosePatientHistory = externalHandleClosePatientHistory || internalHandleClosePatientHistory;
+  const handlePatientUpdate = externalHandlePatientUpdate || internalHandlePatientUpdate;
+  
+  // Auto-refresh patient data when tab is shown (only if using internal data)
   useEffect(() => {
-    refreshPatientData();
-  }, [refreshPatientData]);
+    if (!externalPatients) {
+      refreshPatientData();
+    }
+  }, [externalPatients, refreshPatientData]);
   
   // Handle add patient dialog
   const onAddPatientClick = () => setShowAddPatient(true);
@@ -34,13 +57,13 @@ const PatientsTab: React.FC = () => {
     }
   };
   
-  // Show loading state
-  if (isLoading && !selectedPatient) {
+  // Show loading state if we're using internal data and still loading
+  if (isLoading && !selectedPatient && !externalPatients) {
     return <PatientLoadingState />;
   }
   
-  // Show error state if there's an issue and no selected patient
-  if (hasError && !selectedPatient && (!patients || patients.length === 0)) {
+  // Show error state if there's an issue and no selected patient (only for internal data)
+  if (hasError && !selectedPatient && (!patients || patients.length === 0) && !externalPatients) {
     return <PatientErrorState onRetry={refreshPatientData} />;
   }
   
@@ -55,7 +78,7 @@ const PatientsTab: React.FC = () => {
       ) : (
         <PatientListView
           patients={patients}
-          isLoading={isLoading}
+          isLoading={isLoading && !externalPatients}
           onViewPatient={handleViewPatient}
           onAddPatient={onAddPatientClick}
         />
