@@ -1,6 +1,7 @@
 
 import { SymptomEntry } from '@/contexts/SymptomContext';
 import { HotSpot } from './types';
+import { getHotspotPosition } from './regions';
 
 // Function to get hotspot color based on pain level
 export const getPainLevelColor = (level: number) => {
@@ -11,14 +12,22 @@ export const getPainLevelColor = (level: number) => {
 
 // Convert symptoms to hotspots
 export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
-  return symptoms.map(symptom => ({
-    id: symptom.id,
-    region: symptom.location,
-    size: 20 + (symptom.painLevel * 0.8), // Size based on pain level
-    color: getPainLevelColor(symptom.painLevel),
-    label: symptom.symptomName,
-    description: symptom.notes
-  }));
+  return symptoms.map(symptom => {
+    // Get position based on the symptom location
+    const position = getHotspotPosition(symptom.location);
+    
+    return {
+      id: symptom.id,
+      x: position.x,
+      y: position.y,
+      label: symptom.symptomName,
+      description: symptom.notes,
+      severity: symptom.painLevel,
+      // Optional fields
+      recommendations: [],
+      relatedSymptoms: []
+    };
+  });
 };
 
 // Select the appropriate image based on active system

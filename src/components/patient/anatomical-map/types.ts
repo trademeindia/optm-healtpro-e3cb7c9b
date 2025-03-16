@@ -12,6 +12,13 @@ export interface HotSpot {
   relatedSymptoms?: string[];
 }
 
+export interface AnatomicalRegion {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+}
+
 export interface AnatomicalMapProps {
   className?: string;
 }
