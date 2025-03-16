@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +11,9 @@ import DashboardHeader from './components/DashboardHeader';
 import PeriodFilter from './components/PeriodFilter';
 import KeyMetricsCards from './components/KeyMetricsCards';
 import LegacyCharts from './components/LegacyCharts';
+import { useAuth } from '@/contexts/auth';
+import { useReminders } from '@/hooks/useReminders';
+import ClinicReminders from '@/components/dashboard/ClinicReminders';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -19,6 +22,23 @@ const Dashboard: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [filterPeriod, setFilterPeriod] = useState("thisWeek");
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { 
+    reminders, 
+    addReminder, 
+    toggleReminder, 
+    deleteReminder,
+    getUpcomingReminders 
+  } = useReminders();
+
+  // Check user authentication status
+  useEffect(() => {
+    if (user) {
+      console.log(`Dashboard accessed by: ${user.name} (${user.role})`);
+    } else {
+      console.log('Dashboard accessed by unauthenticated user');
+    }
+  }, [user]);
 
   // Functions for handling different dashboard actions
   const handleUploadDocument = () => {
@@ -34,6 +54,11 @@ const Dashboard: React.FC = () => {
     const patient = dashboardData.patients.find(p => p.id === patientId);
     if (patient) {
       setSelectedPatient(patient);
+      toast({
+        title: "Patient Selected",
+        description: `Viewing details for ${patient.name}`,
+        duration: 3000,
+      });
     } else {
       toast({
         title: "Patient Not Found",
@@ -64,6 +89,25 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  const handleAddReminder = (reminderData: Omit<{ id: string; title: string; dueDate: string; priority: 'low' | 'medium' | 'high'; completed: boolean; }, 'id'>) => {
+    try {
+      const newReminder = addReminder(reminderData);
+      toast({
+        title: "Reminder Added",
+        description: `"${newReminder.title}" has been added to your reminders.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to add reminder:', error);
+      toast({
+        title: "Failed to Add Reminder",
+        description: "There was an error adding your reminder. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -74,7 +118,7 @@ const Dashboard: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 overflow-container">
           <div className="content-wrapper">
             {/* Dashboard Header */}
-            <DashboardHeader doctorName="Samantha" />
+            <DashboardHeader doctorName={user?.name?.split(' ')[0] || "Doctor"} />
             
             {/* Filter Period Selector */}
             <div className="mb-6">
@@ -89,9 +133,20 @@ const Dashboard: React.FC = () => {
               <KeyMetricsCards />
             </div>
             
-            {/* Analytics Graph Section */}
-            <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <ClinicAnalyticsGraph />
+            {/* Analytics Graph and Reminders Section */}
+            <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <ClinicAnalyticsGraph />
+              </div>
+              
+              <div>
+                <ClinicReminders 
+                  reminders={getUpcomingReminders().slice(0, 5)} 
+                  onAddReminder={handleAddReminder}
+                  onToggleReminder={toggleReminder}
+                  onDeleteReminder={deleteReminder}
+                />
+              </div>
             </div>
             
             {/* Legacy Charts Section */}

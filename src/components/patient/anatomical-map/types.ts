@@ -12,10 +12,13 @@ export interface AnatomicalRegion {
 export interface HotSpot {
   id: string;
   region: string; // Corresponds to keys in anatomicalRegions
+  x: number;     // X coordinate for positioning
+  y: number;     // Y coordinate for positioning
   size: number;
   color: string;
   label: string;
   description: string;
+  severity?: number;  // Optional severity level
 }
 
 export interface HotspotMarkerProps {

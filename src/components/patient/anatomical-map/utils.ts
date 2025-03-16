@@ -1,43 +1,61 @@
 
-import { SymptomEntry } from '@/contexts/SymptomContext';
 import { HotSpot } from './types';
+import { SymptomEntry } from '@/contexts/SymptomContext';
+import { anatomicalRegions } from './regions';
 
-// Function to get hotspot color based on pain level
-export const getPainLevelColor = (level: number) => {
-  if (level <= 3) return 'rgba(34, 197, 94, 0.8)'; // Green for low pain
-  if (level <= 6) return 'rgba(249, 115, 22, 0.7)'; // Orange for medium pain
-  return 'rgba(234, 56, 76, 0.8)'; // Red for high pain
-};
-
-// Convert symptoms to hotspots
+/**
+ * Converts symptom entries to hotspots for the anatomical map
+ */
 export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
-  return symptoms.map(symptom => ({
-    id: symptom.id,
-    region: symptom.location,
-    size: 20 + (symptom.painLevel * 0.8), // Size based on pain level
-    color: getPainLevelColor(symptom.painLevel),
-    label: symptom.symptomName,
-    description: symptom.notes
-  }));
+  return symptoms.map(symptom => {
+    // Find the corresponding anatomical region
+    const region = anatomicalRegions.find(r => r.id === symptom.region);
+    
+    // Generate a color based on severity
+    const severityColor = getSeverityColor(symptom.severity || 1);
+    
+    return {
+      id: symptom.id,
+      region: symptom.region,
+      x: region?.x || 50, // Default to center if region not found
+      y: region?.y || 50, // Default to center if region not found
+      size: getHotspotSize(symptom.severity || 1),
+      color: severityColor,
+      label: symptom.name,
+      description: symptom.description || 'No description provided',
+      severity: symptom.severity || 1
+    };
+  });
 };
 
-// Select the appropriate image based on active system
-export const getSystemImage = (activeSystem: string): string => {
-  switch (activeSystem) {
-    case 'muscular':
-      return "/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png";
-    case 'skeletal':
-      return "/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png";
-    case 'skin':
-      return "/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png";
-    case 'organs':
-      return "/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png";
-    case 'vascular':
-    case 'nervous':
-    case 'lymphatic':
-    case 'full-body':
-      return "/lovable-uploads/2f92810e-f197-4554-81aa-25c65d85b001.png";
-    default:
-      return "/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png";
+/**
+ * Determines hotspot size based on symptom severity
+ */
+const getHotspotSize = (severity: number): number => {
+  // Scale size based on severity (1-10)
+  return Math.max(20, Math.min(40, 20 + (severity * 2)));
+};
+
+/**
+ * Generates a color based on symptom severity
+ */
+const getSeverityColor = (severity: number): string => {
+  if (severity <= 3) {
+    return 'rgba(52, 211, 153, 0.8)'; // Green for mild
+  } else if (severity <= 6) {
+    return 'rgba(251, 191, 36, 0.8)'; // Yellow for moderate
+  } else {
+    return 'rgba(239, 68, 68, 0.8)';  // Red for severe
   }
+};
+
+/**
+ * Get text color for contrast against the background
+ */
+export const getContrastTextColor = (backgroundColor: string): string => {
+  // Simple implementation - if using a dark color, return white, otherwise black
+  if (backgroundColor.includes('239, 68, 68') || backgroundColor.includes('251, 191, 36')) {
+    return 'white';
+  }
+  return 'black';
 };

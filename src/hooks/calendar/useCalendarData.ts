@@ -41,7 +41,7 @@ export function useCalendarData(isAuthorized: boolean) {
       // 3. Handle pagination if needed
       
       // For demo, we generate mock data
-      const mockEvents = generateMockEvents(selectedDate);
+      let mockEvents = generateMockEvents(selectedDate);
       
       // Apply role-based access control to filter events
       let filteredEvents = mockEvents;
@@ -55,7 +55,7 @@ export function useCalendarData(isAuthorized: boolean) {
           // Filter logic: either the patientId matches, or the patient name contains the user's name
           // This is a simplification - in a real app, you would have proper patient IDs
           return (eventPatientId && eventPatientId === user.patientId) || 
-                 (event.patientName && event.patientName.includes(user.name));
+                 (event.patientName && user.name && event.patientName.includes(user.name));
         });
         
         console.log(`Filtered ${mockEvents.length} events to ${filteredEvents.length} for patient user`);
@@ -68,6 +68,11 @@ export function useCalendarData(isAuthorized: boolean) {
       const upcoming = mapEventsToAppointments(filteredEvents);
       setUpcomingAppointments(upcoming);
       
+      // Dispatch a success event for calendar data
+      window.dispatchEvent(new CustomEvent('calendar-data-loaded', { 
+        detail: { count: filteredEvents.length } 
+      }));
+      
     } catch (error: any) {
       console.error("Error fetching events:", error);
       setError(error.message || "Failed to fetch calendar data");
@@ -75,6 +80,11 @@ export function useCalendarData(isAuthorized: boolean) {
       toast.error("Failed to fetch calendar data", {
         description: "Could not retrieve your calendar events. Please try again.",
       });
+      
+      // Dispatch an error event
+      window.dispatchEvent(new CustomEvent('calendar-data-error', { 
+        detail: { message: error.message } 
+      }));
     } finally {
       setIsLoading(false);
       isRefreshingRef.current = false;
@@ -99,6 +109,9 @@ export function useCalendarData(isAuthorized: boolean) {
       clearTimeout(debounceTimeoutRef.current);
     }
     
+    // Show a toast notification that we're refreshing
+    toast.info("Refreshing calendar data...");
+    
     // Debounce multiple rapid refresh calls
     debounceTimeoutRef.current = setTimeout(() => {
       console.log("Refreshing calendar data...");
@@ -107,6 +120,11 @@ export function useCalendarData(isAuthorized: boolean) {
       // Force a refresh by setting a new timestamp 
       setLastRefresh(Date.now());
       debounceTimeoutRef.current = null;
+      
+      // Show a success toast after the refresh completes
+      setTimeout(() => {
+        toast.success("Calendar refreshed successfully");
+      }, 1500);
     }, 500); // 500ms debounce
     
   }, [isAuthorized]);

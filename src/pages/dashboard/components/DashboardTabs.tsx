@@ -1,25 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { AlertCircle } from 'lucide-react';
-import { DashboardData } from '../types/dashboardTypes';
-import OverviewTab from './tabs/OverviewTab';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar, Users, FileText, Bell } from 'lucide-react';
 import PatientsTab from './tabs/PatientsTab';
-import ReportsTab from './tabs/ReportsTab';
-import AnalyticsTab from './tabs/AnalyticsTab';
 import CalendarTab from './tabs/CalendarTab';
-import { toast } from 'sonner';
+import ReportsTab from './tabs/ReportsTab';
+import RemindersTab from './tabs/RemindersTab';
 
 interface DashboardTabsProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (value: string) => void;
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
-  selectedPatient: DashboardData['patients'][0] | null;
+  selectedPatient: any;
   handleClosePatientHistory: () => void;
-  handleUpdatePatient: (patient: DashboardData['patients'][0]) => void;
+  handleUpdatePatient: (patient: any) => void;
   handleViewPatient: (patientId: number) => void;
-  dashboardData: DashboardData;
+  dashboardData: any;
 }
 
 const DashboardTabs: React.FC<DashboardTabsProps> = ({
@@ -33,152 +30,48 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
   handleViewPatient,
   dashboardData
 }) => {
-  const [isRecovering, setIsRecovering] = useState(false);
-  const [lastActiveTab, setLastActiveTab] = useState(activeTab);
-  
-  // Track last successful tab for recovery
-  useEffect(() => {
-    if (!isRecovering) {
-      setLastActiveTab(activeTab);
-    }
-  }, [activeTab, isRecovering]);
-
-  // Handle errors in tab switching
-  const handleTabChange = (value: string) => {
-    try {
-      setActiveTab(value);
-    } catch (error) {
-      console.error("Error switching tabs:", error);
-      setIsRecovering(true);
-      
-      // Fallback to previous tab if this one fails
-      toast.error("Error loading tab", {
-        description: "Returning to previous view",
-        duration: 3000
-      });
-      
-      // Try to recover by going back to last known good tab
-      setTimeout(() => {
-        setActiveTab(lastActiveTab);
-        setIsRecovering(false);
-      }, 500);
-    }
-  };
-
-  const handleViewAllAppointments = () => {
-    handleTabChange("calendar");
-  };
-
-  const handleViewAllMessages = () => {
-    toast.info("Messages feature will be available soon", {
-      duration: 3000
-    });
-  };
-
-  const handleViewAllDocuments = () => {
-    handleTabChange("reports");
-  };
-
-  const handleAddReminder = () => {
-    toast.info("Add reminder feature will be available soon", {
-      duration: 3000
-    });
-  };
-
-  const handleToggleReminder = (id: string) => {
-    toast.success(`Reminder ${id} status toggled`, {
-      duration: 2000
-    });
-  };
-
-  const handleViewFullCalendar = () => {
-    handleTabChange("calendar");
-  };
-
-  // Error boundary fallback
-  if (!dashboardData) {
-    return (
-      <div className="p-6 bg-destructive/10 rounded-lg text-center">
-        <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Dashboard data unavailable</h3>
-        <p className="text-muted-foreground mb-4">
-          We're having trouble loading the dashboard data. Please try refreshing the page.
-        </p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-primary text-white rounded-md"
-        >
-          Refresh Page
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <Tabs 
-      defaultValue="overview" 
-      value={activeTab} 
-      onValueChange={handleTabChange}
-      className="w-full"
-    >
-      <div className="overflow-x-auto sticky top-0 bg-white dark:bg-gray-800 z-10 pb-2 -mx-4 px-4">
-        <TabsList className="mb-6 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 w-full flex flex-nowrap min-w-max">
-          <TabsTrigger value="overview" className="rounded-md flex-1 whitespace-nowrap">
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="patients" className="rounded-md flex-1 whitespace-nowrap">
-            Patients
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="rounded-md flex-1 whitespace-nowrap">
-            <span className="hidden sm:inline">Reports & Documents</span>
-            <span className="sm:hidden">Reports</span>
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="rounded-md flex-1 whitespace-nowrap">
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="rounded-md flex-1 whitespace-nowrap">
-            Calendar
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      
-      <div className="tab-content-container overflow-x-hidden">
-        <TabsContent value="overview" className="mt-0">
-          <OverviewTab 
-            appointments={dashboardData.upcomingAppointments || []}
-            therapySessions={dashboardData.therapySchedules || []}
-            messages={dashboardData.clinicMessages || []}
-            reminders={dashboardData.clinicReminders || []}
-            documents={dashboardData.clinicDocuments || []}
-            calendarEvents={dashboardData.calendarEvents || {}}
-            currentDate={currentDate}
-            onViewAllAppointments={handleViewAllAppointments}
-            onViewPatient={handleViewPatient}
-            onViewAllMessages={handleViewAllMessages}
-            onAddReminder={handleAddReminder}
-            onToggleReminder={handleToggleReminder}
-            onViewFullCalendar={handleViewFullCalendar}
-            onViewAllDocuments={handleViewAllDocuments}
-            onUpload={() => handleTabChange("reports")}
-          />
-        </TabsContent>
-        
-        <TabsContent value="patients" className="mt-0">
-          <PatientsTab />
-        </TabsContent>
-        
-        <TabsContent value="reports" className="mt-0">
-          <ReportsTab />
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="mt-0">
-          <AnalyticsTab />
-        </TabsContent>
-        
-        <TabsContent value="calendar" className="mt-0">
-          <CalendarTab />
-        </TabsContent>
-      </div>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid grid-cols-4 mb-6">
+        <TabsTrigger value="overview" className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline-block">Overview</span>
+        </TabsTrigger>
+        <TabsTrigger value="patients" className="flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          <span className="hidden sm:inline-block">Patients</span>
+        </TabsTrigger>
+        <TabsTrigger value="calendar" className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span className="hidden sm:inline-block">Calendar</span>
+        </TabsTrigger>
+        <TabsTrigger value="reminders" className="flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          <span className="hidden sm:inline-block">Reminders</span>
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="mt-0">
+        <ReportsTab />
+      </TabsContent>
+
+      <TabsContent value="patients" className="mt-0">
+        <PatientsTab
+          patients={dashboardData.patients}
+          selectedPatient={selectedPatient}
+          onViewPatient={handleViewPatient}
+          onClosePatientHistory={handleClosePatientHistory}
+          onUpdatePatient={handleUpdatePatient}
+        />
+      </TabsContent>
+
+      <TabsContent value="calendar" className="mt-0">
+        <CalendarTab />
+      </TabsContent>
+
+      <TabsContent value="reminders" className="mt-0">
+        <RemindersTab />
+      </TabsContent>
     </Tabs>
   );
 };
