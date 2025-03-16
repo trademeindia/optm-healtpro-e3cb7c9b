@@ -107,7 +107,7 @@ export const useMedicationData = (patientId?: string) => {
             id: uuidv4(),
             medicationId: uuidv4(), // Will be replaced
             timestamp: date.toISOString(),
-            status: day === 0 && dose === 0 ? 'taken' : 'scheduled'
+            status: day === 0 && dose === 0 ? 'taken' : 'scheduled' as 'taken' | 'scheduled'
           });
         }
       }
@@ -155,7 +155,7 @@ export const useMedicationData = (patientId?: string) => {
     });
     
     // Calculate summaries
-    const medicationsWithSummary = medicationsWithIds.map(med => ({
+    const medicationsWithSummary: MedicationWithSummary[] = medicationsWithIds.map(med => ({
       ...med,
       summary: calculateMedicationSummary(med)
     }));
@@ -185,7 +185,7 @@ export const useMedicationData = (patientId?: string) => {
             if (dose.id === doseId) {
               return {
                 ...dose,
-                status: 'taken',
+                status: 'taken' as const,
                 timestamp: new Date().toISOString() // Update to current time
               };
             }
@@ -201,7 +201,7 @@ export const useMedicationData = (patientId?: string) => {
       });
       
       // Recalculate summaries
-      const medicationsWithSummary = updatedMedications.map(med => ({
+      const medicationsWithSummary: MedicationWithSummary[] = updatedMedications.map(med => ({
         ...med,
         summary: calculateMedicationSummary({
           ...med,
@@ -256,7 +256,7 @@ export const useMedicationData = (patientId?: string) => {
             if (dose.id === doseId) {
               return {
                 ...dose,
-                status: 'missed'
+                status: 'missed' as const
               };
             }
             return dose;
@@ -271,7 +271,7 @@ export const useMedicationData = (patientId?: string) => {
       });
       
       // Recalculate summaries
-      const medicationsWithSummary = updatedMedications.map(med => ({
+      const medicationsWithSummary: MedicationWithSummary[] = updatedMedications.map(med => ({
         ...med,
         summary: calculateMedicationSummary({
           ...med,

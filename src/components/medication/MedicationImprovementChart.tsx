@@ -106,7 +106,7 @@ const MedicationImprovementChart: React.FC<MedicationImprovementChartProps> = ({
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend 
-            onMouseEnter={({ dataKey }) => handleMouseEnter(dataKey)}
+            onMouseEnter={(item) => handleMouseEnter(item.dataKey as string)}
             onMouseLeave={handleMouseLeave}
             wrapperStyle={{ fontSize: '10px' }}
           />
