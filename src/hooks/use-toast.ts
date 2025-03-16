@@ -1,5 +1,5 @@
 
-import { toast } from 'sonner';
+import { toast as sonnerToast } from 'sonner';
 
 export interface ToastProps {
   title?: string;
@@ -9,18 +9,21 @@ export interface ToastProps {
   duration?: number;
 }
 
+// Export the toast function directly so it can be imported elsewhere
+export const toast = sonnerToast;
+
 export const useToast = () => {
   return {
     toast: ({ title, description, action, variant, duration = 3000 }: ToastProps) => {
       if (variant === 'destructive') {
-        return toast.error(title, {
+        return sonnerToast.error(title, {
           description,
           duration,
           action
         });
       }
       
-      return toast(title, {
+      return sonnerToast(title, {
         description,
         duration,
         action

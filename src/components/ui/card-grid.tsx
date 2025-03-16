@@ -7,13 +7,15 @@ interface CardGridProps {
   columns?: 1 | 2 | 3 | 4 | 5 | 6;
   gap?: 'sm' | 'md' | 'lg';
   className?: string;
+  equalHeight?: boolean; // Add the missing prop
 }
 
 export const CardGrid: React.FC<CardGridProps> = ({
   children,
   columns = 3,
   gap = 'md',
-  className
+  className,
+  equalHeight = false
 }) => {
   const columnsClass = {
     1: 'grid-cols-1',
@@ -31,7 +33,13 @@ export const CardGrid: React.FC<CardGridProps> = ({
   };
 
   return (
-    <div className={cn('grid', columnsClass[columns], gapClass[gap], className)}>
+    <div className={cn(
+      'grid', 
+      columnsClass[columns], 
+      gapClass[gap], 
+      equalHeight && 'grid-flow-row auto-rows-fr',
+      className
+    )}>
       {children}
     </div>
   );

@@ -1,27 +1,21 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { SymptomRecord } from '@/types/medicalData';
 
-export interface SymptomEntry {
-  id: string;
-  date: Date;
-  symptomName: string;
-  painLevel: number;
-  location: string;
-  notes?: string;
+interface SymptomContextType {
+  symptoms: SymptomRecord[];
+  isLoading: boolean;
+  addSymptom: (symptom: Omit<SymptomRecord, 'id'>) => void;
+  updateSymptom: (id: string, symptom: Partial<SymptomRecord>) => void;
+  deleteSymptom: (id: string) => void;
 }
 
-interface SymptomContextProps {
-  symptoms: SymptomEntry[];
-  addSymptom: (symptom: SymptomEntry) => void;
-  removeSymptom: (id: string) => void;
-  updateSymptom: (id: string, updatedSymptom: Partial<SymptomEntry>) => void;
-}
-
-const SymptomContext = createContext<SymptomContextProps>({
+const SymptomContext = createContext<SymptomContextType>({
   symptoms: [],
+  isLoading: false,
   addSymptom: () => {},
-  removeSymptom: () => {},
   updateSymptom: () => {},
+  deleteSymptom: () => {}
 });
 
 export const useSymptoms = () => useContext(SymptomContext);
@@ -31,58 +25,72 @@ interface SymptomProviderProps {
 }
 
 export const SymptomProvider: React.FC<SymptomProviderProps> = ({ children }) => {
-  const [symptoms, setSymptoms] = useState<SymptomEntry[]>([
-    {
-      id: '1',
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-      symptomName: 'Lower Back Pain',
-      painLevel: 7,
-      location: 'lower_back',
-      notes: 'Pain worse in the morning',
+  const [symptoms, setSymptoms] = useState<SymptomRecord[]>([
+    { 
+      id: "s1", 
+      symptomName: "Back Pain", 
+      severity: 7, 
+      timestamp: new Date("2023-05-10").toISOString(),
+      relatedBiomarkers: ["bm1"]
     },
-    {
-      id: '2',
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      symptomName: 'Lower Back Pain',
-      painLevel: 5,
-      location: 'lower_back',
-      notes: 'Getting better after exercises',
+    { 
+      id: "s2", 
+      symptomName: "Back Pain", 
+      severity: 5, 
+      timestamp: new Date("2023-05-15").toISOString(),
+      relatedBiomarkers: ["bm1"]
     },
-    {
-      id: '3',
-      date: new Date(), // Today
-      symptomName: 'Lower Back Pain',
-      painLevel: 3,
-      location: 'lower_back',
-      notes: 'Continued improvement',
+    { 
+      id: "s3", 
+      symptomName: "Back Pain", 
+      severity: 3, 
+      timestamp: new Date("2023-05-20").toISOString(),
+      relatedBiomarkers: ["bm1"]
     }
   ]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const addSymptom = (symptom: SymptomEntry) => {
-    setSymptoms(prev => [...prev, symptom]);
+  const addSymptom = (symptom: Omit<SymptomRecord, 'id'>) => {
+    setIsLoading(true);
+    try {
+      const newSymptom: SymptomRecord = {
+        ...symptom,
+        id: `symptom-${Date.now()}`
+      };
+      setSymptoms(prev => [...prev, newSymptom]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeSymptom = (id: string) => {
-    setSymptoms(prev => prev.filter(symptom => symptom.id !== id));
+  const updateSymptom = (id: string, symptom: Partial<SymptomRecord>) => {
+    setIsLoading(true);
+    try {
+      setSymptoms(prev => prev.map(s => 
+        s.id === id ? { ...s, ...symptom } : s
+      ));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateSymptom = (id: string, updatedSymptom: Partial<SymptomEntry>) => {
-    setSymptoms(prev => 
-      prev.map(symptom => 
-        symptom.id === id ? { ...symptom, ...updatedSymptom } : symptom
-      )
-    );
-  };
-
-  const value = {
-    symptoms,
-    addSymptom,
-    removeSymptom,
-    updateSymptom,
+  const deleteSymptom = (id: string) => {
+    setIsLoading(true);
+    try {
+      setSymptoms(prev => prev.filter(s => s.id !== id));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <SymptomContext.Provider value={value}>
+    <SymptomContext.Provider value={{
+      symptoms,
+      isLoading,
+      addSymptom,
+      updateSymptom,
+      deleteSymptom
+    }}>
       {children}
     </SymptomContext.Provider>
   );
