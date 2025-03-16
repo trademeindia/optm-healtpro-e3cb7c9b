@@ -1,60 +1,36 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Bell, Plus, Check, Star } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useReminders, Reminder } from '@/hooks/useReminders';
-import ReminderDialog from './reminders/ReminderDialog';
-import RemindersList from './reminders/RemindersList';
+
+interface Reminder {
+  id: string;
+  title: string;
+  dueDate: string;
+  priority: 'low' | 'medium' | 'high';
+  completed: boolean;
+}
 
 interface ClinicRemindersProps {
+  reminders: Reminder[];
   className?: string;
+  onAddReminder?: () => void;
+  onToggleReminder?: (id: string) => void;
 }
 
 const ClinicReminders: React.FC<ClinicRemindersProps> = ({
+  reminders,
   className,
+  onAddReminder,
+  onToggleReminder,
 }) => {
-  const {
-    reminders,
-    isLoading,
-    addReminder,
-    updateReminder,
-    toggleReminder,
-    deleteReminder
-  } = useReminders();
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedReminder, setSelectedReminder] = useState<Reminder | undefined>(undefined);
-  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
-
-  const handleAddClick = () => {
-    setSelectedReminder(undefined);
-    setDialogMode('add');
-    setDialogOpen(true);
-  };
-
-  const handleEditReminder = (reminder: Reminder) => {
-    setSelectedReminder(reminder);
-    setDialogMode('edit');
-    setDialogOpen(true);
-  };
-
-  const handleSaveReminder = (data: any) => {
-    if (dialogMode === 'edit' && selectedReminder) {
-      return updateReminder(selectedReminder.id, data);
-    } else {
-      return addReminder(data);
-    }
-  };
-
-  const handleToggleReminder = (id: string) => {
-    toggleReminder(id);
-  };
-
-  const handleDeleteReminder = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this reminder?')) {
-      deleteReminder(id);
+  const getPriorityColor = (priority: Reminder['priority']) => {
+    switch (priority) {
+      case 'high': return 'text-red-500';
+      case 'medium': return 'text-yellow-500';
+      case 'low': return 'text-green-500';
     }
   };
 
@@ -72,43 +48,71 @@ const ClinicReminders: React.FC<ClinicRemindersProps> = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            onClick={handleAddClick}
+            onClick={onAddReminder}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center py-6">
-            <div className="animate-pulse">Loading reminders...</div>
-          </div>
-        ) : (
-          <RemindersList 
-            reminders={reminders}
-            onToggleReminder={handleToggleReminder}
-            onEditReminder={handleEditReminder}
-            onDeleteReminder={handleDeleteReminder}
-          />
-        )}
+        <div className="space-y-2">
+          {reminders.length === 0 ? (
+            <p className="text-center text-muted-foreground py-6">No reminders</p>
+          ) : (
+            reminders.map((reminder) => (
+              <div 
+                key={reminder.id} 
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800",
+                  reminder.completed && "bg-gray-50 dark:bg-gray-800/50 opacity-70"
+                )}
+              >
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 rounded-full flex-shrink-0"
+                  onClick={() => onToggleReminder && onToggleReminder(reminder.id)}
+                >
+                  {reminder.completed ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <div className={cn(
+                      "w-4 h-4 border-2 rounded-full",
+                      getPriorityColor(reminder.priority)
+                    )} />
+                  )}
+                </Button>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    "font-medium text-sm",
+                    reminder.completed && "line-through text-muted-foreground"
+                  )}>
+                    {reminder.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Due: {reminder.dueDate}
+                  </p>
+                </div>
+                <Star className={cn(
+                  "h-4 w-4",
+                  getPriorityColor(reminder.priority),
+                  "opacity-" + (reminder.priority === 'high' ? '100' : 
+                               reminder.priority === 'medium' ? '75' : '50')
+                )} />
+              </div>
+            ))
+          )}
+        </div>
         
         <Button 
           variant="outline" 
           className="w-full mt-4 gap-1.5" 
-          onClick={handleAddClick}
+          onClick={onAddReminder}
         >
           <Plus className="h-4 w-4" />
           Add Reminder
         </Button>
       </CardContent>
-
-      <ReminderDialog 
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSave={handleSaveReminder}
-        initialData={selectedReminder}
-        mode={dialogMode}
-      />
     </Card>
   );
 };

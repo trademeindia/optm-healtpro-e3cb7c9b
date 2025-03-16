@@ -1,55 +1,40 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/auth';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Health Analytics Dashboard</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle>Patient Portal</CardTitle>
-              <CardDescription>
-                View your health data, biomarkers, and appointments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => navigate('/patient')}
-                className="w-full"
-              >
-                Go to Patient Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle>Provider Dashboard</CardTitle>
-              <CardDescription>
-                Manage patients, appointments, and clinical data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => navigate('/dashboard')}
-                className="w-full"
-              >
-                Go to Provider Dashboard
-              </Button>
-            </CardContent>
-          </Card>
+  useEffect(() => {
+    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user });
+    
+    if (!isLoading) {
+      if (isAuthenticated && user) {
+        console.log('Index page: User authenticated, role is', user.role);
+        const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+        console.log(`Navigating to ${dashboard}`);
+        navigate(dashboard);
+      } else {
+        console.log('Index page: User not authenticated, redirecting to login');
+        navigate('/login');
+      }
+    }
+  }, [isAuthenticated, isLoading, navigate, user]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full bg-background">
+        <div className="animate-pulse text-foreground p-4 text-center">
+          <h2 className="text-xl font-medium">Loading...</h2>
+          <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default Index;

@@ -1,65 +1,60 @@
 
-import React, { ErrorInfo, Component, ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
-import Dashboard from './pages/dashboard/DashboardPage';
-import PatientDashboard from './pages/PatientDashboard';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from "sonner";
+import { ThemeProvider } from 'next-themes';
+import './App.css';
+import Login from './pages/Login';
 import Index from './pages/Index';
-import '@/App.css';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import PatientsPage from './pages/patients/PatientsPage';
+import ReportsPage from './pages/ReportsPage';
+import BiomarkersPage from './pages/BiomarkersPage';
+import ExercisePage from './pages/exercises/ExercisePage';
+import AppointmentsPage from './pages/AppointmentsPage';
+import SettingsPage from './pages/SettingsPage';
+import HelpPage from './pages/HelpPage';
+import NotFound from './pages/NotFound';
+import PatientDashboard from './pages/PatientDashboard';
+import { PatientReportsPage } from './pages/PatientReportsPage';
+import OAuthCallback from './pages/OAuthCallback';
+import HealthAppsPage from './pages/HealthAppsPage';
+import AIAnalysisPage from './pages/AIAnalysisPage';
+import { AuthProvider } from './contexts/auth'; // Fix import path
 
-// Error boundary component
-class ErrorBoundary extends Component<{ children: ReactNode, fallback: ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: ReactNode, fallback: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-
-    return this.props.children;
-  }
-}
-
-// Error fallback component
-const ErrorFallback = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-    <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
-    <p className="mb-6 max-w-md mx-auto">
-      We're sorry, but there was an error loading this page. Try refreshing the browser.
-    </p>
-    <button 
-      onClick={() => window.location.href = '/'}
-      className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
-    >
-      Go Home
-    </button>
-  </div>
-);
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <ErrorBoundary fallback={<ErrorFallback />}>
-      <Router>
-        <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/patient" element={<PatientDashboard />} />
-          <Route path="/" element={<Index />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Toaster position="top-right" richColors />
-      </Router>
-    </ErrorBoundary>
+    <ThemeProvider attribute="class" defaultTheme="light">
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/patients" element={<PatientsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/biomarkers" element={<BiomarkersPage />} />
+              <Route path="/exercises" element={<ExercisePage />} />
+              <Route path="/appointments" element={<AppointmentsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/patient-dashboard" element={<PatientDashboard />} />
+              <Route path="/patient-reports" element={<PatientReportsPage />} />
+              <Route path="/oauth-callback" element={<OAuthCallback />} />
+              <Route path="/health-apps" element={<HealthAppsPage />} />
+              <Route path="/ai-analysis" element={<AIAnalysisPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster position="bottom-right" richColors closeButton />
+          </AuthProvider>
+        </Router>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

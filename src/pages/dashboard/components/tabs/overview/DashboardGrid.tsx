@@ -99,7 +99,11 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       
       <div className="md:col-span-4">
         <ErrorBoundaryWithFallback onRetry={handleRetry}>
-          <ClinicReminders />
+          <ClinicReminders 
+            reminders={reminders}
+            onAddReminder={onAddReminder}
+            onToggleReminder={onToggleReminder}
+          />
         </ErrorBoundaryWithFallback>
       </div>
       
