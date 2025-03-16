@@ -1,63 +1,52 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HotSpot } from './types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-interface HotspotMarkerProps {
-  hotspot: HotSpot;
-  isActive: boolean;
-  onClick: (hotspot: HotSpot) => void;
-}
+import { Target } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HotspotMarkerProps } from './types';
+import { getHotspotPosition } from './regions';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
-  const getMarkerSize = () => {
-    // Adjust size based on severity
-    const baseSize = hotspot.severity > 7 ? 6 : hotspot.severity > 4 ? 5 : 4;
-    return {
-      width: `${baseSize + (isActive ? 2 : 0)}px`,
-      height: `${baseSize + (isActive ? 2 : 0)}px`,
-    };
-  };
-
-  const getSeverityColor = () => {
-    if (hotspot.severity > 8) return 'bg-red-500';
-    if (hotspot.severity > 5) return 'bg-orange-500';
-    if (hotspot.severity > 3) return 'bg-yellow-400';
-    return 'bg-green-400';
-  };
-
+  const position = getHotspotPosition(hotspot.region);
+  
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={200}>
+      <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={`absolute rounded-full ${getSeverityColor()} shadow-md cursor-pointer ${
-              isActive ? 'z-20 ring-2 ring-white' : 'z-10'
-            }`}
+            className="absolute cursor-pointer rounded-full flex items-center justify-center"
             style={{
-              left: `${hotspot.x}%`,
-              top: `${hotspot.y}%`,
-              ...getMarkerSize()
+              left: `${position.x}%`,
+              top: `${position.y}%`,
+              width: `${hotspot.size}px`,
+              height: `${hotspot.size}px`,
+              backgroundColor: isActive ? hotspot.color : 'rgba(255, 255, 255, 0.7)',
+              border: `2px solid ${hotspot.color}`,
+              boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+              transform: 'translate(-50%, -50%)', // Center the hotspot on its position
+              zIndex: 20 // Ensure hotspots are above the image
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ 
-              scale: 1, 
-              opacity: 1,
-              boxShadow: isActive ? '0 0 0 2px rgba(255,255,255,0.8)' : 'none'
-            }}
+            animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.5 }}
-            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            whileHover={{ scale: 1.2 }}
             onClick={() => onClick(hotspot)}
-            transition={{ duration: 0.2 }}
-          />
+          >
+            {isActive ? (
+              <span className="text-white text-xs font-bold">{hotspot.id}</span>
+            ) : (
+              <span className="text-xs font-bold" style={{ color: hotspot.color }}>{hotspot.id}</span>
+            )}
+          </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs bg-white dark:bg-gray-800 p-2 max-w-[200px] text-center">
+        <TooltipContent>
           <p className="font-medium">{hotspot.label}</p>
-          {hotspot.description && (
-            <p className="text-muted-foreground text-[10px]">{hotspot.description}</p>
-          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

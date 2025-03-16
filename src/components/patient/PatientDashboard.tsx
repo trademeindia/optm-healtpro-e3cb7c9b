@@ -25,17 +25,6 @@ const PatientDashboard: React.FC = () => {
     );
   }
 
-  // Ensure patient has proper data with correct types
-  const validatedPatient = {
-    ...patient,
-    reports: patient.reports.map(report => ({
-      ...report,
-      source: (report.source as string === 'upload' || report.source as string === 'text' || report.source as string === 'api') 
-        ? report.source as "upload" | "text" | "api" 
-        : "upload" // Default to upload if invalid
-    }))
-  };
-
   return (
     <Card className="shadow-sm border">
       <CardHeader className="bg-muted/20">
@@ -85,7 +74,7 @@ const PatientDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-4">
-            <ReportsHistory reports={validatedPatient.reports} analyses={patient.analyses} />
+            <ReportsHistory reports={patient.reports} analyses={patient.analyses} />
           </TabsContent>
         </Tabs>
       </CardContent>

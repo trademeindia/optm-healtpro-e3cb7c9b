@@ -10,14 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { MapControlsProps } from './types';
 
-const MapControls: React.FC<MapControlsProps> = ({ 
-  zoom, 
-  onZoomIn, 
-  onZoomOut,
-  className = "" 
-}) => {
+const MapControls: React.FC<MapControlsProps> = ({ zoom, onZoomIn, onZoomOut }) => {
   return (
-    <div className={`flex gap-1 ${className}`}>
+    <div className="flex gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -26,12 +21,11 @@ const MapControls: React.FC<MapControlsProps> = ({
               size="icon"
               onClick={onZoomOut}
               disabled={zoom <= 0.6}
-              className="h-8 w-8"
             >
-              <ZoomOut className="h-3 w-3" />
+              <ZoomOut className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" align="center" className="text-xs py-1 px-2">
+          <TooltipContent>
             <p>Zoom Out</p>
           </TooltipContent>
         </Tooltip>
@@ -45,12 +39,11 @@ const MapControls: React.FC<MapControlsProps> = ({
               size="icon"
               onClick={onZoomIn}
               disabled={zoom >= 2}
-              className="h-8 w-8"
             >
-              <ZoomIn className="h-3 w-3" />
+              <ZoomIn className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" align="center" className="text-xs py-1 px-2">
+          <TooltipContent>
             <p>Zoom In</p>
           </TooltipContent>
         </Tooltip>

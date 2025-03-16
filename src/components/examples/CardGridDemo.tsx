@@ -1,66 +1,76 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CardGrid } from '@/components/ui/card-grid';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
-const CardGridDemo = () => {
-  const [layout, setLayout] = useState<'two-col' | 'three-col' | 'four-col'>('two-col');
-  const [cardCount, setCardCount] = useState(6);
-  
-  const generateCards = (count: number) => {
-    const cards = [];
-    for (let i = 1; i <= count; i++) {
-      cards.push(
-        <Card key={i}>
-          <CardHeader>
-            <CardTitle>Card {i}</CardTitle>
-            <CardDescription>Card description</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Card content goes here, demonstrating how the grid responds to different layouts.</p>
-            {i % 2 === 0 && <p className="mt-2">This card has a bit more content to show how equal height works.</p>}
-          </CardContent>
-          <CardFooter>
-            <Button>Action</Button>
-          </CardFooter>
-        </Card>
-      );
-    }
-    return cards;
-  };
-  
-  const getColumnCount = () => {
-    switch (layout) {
-      case 'two-col': return 2;
-      case 'three-col': return 3;
-      case 'four-col': return 4;
-      default: return 2;
-    }
-  };
-  
+const CardGridDemo: React.FC = () => {
+  // Sample data for demo cards
+  const items = [
+    { id: 1, title: 'Basic Card', content: 'Simple card with minimal content' },
+    { id: 2, title: 'Card with Footer', content: 'This card includes a footer with actions' },
+    { id: 3, title: 'Detailed Card', content: 'A more complex card with multiple sections' },
+    { id: 4, title: 'Action Card', content: 'This card has interactive elements' }
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Card Grid Demo</h2>
-        <Tabs value={layout} onValueChange={(v) => setLayout(v as any)}>
-          <TabsList>
-            <TabsTrigger value="two-col">2 Columns</TabsTrigger>
-            <TabsTrigger value="three-col">3 Columns</TabsTrigger>
-            <TabsTrigger value="four-col">4 Columns</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      
-      <CardGrid columns={getColumnCount()} gap="md">
-        {generateCards(cardCount)}
-      </CardGrid>
-      
-      <div className="flex justify-center space-x-4">
-        <Button onClick={() => setCardCount(Math.max(cardCount - 1, 1))}>Remove Card</Button>
-        <Button onClick={() => setCardCount(cardCount + 1)}>Add Card</Button>
-      </div>
+    <div className="space-y-12 p-6">
+      {/* Basic responsive grid (1 column on mobile, 2 on tablet, 3 on desktop) */}
+      <section>
+        <h2 className="text-xl font-semibold mb-4">Responsive Card Grid</h2>
+        <CardGrid columns="responsive" gap="md">
+          {items.map(item => (
+            <Card key={item.id} className="h-full">
+              <CardHeader>
+                <CardTitle>{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{item.content}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </CardGrid>
+      </section>
+
+      {/* 2-column grid with small gap */}
+      <section>
+        <h2 className="text-xl font-semibold mb-4">2-Column Card Grid (Small Gap)</h2>
+        <CardGrid columns={2} gap="sm">
+          {items.slice(0, 2).map(item => (
+            <Card key={item.id} className="h-full">
+              <CardHeader>
+                <CardTitle>{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{item.content}</p>
+              </CardContent>
+              <CardFooter>
+                <Button>Learn More</Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </CardGrid>
+      </section>
+
+      {/* 4-column grid with large gap and variable height cards */}
+      <section>
+        <h2 className="text-xl font-semibold mb-4">4-Column Card Grid (Variable Height)</h2>
+        <CardGrid columns={4} gap="lg" equalHeight={false}>
+          {items.map(item => (
+            <Card key={item.id}>
+              <CardHeader>
+                <CardTitle className="text-sm">{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs">{item.content}</p>
+                {item.id % 2 === 0 && (
+                  <p className="mt-2 text-xs">Additional content to create variable height</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </CardGrid>
+      </section>
     </div>
   );
 };

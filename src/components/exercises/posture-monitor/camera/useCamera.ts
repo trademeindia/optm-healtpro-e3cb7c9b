@@ -63,13 +63,25 @@ export const useCamera = ({ onCameraStart }: UseCameraProps = {}): UseCameraResu
   });
   
   const { toggleCamera } = useCameraToggle({
+    cameraActive,
+    isInitializing,
+    videoRef,
+    canvasRef,
+    streamRef,
+    mountedRef,
+    setupTimeoutRef,
+    setCameraActive,
+    setPermission,
+    setCameraError,
+    setIsInitializing,
+    setVideoStatus,
+    stopCamera,
+    onCameraStart,
     requestCameraAccess,
-    onCameraStart: onCameraStart,
-    onCameraStop: () => {
-      // Camera stop handler
-    },
-    setError: setCameraError,
-    setPermission: setPermission
+    setupVideoElement,
+    ensureVideoIsPlaying,
+    checkVideoStatus,
+    waitForVideoElement
   });
   
   // Monitor camera state
