@@ -153,3 +153,12 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     y: 42
   }
 ];
+
+// Helper function to get position from region ID
+export const getHotspotPosition = (regionId: string): { x: number; y: number } => {
+  const region = anatomicalRegions.find(r => r.id === regionId);
+  return {
+    x: region?.x || 50, // Default to center if region not found
+    y: region?.y || 50
+  };
+};

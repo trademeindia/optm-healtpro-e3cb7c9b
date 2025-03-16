@@ -5,6 +5,9 @@ import { HotspotDetailProps } from './types';
 import { anatomicalRegions } from './regions';
 
 const HotspotDetail: React.FC<HotspotDetailProps> = ({ hotspot }) => {
+  // Find the region name from the anatomical regions array
+  const regionName = anatomicalRegions.find(r => r.id === hotspot.region)?.name || 'Unknown';
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -18,7 +21,7 @@ const HotspotDetail: React.FC<HotspotDetailProps> = ({ hotspot }) => {
         ></div>
         <h4 className="font-semibold">{hotspot.label}</h4>
         <span className="text-xs text-muted-foreground">
-          ({anatomicalRegions[hotspot.region]?.name})
+          ({regionName})
         </span>
       </div>
       <p className="text-sm mt-1 text-muted-foreground">{hotspot.description}</p>

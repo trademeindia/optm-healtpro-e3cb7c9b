@@ -12,7 +12,8 @@ import { HotspotMarkerProps } from './types';
 import { getHotspotPosition } from './regions';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
-  const position = getHotspotPosition(hotspot.region);
+  // Use x and y coordinates directly from the hotspot
+  const position = { x: hotspot.x, y: hotspot.y };
   
   return (
     <TooltipProvider>
