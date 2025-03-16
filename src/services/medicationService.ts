@@ -5,7 +5,8 @@ import {
   Medication, 
   MedicationWithSummary,
   MedicationImprovementData,
-  PatientMedication 
+  PatientMedication,
+  MedicationDose
 } from '@/types/medicationData';
 import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
 import { DEFAULT_MEDICATIONS, calculateMedicationSummary, generateImprovementData } from '@/utils/medicationUtils';
