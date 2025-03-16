@@ -55,20 +55,21 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
 
   return (
     <Card className={`glass-morphism bg-white dark:bg-gray-800 shadow-sm overflow-visible ${className || ''}`}>
-      <CardHeader className="pb-3 flex flex-col">
+      <CardHeader className="pb-3 flex flex-col space-y-3">
         <div className="flex justify-between items-center flex-wrap gap-2">
           <div>
-            <CardTitle>Anatomical Map</CardTitle>
-            <CardDescription>Interactive visualization of affected areas</CardDescription>
+            <CardTitle className="text-lg md:text-xl">Anatomical Map</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Interactive visualization of affected areas</CardDescription>
           </div>
           <MapControls 
             zoom={zoom}
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
+            className="flex-shrink-0"
           />
         </div>
         
-        <div className="tabs-container overflow-x-auto mt-2">
+        <div className="tabs-container overflow-x-auto -mx-2 px-2">
           <SystemTabs 
             activeSystem={activeSystem}
             onSystemChange={setActiveSystem}
@@ -77,18 +78,20 @@ const AnatomicalMap: React.FC<AnatomicalMapProps> = ({ className }) => {
       </CardHeader>
       
       <CardContent className="p-0 pb-4 px-4 overflow-visible">
-        <MapVisualization
-          activeSystem={activeSystem}
-          zoom={zoom}
-          hotspots={hotspots}
-          activeHotspot={activeHotspot}
-          onImageLoad={handleImageLoad}
-          onHotspotClick={handleHotspotClick}
-          imageLoaded={imageLoaded}
-        />
-        
-        {/* Detail panel for active hotspot */}
-        {activeHotspot && <HotspotDetail hotspot={activeHotspot} />}
+        <div className="relative flex flex-col space-y-4">
+          <MapVisualization
+            activeSystem={activeSystem}
+            zoom={zoom}
+            hotspots={hotspots}
+            activeHotspot={activeHotspot}
+            onImageLoad={handleImageLoad}
+            onHotspotClick={handleHotspotClick}
+            imageLoaded={imageLoaded}
+          />
+          
+          {/* Detail panel for active hotspot */}
+          {activeHotspot && <HotspotDetail hotspot={activeHotspot} />}
+        </div>
       </CardContent>
     </Card>
   );

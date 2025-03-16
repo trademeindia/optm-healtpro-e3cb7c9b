@@ -25,7 +25,7 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
   onHotspotClick
 }) => {
   return (
-    <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[550px]">
+    <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[350px] sm:h-[450px] md:h-[550px]">
       <motion.div
         className="relative w-full h-full flex justify-center items-center"
         style={{
