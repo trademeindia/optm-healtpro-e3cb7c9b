@@ -2,12 +2,13 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Activity, Newspaper, PieChart, Map } from 'lucide-react';
+import { User, Activity, Newspaper, PieChart, Map, Pill } from 'lucide-react';
 import { useMedicalData } from '@/contexts/MedicalDataContext';
 import BiomarkerTrends from './BiomarkerTrends';
 import AnatomicalViewer from './AnatomicalViewer';
 import ReportsHistory from './ReportsHistory';
 import SymptomTracker from './SymptomTracker';
+import MedicationTab from '@/components/patient-dashboard/MedicationTab';
 
 const PatientDashboard: React.FC = () => {
   const { patient, isLoading } = useMedicalData();
@@ -42,7 +43,7 @@ const PatientDashboard: React.FC = () => {
       </CardHeader>
       <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-6">
+          <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="biomarkers" className="flex gap-1 items-center">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Biomarkers</span>
@@ -50,6 +51,10 @@ const PatientDashboard: React.FC = () => {
             <TabsTrigger value="symptoms" className="flex gap-1 items-center">
               <PieChart className="h-4 w-4" />
               <span className="hidden sm:inline">Symptoms</span>
+            </TabsTrigger>
+            <TabsTrigger value="medications" className="flex gap-1 items-center">
+              <Pill className="h-4 w-4" />
+              <span className="hidden sm:inline">Medications</span>
             </TabsTrigger>
             <TabsTrigger value="anatomical" className="flex gap-1 items-center">
               <Map className="h-4 w-4" />
@@ -67,6 +72,10 @@ const PatientDashboard: React.FC = () => {
 
           <TabsContent value="symptoms" className="space-y-4">
             <SymptomTracker symptoms={patient.symptoms} biomarkers={patient.biomarkers} />
+          </TabsContent>
+          
+          <TabsContent value="medications" className="space-y-4">
+            <MedicationTab patientId={patient.id} />
           </TabsContent>
 
           <TabsContent value="anatomical" className="space-y-4">
