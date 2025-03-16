@@ -19,7 +19,7 @@ const BiomarkerDisplayContainer: React.FC<BiomarkerDisplayContainerProps> = ({ b
 
   return (
     <>
-      <CardGrid columns="responsive" gap="md">
+      <CardGrid columns={2} gap="md">
         {biomarkers.map((biomarker) => (
           <BiomarkerCard 
             key={biomarker.id}

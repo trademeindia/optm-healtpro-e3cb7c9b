@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
@@ -53,16 +52,15 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       setModel(loadedModel);
       
       toast({
-        title: "Model Loaded",
-        description: "Pose detection model loaded successfully. You can start exercising now.",
+        description: "Model loaded successfully",
+        variant: "default"
       });
     } catch (error) {
       console.error('Error loading PoseNet model:', error);
       setError("Failed to load pose detection model");
       
       toast({
-        title: "Model Loading Failed",
-        description: "Failed to load pose detection model. Please try refreshing the page.",
+        description: "Error loading pose model",
         variant: "destructive"
       });
     } finally {

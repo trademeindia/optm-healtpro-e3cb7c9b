@@ -1,78 +1,97 @@
+import React from "react"
 
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CardGrid } from '@/components/ui/card-grid';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardGrid } from "@/components/ui/card-grid"
 
-const CardGridDemo: React.FC = () => {
-  // Sample data for demo cards
-  const items = [
-    { id: 1, title: 'Basic Card', content: 'Simple card with minimal content' },
-    { id: 2, title: 'Card with Footer', content: 'This card includes a footer with actions' },
-    { id: 3, title: 'Detailed Card', content: 'A more complex card with multiple sections' },
-    { id: 4, title: 'Action Card', content: 'This card has interactive elements' }
-  ];
+interface ExampleCardProps {
+  title: string
+  height?: "normal" | "tall"
+}
+
+const ExampleCard: React.FC<ExampleCardProps> = ({ title, height = "normal" }) => {
+  return (
+    <Card className={height === "tall" ? "h-48" : "h-32"}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>A simple card example</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>This is the content of the card.</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+const CardGridDemo = () => {
+  const cardData = Array.from({ length: 6 }, (_, i) => ({
+    id: i + 1,
+    title: `Card ${i + 1}`,
+    description: `Description for card ${i + 1}`,
+  }))
 
   return (
-    <div className="space-y-12 p-6">
-      {/* Basic responsive grid (1 column on mobile, 2 on tablet, 3 on desktop) */}
+    <div className="space-y-12 py-8">
+      {/* Example 1: Basic usage */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Responsive Card Grid</h2>
-        <CardGrid columns="responsive" gap="md">
-          {items.map(item => (
-            <Card key={item.id} className="h-full">
+        <h2 className="text-2xl font-bold mb-4">Basic Card Grid</h2>
+        <CardGrid columns={2} gap="md">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ExampleCard key={i} title={`Card ${i + 1}`} />
+          ))}
+        </CardGrid>
+      </section>
+
+      {/* Example 2: Responsive columns */}
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Responsive Columns</h2>
+        <CardGrid columns="responsive" gap="lg">
+          {cardData.map((card) => (
+            <Card key={card.id} className="h-32">
               <CardHeader>
-                <CardTitle>{item.title}</CardTitle>
+                <CardTitle>{card.title}</CardTitle>
+                <CardDescription>{card.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p>{item.content}</p>
+                <p>Content for {card.title}</p>
               </CardContent>
             </Card>
           ))}
         </CardGrid>
       </section>
 
-      {/* 2-column grid with small gap */}
+      {/* Example 3: Different gap sizes */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">2-Column Card Grid (Small Gap)</h2>
-        <CardGrid columns={2} gap="sm">
-          {items.slice(0, 2).map(item => (
-            <Card key={item.id} className="h-full">
-              <CardHeader>
-                <CardTitle>{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{item.content}</p>
-              </CardContent>
-              <CardFooter>
-                <Button>Learn More</Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </CardGrid>
+        <h2 className="text-2xl font-bold mb-4">Different Gap Sizes</h2>
+        <div className="flex space-x-4">
+          <CardGrid columns={2} gap="sm">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <ExampleCard key={i} title={`Card ${i + 1}`} />
+            ))}
+          </CardGrid>
+          <CardGrid columns={2} gap="md">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <ExampleCard key={i} title={`Card ${i + 1}`} />
+            ))}
+          </CardGrid>
+          <CardGrid columns={2} gap="lg">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <ExampleCard key={i} title={`Card ${i + 1}`} />
+            ))}
+          </CardGrid>
+        </div>
       </section>
-
-      {/* 4-column grid with large gap and variable height cards */}
+      
+      {/* Example with equalHeight prop */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">4-Column Card Grid (Variable Height)</h2>
-        <CardGrid columns={4} gap="lg" equalHeight={false}>
-          {items.map(item => (
-            <Card key={item.id}>
-              <CardHeader>
-                <CardTitle className="text-sm">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs">{item.content}</p>
-                {item.id % 2 === 0 && (
-                  <p className="mt-2 text-xs">Additional content to create variable height</p>
-                )}
-              </CardContent>
-            </Card>
+        <h2 className="text-2xl font-bold mb-4">Equal Height Cards</h2>
+        <CardGrid columns={4} gap="lg">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ExampleCard key={i} title={`Card ${i + 1}`} height={i % 2 === 0 ? "tall" : "normal"} />
           ))}
         </CardGrid>
       </section>
     </div>
-  );
-};
+  )
+}
 
-export default CardGridDemo;
+export default CardGridDemo

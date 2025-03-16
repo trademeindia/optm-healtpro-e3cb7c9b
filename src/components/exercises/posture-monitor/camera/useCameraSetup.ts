@@ -1,11 +1,13 @@
 
 import { useCallback } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Handles camera device setup, permissions, and error handling
  */
 export const useCameraSetup = () => {
+  const { toast } = useToast();
+  
   /**
    * Requests camera access and returns the media stream
    */
@@ -44,14 +46,13 @@ export const useCameraSetup = () => {
       }
       
       toast({
-        title: "Camera Error",
         description: errorMessage,
         variant: "destructive"
       });
       
       return { stream: null, error: errorMessage };
     }
-  }, []);
+  }, [toast]);
   
   return {
     requestCameraAccess
