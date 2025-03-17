@@ -75,12 +75,14 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
                 </div>
               </div>
               
-              {/* Age number */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl font-bold">
-                {biologicalAge}
-              </div>
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mt-1 text-xs sm:text-sm">
-                Years
+              {/* Age number - Updated for better visibility */}
+              <div className="absolute bottom-0 flex flex-col items-center w-full text-center">
+                <div className="text-3xl sm:text-4xl font-bold text-white">
+                  {biologicalAge}
+                </div>
+                <div className="text-xs sm:text-sm text-white/90 mt-0.5">
+                  Years
+                </div>
               </div>
             </div>
 
