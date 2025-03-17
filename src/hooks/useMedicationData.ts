@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   loadPatientMedicationData,
   initializeDefaultMedications
-} from '@/services/medicationService';
+} from '@/services/medication';
 import { useMedicationDoses } from './useMedicationDoses';
 
 export const useMedicationData = (patientId?: string) => {

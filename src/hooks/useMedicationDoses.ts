@@ -6,7 +6,10 @@ import {
   MedicationImprovementData
 } from '@/types/medicationData';
 import { calculateMedicationSummary } from '@/utils/medicationUtils';
-import { saveMedicationData, updateImprovementData } from '@/services/medicationService';
+import { 
+  saveMedicationData, 
+  updateImprovementData 
+} from '@/services/medication';
 
 export const useMedicationDoses = (
   patientId: string,
