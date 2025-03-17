@@ -1,6 +1,5 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
 import { 
   Medication, 
   MedicationWithSummary,
@@ -10,6 +9,7 @@ import {
 } from '@/types/medicationData';
 import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
 import { DEFAULT_MEDICATIONS, calculateMedicationSummary } from '@/utils/medicationUtils';
+import { addSummariesToMedications } from './utils/dataTransformers';
 
 // Initialize default medications for a new patient
 export const initializeDefaultMedications = (patientId: string) => {
@@ -64,10 +64,7 @@ export const initializeDefaultMedications = (patientId: string) => {
   });
   
   // Calculate summaries
-  const medicationsWithSummary: MedicationWithSummary[] = medicationsWithIds.map(med => ({
-    ...med,
-    summary: calculateMedicationSummary(med)
-  }));
+  const medicationsWithSummary = addSummariesToMedications(medicationsWithIds);
   
   // Generate some sample improvement data
   const improvementData: MedicationImprovementData[] = [];
@@ -88,12 +85,6 @@ export const initializeDefaultMedications = (patientId: string) => {
   }
   
   // Save to storage
-  const patientMedication: PatientMedication = {
-    patientId,
-    medications: medicationsWithSummary,
-    improvements: improvementData
-  };
-  
   saveMedicationData(patientId, medicationsWithSummary, improvementData);
   
   return {

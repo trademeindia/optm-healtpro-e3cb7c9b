@@ -6,7 +6,7 @@ import {
   PatientMedication
 } from '@/types/medicationData';
 import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
-import { calculateMedicationSummary } from '@/utils/medicationUtils';
+import { addSummariesToMedications } from './utils/dataTransformers';
 
 // Load medication data for a patient
 export const loadPatientMedicationData = (patientId: string) => {
@@ -19,10 +19,7 @@ export const loadPatientMedicationData = (patientId: string) => {
     
     if (patientMedications) {
       // Calculate summary for each medication
-      const medicationsWithSummary = patientMedications.medications.map(med => ({
-        ...med,
-        summary: calculateMedicationSummary(med)
-      }));
+      const medicationsWithSummary = addSummariesToMedications(patientMedications.medications);
       
       return {
         medications: medicationsWithSummary,

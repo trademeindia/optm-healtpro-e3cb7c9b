@@ -3,17 +3,18 @@ import {
   MedicationWithSummary,
   MedicationImprovementData
 } from '@/types/medicationData';
-import { generateImprovementData } from '@/utils/medicationUtils';
 import { saveMedicationData } from './medicationDataService';
+import { calculateOverallImprovement, getTodayISODate } from './utils/medicationUtils';
+import { sortImprovementDataByDate } from './utils/dataTransformers';
 
 // Update improvement data based on medication adherence
 export const updateImprovementData = (patientId: string, medications: MedicationWithSummary[], existingData: MedicationImprovementData[]) => {
   try {
     // Get today's date
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayISODate();
     
     // Generate new improvement data for today
-    const newImprovementData = generateImprovementData(medications);
+    const newImprovementData = calculateOverallImprovement(medications);
     
     // Clone the existing data
     const updatedImprovementData = [...existingData];
@@ -37,12 +38,12 @@ export const updateImprovementData = (patientId: string, medications: Medication
     }
     
     // Sort by date ascending
-    updatedImprovementData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedData = sortImprovementDataByDate(updatedImprovementData);
     
     // Save the updated improvement data
-    saveMedicationData(patientId, medications, updatedImprovementData);
+    saveMedicationData(patientId, medications, sortedData);
     
-    return updatedImprovementData;
+    return sortedData;
   } catch (error) {
     console.error('Error updating improvement data:', error);
     throw error;
