@@ -95,8 +95,9 @@ export class DataStorageService {
   static async checkTablesExist(): Promise<boolean> {
     try {
       // Try to query an expected table
+      // We need to wrap the Supabase query in a Promise to ensure it has the correct interface
       const result = await withRetry<any>(
-        () => supabase.from('profiles').select('count', { count: 'exact' }).limit(1),
+        () => Promise.resolve(supabase.from('profiles').select('count', { count: 'exact' }).limit(1)),
         { retries: 1 } // Only try once for this check
       );
       
