@@ -2,8 +2,6 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import AppointmentActions from './AppointmentActions';
-import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
-import { AppointmentStatus } from '@/types/appointment';
 
 export interface Appointment {
   id: string;
@@ -11,7 +9,6 @@ export interface Appointment {
   time: string;
   doctor: string;
   type: string;
-  status?: AppointmentStatus;
 }
 
 interface AppointmentCardProps {
@@ -37,19 +34,13 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             {appointment.doctor}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="bg-primary/10 p-2 rounded-full flex-shrink-0">
-            <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-          </div>
-          {appointment.status && (
-            <AppointmentStatusIndicator status={appointment.status} size="sm" />
-          )}
+        <div className="bg-primary/10 p-2 rounded-full flex-shrink-0">
+          <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary" />
         </div>
       </div>
       
       <AppointmentActions 
         appointmentId={appointment.id}
-        status={appointment.status}
         onConfirmAppointment={onConfirmAppointment}
         onRescheduleAppointment={onRescheduleAppointment}
       />
