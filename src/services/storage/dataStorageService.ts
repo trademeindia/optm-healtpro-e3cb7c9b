@@ -1,4 +1,3 @@
-
 import { Patient, MedicalAnalysis, MedicalReport, Biomarker } from '@/types/medicalData';
 import { supabase, withRetry } from '@/integrations/supabase/client';
 import { storeInLocalStorage } from './localStorageService';
@@ -95,13 +94,17 @@ export class DataStorageService {
   static async checkTablesExist(): Promise<boolean> {
     try {
       // Try to query an expected table
-      const response = await withRetry(
+      const result = await withRetry(
         () => supabase.from('profiles').select('count', { count: 'exact' }).limit(1),
         { retries: 1 } // Only try once for this check
       );
       
-      // Check if there was an error in the response
-      return !response.error;
+      // Properly type the result to access the error property
+      if ('error' in result && result.error) {
+        return false;
+      }
+      
+      return true;
     } catch (e) {
       console.error("Error checking tables:", e);
       return false;

@@ -17,12 +17,17 @@ const MiddleColumn: React.FC<LeftColumnProps> = ({
   hasConnectedApps,
   onSyncData
 }) => {
+  // Wrap the onSyncData callback to return a Promise if it doesn't already
+  const handleSyncData = async () => {
+    return Promise.resolve(onSyncData());
+  };
+
   return (
     <div className="lg:col-span-5 space-y-4 md:space-y-6">
       {/* Health Data Sync Button */}
       <HealthSyncButton 
         hasConnectedApps={hasConnectedApps}
-        onSyncData={onSyncData}
+        onSyncData={handleSyncData}
       />
       
       {/* Biological Age Card */}
