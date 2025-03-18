@@ -1,69 +1,52 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { format, addDays, isBefore, startOfDay } from 'date-fns';
+import { Calendar } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import DateTimePicker from './DateTimePicker';
+import { Appointment } from './AppointmentCard';
+import { AppointmentStatus } from '@/types/appointment';
 
 interface RescheduleDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  appointment: {
-    id: string;
-    date: string;
-    time: string;
-    doctor: string;
-    type: string;
-  };
-  onReschedule: (id: string, newDate: string, newTime: string) => void;
+  appointment: Appointment | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onReschedule: (appointmentId: string, newDate: Date) => Promise<boolean>;
 }
 
-// Generate time slots from 8 AM to 5 PM
-const generateTimeSlots = () => {
-  const slots = [];
-  for (let hour = 8; hour <= 17; hour++) {
-    const amPm = hour < 12 ? 'AM' : 'PM';
-    const displayHour = hour <= 12 ? hour : hour - 12;
-    
-    slots.push(`${displayHour}:00 ${amPm}`);
-    slots.push(`${displayHour}:30 ${amPm}`);
-  }
-  return slots;
-};
-
-const timeSlots = generateTimeSlots();
-
 const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
-  isOpen,
-  onClose,
   appointment,
-  onReschedule
+  open,
+  onOpenChange,
+  onReschedule,
 }) => {
-  const today = new Date();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(addDays(today, 1));
-  const [selectedTime, setSelectedTime] = useState<string>(timeSlots[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const handleReschedule = () => {
-    if (!selectedDate) {
-      toast.error("Please select a date");
-      return;
-    }
-
+  const handleReschedule = async () => {
+    if (!appointment) return;
+    
     setIsSubmitting(true);
-
-    // Format the date for display (e.g., "June 20, 2023")
-    const formattedDate = format(selectedDate, 'MMMM d, yyyy');
-
     try {
-      onReschedule(appointment.id, formattedDate, selectedTime);
-      onClose();
+      const success = await onReschedule(appointment.id, selectedDate);
+      if (success) {
+        toast.success("Appointment Rescheduled", {
+          description: `Your appointment has been rescheduled to ${selectedDate.toLocaleDateString()} at ${selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        });
+        onOpenChange(false);
+      }
     } catch (error) {
-      console.error('Error during reschedule:', error);
-      toast.error("Something went wrong", {
-        description: "Failed to reschedule appointment. Please try again."
+      console.error("Error rescheduling appointment:", error);
+      toast.error("Failed to reschedule", {
+        description: "There was an error rescheduling your appointment. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -71,62 +54,46 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !isSubmitting && !open && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Reschedule Appointment</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Reschedule Appointment
+          </DialogTitle>
+          <DialogDescription>
+            Select a new date and time for your appointment.
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Current Appointment</label>
-            <div className="p-3 rounded-md bg-muted/50">
-              <p className="font-medium">{appointment.type}</p>
+
+        {appointment && (
+          <div className="py-4">
+            <div className="mb-4 p-3 bg-muted/50 rounded-md">
+              <h4 className="font-medium">{appointment.type}</h4>
               <p className="text-sm text-muted-foreground">
-                {appointment.date} at {appointment.time}
+                Currently scheduled for {appointment.date} at {appointment.time}
               </p>
               <p className="text-sm text-muted-foreground">
-                {appointment.doctor}
+                With {appointment.doctor}
               </p>
             </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">New Appointment Time</label>
+                <DateTimePicker 
+                  date={selectedDate}
+                  setDate={setSelectedDate}
+                />
+              </div>
+            </div>
           </div>
-          
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Select New Date</label>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border"
-              disabled={(date) => {
-                // Disable past dates and weekends
-                const today = startOfDay(new Date());
-                const day = date.getDay();
-                return isBefore(date, today) || day === 0 || day === 6;
-              }}
-              initialFocus
-            />
-          </div>
-          
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Select New Time</label>
-            <Select value={selectedTime} onValueChange={setSelectedTime}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a time" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeSlots.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
+        )}
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleReschedule} disabled={isSubmitting}>
             {isSubmitting ? "Rescheduling..." : "Confirm Reschedule"}
           </Button>

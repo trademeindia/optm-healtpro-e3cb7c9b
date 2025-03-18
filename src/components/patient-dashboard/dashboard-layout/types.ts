@@ -1,39 +1,36 @@
 
-import { HealthMetricData } from '@/hooks/dashboard/types';
-import { TreatmentTask } from '@/hooks/dashboard/types';
-import { UpcomingAppointment } from '@/hooks/calendar/types';
-import { DashboardAppointment } from '@/hooks/dashboard/types';
-
-// Export these interfaces so they can be imported in other files
-export interface HealthMetrics {
-  heartRate: HealthMetricData;
-  bloodPressure: HealthMetricData;
-  temperature: HealthMetricData;
-  oxygen: HealthMetricData;
-  [key: string]: HealthMetricData;
-}
-
-export interface ActivityData {
-  data: { day: string; value: number }[];
-  currentValue: number;
-  source?: string;
-  lastSync?: string;
-}
-
 export interface DashboardMainContentProps {
-  healthMetrics: HealthMetrics;
-  activityData: ActivityData;
-  treatmentTasks: TreatmentTask[];
-  upcomingAppointments: UpcomingAppointment[] | DashboardAppointment[];
+  healthMetrics: {
+    heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
+    temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+  };
+  activityData: {
+    data: { day: string; value: number }[];
+    currentValue: number;
+    source?: string;
+    lastSync?: string;
+  };
+  treatmentTasks: {
+    id: string;
+    title: string;
+    time: string;
+    completed: boolean;
+  }[];
+  upcomingAppointments: {
+    id: string;
+    date: string;
+    time: string;
+    doctor: string;
+    type: string;
+  }[];
   biologicalAge: number;
   chronologicalAge: number;
   hasConnectedApps: boolean;
   onSyncData: () => Promise<void>;
-  handleConfirmAppointment: (appointmentId: string) => void;
-  handleRescheduleAppointment: (appointmentId: string) => void;
-  // This is the incorrectly spelled prop that might come in
-  handleReschedureAppointment?: (appointmentId: string) => void;
+  handleConfirmAppointment?: (id: string) => void;
+  handleRescheduleAppointment?: (id: string) => void;
 }
 
-// Add the ColumnProps type
-export interface ColumnProps extends DashboardMainContentProps {}
+export type ColumnProps = DashboardMainContentProps;

@@ -1,7 +1,5 @@
 
-import { ActivityData } from '@/components/patient-dashboard/dashboard-layout/types';
-
-export const useActivityData = (fitnessData: any): ActivityData => {
+export const useActivityData = (fitnessData: any) => {
   const activityData = [
     { day: 'Mon', value: 8500 },
     { day: 'Tue', value: 9200 },
@@ -12,7 +10,7 @@ export const useActivityData = (fitnessData: any): ActivityData => {
     { day: 'Sun', value: 7300 }
   ];
 
-  const getSteps = (): ActivityData => {
+  const getSteps = () => {
     return fitnessData.steps ? {
       data: activityData,
       currentValue: Number(fitnessData.steps.value),

@@ -23,7 +23,6 @@ export interface FitnessData {
 
 const useFitnessIntegration = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const [providers, setProviders] = useState<FitnessProvider[]>([]);
   const [fitnessData, setFitnessData] = useState<FitnessData>({});
 
@@ -214,9 +213,8 @@ const useFitnessIntegration = () => {
       });
 
       return true;
-    } catch (err) {
-      console.error('Error connecting provider', err);
-      setError(err instanceof Error ? err : new Error('Failed to connect provider'));
+    } catch (error) {
+      console.error('Error connecting provider', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -248,9 +246,8 @@ const useFitnessIntegration = () => {
       setFitnessData(newFitnessData);
 
       return true;
-    } catch (err) {
-      console.error('Error disconnecting provider', err);
-      setError(err instanceof Error ? err : new Error('Failed to disconnect provider'));
+    } catch (error) {
+      console.error('Error disconnecting provider', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -287,9 +284,8 @@ const useFitnessIntegration = () => {
       });
 
       return true;
-    } catch (err) {
-      console.error('Error refreshing provider data', err);
-      setError(err instanceof Error ? err : new Error('Failed to refresh provider data'));
+    } catch (error) {
+      console.error('Error refreshing provider data', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -298,7 +294,6 @@ const useFitnessIntegration = () => {
 
   return {
     isLoading,
-    error,
     providers,
     fitnessData,
     connectProvider,

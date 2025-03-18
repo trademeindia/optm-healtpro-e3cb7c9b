@@ -1,8 +1,8 @@
 
 import { useMemo } from 'react';
-import { HealthMetrics } from '@/components/patient-dashboard/dashboard-layout/types';
+import { HealthMetrics } from './types';
 
-export const useHealthMetrics = (fitnessData: any): HealthMetrics => {
+export const useHealthMetrics = (fitnessData: any) => {
   const getHeartRate = () => {
     if (fitnessData.heartRate) {
       return {

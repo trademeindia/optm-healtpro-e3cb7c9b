@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Calendar } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 import { AppointmentStatus } from '@/types/appointment';
 
 interface AppointmentActionsProps {
@@ -9,81 +9,52 @@ interface AppointmentActionsProps {
   status?: AppointmentStatus;
   onConfirmAppointment?: (id: string) => void;
   onRescheduleAppointment?: (id: string) => void;
-  className?: string;
 }
 
 const AppointmentActions: React.FC<AppointmentActionsProps> = ({
   appointmentId,
   status,
   onConfirmAppointment,
-  onRescheduleAppointment,
-  className
+  onRescheduleAppointment
 }) => {
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isRescheduling, setIsRescheduling] = useState(false);
-
-  const handleConfirm = async () => {
-    if (!onConfirmAppointment) return;
-    
-    setIsConfirming(true);
-    try {
-      await onConfirmAppointment(appointmentId);
-    } finally {
-      setIsConfirming(false);
-    }
-  };
-
-  const handleReschedule = async () => {
-    if (!onRescheduleAppointment) return;
-    
-    setIsRescheduling(true);
-    try {
-      await onRescheduleAppointment(appointmentId);
-    } finally {
-      setIsRescheduling(false);
-    }
-  };
-
-  // If the appointment is already confirmed, don't show the confirm button
+  // Render different actions based on appointment status
   if (status === 'confirmed') {
     return (
-      <div className={`flex gap-2 ${className}`}>
+      <div className="flex gap-2">
         <Button 
           variant="ghost" 
           size="sm"
           className="flex-1 text-xs py-2 h-8"
-          onClick={handleReschedule}
-          disabled={isRescheduling}
+          onClick={() => onRescheduleAppointment?.(appointmentId)}
         >
-          <Calendar className="h-3 w-3 mr-1" /> 
-          {isRescheduling ? "Processing..." : "Reschedule"}
+          <ArrowRight className="h-3.5 w-3.5 mr-1.5" /> Reschedule
         </Button>
       </div>
     );
   }
-
-  // For scheduled or default status
+  
+  if (status === 'cancelled' || status === 'completed') {
+    return null; // No actions for cancelled or completed appointments
+  }
+  
+  // Default: scheduled or no status (assume scheduled)
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className="flex gap-2">
       <Button 
         variant="outline" 
         size="sm" 
         className="flex-1 text-xs py-2 h-8"
-        onClick={handleConfirm}
-        disabled={isConfirming}
+        onClick={() => onConfirmAppointment?.(appointmentId)}
       >
-        <Check className="h-3 w-3 mr-1" /> 
-        {isConfirming ? "Processing..." : "Confirm"}
+        <Check className="h-3.5 w-3.5 mr-1.5" /> Confirm
       </Button>
       <Button 
         variant="ghost" 
         size="sm"
         className="flex-1 text-xs py-2 h-8"
-        onClick={handleReschedule}
-        disabled={isRescheduling}
+        onClick={() => onRescheduleAppointment?.(appointmentId)}
       >
-        <Calendar className="h-3 w-3 mr-1" /> 
-        {isRescheduling ? "Processing..." : "Reschedule"}
+        <ArrowRight className="h-3.5 w-3.5 mr-1.5" /> Reschedule
       </Button>
     </div>
   );

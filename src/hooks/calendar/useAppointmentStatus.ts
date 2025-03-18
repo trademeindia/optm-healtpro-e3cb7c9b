@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { AppointmentStatus } from '@/types/appointment';
 import { toast } from 'sonner';
 
@@ -10,15 +9,10 @@ export interface AppointmentStatusUpdate {
 }
 
 export const useAppointmentStatus = () => {
-  const [isProcessing, setIsProcessing] = useState(false);
-
   const updateAppointmentStatus = async (
     appointmentId: string,
     newStatus: AppointmentStatus
   ): Promise<boolean> => {
-    if (isProcessing) return false;
-    
-    setIsProcessing(true);
     try {
       console.log(`Updating appointment ${appointmentId} status to ${newStatus}`);
       
@@ -42,22 +36,12 @@ export const useAppointmentStatus = () => {
           successMessage = 'Appointment status updated';
       }
       
-      // Dispatch a custom event to notify about appointment update
-      window.dispatchEvent(new CustomEvent('appointment-updated', { 
-        detail: { id: appointmentId, status: newStatus } 
-      }));
-      
-      // Dispatch a calendar-updated event
-      window.dispatchEvent(new Event('calendar-updated'));
-      
       toast.success(successMessage);
       return true;
     } catch (error) {
       console.error('Error updating appointment status:', error);
       toast.error('Failed to update appointment status');
       return false;
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -74,7 +58,6 @@ export const useAppointmentStatus = () => {
   };
 
   return {
-    isProcessing,
     updateAppointmentStatus,
     handleConfirmAppointment,
     handleCancelAppointment,
