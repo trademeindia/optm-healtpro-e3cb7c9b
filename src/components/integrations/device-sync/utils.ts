@@ -1,5 +1,6 @@
 
 import { FitnessData } from '@/hooks/useFitnessIntegration';
+import { Activity, Heart, Footprints, Flame, Navigation, Moon, Clock } from 'lucide-react';
 
 // Format health data for display
 export const formatHealthMetric = (value: number | string, unit: string) => {
@@ -36,4 +37,24 @@ export const getChangeIcon = (change: number): string => {
   if (change > 0) return 'trending_up';
   if (change < 0) return 'trending_down';
   return 'remove';
+};
+
+// Get icon component based on metric type
+export const getMetricIcon = (metricType: string) => {
+  switch (metricType.toLowerCase()) {
+    case 'steps':
+      return Footprints;
+    case 'heart rate':
+      return Heart;
+    case 'calories':
+      return Flame;
+    case 'distance':
+      return Navigation;
+    case 'sleep':
+      return Moon;
+    case 'active minutes':
+      return Clock;
+    default:
+      return Activity;
+  }
 };
