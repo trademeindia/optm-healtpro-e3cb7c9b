@@ -1,23 +1,27 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useHistoricalData } from '../useHistoricalData';
 
 interface HistoricalDataTabProps {
   providerName: string;
+  historyPeriod: string;
+  setHistoryPeriod: (period: string) => void;
+  historyDataType: string;
+  setHistoryDataType: (dataType: string) => void;
+  historyData: any[];
+  isLoadingHistory: boolean;
 }
 
-const HistoricalDataTab: React.FC<HistoricalDataTabProps> = ({ providerName }) => {
-  const {
-    historyPeriod,
-    setHistoryPeriod,
-    historyDataType,
-    setHistoryDataType,
-    historyData,
-    isLoadingHistory
-  } = useHistoricalData();
-
+const HistoricalDataTab: React.FC<HistoricalDataTabProps> = ({ 
+  providerName,
+  historyPeriod,
+  setHistoryPeriod,
+  historyDataType,
+  setHistoryDataType,
+  historyData,
+  isLoadingHistory
+}) => {
   return (
     <>
       <div className="flex flex-wrap gap-2 mb-4">
