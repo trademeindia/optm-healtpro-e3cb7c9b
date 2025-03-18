@@ -1,11 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GoogleFitInfo from './GoogleFitInfo';
-import { Heart, Activity, Calendar, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { FitnessData, HealthMetric, useFitnessIntegration } from '@/hooks/fitness';
 import GoogleFitSyncPanel from '@/components/integrations/GoogleFitSyncPanel';
 
 interface GoogleFitTabProps {
