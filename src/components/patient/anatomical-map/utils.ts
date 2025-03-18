@@ -1,4 +1,5 @@
-import { HotSpot, AnatomicalRegion } from './types';
+
+import { HotSpot } from './types';
 import { SymptomEntry } from '@/contexts/SymptomContext';
 import { anatomicalRegions } from './regions';
 
