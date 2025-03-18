@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { HealthMetric, FitnessData } from '@/hooks/useFitnessIntegration';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
 
 // These would typically come from environment variables in a production app
 const GOOGLE_FIT_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // Publishable key - replace with your actual client ID
