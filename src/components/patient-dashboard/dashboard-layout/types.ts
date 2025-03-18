@@ -1,7 +1,4 @@
 
-import { AppointmentStatus } from '@/types/appointment';
-import { Appointment } from '@/components/patient-dashboard/appointments';
-
 export interface DashboardMainContentProps {
   healthMetrics: {
     heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
@@ -27,7 +24,6 @@ export interface DashboardMainContentProps {
     time: string;
     doctor: string;
     type: string;
-    status?: AppointmentStatus;
   }[];
   biologicalAge: number;
   chronologicalAge: number;
@@ -37,4 +33,4 @@ export interface DashboardMainContentProps {
   handleRescheduleAppointment?: (id: string) => void;
 }
 
-export type ColumnProps = Partial<DashboardMainContentProps>;
+export type ColumnProps = DashboardMainContentProps;

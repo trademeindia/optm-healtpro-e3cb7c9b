@@ -66,7 +66,7 @@ export const useAppointments = () => {
     const handleAppointmentUpdated = (event: CustomEvent) => {
       const { id, status } = event.detail;
       if (id && status) {
-        updateAppointmentStatus(id, status as AppointmentStatus);
+        updateAppointmentStatus(id, status);
       }
     };
 

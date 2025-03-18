@@ -1,16 +1,11 @@
 
 import React from 'react';
-import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import SymptomProgressChart from '@/components/dashboard/SymptomProgressChart';
-import MedicalDocuments from '../MedicalDocuments';
+import SymptomTracker from '@/components/dashboard/SymptomTracker';
 import AnatomicalMap from '@/components/patient/AnatomicalMap';
-import { ColumnProps } from './types';
+import MedicalDocuments from '../MedicalDocuments';
 
-const RightColumn: React.FC<ColumnProps> = ({
-  treatmentTasks,
-  biologicalAge,
-  chronologicalAge
-}) => {
+const RightColumn: React.FC = () => {
   return (
     <div className="lg:col-span-4 space-y-4 md:space-y-6">
       {/* Progress Chart */}
