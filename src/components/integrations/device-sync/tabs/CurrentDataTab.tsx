@@ -3,6 +3,7 @@ import React from 'react';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
 import { getMetricIcon } from '../utils';
+import { LucideIcon } from 'lucide-react';
 
 interface CurrentDataTabProps {
   healthData: FitnessData;
@@ -23,7 +24,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.steps.value}
           unit={healthData.steps.unit}
           change={healthData.steps.change}
-          icon={getMetricIcon('steps')}
+          icon={getMetricIcon('steps') as LucideIcon}
           color="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
           source={providerName}
           lastSync={lastSyncTime}
@@ -37,7 +38,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.heartRate.value}
           unit={healthData.heartRate.unit}
           change={healthData.heartRate.change}
-          icon={getMetricIcon('heart rate')}
+          icon={getMetricIcon('heart rate') as LucideIcon}
           color="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400"
           source={providerName}
           lastSync={lastSyncTime}
@@ -51,7 +52,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.calories.value}
           unit={healthData.calories.unit}
           change={healthData.calories.change}
-          icon={getMetricIcon('calories')}
+          icon={getMetricIcon('calories') as LucideIcon}
           color="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
           source={providerName}
           lastSync={lastSyncTime}
@@ -65,7 +66,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.distance.value}
           unit={healthData.distance.unit}
           change={healthData.distance.change}
-          icon={getMetricIcon('distance')}
+          icon={getMetricIcon('distance') as LucideIcon}
           color="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
           source={providerName}
           lastSync={lastSyncTime}
@@ -79,7 +80,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.sleep.value}
           unit={healthData.sleep.unit}
           change={healthData.sleep.change}
-          icon={getMetricIcon('sleep')}
+          icon={getMetricIcon('sleep') as LucideIcon}
           color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
           source={providerName}
           lastSync={lastSyncTime}
@@ -93,7 +94,7 @@ const CurrentDataTab: React.FC<CurrentDataTabProps> = ({
           value={healthData.activeMinutes.value}
           unit={healthData.activeMinutes.unit}
           change={healthData.activeMinutes.change}
-          icon={getMetricIcon('active minutes')}
+          icon={getMetricIcon('active minutes') as LucideIcon}
           color="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
           source={providerName}
           lastSync={lastSyncTime}

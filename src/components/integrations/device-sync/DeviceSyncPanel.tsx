@@ -10,6 +10,7 @@ import { FitnessData } from '@/hooks/useFitnessIntegration';
 
 import ConnectView from './ConnectView';
 import SyncedDataView from './SyncedDataView';
+import LoadingView from './LoadingView';
 import { useDeviceSync } from './useDeviceSync';
 
 interface DeviceSyncPanelProps {
