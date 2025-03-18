@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { AppointmentCard, type Appointment } from './appointments';
+import { Calendar } from 'lucide-react';
 
 interface UpcomingAppointmentsCardProps {
   upcomingAppointments: Appointment[];
@@ -13,7 +14,7 @@ interface UpcomingAppointmentsCardProps {
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   upcomingAppointments,
-  className,
+  className = '',
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
@@ -40,8 +41,14 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   };
 
   return (
-    <div className={`glass-morphism rounded-2xl p-4 md:p-6 ${className}`}>
-      <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
+    <div className={`glass-morphism rounded-2xl p-4 md:p-6 shadow-sm ${className}`}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
+        <div className="bg-primary/10 p-2 rounded-full">
+          <Calendar className="h-5 w-5 text-primary" />
+        </div>
+      </div>
+      
       <div className="space-y-4">
         {upcomingAppointments.length > 0 ? (
           upcomingAppointments.map(appointment => (
@@ -53,14 +60,18 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
             />
           ))
         ) : (
-          <div className="text-center py-4 text-muted-foreground">
-            No upcoming appointments scheduled.
+          <div className="text-center py-6 bg-muted/30 rounded-lg">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+            <p className="text-muted-foreground">
+              No upcoming appointments scheduled.
+            </p>
           </div>
         )}
       </div>
+      
       <Button 
         variant="ghost" 
-        className="w-full mt-3 text-sm"
+        className="w-full mt-4 text-sm hover:bg-primary/5"
         aria-label="View all appointments"
       >
         View All Appointments
