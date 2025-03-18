@@ -23,11 +23,6 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
   const isYounger = ageDifference > 0;
   const isMobile = useIsMobile();
   
-  // Format the age difference text
-  const ageDifferenceText = Math.abs(ageDifference) === 1 
-    ? 'year' 
-    : 'years';
-  
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
@@ -55,8 +50,8 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
         >
           <div className="flex flex-col items-center">
             {/* Gauge Visualization */}
-            <div className="relative w-full h-28 sm:h-32 mb-4 sm:mb-6 flex items-center justify-center">
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-16 sm:w-36 sm:h-18 overflow-hidden">
+            <div className="relative w-full h-24 sm:h-28 mb-4 flex items-center justify-center">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 sm:w-32 h-14 sm:h-16 overflow-hidden">
                 {/* Background arc */}
                 <div className="absolute top-0 left-0 w-full h-full rounded-tl-full rounded-tr-full border-6 sm:border-8 border-gray-700 border-b-0"></div>
                 
@@ -71,47 +66,39 @@ const BiologicalAge: React.FC<BiologicalAgeProps> = ({
                 
                 {/* Age marker */}
                 <div 
-                  className="absolute top-0 left-1/2 h-16 sm:h-18 w-1 bg-white transform origin-bottom"
+                  className="absolute top-0 left-1/2 h-14 sm:h-16 w-1 bg-white transform origin-bottom"
                   style={{ 
                     transform: `translateX(-50%) rotate(${gaugePercentage - 90}deg)` 
                   }}
                 >
-                  <div className="w-3 h-3 rounded-full bg-white absolute -top-1.5 left-1/2 transform -translate-x-1/2"></div>
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white absolute -top-1 left-1/2 transform -translate-x-1/2"></div>
                 </div>
               </div>
               
-              {/* Age number - Enhanced visibility */}
+              {/* Age number - Updated for better visibility */}
               <div className="absolute bottom-0 flex flex-col items-center w-full text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-white flex items-baseline">
-                  <span>{biologicalAge}</span>
-                  <span className="text-sm sm:text-base ml-1 opacity-90">Years</span>
+                <div className="text-3xl sm:text-4xl font-bold text-white">
+                  {biologicalAge}
+                </div>
+                <div className="text-xs sm:text-sm text-white/90 mt-0.5">
+                  Years
                 </div>
               </div>
             </div>
 
-            {/* Description - Improved spacing and readability */}
-            <div className="text-sm sm:text-base text-center mb-4">
-              <p className="font-semibold mb-1.5">
-                {isYounger 
-                  ? "Good news! Your biological age is younger" 
-                  : "Your biological age is older"}
-              </p>
-              <p className="text-white/90">
-                {Math.abs(ageDifference)} {ageDifferenceText} {isYounger ? 'younger' : 'older'} than 
-                your chronological age of {chronologicalAge}.
-              </p>
-              <p className="mt-2 text-green-400 font-medium">
-                A lower biological age helps you live healthier longer.
+            {/* Description */}
+            <div className={`text-xs sm:text-sm text-center ${isMobile ? 'mt-4' : 'mt-6'} mb-3`}>
+              <p className="font-semibold mb-1">Good news! Your biological age is</p>
+              <p>{Math.abs(ageDifference)} years {isYounger ? 'younger' : 'older'} than your chronological age of {chronologicalAge}.</p>
+              <p className="mt-1 text-green-400">
+                A lower blood age will help you live healthier longer.
               </p>
             </div>
 
-            {/* Learn more button - Enhanced contrast */}
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-white hover:bg-white/20 flex items-center text-sm"
-            >
+            {/* Learn more button */}
+            <Button variant="ghost" className="text-white hover:text-white hover:bg-white/10 mt-1 flex items-center text-xs sm:text-sm">
               Learn more
-              <ArrowRight className="ml-1.5 h-4 w-4" />
+              <ArrowRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </motion.div>

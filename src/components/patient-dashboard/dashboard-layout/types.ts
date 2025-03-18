@@ -1,47 +1,36 @@
 
 export interface DashboardMainContentProps {
-  healthMetrics: any;
-  activityData: any;
+  healthMetrics: {
+    heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
+    temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+  };
+  activityData: {
+    data: { day: string; value: number }[];
+    currentValue: number;
+    source?: string;
+    lastSync?: string;
+  };
   treatmentTasks: {
     id: string;
     title: string;
     time: string;
     completed: boolean;
   }[];
-  upcomingAppointments: any[];
+  upcomingAppointments: {
+    id: string;
+    date: string;
+    time: string;
+    doctor: string;
+    type: string;
+  }[];
   biologicalAge: number;
   chronologicalAge: number;
   hasConnectedApps: boolean;
-  onSyncData: () => void;
+  onSyncData: () => Promise<void>;
   handleConfirmAppointment?: (id: string) => void;
   handleRescheduleAppointment?: (id: string) => void;
 }
 
-export interface LeftColumnProps {
-  activityData: any;
-  upcomingAppointments: any[];
-  handleConfirmAppointment: (id: string) => void;
-  handleRescheduleAppointment: (id: string) => void;
-  biologicalAge: number;
-  chronologicalAge: number;
-  hasConnectedApps: boolean;
-  onSyncData: () => void;
-  healthMetrics: any;
-  treatmentTasks: {
-    id: string;
-    title: string;
-    time: string;
-    completed: boolean;
-  }[];
-}
-
-export interface RightColumnProps {
-  treatmentTasks: {
-    id: string;
-    title: string;
-    time: string;
-    completed: boolean;
-  }[];
-  biologicalAge: number;
-  chronologicalAge: number;
-}
+export type ColumnProps = DashboardMainContentProps;

@@ -109,9 +109,7 @@ export const useAuthSession = () => {
       localStorage.setItem('demoUser', JSON.stringify(newUser));
       console.log('Stored demo user in localStorage:', newUser.email);
     } else if (newUser === null) {
-      // Always clear localStorage when setting user to null
       localStorage.removeItem('demoUser');
-      console.log('Cleared demo user from localStorage');
     }
   };
 

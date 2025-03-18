@@ -1,10 +1,10 @@
 
 import { Patient, MedicalAnalysis, MedicalReport, Biomarker } from '@/types/medicalData';
-import { supabase, withRetry } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { storeInLocalStorage } from './localStorageService';
 
 /**
- * Service to handle data storage operations with enhanced reliability
+ * Service to handle data storage operations
  */
 export class DataStorageService {
   /**
@@ -16,23 +16,20 @@ export class DataStorageService {
     report: MedicalReport
   ): Promise<void> {
     try {
-      // Check if we have an authenticated user with retry mechanism
-      const { data } = await withRetry(
-        () => supabase.auth.getUser(),
-        { showToastOnError: false }
-      );
+      // Check if we have an authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!data.user) {
+      if (!user) {
         console.log("No authenticated user, skipping data storage");
         return;
       }
       
       // Store in local storage instead of trying to use non-existent tables
       // This is a temporary solution until the database schema is updated
-      this.storeAnalysis(analysis, patient.id, data.user.id);
+      this.storeAnalysis(analysis, patient.id, user.id);
       
       // Store biomarkers in local storage
-      this.storeBiomarkers(patient.biomarkers, patient.id, data.user.id);
+      this.storeBiomarkers(patient.biomarkers, patient.id, user.id);
       
       console.log("Successfully stored data in local storage (Supabase schema mismatch)");
     } catch (error) {
@@ -86,30 +83,6 @@ export class DataStorageService {
         recommendations: biomarker.recommendations,
         timestamp: new Date().toISOString()
       });
-    }
-  }
-  
-  /**
-   * Check if Supabase tables exist to determine availability
-   */
-  static async checkTablesExist(): Promise<boolean> {
-    try {
-      // Try to query an expected table
-      // We need to wrap the Supabase query in a Promise to ensure it has the correct interface
-      const result = await withRetry<any>(
-        () => Promise.resolve(supabase.from('profiles').select('count', { count: 'exact' }).limit(1)),
-        { retries: 1 } // Only try once for this check
-      );
-      
-      // Properly type the result to access the error property
-      if (result && typeof result === 'object' && 'error' in result && result.error) {
-        return false;
-      }
-      
-      return true;
-    } catch (e) {
-      console.error("Error checking tables:", e);
-      return false;
     }
   }
 }

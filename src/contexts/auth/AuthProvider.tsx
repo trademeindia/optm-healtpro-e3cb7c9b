@@ -5,7 +5,7 @@ import { useAuthSession } from './hooks/useAuthSession';
 import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
 import { toast } from 'sonner';
-import { supabase, withRetry, checkSupabaseConnection } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -16,61 +16,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signup,
     loginWithSocialProvider,
     handleOAuthCallback: handleOAuthCallbackBase,
-    logout: logoutBase,
+    logout,
     forgotPassword
   } = useAuthOperations();
 
   const isLoading = sessionLoading || operationsLoading;
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user ? `${user.email} (${user.role})` : 'null', 
       sessionLoading, 
-      operationsLoading,
-      isLoggingOut,
-      supabaseStatus
+      operationsLoading 
     });
-  }, [user, sessionLoading, operationsLoading, isLoggingOut, supabaseStatus]);
-
-  // Check Supabase connection status
-  useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        const isConnected = await checkSupabaseConnection();
-        setSupabaseStatus(isConnected ? 'online' : 'offline');
-        
-        if (!isConnected) {
-          toast.error("Supabase connection issue detected", {
-            description: "Some features may be unavailable. Using local fallbacks when possible.",
-            duration: 6000,
-          });
-        }
-      } catch (e) {
-        console.error('Supabase connection check failed:', e);
-        setSupabaseStatus('offline');
-      }
-    };
-    
-    checkConnection();
-    
-    // Periodically check connection status
-    const interval = setInterval(checkConnection, 60000); // Check every minute
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  }, [user, sessionLoading, operationsLoading]);
 
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data, error } = await withRetry(
-          () => supabase.auth.getSession(),
-          { showToastOnError: false }
-        );
-        
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error checking session:', error);
         }
@@ -93,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      // Demo accounts always work even if Supabase is offline
+      // Handle demo accounts with predefined roles and IDs
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
           id: `demo-admin-${Date.now()}`,
@@ -138,22 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return demoUser;
       }
       
-      // For non-demo users, use the enhanced login with retry logic
-      if (supabaseStatus === 'offline') {
-        toast.error('Cannot login while Supabase is offline', {
-          description: 'Please use a demo account or try again later.',
-          duration: 5000
-        });
-        return null;
-      }
-      
-      return await withRetry(
-        () => loginBase(email, password),
-        {
-          showToastOnError: true,
-          errorMessage: "Login failed"
-        }
-      );
+      // Regular login for non-demo users
+      return await loginBase(email, password);
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Login failed. Please check your credentials and try again.');
@@ -161,46 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = async () => {
-    // Set logging out state to prevent race conditions
-    setIsLoggingOut(true);
-    try {
-      // Clear user state immediately to prevent UI flashing
-      setUser(null);
-      // Call the base logout function with retry for reliability
-      if (supabaseStatus === 'online') {
-        await withRetry(
-          () => logoutBase(),
-          { showToastOnError: false }
-        );
-      } else {
-        // In offline mode, just do local cleanup
-        console.log('Supabase offline, skipping remote logout');
-        await logoutBase();
-      }
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
   const handleOAuthCallback = async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      if (supabaseStatus === 'offline') {
-        toast.error('Cannot complete OAuth while Supabase is offline', {
-          description: 'Please try again later when service is restored.',
-          duration: 5000
-        });
-        throw new Error('Supabase is currently offline');
-      }
-      
-      return await withRetry(
-        () => handleOAuthCallbackBase(provider, code, user),
-        { 
-          showToastOnError: true,
-          errorMessage: `${provider} authentication failed`
-        }
-      );
+      return await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
@@ -213,8 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isAuthenticated: !!user,
-        isLoading: isLoading || isLoggingOut,
-        supabaseStatus,
+        isLoading,
         login,
         loginWithSocialProvider,
         handleOAuthCallback,

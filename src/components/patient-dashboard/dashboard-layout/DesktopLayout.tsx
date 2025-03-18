@@ -37,11 +37,7 @@ const DesktopLayout: React.FC<DashboardMainContentProps> = (props) => {
       />
       
       {/* Right column - symptom tracker, documents, messages */}
-      <RightColumn
-        treatmentTasks={props.treatmentTasks}
-        biologicalAge={props.biologicalAge}
-        chronologicalAge={props.chronologicalAge}
-      />
+      <RightColumn />
     </div>
   );
 };

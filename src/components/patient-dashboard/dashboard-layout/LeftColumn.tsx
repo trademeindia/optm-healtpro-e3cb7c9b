@@ -4,9 +4,9 @@ import PersonalInformation from '../PersonalInformation';
 import ActivityTracker from '@/components/dashboard/ActivityTracker';
 import UpcomingAppointmentsCard from '../UpcomingAppointmentsCard';
 import MessageYourDoctor from '../MessageYourDoctor';
-import { LeftColumnProps } from './types';
+import { ColumnProps } from './types';
 
-const LeftColumn: React.FC<LeftColumnProps> = ({ 
+const LeftColumn: React.FC<ColumnProps> = ({ 
   activityData, 
   upcomingAppointments, 
   handleConfirmAppointment, 

@@ -1,1 +1,13 @@
+
 project_id = "xjxxuqqyjqzgmvtgrpgv"
+
+[api]
+# Disable APIs you don't use to improve performance
+enabled_apis = ["rest", "auth", "storage", "realtime"]
+
+[db]
+# Add schemas for required tables
+[db.schemas]
+# Schema for medical data
+[db.schemas.public]
+tables = ["profiles", "medical_analyses", "biomarkers", "patients", "medical_reports", "symptom_records", "anatomical_mappings"]

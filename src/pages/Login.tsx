@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/auth'; // Fix the import to match actual context path
 import { motion } from 'framer-motion';
 import { HeartPulse } from 'lucide-react';
 
-// Import components
+// Import new components 
 import UserTypeSelector from '@/components/auth/UserTypeSelector';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import LoginForm from '@/components/auth/LoginForm';
@@ -18,12 +18,12 @@ const Login: React.FC = () => {
   const { 
     email, setEmail,
     password, setPassword,
-    isSubmitting,
+    isSubmitting, setIsSubmitting,
     showForgotPassword, setShowForgotPassword,
     forgotEmail, setForgotEmail,
     userType, setUserType,
     showSignupDialog, setShowSignupDialog,
-    signupData,
+    signupData, setSignupData,
     showDebug, setShowDebug,
     handleSubmit,
     handleForgotPassword,
@@ -34,10 +34,8 @@ const Login: React.FC = () => {
     handleSignupInputChange
   } = useLoginState();
 
-  console.log('Login component rendering with userType:', userType);
-
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-background">
+    <div className="min-h-screen w-full flex flex-col md:flex-row">
       <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
         <motion.div 
           className="w-full max-w-md"

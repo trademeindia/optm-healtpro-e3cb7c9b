@@ -53,15 +53,6 @@ const SymptomChart: React.FC<ChartContainerProps> = ({ symptoms, chartData }) =>
     return [0, Math.max(10, maxValue)];
   };
   
-  // Check if we have chart data to display
-  if (!chartData || chartData.length === 0) {
-    return (
-      <div className="h-60 md:h-80 mb-2 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">No symptom data available for the chart</p>
-      </div>
-    );
-  }
-  
   return (
     <div className="h-60 md:h-80 mb-2">
       <ResponsiveContainer width="100%" height="100%">
@@ -125,7 +116,6 @@ const SymptomChart: React.FC<ChartContainerProps> = ({ symptoms, chartData }) =>
                 r: 5,
                 strokeWidth: 0
               }}
-              connectNulls={true}
               opacity={focusedSymptom === null || focusedSymptom === symptom.symptomName ? 1 : 0.3}
             />
           ))}

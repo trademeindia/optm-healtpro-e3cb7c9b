@@ -18,7 +18,6 @@ type SymptomContextType = {
   updateSymptom: (id: string, updates: Partial<SymptomEntry>) => void;
   loadPatientSymptoms: (patientId: number) => void;
   currentPatientId: number | null;
-  isLoading: boolean;
 };
 
 const SymptomContext = createContext<SymptomContextType | undefined>(undefined);
@@ -136,7 +135,6 @@ const defaultSymptoms = [
 export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [symptoms, setSymptoms] = useState<SymptomEntry[]>(defaultSymptoms);
   const [currentPatientId, setCurrentPatientId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const addSymptom = (symptom: SymptomEntry) => {
     setSymptoms(prev => [symptom, ...prev]);
@@ -152,43 +150,27 @@ export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ childre
 
   const loadPatientSymptoms = (patientId: number) => {
     console.log(`Loading symptoms for patient ${patientId}`);
-    setIsLoading(true);
     setCurrentPatientId(patientId);
     
-    // Simulate network delay for realism
-    setTimeout(() => {
-      if (patientSymptoms[patientId]) {
-        setSymptoms(patientSymptoms[patientId]);
-      } else {
-        // If no symptoms are found for this patient, set empty array
-        setSymptoms([]);
-      }
-      setIsLoading(false);
-    }, 500);
+    if (patientSymptoms[patientId]) {
+      setSymptoms(patientSymptoms[patientId]);
+    } else {
+      // If no symptoms are found for this patient, set empty array
+      setSymptoms([]);
+    }
   };
 
   // Listen for changes to currentPatientId and update symptoms accordingly
   useEffect(() => {
     if (currentPatientId !== null && patientSymptoms[currentPatientId]) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setSymptoms(patientSymptoms[currentPatientId]);
-        setIsLoading(false);
-      }, 500);
+      setSymptoms(patientSymptoms[currentPatientId]);
     } else if (currentPatientId === null) {
       setSymptoms(defaultSymptoms);
     }
   }, [currentPatientId]);
 
   return (
-    <SymptomContext.Provider value={{ 
-      symptoms, 
-      addSymptom, 
-      updateSymptom, 
-      loadPatientSymptoms, 
-      currentPatientId,
-      isLoading 
-    }}>
+    <SymptomContext.Provider value={{ symptoms, addSymptom, updateSymptom, loadPatientSymptoms, currentPatientId }}>
       {children}
     </SymptomContext.Provider>
   );

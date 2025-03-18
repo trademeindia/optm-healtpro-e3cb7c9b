@@ -7,9 +7,9 @@ import BiologicalAge from '@/components/dashboard/BiologicalAge';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
-import { LeftColumnProps } from './types';
+import { ColumnProps } from './types';
 
-const MiddleColumn: React.FC<LeftColumnProps> = ({
+const MiddleColumn: React.FC<ColumnProps> = ({
   healthMetrics,
   treatmentTasks,
   biologicalAge,
@@ -17,17 +17,12 @@ const MiddleColumn: React.FC<LeftColumnProps> = ({
   hasConnectedApps,
   onSyncData
 }) => {
-  // Wrap the onSyncData callback to return a Promise if it doesn't already
-  const handleSyncData = async () => {
-    return Promise.resolve(onSyncData());
-  };
-
   return (
     <div className="lg:col-span-5 space-y-4 md:space-y-6">
       {/* Health Data Sync Button */}
       <HealthSyncButton 
         hasConnectedApps={hasConnectedApps}
-        onSyncData={handleSyncData}
+        onSyncData={onSyncData}
       />
       
       {/* Biological Age Card */}
