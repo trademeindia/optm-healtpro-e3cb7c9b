@@ -1,8 +1,8 @@
 
 import { GoogleFitAuth } from './auth/googleFitAuth';
 import { GoogleFitDataService } from './data/googleFitDataService';
-import { GoogleFitDataPoint, GoogleFitSyncResult, HistoricalDataRequest } from './data/googleFitDataTypes';
-import { FitnessData } from '@/hooks/useFitnessIntegration';
+import type { GoogleFitDataPoint, GoogleFitSyncResult, HistoricalDataRequest } from './data/googleFitDataTypes';
+import type { FitnessData } from '@/hooks/useFitnessIntegration';
 
 /**
  * Main Google Fit service that provides all Google Fit functionality
@@ -62,4 +62,4 @@ export const googleFitService = new GoogleFitService();
 
 // Re-export types to maintain the same public API
 export type { GoogleFitDataPoint, GoogleFitSyncResult, HistoricalDataRequest };
-export { FitnessData };
+export type { FitnessData };
