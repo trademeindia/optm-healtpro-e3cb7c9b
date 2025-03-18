@@ -1,4 +1,5 @@
 
+/// <reference types="jest" />
 /// <reference types="@testing-library/jest-dom" />
 
 declare global {
