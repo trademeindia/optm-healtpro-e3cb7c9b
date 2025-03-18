@@ -38,22 +38,29 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
           src={getSystemImage(activeSystem)}
           alt="Human Anatomy Model"
           className="model-image max-h-full max-w-full object-contain"
-          style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
+          style={{ 
+            maxHeight: 'calc(100% - 20px)', 
+            width: 'auto',
+            position: 'relative',
+            zIndex: 10
+          }}
           onLoad={onImageLoad}
         />
         
         {/* Hotspots - Only render if image is loaded */}
         {imageLoaded && (
-          <AnimatePresence>
-            {hotspots.map((hotspot) => (
-              <HotspotMarker
-                key={hotspot.id}
-                hotspot={hotspot}
-                isActive={activeHotspot?.id === hotspot.id}
-                onClick={onHotspotClick}
-              />
-            ))}
-          </AnimatePresence>
+          <div className="absolute inset-0 w-full h-full pointer-events-none">
+            <AnimatePresence>
+              {hotspots.map((hotspot) => (
+                <HotspotMarker
+                  key={hotspot.id}
+                  hotspot={hotspot}
+                  isActive={activeHotspot?.id === hotspot.id}
+                  onClick={onHotspotClick}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
         )}
       </motion.div>
     </div>

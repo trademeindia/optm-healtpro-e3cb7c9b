@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HotspotMarkerProps } from './types';
-import { getHotspotPosition } from './regions';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
   // Use x and y coordinates directly from the hotspot
@@ -20,7 +19,7 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className="absolute cursor-pointer rounded-full flex items-center justify-center"
+            className="absolute cursor-pointer rounded-full flex items-center justify-center pointer-events-auto"
             style={{
               left: `${position.x}%`,
               top: `${position.y}%`,
@@ -46,8 +45,11 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             )}
           </motion.div>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent side="top" align="center" sideOffset={5}>
           <p className="font-medium">{hotspot.label}</p>
+          {hotspot.description && (
+            <p className="text-xs text-muted-foreground">{hotspot.description}</p>
+          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

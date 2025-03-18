@@ -25,9 +25,14 @@ export const getSystemImage = (system: string): string => {
  * Converts symptom entries to hotspots for the anatomical map
  */
 export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
+  if (!symptoms || symptoms.length === 0) {
+    console.log('No symptoms to convert to hotspots');
+    return [];
+  }
+
   return symptoms.map(symptom => {
     // Map symptom location to anatomical region
-    const regionId = mapSymptomLocationToRegion(symptom.location);
+    const regionId = mapSymptomLocationToRegion(symptom.location || 'chest');
     
     // Find the corresponding anatomical region
     const region = anatomicalRegions.find(r => r.id === regionId);
@@ -54,26 +59,28 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
  */
 const mapSymptomLocationToRegion = (location: string): string => {
   // Direct mapping if the location matches a region ID
+  if (!location) return 'chest';
+  
   if (anatomicalRegions.some(region => region.id === location)) {
     return location;
   }
 
   // Handle special cases or format differences
-  switch (location) {
-    case 'rightShoulder': return 'right-shoulder';
-    case 'leftShoulder': return 'left-shoulder';
-    case 'rightElbow': return 'right-elbow';
-    case 'leftElbow': return 'left-elbow';
-    case 'rightWrist': return 'right-hand';
-    case 'leftWrist': return 'left-hand';
-    case 'rightHip': return 'right-hip';
-    case 'leftHip': return 'left-hip';
-    case 'rightKnee': return 'right-knee';
-    case 'leftKnee': return 'left-knee';
-    case 'rightAnkle': return 'right-foot';
-    case 'leftAnkle': return 'left-foot';
-    case 'upperBack': return 'upper-back';
-    case 'lowerBack': return 'lower-back';
+  switch (location.toLowerCase()) {
+    case 'rightshoulder': return 'right-shoulder';
+    case 'leftshoulder': return 'left-shoulder';
+    case 'rightelbow': return 'right-elbow';
+    case 'leftelbow': return 'left-elbow';
+    case 'rightwrist': return 'right-hand';
+    case 'leftwrist': return 'left-hand';
+    case 'righthip': return 'right-hip';
+    case 'lefthip': return 'left-hip';
+    case 'rightknee': return 'right-knee';
+    case 'leftknee': return 'left-knee';
+    case 'rightankle': return 'right-foot';
+    case 'leftankle': return 'left-foot';
+    case 'upperback': return 'upper-back';
+    case 'lowerback': return 'lower-back';
     default: return 'chest'; // Default to chest if no matching region
   }
 };
