@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useGoogleFitIntegration } from '@/hooks/useGoogleFitIntegration';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,99 +19,243 @@ import {
 } from 'lucide-react';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
+import { FitnessProvider } from '@/components/dashboard/FitnessIntegrations';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from 'sonner';
 
-interface GoogleFitSyncPanelProps {
+interface DeviceSyncPanelProps {
+  provider: FitnessProvider;
   onHealthDataSync?: (data: FitnessData) => void;
   className?: string;
 }
 
-const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({ 
+interface HistoricalDataPoint {
+  date: string;
+  value: number;
+}
+
+const DeviceSyncPanel: React.FC<DeviceSyncPanelProps> = ({ 
+  provider,
   onHealthDataSync,
   className = ''
 }) => {
-  const {
-    isConnected,
-    isLoading,
-    connectGoogleFit,
-    disconnectGoogleFit,
-    syncGoogleFitData,
-    lastSyncTime,
-    healthData,
-    getHistoricalData
-  } = useGoogleFitIntegration();
-
+  const [isConnected, setIsConnected] = useState(provider.isConnected);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | undefined>(provider.lastSync);
+  const [healthData, setHealthData] = useState<FitnessData>({});
   const [activeTab, setActiveTab] = useState('current');
   const [historyPeriod, setHistoryPeriod] = useState('7days');
   const [historyDataType, setHistoryDataType] = useState('steps');
-  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<HistoricalDataPoint[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   const handleConnect = () => {
     if (!isConnected) {
-      connectGoogleFit();
+      setIsLoading(true);
+      
+      // Simulate connection process
+      setTimeout(() => {
+        setIsConnected(true);
+        setLastSyncTime(new Date().toLocaleTimeString());
+        
+        // Generate mock health data for this provider
+        const mockHealthData = generateMockHealthData(provider.name);
+        setHealthData(mockHealthData);
+        
+        if (onHealthDataSync) {
+          onHealthDataSync(mockHealthData);
+        }
+        
+        setIsLoading(false);
+        
+        toast.success(`Connected to ${provider.name}`, {
+          description: "Your health data is now being synced"
+        });
+      }, 1500);
     }
   };
 
   const handleDisconnect = async () => {
     if (isConnected) {
-      await disconnectGoogleFit();
+      setIsLoading(true);
+      
+      // Simulate disconnection process
+      setTimeout(() => {
+        setIsConnected(false);
+        setHealthData({});
+        setLastSyncTime(undefined);
+        
+        setIsLoading(false);
+        
+        toast.success(`Disconnected from ${provider.name}`, {
+          description: "Your health data will no longer be synced"
+        });
+      }, 1000);
     }
   };
 
   const handleSync = async () => {
     if (isConnected) {
-      const syncedData = await syncGoogleFitData();
-      if (onHealthDataSync) {
-        onHealthDataSync(syncedData);
-      }
+      setIsLoading(true);
+      
+      // Simulate sync process
+      setTimeout(() => {
+        setLastSyncTime(new Date().toLocaleTimeString());
+        
+        // Update mock health data with slight variations
+        const updatedHealthData = generateMockHealthData(provider.name);
+        setHealthData(updatedHealthData);
+        
+        if (onHealthDataSync) {
+          onHealthDataSync(updatedHealthData);
+        }
+        
+        setIsLoading(false);
+        
+        toast.success(`Synced with ${provider.name}`, {
+          description: "Your latest health data has been updated"
+        });
+      }, 1500);
     }
   };
 
-  const fetchHistoricalData = async () => {
+  const fetchHistoricalData = () => {
     if (!isConnected) return;
     
     setIsLoadingHistory(true);
     
-    try {
+    // Simulate API call to get historical data
+    setTimeout(() => {
       const endDate = new Date();
       const startDate = new Date();
+      let days = 7;
       
       // Set start date based on selected period
       if (historyPeriod === '7days') {
+        days = 7;
         startDate.setDate(endDate.getDate() - 7);
       } else if (historyPeriod === '30days') {
+        days = 30;
         startDate.setDate(endDate.getDate() - 30);
       } else if (historyPeriod === '90days') {
+        days = 90;
         startDate.setDate(endDate.getDate() - 90);
       }
       
-      const data = await getHistoricalData({
-        dataType: historyDataType,
-        startDate,
-        endDate
+      // Generate mock historical data
+      const mockHistoricalData: HistoricalDataPoint[] = [];
+      
+      for (let i = 0; i < days; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        
+        let value: number;
+        
+        // Generate appropriate values based on data type
+        switch (historyDataType) {
+          case 'steps':
+            value = Math.floor(5000 + Math.random() * 7000);
+            break;
+          case 'heart_rate':
+            value = Math.floor(60 + Math.random() * 20);
+            break;
+          case 'calories':
+            value = Math.floor(1000 + Math.random() * 1000);
+            break;
+          case 'distance':
+            value = Math.floor(30 + Math.random() * 100) / 10;
+            break;
+          case 'sleep':
+            value = Math.floor(5 + Math.random() * 4);
+            break;
+          case 'active_minutes':
+            value = Math.floor(30 + Math.random() * 60);
+            break;
+          default:
+            value = Math.random() * 100;
+        }
+        
+        mockHistoricalData.push({
+          date: format(date, 'MMM dd'),
+          value
+        });
+      }
+      
+      // Sort by date (oldest to newest)
+      mockHistoricalData.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
       });
       
-      // Format data for the chart
-      const formattedData = data.map(point => ({
-        date: format(new Date(point.startTime), 'MMM dd'),
-        value: point.value
-      }));
-      
-      setHistoryData(formattedData);
-    } catch (error) {
-      console.error("Error fetching historical data:", error);
-    } finally {
+      setHistoryData(mockHistoricalData);
       setIsLoadingHistory(false);
-    }
+    }, 1000);
   };
 
   // Fetch historical data when tab, period or data type changes
   React.useEffect(() => {
-    if (activeTab === 'history') {
+    if (activeTab === 'history' && isConnected) {
       fetchHistoricalData();
     }
-  }, [activeTab, historyPeriod, historyDataType]);
+  }, [activeTab, historyPeriod, historyDataType, isConnected]);
+
+  // Generate mock health data for the device
+  const generateMockHealthData = (providerName: string): FitnessData => {
+    const currentTimestamp = new Date().toISOString();
+    
+    // Generate realistic mock data specific to this provider
+    return {
+      heartRate: {
+        name: 'Heart Rate',
+        value: Math.floor(60 + Math.random() * 20), // 60-80 bpm
+        unit: 'bpm',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 10) * (Math.random() > 0.5 ? 1 : -1),
+        source: providerName
+      },
+      steps: {
+        name: 'Steps',
+        value: Math.floor(5000 + Math.random() * 7000), // 5000-12000 steps
+        unit: 'steps',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 15) * (Math.random() > 0.3 ? 1 : -1),
+        source: providerName
+      },
+      calories: {
+        name: 'Calories',
+        value: Math.floor(1000 + Math.random() * 1000), // 1000-2000 kcal
+        unit: 'kcal',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 8) * (Math.random() > 0.4 ? 1 : -1),
+        source: providerName
+      },
+      distance: {
+        name: 'Distance',
+        value: Math.floor(30 + Math.random() * 100) / 10, // 3.0-13.0 km
+        unit: 'km',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 12),
+        source: providerName
+      },
+      sleep: {
+        name: 'Sleep',
+        value: Math.floor(5 + Math.random() * 4), // 5-9 hours
+        unit: 'hours',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 20) * (Math.random() > 0.5 ? 1 : -1),
+        source: providerName
+      },
+      activeMinutes: {
+        name: 'Active Minutes',
+        value: Math.floor(30 + Math.random() * 60), // 30-90 minutes
+        unit: 'min',
+        timestamp: currentTimestamp,
+        change: Math.floor(Math.random() * 25),
+        source: providerName
+      }
+    };
+  };
 
   const getMetricIcon = (metricName: string) => {
     switch (metricName.toLowerCase()) {
@@ -151,13 +294,13 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
           <div className="rounded-full bg-primary/10 p-3 mb-4">
             <Link2 className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="text-lg font-medium mb-2">Connect to Google Fit</h3>
+          <h3 className="text-lg font-medium mb-2">Connect to {provider.name}</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-md">
-            Sync your health and fitness data from Google Fit to track your progress and gain insights about your health.
+            Sync your health and fitness data from {provider.name} to track your progress and gain insights about your health.
           </p>
           <Button onClick={handleConnect} className="gap-2">
             <Link2 className="h-4 w-4" />
-            <span>Connect Google Fit</span>
+            <span>Connect {provider.name}</span>
           </Button>
         </div>
       );
@@ -193,8 +336,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.steps.change}
                 icon={getMetricIcon('steps')}
                 color="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -207,8 +350,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.heartRate.change}
                 icon={getMetricIcon('heart rate')}
                 color="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -221,8 +364,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.calories.change}
                 icon={getMetricIcon('calories')}
                 color="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -235,8 +378,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.distance.change}
                 icon={getMetricIcon('distance')}
                 color="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -249,8 +392,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.sleep.change}
                 icon={getMetricIcon('sleep')}
                 color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -263,8 +406,8 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
                 change={healthData.activeMinutes.change}
                 icon={getMetricIcon('active minutes')}
                 color="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                source="Google Fit"
-                lastSync={lastSyncTime ? format(new Date(lastSyncTime), 'h:mm a') : undefined}
+                source={provider.name}
+                lastSync={lastSyncTime}
                 isConnected={true}
               />
             )}
@@ -337,11 +480,20 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
     <Card className={className}>
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle>Google Fit Integration</CardTitle>
-            <CardDescription>
-              Sync your health and fitness data
-            </CardDescription>
+          <div className="flex items-center gap-2">
+            {provider.logo && (
+              <img 
+                src={provider.logo} 
+                alt={provider.name} 
+                className="h-6 w-6 rounded-full mr-2" 
+              />
+            )}
+            <div>
+              <CardTitle>{provider.name} Integration</CardTitle>
+              <CardDescription>
+                Sync your health and fitness data
+              </CardDescription>
+            </div>
           </div>
           {isConnected && (
             <Button 
@@ -361,11 +513,11 @@ const GoogleFitSyncPanel: React.FC<GoogleFitSyncPanelProps> = ({
       </CardContent>
       {isConnected && lastSyncTime && (
         <CardFooter className="text-xs text-muted-foreground border-t pt-4">
-          Last synchronized: {format(new Date(lastSyncTime), 'MMMM d, yyyy h:mm a')}
+          Last synchronized: {format(new Date(), 'MMMM d, yyyy')} at {lastSyncTime}
         </CardFooter>
       )}
     </Card>
   );
 };
 
-export default GoogleFitSyncPanel;
+export default DeviceSyncPanel;
