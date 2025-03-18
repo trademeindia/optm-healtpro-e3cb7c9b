@@ -20,12 +20,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export const healthAppsApi = {
   async getConnections(userId: string) {
     // Using rpc call with explicit typing to resolve TypeScript issues
-    return supabase.rpc<any>('get_fitness_connections', { user_id_param: userId });
+    return supabase.rpc<any, any>('get_fitness_connections', { user_id_param: userId });
   },
   
   async getLatestHealthData(userId: string, provider: string, dataType: string) {
     // Using rpc call with explicit typing to resolve TypeScript issues
-    return supabase.rpc<any>('get_latest_fitness_data', { 
+    return supabase.rpc<any, any>('get_latest_fitness_data', { 
       user_id_param: userId,
       provider_param: provider,
       data_type_param: dataType
@@ -34,7 +34,7 @@ export const healthAppsApi = {
   
   async getHealthDataHistory(userId: string, provider: string, dataType: string, limit = 30) {
     // Using rpc call with explicit typing to resolve TypeScript issues
-    return supabase.rpc<any>('get_fitness_data_history', {
+    return supabase.rpc<any, any>('get_fitness_data_history', {
       user_id_param: userId,
       provider_param: provider,
       data_type_param: dataType,
