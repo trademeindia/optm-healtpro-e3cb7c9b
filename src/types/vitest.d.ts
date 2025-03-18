@@ -1,6 +1,6 @@
 
 /// <reference types="vitest" />
-/// <reference types="@testing-library/jest-dom" />
+/// <reference types="@testing-library/jest-dom/vitest" />
 
 // Extend existing expect interface with jest-dom matchers
 interface CustomMatchers<R = unknown> {
