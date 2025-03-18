@@ -1,32 +1,24 @@
 
 import React from 'react';
-import { 
-  Heart, 
-  ActivitySquare, 
-  Flame,
-  Circle,
-  Moon,
-  Clock,
-  ScanEye
-} from 'lucide-react';
+import { Activity, Heart, Footprints, FlameKindling, Route, Moon, Timer } from 'lucide-react';
 import { MetricIconProps } from './types';
 
 const MetricIcon: React.FC<MetricIconProps> = ({ metricName }) => {
   switch (metricName.toLowerCase()) {
-    case 'heart rate':
-      return <Heart className="w-4 h-4 md:w-5 md:h-5" />;
     case 'steps':
-      return <ActivitySquare className="w-4 h-4 md:w-5 md:h-5" />;
+      return <Footprints className="h-4 w-4" />;
+    case 'heart rate':
+      return <Heart className="h-4 w-4" />;
     case 'calories':
-      return <Flame className="w-4 h-4 md:w-5 md:h-5" />;
+      return <FlameKindling className="h-4 w-4" />;
     case 'distance':
-      return <Circle className="w-4 h-4 md:w-5 md:h-5" />;
+      return <Route className="h-4 w-4" />;
     case 'sleep':
-      return <Moon className="w-4 h-4 md:w-5 md:h-5" />;
+      return <Moon className="h-4 w-4" />;
     case 'active minutes':
-      return <Clock className="w-4 h-4 md:w-5 md:h-5" />;
+      return <Timer className="h-4 w-4" />;
     default:
-      return <ScanEye className="w-4 h-4 md:w-5 md:h-5" />;
+      return <Activity className="h-4 w-4" />;
   }
 };
 
