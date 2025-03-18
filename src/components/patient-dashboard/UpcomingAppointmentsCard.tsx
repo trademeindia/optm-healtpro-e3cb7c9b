@@ -32,8 +32,9 @@ const adaptAppointment = (appt: UpcomingAppointment | DashboardAppointment): App
       date: typeof appt.date === 'string' ? appt.date : new Date(appt.date).toLocaleDateString(),
       time: appt.time,
       doctor: 'doctorName' in appt && appt.doctorName ? appt.doctorName : 'Your Doctor',
-      type: appt.type || appt.title || 'Appointment', // Ensure there's always a valid string here
-      status: appt.status || 'scheduled'
+      type: typeof appt.type === 'string' ? appt.type : 
+           (typeof appt.title === 'string' ? appt.title : 'Appointment'), // Ensure there's always a valid string here
+      status: typeof appt.status === 'string' ? appt.status : 'scheduled'
     };
   }
 };

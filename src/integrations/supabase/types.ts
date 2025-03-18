@@ -141,23 +141,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_fitness_connections: {
-        Args: {
-          user_id_param: string
-        }
-        Returns: {
-          access_token: string
-          created_at: string
-          expires_at: string
-          id: string
-          last_sync: string | null
-          provider: string
-          refresh_token: string
-          scope: string
-          updated_at: string
-          user_id: string
-        }[]
-      }
+      get_fitness_connections:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              user_id_param: string
+            }
+            Returns: {
+              access_token: string
+              created_at: string
+              expires_at: string
+              id: string
+              last_sync: string | null
+              provider: string
+              refresh_token: string
+              scope: string
+              updated_at: string
+              user_id: string
+            }[]
+          }
       get_fitness_data_history: {
         Args: {
           user_id_param: string
