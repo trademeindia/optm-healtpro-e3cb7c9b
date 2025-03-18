@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Activity, Heart } from 'lucide-react';
 import { AppointmentStatus } from '@/types/appointment';
 import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
 import AppointmentActions from './AppointmentActions';
@@ -12,6 +12,11 @@ export interface Appointment {
   doctor: string;
   type: string;
   status?: AppointmentStatus;
+  healthMetrics?: {
+    heartRate?: number;
+    steps?: number;
+    sleep?: number;
+  };
 }
 
 interface AppointmentCardProps {
@@ -59,6 +64,27 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       {appointment.status && (
         <div className="mb-3">
           <AppointmentStatusIndicator status={appointment.status} />
+        </div>
+      )}
+      
+      {/* Health metrics section - show when available */}
+      {appointment.healthMetrics && (
+        <div className="mb-3 p-2 bg-muted/30 rounded-md">
+          <p className="text-xs text-muted-foreground mb-2 font-medium">Health Data - Last 24 Hours</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {appointment.healthMetrics.heartRate && (
+              <div className="flex items-center gap-1.5">
+                <Heart className="h-3 w-3 text-red-500" />
+                <span>{appointment.healthMetrics.heartRate} bpm</span>
+              </div>
+            )}
+            {appointment.healthMetrics.steps && (
+              <div className="flex items-center gap-1.5">
+                <Activity className="h-3 w-3 text-green-500" />
+                <span>{appointment.healthMetrics.steps.toLocaleString()} steps</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
       
