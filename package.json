@@ -46,6 +46,7 @@
     "@tensorflow-models/posenet": "^2.2.2",
     "@tensorflow/tfjs": "^3.21.0",
     "@testing-library/jest-dom": "^6.6.3",
+    "@types/testing-library__jest-dom": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
