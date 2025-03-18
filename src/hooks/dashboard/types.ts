@@ -27,4 +27,5 @@ export interface DashboardAppointment {
   time: string;
   doctor: string;
   type: string;
+  status?: 'scheduled' | 'confirmed' | 'cancelled' | 'completed';
 }

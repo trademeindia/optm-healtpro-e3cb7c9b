@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { AppointmentStatus } from '@/types/appointment';
+import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
 import AppointmentActions from './AppointmentActions';
 
 export interface Appointment {
@@ -9,6 +11,7 @@ export interface Appointment {
   time: string;
   doctor: string;
   type: string;
+  status?: AppointmentStatus;
 }
 
 interface AppointmentCardProps {
@@ -38,6 +41,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary" />
         </div>
       </div>
+
+      {appointment.status && (
+        <div className="mb-3">
+          <AppointmentStatusIndicator status={appointment.status} />
+        </div>
+      )}
       
       <AppointmentActions 
         appointmentId={appointment.id}

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Check, Calendar } from 'lucide-react';
 
 interface AppointmentActionsProps {
   appointmentId: string;
@@ -21,7 +22,7 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
         className="flex-1 text-xs py-2 h-8"
         onClick={() => onConfirmAppointment?.(appointmentId)}
       >
-        Confirm
+        <Check className="h-3 w-3 mr-1" /> Confirm
       </Button>
       <Button 
         variant="ghost" 
@@ -29,7 +30,7 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
         className="flex-1 text-xs py-2 h-8"
         onClick={() => onRescheduleAppointment?.(appointmentId)}
       >
-        Reschedule
+        <Calendar className="h-3 w-3 mr-1" /> Reschedule
       </Button>
     </div>
   );
