@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import FitnessIntegrations from '@/components/dashboard/FitnessIntegrations';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { Button } from '@/components/ui/button';
-import { Check, Smartphone } from 'lucide-react';
+import { Check, Smartphone, X } from 'lucide-react';
 import GoogleFitSyncPanel from '@/components/integrations/GoogleFitSyncPanel';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundaryWithFallback } from '@/pages/dashboard/components/tabs/overview/ErrorBoundaryWithFallback';
+import DeviceSyncPanel from '@/components/integrations/DeviceSyncPanel';
 
 const HealthAppsPage: React.FC = () => {
   const { 
@@ -21,18 +23,32 @@ const HealthAppsPage: React.FC = () => {
   
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("integrations");
+  const [connectedDevices, setConnectedDevices] = useState<string[]>([]);
+
+  // Get list of connected providers for creating device-specific tabs
+  useEffect(() => {
+    const connected = providers
+      .filter(p => p.isConnected)
+      .map(p => p.id);
+    
+    setConnectedDevices(connected);
+  }, [providers]);
 
   const handleHealthDataSync = (data: any) => {
-    // This function will be called when Google Fit data is synced
+    // This function will be called when health data is synced
     toast({
       title: "Health Data Synced",
-      description: "Your Google Fit data has been synchronized",
+      description: "Your health data has been synchronized",
       duration: 3000,
     });
   };
 
   const handleRetry = () => {
     window.location.reload();
+  };
+
+  const getProviderById = (id: string) => {
+    return providers.find(p => p.id === id);
   };
 
   return (
@@ -52,9 +68,20 @@ const HealthAppsPage: React.FC = () => {
 
           <ErrorBoundaryWithFallback onRetry={handleRetry}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-              <TabsList>
-                <TabsTrigger value="integrations">Health App Integrations</TabsTrigger>
-                <TabsTrigger value="googlefit">Google Fit Sync</TabsTrigger>
+              <TabsList className="overflow-x-auto flex w-full sm:w-auto pb-1">
+                <TabsTrigger value="integrations">All Integrations</TabsTrigger>
+                {connectedDevices.includes('google_fit') && (
+                  <TabsTrigger value="googlefit">Google Fit</TabsTrigger>
+                )}
+                {connectedDevices.includes('samsung_health') && (
+                  <TabsTrigger value="samsung_health">Samsung Health</TabsTrigger>
+                )}
+                {connectedDevices.includes('apple_health') && (
+                  <TabsTrigger value="apple_health">Apple Health</TabsTrigger>
+                )}
+                {connectedDevices.includes('fitbit') && (
+                  <TabsTrigger value="fitbit">Fitbit</TabsTrigger>
+                )}
               </TabsList>
             
               <TabsContent value="integrations" className="mt-0">
@@ -246,6 +273,97 @@ const HealthAppsPage: React.FC = () => {
                   </div>
                 </div>
               </TabsContent>
+
+              {/* Dynamically generate tabs for other connected devices */}
+              {connectedDevices
+                .filter(id => id !== 'google_fit') // Google Fit has its own dedicated component
+                .map(deviceId => {
+                  const provider = getProviderById(deviceId);
+                  return provider ? (
+                    <TabsContent key={deviceId} value={deviceId} className="mt-0">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div className="lg:col-span-8">
+                          <DeviceSyncPanel 
+                            provider={provider}
+                            onHealthDataSync={handleHealthDataSync}
+                            className="shadow-sm"
+                          />
+                        </div>
+                        
+                        <div className="lg:col-span-4">
+                          <div className="glass-morphism rounded-2xl p-6">
+                            <h3 className="text-lg font-semibold mb-4">{provider.name} Integration</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Connect your {provider.name} account to track and monitor your health metrics in real-time.
+                            </p>
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-2">
+                                <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                                  <Check className="h-3.5 w-3.5 text-primary" />
+                                </div>
+                                <p className="text-xs">
+                                  <span className="font-medium">Real-time syncing</span> - Get your latest fitness data instantly
+                                </p>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                                  <Check className="h-3.5 w-3.5 text-primary" />
+                                </div>
+                                <p className="text-xs">
+                                  <span className="font-medium">Comprehensive metrics</span> - Track steps, heart rate, sleep and more
+                                </p>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                                  <Check className="h-3.5 w-3.5 text-primary" />
+                                </div>
+                                <p className="text-xs">
+                                  <span className="font-medium">Historical data</span> - View your progress over time with detailed charts
+                                </p>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <div className="bg-primary/10 p-1.5 rounded-full mt-0.5">
+                                  <Check className="h-3.5 w-3.5 text-primary" />
+                                </div>
+                                <p className="text-xs">
+                                  <span className="font-medium">Secure connection</span> - Your data is transferred securely
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-6">
+                              <h4 className="text-sm font-medium mb-2">Supported Devices</h4>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex items-center gap-2 p-2 border rounded-md bg-card">
+                                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-xs">{provider.name} Devices</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="glass-morphism rounded-2xl p-6 mt-6">
+                            <h3 className="text-lg font-semibold mb-4">Need Help?</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              If you're having trouble connecting to {provider.name} or syncing your data, here are some resources to help you.
+                            </p>
+                            <div className="space-y-2">
+                              <Button variant="outline" size="sm" className="w-full justify-start">
+                                Troubleshooting Guide
+                              </Button>
+                              <Button variant="outline" size="sm" className="w-full justify-start">
+                                Contact Support
+                              </Button>
+                              <Button variant="outline" size="sm" className="w-full justify-start">
+                                FAQ
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  ) : null;
+                })}
             </Tabs>
           </ErrorBoundaryWithFallback>
         </main>
