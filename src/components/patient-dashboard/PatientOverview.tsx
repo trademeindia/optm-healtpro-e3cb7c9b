@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, MapPin, Phone, Mail, Heart, Activity, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Phone, Mail, UserIcon, Activity, AlertCircle } from 'lucide-react';
 import { User } from '@/contexts/auth/types';
 import { DashboardAppointment, HealthMetrics } from '@/hooks/dashboard/types';
 import UpcomingAppointmentsCard from './UpcomingAppointmentsCard';
@@ -55,15 +54,15 @@ const PatientOverview: React.FC<PatientOverviewProps> = ({
       <Card className="lg:col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center">
-            <User className="h-5 w-5 mr-2 text-primary" />
+            <UserIcon className="h-5 w-5 mr-2 text-primary" />
             Personal Information
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center mb-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mr-4">
-              {user?.avatar ? (
-                <img src={user.avatar} alt={user?.name} className="w-full h-full rounded-full object-cover" />
+              {user?.picture ? (
+                <img src={user.picture} alt={user?.name} className="w-full h-full rounded-full object-cover" />
               ) : (
                 <span className="text-xl font-semibold text-primary">
                   {user?.name?.charAt(0) || "P"}

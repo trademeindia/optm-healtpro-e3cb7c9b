@@ -1,4 +1,3 @@
-
 import React, { memo, useState, useEffect } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
@@ -14,6 +13,7 @@ import ProgressTracking from '@/components/patient-dashboard/ProgressTracking';
 import PatientOverview from '@/components/patient-dashboard/PatientOverview';
 import MedicalReports from '@/components/patient-dashboard/MedicalReports';
 import RealTimeVitals from '@/components/patient-dashboard/RealTimeVitals';
+import { MuscleGroup } from '@/types/exercise.types';
 
 // Memoize the component to prevent unnecessary re-renders
 const PatientDashboard: React.FC = memo(() => {
@@ -46,12 +46,12 @@ const PatientDashboard: React.FC = memo(() => {
   }, [hasConnectedApps, handleSyncAllData]);
 
   // Sample data for muscle improvement progress tracking
-  const muscleGroups = [
-    { id: 1, name: 'Quadriceps', progress: 75 },
-    { id: 2, name: 'Hamstrings', progress: 60 },
-    { id: 3, name: 'Lower Back', progress: 45 },
-    { id: 4, name: 'Shoulders', progress: 80 },
-    { id: 5, name: 'Abdominals', progress: 65 }
+  const muscleGroups: MuscleGroup[] = [
+    { id: "1", name: 'Quadriceps', progress: 75 },
+    { id: "2", name: 'Hamstrings', progress: 60 },
+    { id: "3", name: 'Lower Back', progress: 45 },
+    { id: "4", name: 'Shoulders', progress: 80 },
+    { id: "5", name: 'Abdominals', progress: 65 }
   ];
 
   const progressData = [
