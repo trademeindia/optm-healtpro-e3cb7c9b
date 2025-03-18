@@ -1,4 +1,7 @@
 
+import { AppointmentStatus } from '@/types/appointment';
+import { Appointment } from '@/components/patient-dashboard/appointments';
+
 export interface DashboardMainContentProps {
   healthMetrics: {
     heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
@@ -24,7 +27,7 @@ export interface DashboardMainContentProps {
     time: string;
     doctor: string;
     type: string;
-    status?: string;
+    status?: AppointmentStatus;
   }[];
   biologicalAge: number;
   chronologicalAge: number;

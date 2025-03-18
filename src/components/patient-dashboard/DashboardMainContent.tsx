@@ -5,6 +5,7 @@ import RightColumn from './dashboard-layout/RightColumn';
 import { RescheduleDialog } from './appointments';
 import { usePatientAppointments } from '@/hooks/dashboard/usePatientAppointments';
 import { DashboardMainContentProps } from './dashboard-layout/types';
+import { AppointmentStatus } from '@/types/appointment';
 
 const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   healthMetrics,
@@ -18,6 +19,12 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
   handleConfirmAppointment,
   handleRescheduleAppointment
 }) => {
+  // Convert upcomingAppointments to ensure they have the correct status type
+  const typedAppointments = upcomingAppointments.map(appointment => ({
+    ...appointment,
+    status: appointment.status as AppointmentStatus || 'scheduled' as AppointmentStatus
+  }));
+  
   const {
     appointments,
     selectedAppointment,
@@ -26,7 +33,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
     handleConfirmAppointment: confirmAppointment,
     openRescheduleDialog,
     handleRescheduleAppointment: rescheduleAppointment
-  } = usePatientAppointments(upcomingAppointments);
+  } = usePatientAppointments(typedAppointments);
   
   // Handle appointment confirmation, using either the prop or the hook function
   const onConfirmAppointment = (id: string) => {

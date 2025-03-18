@@ -42,18 +42,28 @@ export const usePatientAppointments = (upcomingAppointments: Appointment[]) => {
   }, [appointments]);
 
   // Handle rescheduling an appointment
-  const handleRescheduleAppointment = useCallback((
+  const handleRescheduleAppointment = useCallback(async (
     appointmentId: string, 
-    newDate: string, 
-    newTime: string
-  ) => {
+    newDate: Date
+  ): Promise<boolean> => {
+    const formattedDate = newDate.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const formattedTime = newDate.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+    
     setAppointments(prevAppointments => 
       prevAppointments.map(appointment => 
         appointment.id === appointmentId 
           ? { 
               ...appointment, 
-              date: newDate, 
-              time: newTime,
+              date: formattedDate, 
+              time: formattedTime,
               status: 'scheduled' as AppointmentStatus 
             } 
           : appointment
@@ -63,9 +73,11 @@ export const usePatientAppointments = (upcomingAppointments: Appointment[]) => {
     setRescheduleDialogOpen(false);
     
     toast.success('Appointment rescheduled', {
-      description: `Your appointment has been rescheduled to ${newDate} at ${newTime}.`,
+      description: `Your appointment has been rescheduled to ${formattedDate} at ${formattedTime}.`,
       duration: 3000
     });
+    
+    return true;
   }, []);
 
   return {
