@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAppointmentStatus } from '@/hooks/calendar/useAppointmentStatus';
 import { DashboardAppointment } from './types';
@@ -27,7 +27,7 @@ export const useAppointments = () => {
 
   const { handleConfirmAppointment: confirmAppointmentStatus } = useAppointmentStatus();
 
-  const handleConfirmAppointment = async (id: string) => {
+  const handleConfirmAppointment = useCallback(async (id: string) => {
     try {
       // Update the appointment status using the appointment status hook
       const success = await confirmAppointmentStatus(id);
@@ -48,38 +48,69 @@ export const useAppointments = () => {
           duration: 3000
         });
         
-        // In a real app, this would notify the healthcare provider
-        console.log(`Sending notification to healthcare provider for appointment ${id}`);
+        // Dispatch a custom event to notify about appointment update
+        window.dispatchEvent(new CustomEvent('appointment-updated', { 
+          detail: { id, status: 'confirmed' } 
+        }));
+        
+        // Dispatch a calendar-updated event
+        window.dispatchEvent(new Event('calendar-updated'));
+        
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Error confirming appointment:', error);
       toast.error("Failed to confirm appointment", {
         description: "Please try again later.",
         duration: 3000
       });
+      return false;
     }
-  };
+  }, [confirmAppointmentStatus]);
 
-  const handleRescheduleAppointment = async (id: string) => {
+  const handleRescheduleAppointment = useCallback(async (id: string, newDate?: string, newTime?: string) => {
     try {
-      // In a real app, this would open a reschedule dialog
-      // For now, we'll just show a toast
-      toast.info("Reschedule Requested", {
-        description: "Your request to reschedule has been sent.",
-        duration: 3000
-      });
+      if (newDate && newTime) {
+        // Update appointment with new date and time
+        setUpcomingAppointments(prevAppointments => 
+          prevAppointments.map(appointment => 
+            appointment.id === id 
+              ? { ...appointment, date: newDate, time: newTime, status: 'scheduled' as AppointmentStatus } 
+              : appointment
+          )
+        );
+        
+        toast.success("Appointment Rescheduled", {
+          description: `Your appointment has been rescheduled to ${newDate} at ${newTime}.`,
+          duration: 3000
+        });
+      } else {
+        // Simply trigger the reschedule dialog
+        toast.info("Reschedule Requested", {
+          description: "Opening reschedule dialog...",
+          duration: 3000
+        });
+      }
       
-      // In a real app, this would update the appointment in the database
-      // and notify the healthcare provider
-      console.log(`Sending reschedule notification to healthcare provider for appointment ${id}`);
+      // Dispatch events to update all views
+      window.dispatchEvent(new CustomEvent('appointment-updated', { 
+        detail: { id, status: 'scheduled', date: newDate, time: newTime } 
+      }));
+      
+      // Dispatch a calendar-updated event
+      window.dispatchEvent(new Event('calendar-updated'));
+      
+      return true;
     } catch (error) {
       console.error('Error rescheduling appointment:', error);
-      toast.error("Failed to request reschedule", {
+      toast.error("Failed to reschedule appointment", {
         description: "Please try again later.",
         duration: 3000
       });
+      return false;
     }
-  };
+  }, []);
 
   return {
     upcomingAppointments,

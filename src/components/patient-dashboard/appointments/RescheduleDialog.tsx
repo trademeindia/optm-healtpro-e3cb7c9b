@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { format, addDays, isBefore, startOfDay } from 'date-fns';
 
 interface RescheduleDialogProps {
   isOpen: boolean;
@@ -40,8 +41,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
   appointment,
   onReschedule
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(addDays(today, 1));
   const [selectedTime, setSelectedTime] = useState<string>(timeSlots[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleReschedule = () => {
     if (!selectedDate) {
@@ -49,30 +52,43 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
       return;
     }
 
-    // Format the date for display (e.g., "June 20, 2023")
-    const formattedDate = selectedDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    setIsSubmitting(true);
 
-    onReschedule(appointment.id, formattedDate, selectedTime);
-    onClose();
+    // Format the date for display (e.g., "June 20, 2023")
+    const formattedDate = format(selectedDate, 'MMMM d, yyyy');
+
+    try {
+      onReschedule(appointment.id, formattedDate, selectedTime);
+      onClose();
+    } catch (error) {
+      console.error('Error during reschedule:', error);
+      toast.error("Something went wrong", {
+        description: "Failed to reschedule appointment. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !isSubmitting && !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Reschedule Appointment</DialogTitle>
+          <DialogTitle className="text-xl">Reschedule Appointment</DialogTitle>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <label className="text-sm font-medium">Current Appointment</label>
-            <p className="text-sm text-muted-foreground">
-              {appointment.type} - {appointment.date} at {appointment.time}
-            </p>
+            <div className="p-3 rounded-md bg-muted/50">
+              <p className="font-medium">{appointment.type}</p>
+              <p className="text-sm text-muted-foreground">
+                {appointment.date} at {appointment.time}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {appointment.doctor}
+              </p>
+            </div>
           </div>
           
           <div className="grid gap-2">
@@ -84,18 +100,18 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
               className="rounded-md border"
               disabled={(date) => {
                 // Disable past dates and weekends
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const today = startOfDay(new Date());
                 const day = date.getDay();
-                return date < today || day === 0 || day === 6;
+                return isBefore(date, today) || day === 0 || day === 6;
               }}
+              initialFocus
             />
           </div>
           
           <div className="grid gap-2">
             <label className="text-sm font-medium">Select New Time</label>
             <Select value={selectedTime} onValueChange={setSelectedTime}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
@@ -110,8 +126,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleReschedule}>Confirm Reschedule</Button>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+          <Button onClick={handleReschedule} disabled={isSubmitting}>
+            {isSubmitting ? "Rescheduling..." : "Confirm Reschedule"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

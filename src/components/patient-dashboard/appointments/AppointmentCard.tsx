@@ -18,15 +18,17 @@ interface AppointmentCardProps {
   appointment: Appointment;
   onConfirmAppointment?: (id: string) => void;
   onRescheduleAppointment?: (id: string) => void;
+  className?: string;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
   onConfirmAppointment,
-  onRescheduleAppointment
+  onRescheduleAppointment,
+  className
 }) => {
   return (
-    <div className="p-3 md:p-4 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow">
+    <div className={`p-3 md:p-4 border rounded-lg bg-card hover:shadow-md transition-shadow ${className}`}>
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-base md:text-lg truncate">{appointment.type}</h4>
@@ -50,6 +52,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       
       <AppointmentActions 
         appointmentId={appointment.id}
+        status={appointment.status}
         onConfirmAppointment={onConfirmAppointment}
         onRescheduleAppointment={onRescheduleAppointment}
       />

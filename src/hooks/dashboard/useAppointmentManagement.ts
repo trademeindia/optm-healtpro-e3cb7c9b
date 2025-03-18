@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { DashboardAppointment } from './types';
 import { useAppointmentStatus } from '@/hooks/calendar/useAppointmentStatus';
+import { AppointmentStatus } from '@/types/appointment';
 
 export const useAppointmentManagement = (
   initialAppointments: DashboardAppointment[]
@@ -10,11 +11,41 @@ export const useAppointmentManagement = (
   const [appointments, setAppointments] = useState<DashboardAppointment[]>(initialAppointments);
   const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<DashboardAppointment | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { handleConfirmAppointment: confirmAppointmentStatus } = useAppointmentStatus();
 
+  // Listen for appointment updates from other parts of the application
+  useEffect(() => {
+    const handleAppointmentUpdated = (event: CustomEvent) => {
+      const { id, status, date, time } = event.detail;
+      
+      setAppointments(prevAppointments => 
+        prevAppointments.map(appointment => 
+          appointment.id === id 
+            ? { 
+                ...appointment, 
+                status: status as AppointmentStatus,
+                ...(date && { date }),
+                ...(time && { time })
+              } 
+            : appointment
+        )
+      );
+    };
+
+    window.addEventListener('appointment-updated', handleAppointmentUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener('appointment-updated', handleAppointmentUpdated as EventListener);
+    };
+  }, []);
+
   // Handle appointment confirmation
-  const handleConfirmAppointment = async (id: string) => {
+  const handleConfirmAppointment = useCallback(async (id: string) => {
+    if (isProcessing) return false;
+    
+    setIsProcessing(true);
     try {
       // Update the appointment status using the appointment status hook
       const success = await confirmAppointmentStatus(id);
@@ -35,8 +66,13 @@ export const useAppointmentManagement = (
           duration: 3000
         });
         
-        // In a real app, this would send a notification to the healthcare provider
-        console.log(`Notification sent to healthcare provider for appointment ${id} confirmation`);
+        // Dispatch a custom event to notify about appointment update
+        window.dispatchEvent(new CustomEvent('appointment-updated', { 
+          detail: { id, status: 'confirmed' } 
+        }));
+        
+        // Dispatch a calendar-updated event
+        window.dispatchEvent(new Event('calendar-updated'));
         
         return true;
       }
@@ -48,20 +84,25 @@ export const useAppointmentManagement = (
         duration: 3000
       });
       return false;
+    } finally {
+      setIsProcessing(false);
     }
-  };
+  }, [confirmAppointmentStatus, isProcessing]);
 
   // Open reschedule dialog
-  const openRescheduleDialog = (id: string) => {
+  const openRescheduleDialog = useCallback((id: string) => {
     const appointment = appointments.find(app => app.id === id);
     if (appointment) {
       setSelectedAppointment(appointment);
       setIsRescheduleDialogOpen(true);
     }
-  };
+  }, [appointments]);
 
   // Handle appointment rescheduling
-  const handleRescheduleAppointment = (id: string, newDate: string, newTime: string) => {
+  const handleRescheduleAppointment = useCallback((id: string, newDate: string, newTime: string) => {
+    if (isProcessing) return false;
+    
+    setIsProcessing(true);
     try {
       // Update local state
       setAppointments(prevAppointments => 
@@ -78,13 +119,17 @@ export const useAppointmentManagement = (
         duration: 3000
       });
       
+      // Dispatch a custom event to notify about appointment update
+      window.dispatchEvent(new CustomEvent('appointment-updated', { 
+        detail: { id, status: 'scheduled', date: newDate, time: newTime } 
+      }));
+      
+      // Dispatch a calendar-updated event
+      window.dispatchEvent(new Event('calendar-updated'));
+      
       // Close dialog
       setIsRescheduleDialogOpen(false);
       setSelectedAppointment(null);
-      
-      // In a real app, this would update the appointment in the database
-      // and notify the healthcare provider
-      console.log(`Notification sent to healthcare provider for appointment ${id} reschedule`);
       
       return true;
     } catch (error) {
@@ -94,13 +139,16 @@ export const useAppointmentManagement = (
         duration: 3000
       });
       return false;
+    } finally {
+      setIsProcessing(false);
     }
-  };
+  }, [isProcessing]);
 
   return {
     appointments,
     selectedAppointment,
     isRescheduleDialogOpen,
+    isProcessing,
     handleConfirmAppointment,
     openRescheduleDialog,
     handleRescheduleAppointment,
