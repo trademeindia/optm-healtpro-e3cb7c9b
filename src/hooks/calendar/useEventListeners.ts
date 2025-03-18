@@ -8,37 +8,64 @@ export function useCalendarEventListeners(
   const eventsQueueRef = useRef<Set<string>>(new Set());
   const processingEventsRef = useRef(false);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastEventTimeRef = useRef(0);
+  const MIN_EVENT_INTERVAL = 1000; // Minimum 1 second between handling events
 
-  // Consolidated event handler to reduce duplicate refreshes
+  // Consolidated event handler with rate limiting
   const handleCalendarEvent = useCallback((event: CustomEvent, eventType: string) => {
+    // Check if we've processed an event too recently
+    const now = Date.now();
+    if (now - lastEventTimeRef.current < MIN_EVENT_INTERVAL) {
+      console.log(`Skipping rapid ${eventType} event, throttling applied`);
+      return;
+    }
+    
     console.log(`${eventType} event received:`, event.detail);
+    lastEventTimeRef.current = now;
     
     // Add to queue instead of refreshing immediately
     eventsQueueRef.current.add(eventType);
     
     // Only schedule processing if not already scheduled
     if (!processingEventsRef.current && !refreshTimeoutRef.current) {
+      // Use a longer timeout to batch more events
       refreshTimeoutRef.current = setTimeout(() => {
         processEvents();
-      }, 500);
+      }, 1000); // Increased timeout for better batching
     }
   }, []);
   
   // Process all queued events with a single refresh
   const processEvents = useCallback(() => {
-    if (processingEventsRef.current) return;
+    if (processingEventsRef.current) {
+      console.log("Already processing events, skipping");
+      return;
+    }
     
     processingEventsRef.current = true;
-    refreshTimeoutRef.current = null;
+    
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
     
     try {
       if (eventsQueueRef.current.size > 0) {
         console.log(`Processing ${eventsQueueRef.current.size} calendar events`);
         eventsQueueRef.current.clear();
-        debouncedRefresh();
+        
+        // Use a small timeout before triggering refresh to avoid UI blocking
+        setTimeout(() => {
+          debouncedRefresh();
+        }, 50);
       }
+    } catch (error) {
+      console.error("Error processing calendar events:", error);
     } finally {
-      processingEventsRef.current = false;
+      // Wait a bit before allowing more event processing to prevent rapid refreshes
+      setTimeout(() => {
+        processingEventsRef.current = false;
+      }, 500);
     }
   }, [debouncedRefresh]);
 
@@ -63,10 +90,11 @@ export function useCalendarEventListeners(
     window.addEventListener('appointment-deleted', handleAppointmentDeleted);
     window.addEventListener('calendar-data-updated', handleCalendarDataUpdated);
     
-    // Initial refresh should only happen once
+    // Initial refresh should only happen once and with a delay
     const initialRefreshTimeout = setTimeout(() => {
+      console.log("Performing initial calendar refresh");
       refreshCalendar();
-    }, 500);
+    }, 1500); // Increased timeout for initial load
 
     // Clean up listeners and timeouts
     return () => {
