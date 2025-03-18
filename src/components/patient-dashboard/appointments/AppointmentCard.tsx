@@ -25,6 +25,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
+  // Determine if appointment is upcoming (today or in the future)
+  const isUpcoming = () => {
+    const now = new Date();
+    const today = now.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    return appointment.date === 'Today' || 
+           appointment.date === today || 
+           new Date(appointment.date) >= now;
+  };
+  
   return (
     <div className="p-3 md:p-4 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start gap-3 mb-3">
@@ -48,11 +62,13 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </div>
       )}
       
-      <AppointmentActions 
-        appointmentId={appointment.id}
-        onConfirmAppointment={onConfirmAppointment}
-        onRescheduleAppointment={onRescheduleAppointment}
-      />
+      {isUpcoming() && (
+        <AppointmentActions 
+          appointmentId={appointment.id}
+          onConfirmAppointment={onConfirmAppointment}
+          onRescheduleAppointment={onRescheduleAppointment}
+        />
+      )}
     </div>
   );
 };
