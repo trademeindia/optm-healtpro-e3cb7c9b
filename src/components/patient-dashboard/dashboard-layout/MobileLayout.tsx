@@ -29,6 +29,11 @@ const MobileLayout: React.FC<DashboardMainContentProps> = ({
   handleConfirmAppointment,
   handleRescheduleAppointment
 }) => {
+  // Convert onSyncData to a Promise-returning function if it isn't already
+  const handleSyncData = async () => {
+    return onSyncData();
+  };
+
   return (
     <div className="lg:hidden space-y-4 md:space-y-6">
       {/* Personal Information */}
@@ -37,7 +42,7 @@ const MobileLayout: React.FC<DashboardMainContentProps> = ({
       {/* Health Sync Button */}
       <HealthSyncButton 
         hasConnectedApps={hasConnectedApps}
-        onSyncData={onSyncData}
+        onSyncData={handleSyncData}
       />
       
       {/* Biological Age Card */}

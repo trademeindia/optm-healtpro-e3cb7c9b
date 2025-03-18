@@ -25,13 +25,13 @@ export interface HealthMetrics {
 
 export interface DashboardAppointment {
   id: string;
+  title: string; // Make this required to match UpcomingAppointment
   date: string;
   time: string;
+  endTime: string; // Add this to match UpcomingAppointment
   doctor: string;
   type: string;
   status?: 'scheduled' | 'confirmed' | 'cancelled' | 'completed';
-  title?: string;
-  endTime?: string;
 }
 
 export interface ActivityData {

@@ -6,19 +6,25 @@ import { DashboardAppointment } from './types';
 import { AppointmentStatus } from '@/types/appointment';
 
 export const useAppointments = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const [upcomingAppointments, setUpcomingAppointments] = useState<DashboardAppointment[]>([
     {
       id: '1',
+      title: 'Follow-up Appointment',
       date: 'June 20, 2023',
       time: '10:30 AM',
+      endTime: '11:30 AM',
       doctor: 'Dr. Nikolas Pascal',
       type: 'Follow-up',
       status: 'scheduled'
     },
     {
       id: '2',
+      title: 'Physical Therapy Session',
       date: 'July 5, 2023',
       time: '02:00 PM',
+      endTime: '03:00 PM',
       doctor: 'Dr. Nikolas Pascal',
       type: 'Physical Therapy',
       status: 'scheduled'
@@ -76,7 +82,16 @@ export const useAppointments = () => {
         setUpcomingAppointments(prevAppointments => 
           prevAppointments.map(appointment => 
             appointment.id === id 
-              ? { ...appointment, date: newDate, time: newTime, status: 'scheduled' as AppointmentStatus } 
+              ? { 
+                  ...appointment, 
+                  date: newDate, 
+                  time: newTime,
+                  // Set a default end time 1 hour later
+                  endTime: newTime.includes('AM') 
+                    ? newTime.replace('AM', 'AM').replace(/(\d+):(\d+)/, (_, h, m) => `${(Number(h) + 1) % 12 || 12}:${m}`) 
+                    : newTime.replace('PM', 'PM').replace(/(\d+):(\d+)/, (_, h, m) => `${(Number(h) + 1) % 12 || 12}:${m}`),
+                  status: 'scheduled' as AppointmentStatus 
+                } 
               : appointment
           )
         );
@@ -104,6 +119,7 @@ export const useAppointments = () => {
       return true;
     } catch (error) {
       console.error('Error rescheduling appointment:', error);
+      setError(error instanceof Error ? error : new Error('Failed to reschedule appointment'));
       toast.error("Failed to reschedule appointment", {
         description: "Please try again later.",
         duration: 3000
@@ -114,6 +130,8 @@ export const useAppointments = () => {
 
   return {
     upcomingAppointments,
+    isLoading,
+    error,
     handleConfirmAppointment,
     handleRescheduleAppointment
   };
