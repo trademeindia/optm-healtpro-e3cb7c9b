@@ -4,7 +4,7 @@ import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { useToast } from '@/hooks/use-toast';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import HealthAppsHeader from '@/components/health-apps/HealthAppsHeader';
 import IntegrationsTab from '@/components/health-apps/IntegrationsTab';
 import GoogleFitTab from '@/components/health-apps/GoogleFitTab';
@@ -39,18 +39,20 @@ const HealthAppsPage: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <HealthAppsHeader activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <TabsContent value="integrations" className="mt-0">
-            <IntegrationsTab 
-              providers={providers}
-              onConnect={connectProvider}
-              onDisconnect={disconnectProvider}
-              onRefresh={refreshProviderData}
-            />
-          </TabsContent>
-          
-          <TabsContent value="googlefit" className="mt-0">
-            <GoogleFitTab onHealthDataSync={handleHealthDataSync} />
-          </TabsContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-0">
+            <TabsContent value="integrations">
+              <IntegrationsTab 
+                providers={providers}
+                onConnect={connectProvider}
+                onDisconnect={disconnectProvider}
+                onRefresh={refreshProviderData}
+              />
+            </TabsContent>
+            
+            <TabsContent value="googlefit">
+              <GoogleFitTab onHealthDataSync={handleHealthDataSync} />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

@@ -37,6 +37,7 @@ export const useFitnessIntegration = (): UseFitnessIntegrationResult => {
   // Connect to a provider
   const connectProvider = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    setError(null);
     
     try {
       // Simulate API connection
@@ -70,6 +71,7 @@ export const useFitnessIntegration = (): UseFitnessIntegrationResult => {
   // Disconnect from a provider
   const disconnectProvider = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    setError(null);
     
     try {
       // Simulate API disconnection
@@ -102,6 +104,7 @@ export const useFitnessIntegration = (): UseFitnessIntegrationResult => {
   // Refresh data from a provider
   const refreshProviderData = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    setError(null);
     
     try {
       // Get provider info
