@@ -2,15 +2,39 @@
 import GoogleFitAuthManager from './googleFit/authManager';
 import GoogleFitDataService from './googleFit/dataService';
 import { GoogleFitDataPoint, GoogleFitSyncResult } from './googleFit/types';
-import { FitnessData } from '@/hooks/useFitnessIntegration';
+import { FitnessData } from '@/hooks/fitness';
 
 class GoogleFitService {
   private authManager: GoogleFitAuthManager;
   private dataService: GoogleFitDataService;
+  private userId: string | null = null;
 
   constructor() {
     this.authManager = new GoogleFitAuthManager();
     this.dataService = new GoogleFitDataService(this.authManager);
+    
+    // Try to get user ID from localStorage
+    this.loadUserContext();
+  }
+  
+  private loadUserContext() {
+    try {
+      const authData = localStorage.getItem('authUser');
+      if (authData) {
+        const user = JSON.parse(authData);
+        if (user && user.id) {
+          this.userId = user.id;
+          console.log(`GoogleFitService initialized with user ID: ${this.userId}`);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading user context for GoogleFitService:', e);
+    }
+  }
+  
+  public setUserId(userId: string) {
+    this.userId = userId;
+    console.log(`GoogleFitService: User ID set to ${userId}`);
   }
 
   public isAuthenticated(): boolean {
@@ -26,11 +50,13 @@ class GoogleFitService {
   }
 
   public async syncHealthData(): Promise<GoogleFitSyncResult> {
-    return this.dataService.syncHealthData();
+    // Include user context for data service
+    return this.dataService.syncHealthData(this.userId);
   }
 
   public async getHistoricalData(dataType: string, startDate: Date, endDate: Date): Promise<GoogleFitDataPoint[]> {
-    return this.dataService.getHistoricalData(dataType, startDate, endDate);
+    // Include user context for historical data
+    return this.dataService.getHistoricalData(dataType, startDate, endDate, this.userId);
   }
 }
 

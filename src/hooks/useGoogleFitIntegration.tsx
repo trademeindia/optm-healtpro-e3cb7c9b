@@ -1,7 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { FitnessData } from './useFitnessIntegration';
+import { FitnessData } from './fitness';
 import { googleFitService, GoogleFitDataPoint, GoogleFitSyncResult } from '@/services/integrations/googleFitService';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface HistoricalDataQuery {
   dataType: string;
@@ -25,9 +27,21 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [healthData, setHealthData] = useState<FitnessData>({});
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     checkConnectionStatus();
+    
+    // Set up automatic refresh interval (every 15 minutes)
+    const refreshInterval = setInterval(() => {
+      if (isConnected) {
+        syncGoogleFitData();
+      }
+    }, 15 * 60 * 1000);
+    
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const checkConnectionStatus = useCallback(() => {
@@ -49,6 +63,11 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     setIsLoading(true);
     
     try {
+      // Log the current user for debug purposes
+      if (user) {
+        console.log(`Connecting Google Fit for user: ${user.email}`);
+      }
+      
       googleFitService.initiateAuth();
       
       setTimeout(() => {
@@ -57,6 +76,11 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
         
         if (connected) {
           syncGoogleFitData();
+          
+          // Store user-specific connection info
+          if (user) {
+            localStorage.setItem(`googleFit_connected_${user.id}`, 'true');
+          }
         } else {
           setIsLoading(false);
         }
@@ -69,7 +93,7 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
       });
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const disconnectGoogleFit = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
@@ -81,6 +105,11 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
         setIsConnected(false);
         setHealthData({});
         setLastSyncTime(null);
+        
+        // Remove user-specific connection info
+        if (user) {
+          localStorage.removeItem(`googleFit_connected_${user.id}`);
+        }
         
         toast.success("Disconnected from Google Fit", {
           duration: 3000
@@ -102,17 +131,27 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const syncGoogleFitData = useCallback(async (): Promise<FitnessData> => {
     setIsLoading(true);
     
     try {
+      // Log sync attempt with user context
+      if (user) {
+        console.log(`Syncing Google Fit data for user: ${user.email}`);
+      }
+      
       const result = await googleFitService.syncHealthData();
       
       if (result.success) {
         setHealthData(result.data);
         setLastSyncTime(result.timestamp);
+        
+        // Save last sync time for this user
+        if (user) {
+          localStorage.setItem(`googleFit_lastSync_${user.id}`, result.timestamp);
+        }
         
         toast.success("Health data synced", {
           description: "Your Google Fit data has been updated",
@@ -137,12 +176,17 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const getHistoricalData = useCallback(async (query: HistoricalDataQuery): Promise<GoogleFitDataPoint[]> => {
     setIsLoading(true);
     
     try {
+      // Include user context in historical data query
+      if (user) {
+        console.log(`Getting historical ${query.dataType} data for user: ${user.email}`);
+      }
+      
       const data = await googleFitService.getHistoricalData(
         query.dataType,
         query.startDate,
@@ -159,7 +203,7 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   return {
     isConnected,
