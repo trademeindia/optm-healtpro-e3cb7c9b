@@ -1,119 +1,151 @@
 
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from 'react';
 import { FitnessData, FitnessProvider } from './types';
 import { getMockProviders } from './mockProviders';
+import { updateProviderConnection, updateFitnessDataTimestamps, removeProviderData } from './providerActions';
 import { getProviderData } from './providerData';
-import { 
-  updateProviderConnection, 
-  updateFitnessDataTimestamps,
-  removeProviderData
-} from './providerActions';
 
-const useFitnessIntegration = () => {
-  const [isLoading, setIsLoading] = useState(true);
+export interface UseFitnessIntegrationResult {
+  providers: FitnessProvider[];
+  fitnessData: FitnessData;
+  isLoading: boolean;
+  error: string | null;
+  connectProvider: (providerId: string) => Promise<boolean>;
+  disconnectProvider: (providerId: string) => Promise<boolean>;
+  refreshProviderData: (providerId: string) => Promise<boolean>;
+}
+
+export const useFitnessIntegration = (): UseFitnessIntegrationResult => {
   const [providers, setProviders] = useState<FitnessProvider[]>([]);
   const [fitnessData, setFitnessData] = useState<FitnessData>({});
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Load initial providers
   useEffect(() => {
-    const mockProviders = getMockProviders();
-    setProviders(mockProviders);
-    setIsLoading(false);
+    try {
+      const initialProviders = getMockProviders();
+      setProviders(initialProviders);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error loading fitness providers:', err);
+      setError('Failed to load fitness providers');
+      setIsLoading(false);
+    }
   }, []);
-
-  const connectProvider = async (providerId: string): Promise<boolean> => {
+  
+  // Connect to a provider
+  const connectProvider = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate API connection
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      setProviders(prev => 
-        updateProviderConnection(
-          prev, 
-          providerId, 
-          true, 
-          new Date().toLocaleTimeString()
-        )
-      );
-
-      // Get provider-specific data
-      const newData = getProviderData(providerId);
+      // Get provider data
+      const provider = providers.find(p => p.id === providerId);
+      if (!provider) {
+        throw new Error(`Provider ${providerId} not found`);
+      }
       
-      setFitnessData(prev => ({
-        ...prev,
-        ...newData
-      }));
-
-      toast.success("Successfully connected", {
-        description: `Health data synced from ${providers.find(p => p.id === providerId)?.name}`,
-        duration: 3000
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error connecting provider', error);
-      return false;
-    } finally {
+      // Update provider connection status
+      const now = new Date().toISOString();
+      const updatedProviders = updateProviderConnection(providers, providerId, true, now);
+      setProviders(updatedProviders);
+      
+      // Get provider data
+      const providerData = await getProviderData(providerId);
+      setFitnessData(prev => ({ ...prev, ...providerData }));
+      
       setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error(`Error connecting to provider ${providerId}:`, err);
+      setError(`Failed to connect to fitness provider: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsLoading(false);
+      return false;
     }
-  };
-
-  const disconnectProvider = async (providerId: string): Promise<boolean> => {
+  }, [providers]);
+  
+  // Disconnect from a provider
+  const disconnectProvider = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate API disconnection
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const providerName = providers.find(p => p.id === providerId)?.name || '';
+      // Get provider info
+      const provider = providers.find(p => p.id === providerId);
+      if (!provider) {
+        throw new Error(`Provider ${providerId} not found`);
+      }
       
-      setProviders(prev => 
-        updateProviderConnection(prev, providerId, false)
-      );
+      // Update provider connection status
+      const updatedProviders = updateProviderConnection(providers, providerId, false);
+      setProviders(updatedProviders);
       
-      setFitnessData(prev => 
-        removeProviderData(prev, providerName)
-      );
-
-      return true;
-    } catch (error) {
-      console.error('Error disconnecting provider', error);
-      return false;
-    } finally {
+      // Remove provider data
+      const updatedData = removeProviderData(fitnessData, provider.name);
+      setFitnessData(updatedData);
+      
       setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error(`Error disconnecting from provider ${providerId}:`, err);
+      setError(`Failed to disconnect from fitness provider: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsLoading(false);
+      return false;
     }
-  };
-
-  const refreshProviderData = async (providerId: string): Promise<boolean> => {
+  }, [providers, fitnessData]);
+  
+  // Refresh data from a provider
+  const refreshProviderData = useCallback(async (providerId: string): Promise<boolean> => {
     setIsLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get provider info
+      const provider = providers.find(p => p.id === providerId);
+      if (!provider) {
+        throw new Error(`Provider ${providerId} not found`);
+      }
       
-      setProviders(prev => 
-        updateProviderConnection(
-          prev, 
-          providerId, 
-          true, 
-          new Date().toLocaleTimeString()
-        )
-      );
-
-      const providerName = providers.find(p => p.id === providerId)?.name || '';
+      if (!provider.isConnected) {
+        throw new Error(`Provider ${provider.name} is not connected`);
+      }
       
-      setFitnessData(prev => 
-        updateFitnessDataTimestamps(prev, providerName)
-      );
-
-      return true;
-    } catch (error) {
-      console.error('Error refreshing provider data', error);
-      return false;
-    } finally {
+      // Simulate API data refresh
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Get fresh provider data
+      const providerData = await getProviderData(providerId);
+      
+      // Update timestamps for existing data
+      const updatedData = updateFitnessDataTimestamps(fitnessData, provider.name);
+      
+      // Merge with new data
+      setFitnessData({ ...updatedData, ...providerData });
+      
+      // Update last sync time
+      const now = new Date().toISOString();
+      const updatedProviders = updateProviderConnection(providers, providerId, true, now);
+      setProviders(updatedProviders);
+      
       setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error(`Error refreshing data from provider ${providerId}:`, err);
+      setError(`Failed to refresh fitness data: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsLoading(false);
+      return false;
     }
-  };
-
+  }, [providers, fitnessData]);
+  
   return {
-    isLoading,
     providers,
     fitnessData,
+    isLoading,
+    error,
     connectProvider,
     disconnectProvider,
     refreshProviderData
