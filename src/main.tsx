@@ -31,10 +31,33 @@ const RootErrorFallback = () => (
   </div>
 );
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary fallback={<RootErrorFallback />}>
-      <App />
-    </ErrorBoundary>
-  </React.StrictMode>,
-)
+// Render with safer initialization
+try {
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error('Root element not found');
+  }
+  
+  const root = ReactDOM.createRoot(rootElement);
+  
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary fallback={<RootErrorFallback />}>
+        <App />
+      </ErrorBoundary>
+    </React.StrictMode>,
+  );
+} catch (error) {
+  console.error('Failed to initialize application:', error);
+  document.body.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:20px;text-align:center;">
+      <h2 style="margin-bottom:8px;font-size:1.5rem;font-weight:600;">Application Failed to Load</h2>
+      <p style="margin-bottom:24px;">There was a critical error initializing the application.</p>
+      <button 
+        style="padding:8px 16px;background-color:#3b82f6;color:white;border-radius:6px;border:none;cursor:pointer;" 
+        onclick="window.location.reload()">
+        Retry Loading
+      </button>
+    </div>
+  `;
+}
