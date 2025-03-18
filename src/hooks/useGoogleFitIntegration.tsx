@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { FitnessData } from './useFitnessIntegration';
-import { googleFitService, GoogleFitDataPoint } from '@/services/integrations/googleFitService';
+import { googleFitService, GoogleFitDataPoint, GoogleFitSyncResult } from '@/services/integrations/googleFitService';
 
 export interface HistoricalDataQuery {
   dataType: string;
@@ -27,7 +26,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
   const [healthData, setHealthData] = useState<FitnessData>({});
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
-  // Initialize integration status on component mount
   useEffect(() => {
     checkConnectionStatus();
   }, []);
@@ -38,7 +36,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
       setIsConnected(connected);
       
       if (connected) {
-        // If connected, sync data automatically
         syncGoogleFitData();
       }
     } catch (error) {
@@ -54,7 +51,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     try {
       googleFitService.initiateAuth();
       
-      // Check connection status after a delay to allow auth flow to complete
       setTimeout(() => {
         const connected = googleFitService.isAuthenticated();
         setIsConnected(connected);
