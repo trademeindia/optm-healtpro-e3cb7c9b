@@ -15,13 +15,13 @@ export const PatientsTable: React.FC<PatientsTableProps> = ({
 }) => {
   return (
     <div className="overflow-x-auto responsive-table">
-      <table className="w-full border-collapse">
+      <table className="w-full border-collapse table-auto">
         {children}
       </table>
       
       {patients.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No patients found matching your search.</p>
+          <p className="text-gray-500 dark:text-gray-400">No patients found matching your search.</p>
         </div>
       )}
     </div>

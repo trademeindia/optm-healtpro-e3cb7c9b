@@ -16,13 +16,13 @@ import { Spinner } from '@/components/ui/spinner';
 interface PatientsListProps {
   patients: Patient[];
   onViewPatient: (patientId: number) => void;
-  isLoading?: boolean; // Added to match the updated interface
+  isLoading?: boolean;
 }
 
 export const PatientsList: React.FC<PatientsListProps> = ({
   patients,
   onViewPatient,
-  isLoading = false, // Default to false if not provided
+  isLoading = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'lastVisit' | 'condition'>('lastVisit');
@@ -104,7 +104,7 @@ export const PatientsList: React.FC<PatientsListProps> = ({
           />
           
           <PatientsTable patients={sortedPatients} onViewPatient={onViewPatient}>
-            <PatientTableHeader />
+            <PatientTableHeader handleSort={handleSort} sortBy={sortBy} sortDirection={sortDirection} />
             
             <tbody>
               {sortedPatients.length > 0 ? (
@@ -117,7 +117,7 @@ export const PatientsList: React.FC<PatientsListProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                  <td colSpan={5} className="p-4 text-center text-gray-500 dark:text-gray-400">
                     No patients found matching "{searchTerm}"
                   </td>
                 </tr>

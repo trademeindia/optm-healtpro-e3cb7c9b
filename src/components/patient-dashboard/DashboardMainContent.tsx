@@ -6,7 +6,7 @@ import { DashboardMainContentProps } from './dashboard-layout/types';
 
 const DashboardMainContent: React.FC<DashboardMainContentProps> = (props) => {
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 bg-gray-50 dark:bg-gray-900">
       {/* Mobile layout - Stack everything in one column */}
       <div className="block md:hidden">
         <MobileLayout {...props} />

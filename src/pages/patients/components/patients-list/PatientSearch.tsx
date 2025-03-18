@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 interface PatientSearchProps {
   searchTerm: string;
@@ -14,20 +13,16 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   onSearchChange,
 }) => {
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative flex-1 sm:w-64">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search patients..." 
-          className="pl-9"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
+    <div className="mb-4 relative">
+      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+        <Search className="h-4 w-4 text-gray-400" />
       </div>
-      
-      <Button variant="outline" size="icon">
-        <Filter className="h-4 w-4" />
-      </Button>
+      <Input
+        className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 rounded-lg"
+        placeholder="Search patients by name, condition, or ICD code..."
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+      />
     </div>
   );
 };

@@ -30,7 +30,7 @@ const MobileLayout: React.FC<DashboardMainContentProps> = ({
   handleRescheduleAppointment
 }) => {
   return (
-    <div className="lg:hidden space-y-4 md:space-y-6">
+    <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 lg:hidden space-y-4 md:space-y-6 p-4">
       {/* Personal Information */}
       <PersonalInformation />
       
@@ -127,23 +127,15 @@ const MobileLayout: React.FC<DashboardMainContentProps> = ({
       />
       
       {/* Progress Chart */}
-      <div className="glass-morphism rounded-2xl p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <SymptomProgressChart className="w-full" />
       </div>
       
-      {/* Symptom Tracker */}
+      {/* Rest of components */}
       <SymptomTracker />
-      
-      {/* Anatomical Map */}
       <AnatomicalMap />
-      
-      {/* PostureAnalysis */}
       <PostureAnalysis />
-      
-      {/* Message Your Doctor */}
       <MessageYourDoctor />
-      
-      {/* Medical Documents */}
       <MedicalDocuments />
     </div>
   );

@@ -9,6 +9,100 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      fitness_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_sync: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_sync?: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_sync?: string | null
+          provider?: string
+          refresh_token?: string
+          scope?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitness_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fitness_data: {
+        Row: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          end_time: string
+          id?: string
+          metadata?: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          end_time?: string
+          id?: string
+          metadata?: Json | null
+          source?: string
+          start_time?: string
+          unit?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitness_data_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -47,7 +141,67 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_fitness_connections:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              user_id_param: string
+            }
+            Returns: {
+              access_token: string
+              created_at: string
+              expires_at: string
+              id: string
+              last_sync: string | null
+              provider: string
+              refresh_token: string
+              scope: string
+              updated_at: string
+              user_id: string
+            }[]
+          }
+      get_fitness_data_history: {
+        Args: {
+          user_id_param: string
+          provider_param: string
+          data_type_param: string
+          limit_param: number
+        }
+        Returns: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }[]
+      }
+      get_latest_fitness_data: {
+        Args: {
+          user_id_param: string
+          provider_param: string
+          data_type_param: string
+        }
+        Returns: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

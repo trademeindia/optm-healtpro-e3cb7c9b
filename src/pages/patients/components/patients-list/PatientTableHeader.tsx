@@ -1,57 +1,65 @@
 
 import React from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 interface PatientTableHeaderProps {
+  handleSort?: (column: 'name' | 'lastVisit' | 'condition') => void;
   sortBy?: 'name' | 'lastVisit' | 'condition';
   sortDirection?: 'asc' | 'desc';
-  onSort?: (column: 'name' | 'lastVisit' | 'condition') => void;
 }
 
-export const PatientTableHeader: React.FC<PatientTableHeaderProps> = ({
+export const PatientTableHeader: React.FC<PatientTableHeaderProps> = ({ 
+  handleSort,
   sortBy,
-  sortDirection,
-  onSort
+  sortDirection
 }) => {
-  const handleSort = (column: 'name' | 'lastVisit' | 'condition') => {
-    if (onSort) {
-      onSort(column);
-    }
+  const renderSortIcon = (column: 'name' | 'lastVisit' | 'condition') => {
+    if (sortBy !== column) return null;
+    return sortDirection === 'asc' ? 
+      <ArrowUp className="inline h-4 w-4 ml-1" /> : 
+      <ArrowDown className="inline h-4 w-4 ml-1" />;
+  };
+  
+  const getSortableHeaderClass = (column: 'name' | 'lastVisit' | 'condition') => {
+    return `px-4 py-3 text-left font-medium text-sm ${handleSort ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}`;
   };
 
   return (
-    <thead>
-      <tr className="border-b border-gray-200 dark:border-gray-700">
-        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-          <div 
-            className="flex items-center gap-1 cursor-pointer" 
-            onClick={() => handleSort('name')}
-          >
-            Patient
-            <ArrowUpDown className="h-3 w-3" />
-          </div>
+    <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <tr>
+        <th 
+          className={getSortableHeaderClass('name')}
+          onClick={() => handleSort && handleSort('name')}
+        >
+          <span className="flex items-center">
+            Patient {renderSortIcon('name')}
+          </span>
         </th>
-        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-          <div 
-            className="flex items-center gap-1 cursor-pointer"
-            onClick={() => handleSort('condition')}
-          >
-            Diagnosis
-            <ArrowUpDown className="h-3 w-3" />
-          </div>
+        <th 
+          className={getSortableHeaderClass('condition')}
+          onClick={() => handleSort && handleSort('condition')}
+        >
+          <span className="flex items-center">
+            Condition {renderSortIcon('condition')}
+          </span>
         </th>
-        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">ICD Code</th>
-        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-          <div 
-            className="flex items-center gap-1 cursor-pointer"
-            onClick={() => handleSort('lastVisit')}
-          >
-            Last Visit
-            <ArrowUpDown className="h-3 w-3" />
-          </div>
+        <th className="px-4 py-3 text-left font-medium text-sm">
+          ICD Code
         </th>
-        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Next Appointment</th>
-        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+        <th 
+          className={getSortableHeaderClass('lastVisit')}
+          onClick={() => handleSort && handleSort('lastVisit')}
+        >
+          <span className="flex items-center">
+            Last Visit {renderSortIcon('lastVisit')}
+          </span>
+        </th>
+        <th className="px-4 py-3 text-left font-medium text-sm">
+          Next Visit
+        </th>
+        <th className="px-4 py-3 text-right font-medium text-sm">
+          Actions
+        </th>
       </tr>
     </thead>
   );
