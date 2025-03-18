@@ -24,6 +24,7 @@ export interface DashboardMainContentProps {
     time: string;
     doctor: string;
     type: string;
+    status?: string;
   }[];
   biologicalAge: number;
   chronologicalAge: number;
@@ -33,4 +34,4 @@ export interface DashboardMainContentProps {
   handleRescheduleAppointment?: (id: string) => void;
 }
 
-export type ColumnProps = DashboardMainContentProps;
+export type ColumnProps = Partial<DashboardMainContentProps>;

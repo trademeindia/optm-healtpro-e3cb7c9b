@@ -1,96 +1,71 @@
 
 import { useState, useCallback } from 'react';
+import { DashboardAppointment } from './types';
+import { Appointment } from '@/components/patient-dashboard/appointments';
 import { toast } from 'sonner';
-import { useAppointmentStatus } from '@/hooks/calendar/useAppointmentStatus';
-import { AppointmentWithStatus } from './useAppointments';
+import { AppointmentStatus } from '@/types/appointment';
 
-export const usePatientAppointments = (
-  initialAppointments: AppointmentWithStatus[]
-) => {
-  const [appointments, setAppointments] = useState<AppointmentWithStatus[]>(initialAppointments);
+export const usePatientAppointments = (upcomingAppointments: Appointment[]) => {
+  // Convert incoming appointments to include status if not present
+  const initialAppointments = upcomingAppointments.map(appointment => ({
+    ...appointment,
+    status: appointment.status || 'scheduled' as AppointmentStatus
+  }));
+
+  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithStatus | null>(null);
-  
-  const { updateAppointmentStatus } = useAppointmentStatus();
 
-  const handleConfirmAppointment = useCallback(async (id: string) => {
-    // In a real app, this would call an API
-    const success = await updateAppointmentStatus(id, 'confirmed');
+  // Handle confirming an appointment
+  const handleConfirmAppointment = useCallback((id: string) => {
+    setAppointments(prevAppointments => 
+      prevAppointments.map(appointment => 
+        appointment.id === id 
+          ? { ...appointment, status: 'confirmed' as AppointmentStatus } 
+          : appointment
+      )
+    );
     
-    if (success) {
-      // Update local state
-      setAppointments(prev => 
-        prev.map(appointment => 
-          appointment.id === id 
-            ? { ...appointment, status: 'confirmed' } 
-            : appointment
-        )
-      );
-      
-      // Dispatch event for other components to react
-      window.dispatchEvent(new CustomEvent('appointment-updated', { 
-        detail: { id, status: 'confirmed' } 
-      }));
-      
-      toast.success("Appointment Confirmed", {
-        description: "Your appointment has been confirmed successfully.",
-        duration: 3000
-      });
-    }
-    
-    return success;
-  }, [updateAppointmentStatus]);
+    toast.success('Appointment confirmed', {
+      description: 'Your appointment has been confirmed successfully.',
+      duration: 3000
+    });
+  }, []);
 
+  // Open the reschedule dialog for an appointment
   const openRescheduleDialog = useCallback((id: string) => {
-    const appointment = appointments.find(a => a.id === id) || null;
-    setSelectedAppointment(appointment);
-    setRescheduleDialogOpen(true);
+    const appointment = appointments.find(a => a.id === id);
+    if (appointment) {
+      setSelectedAppointment(appointment);
+      setRescheduleDialogOpen(true);
+    }
   }, [appointments]);
 
-  const handleRescheduleAppointment = useCallback(async (id: string, newDate: Date) => {
-    try {
-      // In a real app, this would call an API to reschedule
-      console.log(`Rescheduling appointment ${id} to ${newDate.toISOString()}`);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state with new date and time
-      setAppointments(prev => 
-        prev.map(appointment => {
-          if (appointment.id === id) {
-            const newDateStr = newDate.toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            });
-            
-            const newTimeStr = newDate.toLocaleTimeString('en-US', { 
-              hour: 'numeric', 
-              minute: '2-digit'
-            });
-            
-            return { 
+  // Handle rescheduling an appointment
+  const handleRescheduleAppointment = useCallback((
+    appointmentId: string, 
+    newDate: string, 
+    newTime: string
+  ) => {
+    setAppointments(prevAppointments => 
+      prevAppointments.map(appointment => 
+        appointment.id === appointmentId 
+          ? { 
               ...appointment, 
-              date: newDateStr,
-              time: newTimeStr,
-              status: 'scheduled' 
-            };
-          }
-          return appointment;
-        })
-      );
-      
-      // Dispatch event for other components to react
-      window.dispatchEvent(new CustomEvent('appointment-rescheduled', { 
-        detail: { id, newDate } 
-      }));
-      
-      return true;
-    } catch (error) {
-      console.error("Error rescheduling appointment:", error);
-      return false;
-    }
+              date: newDate, 
+              time: newTime,
+              status: 'scheduled' as AppointmentStatus 
+            } 
+          : appointment
+      )
+    );
+    
+    setRescheduleDialogOpen(false);
+    
+    toast.success('Appointment rescheduled', {
+      description: `Your appointment has been rescheduled to ${newDate} at ${newTime}.`,
+      duration: 3000
+    });
   }, []);
 
   return {
@@ -103,5 +78,3 @@ export const usePatientAppointments = (
     handleRescheduleAppointment
   };
 };
-
-export default usePatientAppointments;
