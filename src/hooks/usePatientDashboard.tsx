@@ -14,23 +14,26 @@ export const usePatientDashboard = () => {
   const [error, setError] = useState<Error | null>(null);
   const [dataLoadAttempts, setDataLoadAttempts] = useState(0);
 
+  // Add missing properties to the fitness integration hook if needed
   const { 
     providers, 
     fitnessData, 
     refreshProviderData,
-    isLoading: fitnessLoading,
-    error: fitnessError
+    isLoading: fitnessLoading = false,
+    error: fitnessError = null
   } = useFitnessIntegration();
 
   const healthMetrics = useHealthMetrics(fitnessData);
   const activityData = useActivityData(fitnessData);
   const treatmentTasks = useTreatmentTasks();
+  
+  // Add missing properties to the appointments hook if needed
   const { 
     upcomingAppointments, 
     handleConfirmAppointment, 
     handleRescheduleAppointment,
-    isLoading: appointmentsLoading,
-    error: appointmentsError 
+    isLoading: appointmentsLoading = false,
+    error: appointmentsError = null 
   } = useAppointments();
 
   // Combine loading states and errors

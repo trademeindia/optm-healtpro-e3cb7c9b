@@ -147,7 +147,7 @@ const PatientDashboard: React.FC = () => {
                     hasConnectedApps={hasConnectedApps}
                     onSyncData={handleSyncAllData}
                     handleConfirmAppointment={handleConfirmAppointment}
-                    handleReschedureAppointment={handleRescheduleAppointment}
+                    handleRescheduleAppointment={handleRescheduleAppointment}
                   />
                 </ErrorBoundary>
               </DashboardTabs>

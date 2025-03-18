@@ -8,8 +8,11 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = (props) => {
   // Ensure the props are correctly passed down
   const fixedProps = {
     ...props,
-    // Fix the misspelled prop
-    handleRescheduleAppointment: props.handleRescheduleAppointment || props.handleReschedureAppointment
+    // Fix the misspelled prop and ensure onSyncData returns a Promise
+    handleRescheduleAppointment: props.handleRescheduleAppointment || props.handleReschedureAppointment,
+    onSyncData: async () => {
+      return props.onSyncData();
+    }
   };
   
   return (

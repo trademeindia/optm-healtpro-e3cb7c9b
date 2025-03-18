@@ -11,6 +11,7 @@ export interface HealthMetricData {
   unit: string;
   change?: number;
   source?: string;
+  lastSync?: string;
   timestamp?: string;
 }
 
@@ -19,6 +20,7 @@ export interface HealthMetrics {
   bloodPressure: HealthMetricData;
   temperature: HealthMetricData;
   oxygen: HealthMetricData;
+  [key: string]: HealthMetricData;
 }
 
 export interface DashboardAppointment {
@@ -28,4 +30,13 @@ export interface DashboardAppointment {
   doctor: string;
   type: string;
   status?: 'scheduled' | 'confirmed' | 'cancelled' | 'completed';
+  title?: string;
+  endTime?: string;
+}
+
+export interface ActivityData {
+  data: { day: string; value: number }[];
+  currentValue: number;
+  source?: string;
+  lastSync?: string;
 }
