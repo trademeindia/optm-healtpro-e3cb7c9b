@@ -15,3 +15,35 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storageKey: 'supabase.auth.token',
   },
 });
+
+// Export helper functions for working with health app data
+export const healthAppsApi = {
+  async getConnections(userId: string) {
+    return supabase
+      .from('fitness_connections')
+      .select('*')
+      .eq('user_id', userId);
+  },
+  
+  async getLatestHealthData(userId: string, provider: string, dataType: string) {
+    return supabase
+      .from('fitness_data')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('provider', provider)
+      .eq('data_type', dataType)
+      .order('timestamp', { ascending: false })
+      .limit(1);
+  },
+  
+  async getHealthDataHistory(userId: string, provider: string, dataType: string, limit = 30) {
+    return supabase
+      .from('fitness_data')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('provider', provider)
+      .eq('data_type', dataType)
+      .order('timestamp', { ascending: false })
+      .limit(limit);
+  }
+};
