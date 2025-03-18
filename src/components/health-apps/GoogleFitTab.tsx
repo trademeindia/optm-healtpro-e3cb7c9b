@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GoogleFitInfo from './GoogleFitInfo';
 import { Heart, Activity, Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FitnessData, HealthMetric } from '@/hooks/useFitnessIntegration';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 
 interface GoogleFitTabProps {
@@ -79,18 +80,22 @@ const GoogleFitTab: React.FC<GoogleFitTabProps> = ({ onHealthDataSync }) => {
                 )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(fitnessData).map(([key, metric]) => (
-                    <div key={key} className="border rounded-lg p-4">
-                      <h4 className="font-medium">{metric.name}</h4>
-                      <div className="flex items-end gap-2 mt-2">
-                        <span className="text-2xl font-bold">{metric.value}</span>
-                        <span className="text-muted-foreground">{metric.unit}</span>
+                  {Object.entries(fitnessData).map(([key, metric]) => {
+                    // Ensure metric is treated as HealthMetric type
+                    const healthMetric = metric as HealthMetric;
+                    return (
+                      <div key={key} className="border rounded-lg p-4">
+                        <h4 className="font-medium">{healthMetric.name}</h4>
+                        <div className="flex items-end gap-2 mt-2">
+                          <span className="text-2xl font-bold">{healthMetric.value}</span>
+                          <span className="text-muted-foreground">{healthMetric.unit}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Last updated: {new Date(healthMetric.timestamp).toLocaleString()}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Last updated: {new Date(metric.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {Object.keys(fitnessData).length === 0 && !isLoading && (
                     <div className="col-span-full text-center py-8 text-muted-foreground">
