@@ -1,22 +1,39 @@
 
-import { Heart, ActivitySquare, Circle, Flame, ScanEye, Moon, Clock } from 'lucide-react';
-import React from 'react';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
 
-export const getMetricIcon = (metricName: string) => {
-  switch (metricName.toLowerCase()) {
-    case 'heart rate':
-      return <Heart className="w-4 h-4 md:w-5 md:h-5" />;
-    case 'steps':
-      return <ActivitySquare className="w-4 h-4 md:w-5 md:h-5" />;
-    case 'calories':
-      return <Flame className="w-4 h-4 md:w-5 md:h-5" />;
-    case 'distance':
-      return <Circle className="w-4 h-4 md:w-5 md:h-5" />;
-    case 'sleep':
-      return <Moon className="w-4 h-4 md:w-5 md:h-5" />;
-    case 'active minutes':
-      return <Clock className="w-4 h-4 md:w-5 md:h-5" />;
-    default:
-      return <ScanEye className="w-4 h-4 md:w-5 md:h-5" />;
-  }
+// Format health data for display
+export const formatHealthMetric = (value: number | string, unit: string) => {
+  return `${value} ${unit}`;
+};
+
+// Check if health data is available
+export const hasHealthData = (data: FitnessData): boolean => {
+  return Object.keys(data).length > 0;
+};
+
+// Get percentage change indicator
+export const getChangeIndicator = (changeValue: number): 'positive' | 'negative' | 'neutral' => {
+  if (changeValue > 0) return 'positive';
+  if (changeValue < 0) return 'negative';
+  return 'neutral';
+};
+
+// Format change value for display
+export const formatChange = (change: number): string => {
+  const prefix = change > 0 ? '+' : '';
+  return `${prefix}${change}%`;
+};
+
+// Get class name based on health metric change
+export const getChangeClass = (change: number): string => {
+  if (change > 0) return 'text-green-500';
+  if (change < 0) return 'text-red-500';
+  return 'text-gray-500';
+};
+
+// Get icon name based on health metric change
+export const getChangeIcon = (change: number): string => {
+  if (change > 0) return 'trending_up';
+  if (change < 0) return 'trending_down';
+  return 'remove';
 };
