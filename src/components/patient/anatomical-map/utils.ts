@@ -1,4 +1,3 @@
-
 import { HotSpot, AnatomicalRegion } from './types';
 import { SymptomEntry } from '@/contexts/SymptomContext';
 import { anatomicalRegions } from './regions';
@@ -143,4 +142,3 @@ export const getContrastTextColor = (backgroundColor: string): string => {
 export const getAnatomicalRegionById = (id: string): AnatomicalRegion | undefined => {
   return anatomicalRegions.find(region => region.id === id);
 };
-

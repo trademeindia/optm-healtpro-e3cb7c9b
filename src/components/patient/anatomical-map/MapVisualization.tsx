@@ -37,12 +37,13 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
         <div className="relative h-full max-h-full flex items-center justify-center">
           <img
             src={getSystemImage(activeSystem)}
-            alt="Human Anatomy Model"
-            className="model-image max-h-full max-w-full object-contain"
+            alt={`${activeSystem} Anatomical System`}
+            className="model-image h-auto max-h-[500px] w-auto object-contain"
             style={{ 
-              maxHeight: 'calc(100% - 20px)', 
+              maxHeight: '90%',
               width: 'auto',
-              zIndex: 10
+              zIndex: 10,
+              display: 'block'
             }}
             onLoad={onImageLoad}
           />
