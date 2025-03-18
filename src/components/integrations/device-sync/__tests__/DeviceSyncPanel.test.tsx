@@ -1,5 +1,6 @@
 
-/// <reference types="@testing-library/jest-dom" />
+/// <reference types="vitest" />
+/// <reference types="@testing-library/jest-dom/vitest" />
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
