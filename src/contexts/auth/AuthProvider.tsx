@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -16,19 +15,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signup,
     loginWithSocialProvider,
     handleOAuthCallback: handleOAuthCallbackBase,
-    logout,
+    logout: logoutBase,
     forgotPassword
   } = useAuthOperations();
 
   const isLoading = sessionLoading || operationsLoading;
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user ? `${user.email} (${user.role})` : 'null', 
       sessionLoading, 
-      operationsLoading 
+      operationsLoading,
+      isLoggingOut
     });
-  }, [user, sessionLoading, operationsLoading]);
+  }, [user, sessionLoading, operationsLoading, isLoggingOut]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -110,6 +111,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const logout = async () => {
+    // Set logging out state to prevent race conditions
+    setIsLoggingOut(true);
+    try {
+      // Clear user state immediately to prevent UI flashing
+      setUser(null);
+      // Call the base logout function
+      await logoutBase();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   const handleOAuthCallback = async (provider: string, code: string) => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
@@ -126,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isAuthenticated: !!user,
-        isLoading,
+        isLoading: isLoading || isLoggingOut,
         login,
         loginWithSocialProvider,
         handleOAuthCallback,

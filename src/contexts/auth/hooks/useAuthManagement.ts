@@ -9,30 +9,43 @@ type UseAuthManagementProps = {
 export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
   const logout = async (): Promise<void> => {
     try {
+      // Flag to track if we need to navigate after cleanup
+      let shouldNavigate = true;
+      
       // Check if we have a demo user in localStorage
       const demoUserData = localStorage.getItem('demoUser');
+      
       if (demoUserData) {
         // Clear demo user from localStorage
         localStorage.removeItem('demoUser');
-        toast.info('You have been logged out', {
-          duration: 3000
-        });
-        navigate('/login');
-        return;
+        console.log('Demo user data cleared from localStorage');
       }
       
-      // Regular logout for authenticated users
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Supabase signOut error:', error);
-        throw error;
+      // Always attempt to sign out from Supabase as well
+      // This ensures we clear any potential session even for demo users
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error('Supabase signOut error:', error);
+          // Continue with local cleanup even if Supabase fails
+        } else {
+          console.log('Supabase signOut successful');
+        }
+      } catch (supabaseError) {
+        console.error('Unexpected error during Supabase signOut:', supabaseError);
+        // Continue with local cleanup even if Supabase fails
       }
       
-      toast.info('You have been logged out', {
+      // Show success message
+      toast.success('You have been logged out', {
         duration: 3000
       });
-      navigate('/login');
+      
+      // Navigate to login page
+      if (shouldNavigate) {
+        console.log('Navigating to login page after logout');
+        navigate('/login');
+      }
     } catch (error: any) {
       console.error('Logout error:', error);
       toast.error('Failed to log out', {
