@@ -23,18 +23,17 @@ const Index: React.FC = () => {
     }
   }, [isAuthenticated, isLoading, navigate, user]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen w-full bg-background">
-        <div className="animate-pulse text-foreground p-4 text-center">
+  // Show a loading spinner while auth is being determined
+  return (
+    <div className="flex items-center justify-center min-h-screen w-full bg-background">
+      <div className={isLoading ? "animate-pulse" : "hidden"} aria-hidden={!isLoading}>
+        <div className="text-foreground p-4 text-center">
           <h2 className="text-xl font-medium">Loading...</h2>
           <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
         </div>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 };
 
 export default Index;
