@@ -60,7 +60,7 @@ const DashboardMainContent: React.FC<DashboardMainContentProps> = ({
       <RightColumn 
         treatmentTasks={treatmentTasks}
         biologicalAge={biologicalAge}
-        chronologicalAge={chronologicalAge} 
+        chronologicalAge={chronologicalAge}
       />
       
       <RescheduleDialog 

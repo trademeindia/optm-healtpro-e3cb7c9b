@@ -7,9 +7,9 @@ import BiologicalAge from '@/components/dashboard/BiologicalAge';
 import HealthMetric from '@/components/dashboard/HealthMetric';
 import TreatmentPlan from '@/components/dashboard/TreatmentPlan';
 import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
-import { ColumnProps } from './types';
+import { LeftColumnProps } from './types';
 
-const MiddleColumn: React.FC<ColumnProps> = ({
+const MiddleColumn: React.FC<LeftColumnProps> = ({
   healthMetrics,
   treatmentTasks,
   biologicalAge,
