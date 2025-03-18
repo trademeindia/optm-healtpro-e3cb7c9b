@@ -1,36 +1,20 @@
 
+import { HealthMetric } from '@/hooks/dashboard/useHealthMetrics';
+import { ActivityData } from '@/hooks/dashboard/useActivityData';
+import { TreatmentTask } from '@/hooks/dashboard/useTreatmentTasks';
+import { UpcomingAppointment } from '@/hooks/calendar/types';
+
 export interface DashboardMainContentProps {
-  healthMetrics: {
-    heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
-    temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-  };
-  activityData: {
-    data: { day: string; value: number }[];
-    currentValue: number;
-    source?: string;
-    lastSync?: string;
-  };
-  treatmentTasks: {
-    id: string;
-    title: string;
-    time: string;
-    completed: boolean;
-  }[];
-  upcomingAppointments: {
-    id: string;
-    date: string;
-    time: string;
-    doctor: string;
-    type: string;
-  }[];
+  healthMetrics: HealthMetric[];
+  activityData: ActivityData[];
+  treatmentTasks: TreatmentTask[];
+  upcomingAppointments: UpcomingAppointment[];
   biologicalAge: number;
   chronologicalAge: number;
   hasConnectedApps: boolean;
-  onSyncData: () => Promise<void>;
-  handleConfirmAppointment?: (id: string) => void;
-  handleRescheduleAppointment?: (id: string) => void;
+  onSyncData: () => void;
+  handleConfirmAppointment: (appointmentId: string) => void;
+  handleRescheduleAppointment: (appointmentId: string) => void;
+  // This is the incorrectly spelled prop that might come in
+  handleReschedureAppointment?: (appointmentId: string) => void;
 }
-
-export type ColumnProps = DashboardMainContentProps;
