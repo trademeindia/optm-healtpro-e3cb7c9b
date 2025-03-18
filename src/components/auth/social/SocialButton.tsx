@@ -8,6 +8,7 @@ interface SocialButtonProps {
   icon: React.ReactNode;
   provider: string;
   testId?: string;
+  className?: string;
 }
 
 const SocialButton: React.FC<SocialButtonProps> = ({
@@ -15,12 +16,13 @@ const SocialButton: React.FC<SocialButtonProps> = ({
   disabled,
   icon,
   provider,
-  testId
+  testId,
+  className
 }) => {
   return (
     <Button 
       variant="outline" 
-      className="flex items-center justify-center gap-2 h-11"
+      className={`flex items-center justify-center gap-2 h-11 w-full shadow-sm ${className}`}
       onClick={onClick}
       disabled={disabled}
       data-testid={testId}

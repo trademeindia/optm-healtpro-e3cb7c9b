@@ -83,9 +83,10 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       console.log(`Successfully initiated ${provider} auth flow, user should be redirected.`);
     } catch (error: any) {
       console.error(`Error initiating ${provider} authentication:`, error);
-      toast.error(`Login with ${provider} failed. Please check the debugging section for more information.`, {
+      toast.error(`Login with ${provider} failed. Please try again.`, {
         duration: 5000
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }

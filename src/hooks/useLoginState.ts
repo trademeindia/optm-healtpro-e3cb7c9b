@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const useLoginState = () => {
   const navigate = useNavigate();
@@ -83,7 +85,7 @@ export const useLoginState = () => {
     }
     
     if (signupData.password !== signupData.confirmPassword) {
-      alert('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     
@@ -100,19 +102,29 @@ export const useLoginState = () => {
 
   const handleGoogleLogin = async () => {
     try {
+      setIsSubmitting(true);
       console.log('Initiating Google OAuth login flow');
+      toast.info('Connecting to Google...', { duration: 3000 });
       await loginWithSocialProvider('google');
     } catch (error) {
       console.error('Error initiating Google login:', error);
+      toast.error('Google login failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
     try {
+      setIsSubmitting(true);
       console.log(`Initiating ${provider} OAuth login flow`);
+      toast.info(`Connecting to ${provider}...`, { duration: 3000 });
       await loginWithSocialProvider(provider);
     } catch (error) {
       console.error(`${provider} login initiation failed:`, error);
+      toast.error(`${provider} login failed. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
