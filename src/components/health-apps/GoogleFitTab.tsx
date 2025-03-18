@@ -1,12 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GoogleFitInfo from './GoogleFitInfo';
 import { Heart, Activity, Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FitnessData, HealthMetric } from '@/hooks/useFitnessIntegration';
-import useFitnessIntegration from '@/hooks/useFitnessIntegration';
+import { FitnessData, HealthMetric, useFitnessIntegration } from '@/hooks/useFitnessIntegration';
 
 interface GoogleFitTabProps {
   onHealthDataSync: (data: any) => void;

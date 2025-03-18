@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import useFitnessIntegration from '@/hooks/useFitnessIntegration';
+import { useFitnessIntegration } from '@/hooks/useFitnessIntegration';
 import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
 import { useHealthMetrics } from './dashboard/useHealthMetrics';
 import { useActivityData } from './dashboard/useActivityData';

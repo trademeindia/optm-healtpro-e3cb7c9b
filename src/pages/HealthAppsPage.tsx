@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
-import useFitnessIntegration from '@/hooks/useFitnessIntegration';
+import { useFitnessIntegration } from '@/hooks/useFitnessIntegration';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import HealthAppsHeader from '@/components/health-apps/HealthAppsHeader';
