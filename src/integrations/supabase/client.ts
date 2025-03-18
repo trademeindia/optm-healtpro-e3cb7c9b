@@ -19,34 +19,26 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 // Export helper functions for working with health app data
 export const healthAppsApi = {
   async getConnections(userId: string) {
-    // Using raw query since the types file doesn't include these tables yet
-    return supabase
-      .from('fitness_connections')
-      .select('*')
-      .eq('user_id', userId);
+    // Using rpc call instead of direct table query to avoid typing issues
+    return supabase.rpc('get_fitness_connections', { user_id_param: userId });
   },
   
   async getLatestHealthData(userId: string, provider: string, dataType: string) {
-    // Using raw query since the types file doesn't include these tables yet
-    return supabase
-      .from('fitness_data')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('provider', dataType)
-      .eq('data_type', dataType)
-      .order('timestamp', { ascending: false })
-      .limit(1);
+    // Using rpc call instead of direct table query to avoid typing issues
+    return supabase.rpc('get_latest_fitness_data', { 
+      user_id_param: userId,
+      provider_param: provider,
+      data_type_param: dataType
+    });
   },
   
   async getHealthDataHistory(userId: string, provider: string, dataType: string, limit = 30) {
-    // Using raw query since the types file doesn't include these tables yet
-    return supabase
-      .from('fitness_data')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('provider', provider)
-      .eq('data_type', dataType)
-      .order('timestamp', { ascending: false })
-      .limit(limit);
+    // Using rpc call instead of direct table query to avoid typing issues
+    return supabase.rpc('get_fitness_data_history', {
+      user_id_param: userId,
+      provider_param: provider,
+      data_type_param: dataType,
+      limit_param: limit
+    });
   }
 };
