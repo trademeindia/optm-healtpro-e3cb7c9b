@@ -19,26 +19,32 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 // Export helper functions for working with health app data
 export const healthAppsApi = {
   async getConnections(userId: string) {
-    // Using rpc call with proper typing to resolve TypeScript issues
-    return supabase.rpc<any, any>('get_fitness_connections', { user_id_param: userId });
+    // Using rpc call with proper typing to bypass TypeScript issues
+    return supabase.functions.invoke('get_fitness_connections', {
+      body: { user_id_param: userId }
+    });
   },
   
   async getLatestHealthData(userId: string, provider: string, dataType: string) {
-    // Using rpc call with proper typing to resolve TypeScript issues
-    return supabase.rpc<any, any>('get_latest_fitness_data', { 
-      user_id_param: userId,
-      provider_param: provider,
-      data_type_param: dataType
+    // Using functions.invoke to bypass TypeScript issues
+    return supabase.functions.invoke('get_latest_fitness_data', {
+      body: { 
+        user_id_param: userId,
+        provider_param: provider,
+        data_type_param: dataType
+      }
     });
   },
   
   async getHealthDataHistory(userId: string, provider: string, dataType: string, limit = 30) {
-    // Using rpc call with proper typing to resolve TypeScript issues
-    return supabase.rpc<any, any>('get_fitness_data_history', {
-      user_id_param: userId,
-      provider_param: provider,
-      data_type_param: dataType,
-      limit_param: limit
+    // Using functions.invoke to bypass TypeScript issues
+    return supabase.functions.invoke('get_fitness_data_history', {
+      body: {
+        user_id_param: userId,
+        provider_param: provider,
+        data_type_param: dataType,
+        limit_param: limit
+      }
     });
   }
 };
