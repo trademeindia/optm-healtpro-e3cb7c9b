@@ -2,10 +2,12 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -26,6 +28,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Uncaught error:', error, errorInfo);
+    
+    // Call the onError prop if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+    
+    // Show error toast
+    toast.error('An error occurred', {
+      description: error.message || 'Please try again or reload the page',
+      duration: 5000
+    });
   }
 
   private handleReset = () => {

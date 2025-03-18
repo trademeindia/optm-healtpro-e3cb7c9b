@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
@@ -23,43 +23,124 @@ import HealthAppsPage from './pages/HealthAppsPage';
 import AIAnalysisPage from './pages/AIAnalysisPage';
 import { AuthProvider } from './contexts/auth';
 import ErrorBoundary from './components/error-boundary/ErrorBoundary';
+import { Loader2 } from 'lucide-react';
 
-// Create a client
+// Create a client with improved error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: 2,
       refetchOnWindowFocus: false,
+      onError: (error) => {
+        console.error('Query error:', error);
+      },
     },
   },
 });
 
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+  </div>
+);
+
 function App() {
+  const handleGlobalError = (error: Error) => {
+    console.error('Global error caught by ErrorBoundary:', error);
+  };
+
   return (
-    <ErrorBoundary>
+    <ErrorBoundary onError={handleGlobalError}>
       <ThemeProvider attribute="class" defaultTheme="light">
         <QueryClientProvider client={queryClient}>
           <Router>
             <AuthProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/patients" element={<PatientsPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/biomarkers" element={<BiomarkersPage />} />
-                <Route path="/exercises" element={<ExercisePage />} />
-                <Route path="/appointments" element={<AppointmentsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="/patient-dashboard" element={<PatientDashboard />} />
-                <Route path="/patient-reports" element={<PatientReportsPage />} />
-                <Route path="/oauth-callback" element={<OAuthCallback />} />
-                <Route path="/health-apps" element={<HealthAppsPage />} />
-                <Route path="/ai-analysis" element={<AIAnalysisPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster position="bottom-right" richColors closeButton />
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={
+                    <ErrorBoundary>
+                      <Index />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/login" element={
+                    <ErrorBoundary>
+                      <Login />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/dashboard" element={
+                    <ErrorBoundary>
+                      <DashboardPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/patients" element={
+                    <ErrorBoundary>
+                      <PatientsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/reports" element={
+                    <ErrorBoundary>
+                      <ReportsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/biomarkers" element={
+                    <ErrorBoundary>
+                      <BiomarkersPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/exercises" element={
+                    <ErrorBoundary>
+                      <ExercisePage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/appointments" element={
+                    <ErrorBoundary>
+                      <AppointmentsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/settings" element={
+                    <ErrorBoundary>
+                      <SettingsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/help" element={
+                    <ErrorBoundary>
+                      <HelpPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/patient-dashboard" element={
+                    <ErrorBoundary>
+                      <PatientDashboard />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/patient-reports" element={
+                    <ErrorBoundary>
+                      <PatientReportsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/oauth-callback" element={
+                    <ErrorBoundary>
+                      <OAuthCallback />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/health-apps" element={
+                    <ErrorBoundary>
+                      <HealthAppsPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="/ai-analysis" element={
+                    <ErrorBoundary>
+                      <AIAnalysisPage />
+                    </ErrorBoundary>
+                  } />
+                  <Route path="*" element={
+                    <ErrorBoundary>
+                      <NotFound />
+                    </ErrorBoundary>
+                  } />
+                </Routes>
+                <Toaster position="bottom-right" richColors closeButton />
+              </Suspense>
             </AuthProvider>
           </Router>
         </QueryClientProvider>
