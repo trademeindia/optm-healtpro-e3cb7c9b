@@ -6,7 +6,7 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     id: 'head',
     name: 'Head',
     x: 50,
-    y: 7
+    y: 8
   },
   {
     id: 'neck',
@@ -18,7 +18,7 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     id: 'chest',
     name: 'Chest',
     x: 50,
-    y: 26
+    y: 25
   },
   {
     id: 'abdomen',
@@ -69,39 +69,27 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     y: 37
   },
   {
-    id: 'left-forearm',
-    name: 'Left Forearm',
-    x: 22,
-    y: 43
-  },
-  {
-    id: 'right-forearm',
-    name: 'Right Forearm',
-    x: 78,
-    y: 43
-  },
-  {
     id: 'left-hand',
     name: 'Left Hand',
     x: 20,
-    y: 50
+    y: 45
   },
   {
     id: 'right-hand',
     name: 'Right Hand',
     x: 80,
-    y: 50
+    y: 45
   },
   {
     id: 'left-hip',
     name: 'Left Hip',
-    x: 42,
+    x: 43,
     y: 50
   },
   {
     id: 'right-hip',
     name: 'Right Hip',
-    x: 58,
+    x: 57,
     y: 50
   },
   {
@@ -120,25 +108,25 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     id: 'left-knee',
     name: 'Left Knee',
     x: 40,
-    y: 73
+    y: 70
   },
   {
     id: 'right-knee',
     name: 'Right Knee',
     x: 60,
-    y: 73
+    y: 70
   },
   {
     id: 'left-calf',
     name: 'Left Calf',
     x: 40,
-    y: 83
+    y: 80
   },
   {
     id: 'right-calf',
     name: 'Right Calf',
     x: 60,
-    y: 83
+    y: 80
   },
   {
     id: 'left-foot',
@@ -163,24 +151,6 @@ export const anatomicalRegions: AnatomicalRegion[] = [
     name: 'Lower Back',
     x: 50,
     y: 42
-  },
-  {
-    id: 'head-3',
-    name: 'Head (Superior)',
-    x: 50,
-    y: 4
-  },
-  {
-    id: 'neck-right-1',
-    name: 'Right Neck',
-    x: 60,
-    y: 15
-  },
-  {
-    id: 'abdomen-center',
-    name: 'Abdominal Region',
-    x: 50,
-    y: 45
   }
 ];
 

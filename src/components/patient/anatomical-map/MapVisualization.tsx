@@ -33,36 +33,35 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
           transition: 'scale 0.2s ease-out'
         }}
       >
-        {/* Anatomical model image with position relative for proper hotspot positioning */}
-        <div className="relative h-full max-h-full flex items-center justify-center">
-          <img
-            src={getSystemImage(activeSystem)}
-            alt="Human Anatomy Model"
-            className="model-image max-h-full max-w-full object-contain"
-            style={{ 
-              maxHeight: 'calc(100% - 20px)', 
-              width: 'auto',
-              zIndex: 10
-            }}
-            onLoad={onImageLoad}
-          />
-          
-          {/* Hotspots container with absolute positioning relative to the image container */}
-          {imageLoaded && (
-            <div className="absolute inset-0 w-full h-full pointer-events-none">
-              <AnimatePresence>
-                {hotspots.map((hotspot) => (
-                  <HotspotMarker
-                    key={hotspot.id}
-                    hotspot={hotspot}
-                    isActive={activeHotspot?.id === hotspot.id}
-                    onClick={onHotspotClick}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+        {/* Anatomical model image */}
+        <img
+          src={getSystemImage(activeSystem)}
+          alt="Human Anatomy Model"
+          className="model-image max-h-full max-w-full object-contain"
+          style={{ 
+            maxHeight: 'calc(100% - 20px)', 
+            width: 'auto',
+            position: 'relative',
+            zIndex: 10
+          }}
+          onLoad={onImageLoad}
+        />
+        
+        {/* Hotspots - Only render if image is loaded */}
+        {imageLoaded && (
+          <div className="absolute inset-0 w-full h-full pointer-events-none">
+            <AnimatePresence>
+              {hotspots.map((hotspot) => (
+                <HotspotMarker
+                  key={hotspot.id}
+                  hotspot={hotspot}
+                  isActive={activeHotspot?.id === hotspot.id}
+                  onClick={onHotspotClick}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </motion.div>
     </div>
   );
