@@ -25,18 +25,24 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
   onConfirmAppointment,
   onRescheduleAppointment,
-  className
+  className = ''
 }) => {
+  // Safety check for null/undefined appointment
+  if (!appointment || !appointment.id) {
+    console.error('Invalid appointment passed to AppointmentCard:', appointment);
+    return null;
+  }
+
   return (
     <div className={`p-3 md:p-4 border rounded-lg bg-card hover:shadow-md transition-shadow ${className}`}>
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="min-w-0 flex-1">
-          <h4 className="font-medium text-base md:text-lg truncate">{appointment.type}</h4>
+          <h4 className="font-medium text-base md:text-lg truncate">{appointment.type || 'Appointment'}</h4>
           <p className="text-sm text-muted-foreground mt-1 truncate">
-            {appointment.date} at {appointment.time}
+            {appointment.date || 'No date'} at {appointment.time || 'No time'}
           </p>
           <p className="text-sm text-muted-foreground truncate">
-            {appointment.doctor}
+            {appointment.doctor || 'No doctor assigned'}
           </p>
         </div>
         <div className="bg-primary/10 p-2 rounded-full flex-shrink-0">

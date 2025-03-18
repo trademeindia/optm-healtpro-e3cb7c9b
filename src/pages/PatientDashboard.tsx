@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
 import DashboardMainContent from '@/components/patient-dashboard/DashboardMainContent';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
+import ErrorBoundary from '@/components/error-boundary/ErrorBoundary';
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -42,27 +43,29 @@ const PatientDashboard: React.FC = () => {
             </p>
           </div>
           
-          <SymptomProvider>
-            <DashboardTabs
-              initialTab={initialTab}
-              upcomingAppointments={upcomingAppointments || []}
-              onConfirmAppointment={handleConfirmAppointment}
-              onRescheduleAppointment={handleRescheduleAppointment}
-            >
-              <DashboardMainContent
-                healthMetrics={healthMetrics}
-                activityData={activityData}
-                treatmentTasks={treatmentTasks}
+          <ErrorBoundary>
+            <SymptomProvider>
+              <DashboardTabs
+                initialTab={initialTab}
                 upcomingAppointments={upcomingAppointments || []}
-                biologicalAge={biologicalAge}
-                chronologicalAge={chronologicalAge}
-                hasConnectedApps={hasConnectedApps}
-                onSyncData={handleSyncAllData}
-                handleConfirmAppointment={handleConfirmAppointment}
-                handleRescheduleAppointment={handleRescheduleAppointment}
-              />
-            </DashboardTabs>
-          </SymptomProvider>
+                onConfirmAppointment={handleConfirmAppointment}
+                onRescheduleAppointment={handleRescheduleAppointment}
+              >
+                <DashboardMainContent
+                  healthMetrics={healthMetrics}
+                  activityData={activityData}
+                  treatmentTasks={treatmentTasks}
+                  upcomingAppointments={upcomingAppointments || []}
+                  biologicalAge={biologicalAge}
+                  chronologicalAge={chronologicalAge}
+                  hasConnectedApps={hasConnectedApps}
+                  onSyncData={handleSyncAllData}
+                  handleConfirmAppointment={handleConfirmAppointment}
+                  handleRescheduleAppointment={handleRescheduleAppointment}
+                />
+              </DashboardTabs>
+            </SymptomProvider>
+          </ErrorBoundary>
         </main>
       </div>
     </div>
