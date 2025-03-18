@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Activity, Heart } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { AppointmentStatus } from '@/types/appointment';
 import AppointmentStatusIndicator from '@/components/calendar/AppointmentStatusIndicator';
 import AppointmentActions from './AppointmentActions';
@@ -12,11 +12,6 @@ export interface Appointment {
   doctor: string;
   type: string;
   status?: AppointmentStatus;
-  healthMetrics?: {
-    heartRate?: number;
-    steps?: number;
-    sleep?: number;
-  };
 }
 
 interface AppointmentCardProps {
@@ -30,20 +25,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
-  // Determine if appointment is upcoming (today or in the future)
-  const isUpcoming = () => {
-    const now = new Date();
-    const today = now.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-    
-    return appointment.date === 'Today' || 
-           appointment.date === today || 
-           new Date(appointment.date) >= now;
-  };
-  
   return (
     <div className="p-3 md:p-4 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start gap-3 mb-3">
@@ -67,34 +48,11 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </div>
       )}
       
-      {/* Health metrics section - show when available */}
-      {appointment.healthMetrics && (
-        <div className="mb-3 p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground mb-2 font-medium">Health Data - Last 24 Hours</p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {appointment.healthMetrics.heartRate && (
-              <div className="flex items-center gap-1.5">
-                <Heart className="h-3 w-3 text-red-500" />
-                <span>{appointment.healthMetrics.heartRate} bpm</span>
-              </div>
-            )}
-            {appointment.healthMetrics.steps && (
-              <div className="flex items-center gap-1.5">
-                <Activity className="h-3 w-3 text-green-500" />
-                <span>{appointment.healthMetrics.steps.toLocaleString()} steps</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      
-      {isUpcoming() && (
-        <AppointmentActions 
-          appointmentId={appointment.id}
-          onConfirmAppointment={onConfirmAppointment}
-          onRescheduleAppointment={onRescheduleAppointment}
-        />
-      )}
+      <AppointmentActions 
+        appointmentId={appointment.id}
+        onConfirmAppointment={onConfirmAppointment}
+        onRescheduleAppointment={onRescheduleAppointment}
+      />
     </div>
   );
 };

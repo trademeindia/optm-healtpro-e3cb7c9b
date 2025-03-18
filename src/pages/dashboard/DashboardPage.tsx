@@ -31,8 +31,6 @@ const Dashboard: React.FC = () => {
     getUpcomingReminders 
   } = useReminders();
 
-  console.log("Dashboard rendering", { user: user?.email, role: user?.role });
-
   // Check user authentication status
   useEffect(() => {
     if (user) {

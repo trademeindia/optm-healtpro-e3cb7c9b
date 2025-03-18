@@ -38,22 +38,14 @@ export const usePatientDashboard = () => {
       duration: 3000
     });
 
-    try {
-      for (const provider of connectedProviders) {
-        await refreshProviderData(provider.id);
-      }
-
-      toast.success("Sync complete", {
-        description: "Your health data has been updated.",
-        duration: 3000
-      });
-    } catch (error) {
-      console.error("Error syncing data:", error);
-      toast.error("Sync failed", {
-        description: "There was an error syncing your health data.",
-        duration: 3000
-      });
+    for (const provider of connectedProviders) {
+      await refreshProviderData(provider.id);
     }
+
+    toast.success("Sync complete", {
+      description: "Your health data has been updated.",
+      duration: 3000
+    });
   };
 
   const hasConnectedApps = providers.some(p => p.isConnected);

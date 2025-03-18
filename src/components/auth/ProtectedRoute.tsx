@@ -29,15 +29,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // Add debugging logs to help diagnose issues
-  console.log("ProtectedRoute:", { 
-    path: location.pathname,
-    isAuthenticated, 
-    isLoading,
-    user: user ? `${user.email} (${user.role})` : 'null',
-    requiredRole
-  });
-
   // Show loading state
   if (isLoading) {
     return (
@@ -47,21 +38,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Skip protection for dashboard for now - temporary fix
-  if (location.pathname === '/dashboard' || location.pathname === '/patient-dashboard') {
-    console.log("Bypassing protection for dashboard route");
-    return <>{children}</>;
-  }
-
   // Redirect to login if not authenticated
   if (!isAuthenticated || !user) {
-    console.log("User not authenticated, redirecting to login");
     return <Navigate to={redirectPath} state={{ from: location }} replace />;
   }
 
   // Check for role-based access if required
   if (requiredRole && !hasMinimumRoleLevel(user.role, requiredRole)) {
-    console.log("Insufficient role level", { userRole: user.role, requiredRole });
     return (
       <AccessDenied 
         title="Insufficient Permissions"
@@ -82,7 +65,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
 
     if (!hasAccess) {
-      console.log("Missing specific permission", { resourceType, action, resourceId });
       return (
         <AccessDenied 
           title="Access Restricted"
@@ -95,7 +77,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If all checks pass, render the protected content
-  console.log("Access granted to protected route");
   return <>{children}</>;
 };
 
