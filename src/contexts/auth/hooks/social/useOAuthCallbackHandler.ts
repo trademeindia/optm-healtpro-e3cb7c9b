@@ -17,7 +17,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
     provider: string,
     code: string,
     currentUser: User | null
-  ): Promise<void> {
+  ) => {
     setIsLoading(true);
     setError(null);
     
