@@ -141,7 +141,62 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_fitness_connections: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_sync: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_fitness_data_history: {
+        Args: {
+          user_id_param: string
+          provider_param: string
+          data_type_param: string
+          limit_param: number
+        }
+        Returns: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }[]
+      }
+      get_latest_fitness_data: {
+        Args: {
+          user_id_param: string
+          provider_param: string
+          data_type_param: string
+        }
+        Returns: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
