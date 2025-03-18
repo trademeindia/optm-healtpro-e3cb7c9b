@@ -15,12 +15,20 @@ export function useCalendarData(isAuthorized: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const isRefreshingRef = useRef(false);
-  const appointmentChanges = useRef(0);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSuccessfulFetchRef = useRef(0);
+  const MIN_REFRESH_INTERVAL = 5000; // 5 seconds minimum between refreshes
 
+  // Improved fetch events function with error handling and rate limiting
   const fetchEvents = useCallback(async () => {
-    // Don't fetch if not authorized or already fetching
+    // Don't fetch if not authorized, already fetching, or fetched too recently
     if (!isAuthorized || isRefreshingRef.current) return;
+    
+    const now = Date.now();
+    if (now - lastSuccessfulFetchRef.current < MIN_REFRESH_INTERVAL) {
+      console.log(`Skipping fetch, only ${now - lastSuccessfulFetchRef.current}ms since last fetch`);
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -35,11 +43,6 @@ export function useCalendarData(isAuthorized: boolean) {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real implementation, we would:
-      // 1. Make API call to Google Calendar using tokens from auth
-      // 2. Map the response to our CalendarEvent type
-      // 3. Handle pagination if needed
-      
       // For demo, we generate mock data
       let mockEvents = generateMockEvents(selectedDate);
       
@@ -53,7 +56,6 @@ export function useCalendarData(isAuthorized: boolean) {
           const eventPatientId = (event as any).patientId;
           
           // Filter logic: either the patientId matches, or the patient name contains the user's name
-          // This is a simplification - in a real app, you would have proper patient IDs
           return (eventPatientId && eventPatientId === user.patientId) || 
                  (event.patientName && user.name && event.patientName.includes(user.name));
         });
@@ -68,9 +70,12 @@ export function useCalendarData(isAuthorized: boolean) {
       const upcoming = mapEventsToAppointments(filteredEvents);
       setUpcomingAppointments(upcoming);
       
-      // Dispatch a success event for calendar data
+      // Update last successful fetch time
+      lastSuccessfulFetchRef.current = Date.now();
+      
+      // Dispatch a success event for calendar data - do this less frequently
       window.dispatchEvent(new CustomEvent('calendar-data-loaded', { 
-        detail: { count: filteredEvents.length } 
+        detail: { count: filteredEvents.length, timestamp: new Date().toISOString() } 
       }));
       
     } catch (error: any) {
@@ -91,11 +96,10 @@ export function useCalendarData(isAuthorized: boolean) {
     }
   }, [isAuthorized, selectedDate, user]);
 
+  // Improved refresh function with rate limiting
   const refreshCalendar = useCallback(async () => {
     if (!isAuthorized) {
-      toast.error("Calendar not connected", {
-        description: "Please connect your Google Calendar first",
-      });
+      console.log("Calendar not authorized, skipping refresh");
       return;
     }
     
@@ -104,27 +108,24 @@ export function useCalendarData(isAuthorized: boolean) {
       return;
     }
     
+    const now = Date.now();
+    if (now - lastSuccessfulFetchRef.current < MIN_REFRESH_INTERVAL) {
+      console.log(`Skipping refresh, only ${now - lastSuccessfulFetchRef.current}ms since last fetch`);
+      return;
+    }
+    
     // Clear any existing timeout
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
     
-    // Show a toast notification that we're refreshing
-    toast.info("Refreshing calendar data...");
-    
     // Debounce multiple rapid refresh calls
     debounceTimeoutRef.current = setTimeout(() => {
       console.log("Refreshing calendar data...");
-      appointmentChanges.current += 1;
       
       // Force a refresh by setting a new timestamp 
       setLastRefresh(Date.now());
       debounceTimeoutRef.current = null;
-      
-      // Show a success toast after the refresh completes
-      setTimeout(() => {
-        toast.success("Calendar refreshed successfully");
-      }, 1500);
     }, 500); // 500ms debounce
     
   }, [isAuthorized]);

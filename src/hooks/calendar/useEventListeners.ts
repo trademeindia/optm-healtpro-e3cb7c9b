@@ -1,53 +1,84 @@
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 export function useCalendarEventListeners(
   debouncedRefresh: () => void,
   refreshCalendar: () => void
 ) {
-  const handleAppointmentCreated = useCallback((event: CustomEvent) => {
-    console.log('Appointment created:', event.detail);
-    debouncedRefresh();
-  }, [debouncedRefresh]);
+  const eventsQueueRef = useRef<Set<string>>(new Set());
+  const processingEventsRef = useRef(false);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleAppointmentUpdated = useCallback((event: CustomEvent) => {
-    console.log('Appointment updated:', event.detail);
-    debouncedRefresh();
-  }, [debouncedRefresh]);
-
-  const handleAppointmentDeleted = useCallback((event: CustomEvent) => {
-    console.log('Appointment deleted:', event.detail);
-    debouncedRefresh();
-  }, [debouncedRefresh]);
-
-  const handleCalendarDataUpdated = useCallback((event: CustomEvent) => {
-    console.log('Calendar event received in CalendarTab', event.detail);
-    debouncedRefresh();
-  }, [debouncedRefresh]);
-
-  // Set up event listeners
-  useEffect(() => {
-    // Add listeners for appointment events
-    window.addEventListener('appointment-created', handleAppointmentCreated as EventListener);
-    window.addEventListener('appointment-updated', handleAppointmentUpdated as EventListener);
-    window.addEventListener('appointment-deleted', handleAppointmentDeleted as EventListener);
-    window.addEventListener('calendar-data-updated', handleCalendarDataUpdated as EventListener);
+  // Consolidated event handler to reduce duplicate refreshes
+  const handleCalendarEvent = useCallback((event: CustomEvent, eventType: string) => {
+    console.log(`${eventType} event received:`, event.detail);
     
-    // Initial refresh
-    refreshCalendar();
+    // Add to queue instead of refreshing immediately
+    eventsQueueRef.current.add(eventType);
+    
+    // Only schedule processing if not already scheduled
+    if (!processingEventsRef.current && !refreshTimeoutRef.current) {
+      refreshTimeoutRef.current = setTimeout(() => {
+        processEvents();
+      }, 500);
+    }
+  }, []);
+  
+  // Process all queued events with a single refresh
+  const processEvents = useCallback(() => {
+    if (processingEventsRef.current) return;
+    
+    processingEventsRef.current = true;
+    refreshTimeoutRef.current = null;
+    
+    try {
+      if (eventsQueueRef.current.size > 0) {
+        console.log(`Processing ${eventsQueueRef.current.size} calendar events`);
+        eventsQueueRef.current.clear();
+        debouncedRefresh();
+      }
+    } finally {
+      processingEventsRef.current = false;
+    }
+  }, [debouncedRefresh]);
 
-    // Clean up listeners
+  // Set up event listeners with the consolidated handler
+  useEffect(() => {
+    // Create type-safe event handlers for each event type
+    const handleAppointmentCreated = (event: Event) => 
+      handleCalendarEvent(event as CustomEvent, 'appointment-created');
+      
+    const handleAppointmentUpdated = (event: Event) => 
+      handleCalendarEvent(event as CustomEvent, 'appointment-updated');
+      
+    const handleAppointmentDeleted = (event: Event) => 
+      handleCalendarEvent(event as CustomEvent, 'appointment-deleted');
+      
+    const handleCalendarDataUpdated = (event: Event) => 
+      handleCalendarEvent(event as CustomEvent, 'calendar-data-updated');
+    
+    // Add listeners for appointment events
+    window.addEventListener('appointment-created', handleAppointmentCreated);
+    window.addEventListener('appointment-updated', handleAppointmentUpdated);
+    window.addEventListener('appointment-deleted', handleAppointmentDeleted);
+    window.addEventListener('calendar-data-updated', handleCalendarDataUpdated);
+    
+    // Initial refresh should only happen once
+    const initialRefreshTimeout = setTimeout(() => {
+      refreshCalendar();
+    }, 500);
+
+    // Clean up listeners and timeouts
     return () => {
-      window.removeEventListener('appointment-created', handleAppointmentCreated as EventListener);
-      window.removeEventListener('appointment-updated', handleAppointmentUpdated as EventListener);
-      window.removeEventListener('appointment-deleted', handleAppointmentDeleted as EventListener);
-      window.removeEventListener('calendar-data-updated', handleCalendarDataUpdated as EventListener);
+      window.removeEventListener('appointment-created', handleAppointmentCreated);
+      window.removeEventListener('appointment-updated', handleAppointmentUpdated);
+      window.removeEventListener('appointment-deleted', handleAppointmentDeleted);
+      window.removeEventListener('calendar-data-updated', handleCalendarDataUpdated);
+      
+      clearTimeout(initialRefreshTimeout);
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
     };
-  }, [
-    handleAppointmentCreated,
-    handleAppointmentUpdated,
-    handleAppointmentDeleted,
-    handleCalendarDataUpdated,
-    refreshCalendar
-  ]);
+  }, [handleCalendarEvent, refreshCalendar]);
 }

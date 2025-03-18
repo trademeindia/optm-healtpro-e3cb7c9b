@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -8,7 +8,8 @@ import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
 import DashboardMainContent from '@/components/patient-dashboard/DashboardMainContent';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
 
-const PatientDashboard: React.FC = () => {
+// Memoize the component to prevent unnecessary re-renders
+const PatientDashboard: React.FC = memo(() => {
   const { user } = useAuth();
   
   const {
@@ -67,6 +68,8 @@ const PatientDashboard: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+PatientDashboard.displayName = 'PatientDashboard';
 
 export default PatientDashboard;

@@ -6,19 +6,18 @@ import { useAuth } from '@/contexts/auth';
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, user } = useAuth();
-
+  
   useEffect(() => {
-    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user });
-    
+    // Use a single effect for navigation with proper dependencies
     if (!isLoading) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
         const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
         console.log(`Navigating to ${dashboard}`);
-        navigate(dashboard);
+        navigate(dashboard, { replace: true });
       } else {
         console.log('Index page: User not authenticated, redirecting to login');
-        navigate('/login');
+        navigate('/login', { replace: true });
       }
     }
   }, [isAuthenticated, isLoading, navigate, user]);
