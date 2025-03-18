@@ -92,7 +92,10 @@ export const safeDataOperation = async <T>(
 export const healthAppsApi = {
   async getConnections(userId: string) {
     return safeDataOperation(
-      () => supabase.rpc<any, any>('get_fitness_connections', { user_id_param: userId }),
+      async () => {
+        const result = await supabase.rpc('get_fitness_connections', { user_id_param: userId });
+        return { data: result.data || [], error: result.error };
+      },
       { data: [], error: null },
       'Failed to fetch health connections'
     );
@@ -100,11 +103,14 @@ export const healthAppsApi = {
   
   async getLatestHealthData(userId: string, provider: string, dataType: string) {
     return safeDataOperation(
-      () => supabase.rpc<any, any>('get_latest_fitness_data', { 
-        user_id_param: userId,
-        provider_param: provider,
-        data_type_param: dataType
-      }),
+      async () => {
+        const result = await supabase.rpc('get_latest_fitness_data', { 
+          user_id_param: userId,
+          provider_param: provider,
+          data_type_param: dataType
+        });
+        return { data: result.data || null, error: result.error };
+      },
       { data: null, error: null },
       `Failed to fetch latest ${dataType} data`
     );
@@ -112,12 +118,15 @@ export const healthAppsApi = {
   
   async getHealthDataHistory(userId: string, provider: string, dataType: string, limit = 30) {
     return safeDataOperation(
-      () => supabase.rpc<any, any>('get_fitness_data_history', {
-        user_id_param: userId,
-        provider_param: provider,
-        data_type_param: dataType,
-        limit_param: limit
-      }),
+      async () => {
+        const result = await supabase.rpc('get_fitness_data_history', {
+          user_id_param: userId,
+          provider_param: provider,
+          data_type_param: dataType,
+          limit_param: limit
+        });
+        return { data: result.data || [], error: result.error };
+      },
       { data: [], error: null },
       `Failed to fetch ${dataType} history`
     );
