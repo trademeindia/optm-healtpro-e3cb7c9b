@@ -1,14 +1,11 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { FitnessData } from './useFitnessIntegration';
-import { googleFitService, GoogleFitDataPoint } from '@/services/integrations/googleFitService';
-
-export interface HistoricalDataQuery {
-  dataType: string;
-  startDate: Date;
-  endDate: Date;
-}
+import { 
+  googleFitService, 
+  GoogleFitDataPoint, 
+  HistoricalDataRequest 
+} from '@/services/integrations/googleFitService';
 
 export interface GoogleFitIntegrationReturn {
   isConnected: boolean;
@@ -18,7 +15,7 @@ export interface GoogleFitIntegrationReturn {
   syncGoogleFitData: () => Promise<FitnessData>;
   lastSyncTime: string | null;
   healthData: FitnessData;
-  getHistoricalData: (query: HistoricalDataQuery) => Promise<GoogleFitDataPoint[]>;
+  getHistoricalData: (query: HistoricalDataRequest) => Promise<GoogleFitDataPoint[]>;
 }
 
 export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
@@ -27,7 +24,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
   const [healthData, setHealthData] = useState<FitnessData>({});
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
-  // Initialize integration status on component mount
   useEffect(() => {
     checkConnectionStatus();
   }, []);
@@ -38,7 +34,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
       setIsConnected(connected);
       
       if (connected) {
-        // If connected, sync data automatically
         syncGoogleFitData();
       }
     } catch (error) {
@@ -54,7 +49,6 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     try {
       googleFitService.initiateAuth();
       
-      // Check connection status after a delay to allow auth flow to complete
       setTimeout(() => {
         const connected = googleFitService.isAuthenticated();
         setIsConnected(connected);
@@ -143,15 +137,11 @@ export const useGoogleFitIntegration = (): GoogleFitIntegrationReturn => {
     }
   }, []);
 
-  const getHistoricalData = useCallback(async (query: HistoricalDataQuery): Promise<GoogleFitDataPoint[]> => {
+  const getHistoricalData = useCallback(async (query: HistoricalDataRequest): Promise<GoogleFitDataPoint[]> => {
     setIsLoading(true);
     
     try {
-      const data = await googleFitService.getHistoricalData(
-        query.dataType,
-        query.startDate,
-        query.endDate
-      );
+      const data = await googleFitService.getHistoricalData(query);
       
       return data;
     } catch (error) {
