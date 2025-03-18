@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -9,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading: sessionLoading, setUser } = useAuthSession();
+  const navigate = useNavigate();
   const {
     isLoading: operationsLoading,
     login: loginBase,
@@ -57,6 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
+      console.log('AuthProvider login called:', email);
+
       // Handle demo accounts with predefined roles and IDs
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
@@ -68,6 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           picture: null
         };
         
+        console.log('Creating admin demo user:', demoUser);
         setUser(demoUser);
         toast.success('Admin demo login successful');
         return demoUser;
@@ -82,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           picture: null
         };
         
+        console.log('Creating doctor demo user:', demoUser);
         setUser(demoUser);
         toast.success('Demo login successful');
         return demoUser;
@@ -97,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           patientId: 'demo-patient-id-123' // Link to patient records
         };
         
+        console.log('Creating patient demo user:', demoUser);
         setUser(demoUser);
         toast.success('Demo login successful');
         return demoUser;
@@ -115,10 +122,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set logging out state to prevent race conditions
     setIsLoggingOut(true);
     try {
+      console.log('Logging out user');
       // Clear user state immediately to prevent UI flashing
       setUser(null);
       // Call the base logout function
       await logoutBase();
+      // Navigate to login page after logout
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Logout failed');
     } finally {
       setIsLoggingOut(false);
     }

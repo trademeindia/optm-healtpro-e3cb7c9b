@@ -12,22 +12,23 @@ type UseAuthLoginProps = {
 export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
   const login = async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
+    console.log('useAuthLogin: Attempting login with:', email);
+    
     try {
-      console.log(`Attempting to log in with email: ${email}`);
-      
       // Check if using demo credentials
       const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
       const isDemoPatient = email === 'patient@example.com' && password === 'password123';
+      const isDemoAdmin = email === 'admin@example.com' && password === 'password123';
       
-      if (isDemoDoctor || isDemoPatient) {
+      if (isDemoDoctor || isDemoPatient || isDemoAdmin) {
         console.log('Using demo account login');
         
         // Create a demo user without actually authenticating
         const demoUser: User = {
-          id: isDemoDoctor ? 'demo-doctor-id' : 'demo-patient-id',
+          id: isDemoAdmin ? 'demo-admin-id' : (isDemoDoctor ? 'demo-doctor-id' : 'demo-patient-id'),
           email: email,
-          name: isDemoDoctor ? 'Demo Doctor' : 'Demo Patient',
-          role: isDemoDoctor ? 'doctor' : 'patient',
+          name: isDemoAdmin ? 'Demo Admin' : (isDemoDoctor ? 'Demo Doctor' : 'Demo Patient'),
+          role: isDemoAdmin ? 'admin' : (isDemoDoctor ? 'doctor' : 'patient'),
           provider: 'email',
           picture: null
         };
@@ -36,7 +37,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         
         // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
         setTimeout(() => {
-          const dashboard = isDemoDoctor ? '/dashboard' : '/patient-dashboard';
+          const dashboard = isDemoDoctor ? '/dashboard' : (isDemoAdmin ? '/dashboard' : '/patient-dashboard');
           console.log(`Navigating to ${dashboard}`);
           navigate(dashboard);
         }, 100);
@@ -45,6 +46,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       }
       
       // Regular authentication flow for non-demo users
+      console.log('Attempting Supabase auth with email/password');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -59,12 +61,14 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         throw new Error('No user returned from authentication');
       }
 
+      console.log('Supabase auth successful, formatting user');
       const formattedUser = await formatUser(data.user);
       if (!formattedUser) {
         throw new Error('User profile not found');
       }
       
       toast.success('Login successful');
+      console.log('Login complete, returning formatted user');
       
       return formattedUser;
     } catch (error: any) {

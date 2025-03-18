@@ -26,13 +26,13 @@ const Index: React.FC = () => {
       try {
         if (isAuthenticated && user) {
           console.log('User authenticated, role:', user.role);
-          const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+          const dashboard = user.role === 'doctor' || user.role === 'admin' ? '/dashboard' : '/patient-dashboard';
           console.log(`Navigating to ${dashboard}`);
           
           // Use a small timeout to ensure state is settled before navigation
           redirectTimer = window.setTimeout(() => {
             navigate(dashboard, { replace: true });
-          }, 100);
+          }, 200);
           
         } else {
           console.log('User not authenticated, redirecting to login');
@@ -40,9 +40,9 @@ const Index: React.FC = () => {
           // Use a small timeout to ensure state is settled before navigation
           redirectTimer = window.setTimeout(() => {
             navigate('/login', { replace: true });
-          }, 100);
+          }, 200);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Navigation error:', error);
         setNavigationError(error instanceof Error ? error.message : 'Unknown navigation error');
         setRedirectAttempts(prev => prev + 1);
@@ -67,6 +67,18 @@ const Index: React.FC = () => {
       if (redirectTimer) window.clearTimeout(redirectTimer);
     };
   }, [isAuthenticated, isLoading, navigate, user, redirectAttempts]);
+
+  // Emergency redirect after 5 seconds if nothing happens
+  useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      if (document.location.pathname === '/') {
+        console.log('Emergency redirect triggered after timeout');
+        window.location.href = '/login';
+      }
+    }, 5000);
+    
+    return () => clearTimeout(emergencyTimeout);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full bg-background">

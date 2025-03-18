@@ -1,3 +1,4 @@
+
 import React, { Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -34,6 +35,9 @@ const queryClient = new QueryClient({
       meta: {
         onError: (error: Error) => {
           console.error('Query error:', error);
+          toast.error('Data fetch error', {
+            description: error.message || 'Failed to load data'
+          });
         },
       },
     },

@@ -10,7 +10,15 @@ interface EmailInputProps {
   userType: 'doctor' | 'patient';
 }
 
-const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) => {
+const EmailInput: React.FC<EmailInputProps> = ({
+  email,
+  setEmail,
+  userType
+}) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
   return (
     <div className="mb-4">
       <Label htmlFor="email">Email Address</Label>
@@ -22,9 +30,10 @@ const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) =>
           id="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleInputChange}
           className="pl-10"
           placeholder={userType === 'doctor' ? "doctor@example.com" : "patient@example.com"}
+          autoComplete="email"
           required
         />
       </div>
