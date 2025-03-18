@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -124,10 +125,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleOAuthCallback = async (provider: string, code: string) => {
+  const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      return await handleOAuthCallbackBase(provider, code, user);
+      await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
