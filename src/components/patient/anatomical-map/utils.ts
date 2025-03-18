@@ -17,7 +17,7 @@ export const getSystemImage = (system: string): string => {
       return '/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png';
     case 'muscular':
     default:
-      return '/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png';
+      return '/lovable-uploads/5c7b19fc-f7bf-458e-a1ce-eb1e1a46f331.png'; // Updated to use our new muscular image
   }
 };
 
@@ -47,11 +47,25 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
       y: region?.y || 50, // Default to center if region not found
       size: getHotspotSize(symptom.painLevel || 1),
       color: severityColor,
-      label: symptom.symptomName,
+      label: getAnatomicalLabel(regionId, symptom.symptomName),
       description: symptom.notes || 'No description provided',
       severity: symptom.painLevel || 1
     };
   });
+};
+
+/**
+ * Returns proper anatomical label based on region and symptom
+ */
+const getAnatomicalLabel = (regionId: string, symptomName?: string): string => {
+  // Find the formal name from the regions list
+  const region = anatomicalRegions.find(r => r.id === regionId);
+  
+  if (symptomName) {
+    return `${region?.name || regionId}: ${symptomName}`;
+  }
+  
+  return region?.name || regionId;
 };
 
 /**
@@ -71,12 +85,18 @@ const mapSymptomLocationToRegion = (location: string): string => {
     case 'leftshoulder': return 'left-shoulder';
     case 'rightelbow': return 'right-elbow';
     case 'leftelbow': return 'left-elbow';
+    case 'rightforearm': return 'right-forearm';
+    case 'leftforearm': return 'left-forearm';
     case 'rightwrist': return 'right-hand';
     case 'leftwrist': return 'left-hand';
     case 'righthip': return 'right-hip';
     case 'lefthip': return 'left-hip';
+    case 'rightthigh': return 'right-thigh';
+    case 'leftthigh': return 'left-thigh';
     case 'rightknee': return 'right-knee';
     case 'leftknee': return 'left-knee';
+    case 'rightcalf': return 'right-calf';
+    case 'leftcalf': return 'left-calf';
     case 'rightankle': return 'right-foot';
     case 'leftankle': return 'left-foot';
     case 'upperback': return 'upper-back';
@@ -90,7 +110,7 @@ const mapSymptomLocationToRegion = (location: string): string => {
  */
 const getHotspotSize = (severity: number): number => {
   // Scale size based on severity (1-10)
-  return Math.max(20, Math.min(40, 20 + (severity * 2)));
+  return Math.max(24, Math.min(36, 24 + (severity * 1.5)));
 };
 
 /**
@@ -98,11 +118,11 @@ const getHotspotSize = (severity: number): number => {
  */
 const getSeverityColor = (severity: number): string => {
   if (severity <= 3) {
-    return 'rgba(52, 211, 153, 0.8)'; // Green for mild
+    return 'rgba(52, 211, 153, 0.9)'; // Green for mild
   } else if (severity <= 6) {
-    return 'rgba(251, 191, 36, 0.8)'; // Yellow for moderate
+    return 'rgba(251, 191, 36, 0.9)'; // Yellow for moderate
   } else {
-    return 'rgba(239, 68, 68, 0.8)';  // Red for severe
+    return 'rgba(239, 68, 68, 0.9)';  // Red for severe
   }
 };
 
@@ -115,4 +135,11 @@ export const getContrastTextColor = (backgroundColor: string): string => {
     return 'white';
   }
   return 'black';
+};
+
+/**
+ * Get anatomical region by ID
+ */
+export const getAnatomicalRegionById = (id: string): AnatomicalRegion | undefined => {
+  return anatomicalRegions.find(region => region.id === id);
 };

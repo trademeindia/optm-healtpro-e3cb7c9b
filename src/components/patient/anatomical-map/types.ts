@@ -19,6 +19,7 @@ export interface HotSpot {
   label: string;
   description: string;
   severity?: number;  // Optional severity level
+  isActive?: boolean; // Whether this hotspot is currently active/selected
 }
 
 export interface HotspotMarkerProps {
