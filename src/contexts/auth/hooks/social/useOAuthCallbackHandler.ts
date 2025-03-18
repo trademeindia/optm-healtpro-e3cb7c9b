@@ -17,7 +17,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
     provider: string,
     code: string,
     currentUser: User | null
-  ): Promise<boolean> => {
+  ): Promise<void> {
     setIsLoading(true);
     setError(null);
     
@@ -50,13 +50,13 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
           
           // Navigate back to Health Apps page or appropriate page
           navigate('/health-apps');
-          return true;
+          return;
         }
         
         // For other providers or general account linking
         toast.success(`${provider} account connected`);
         navigate('/dashboard');
-        return true;
+        return;
       }
       
       // For normal OAuth login, let Supabase handle the session creation
@@ -87,8 +87,6 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         toast.success('Login successful');
         navigate('/dashboard');
       }
-      
-      return true;
     } catch (error: any) {
       console.error('OAuth callback processing error:', error);
       setError(error.message || 'Authentication failed');
@@ -97,7 +95,6 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         duration: 5000
       });
       navigate('/login');
-      return false;
     } finally {
       setIsLoading(false);
     }

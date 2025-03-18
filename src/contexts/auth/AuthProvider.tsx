@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      // Handle demo accounts with predefined roles and IDs
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
           id: `demo-admin-${Date.now()}`,
@@ -102,7 +101,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return demoUser;
       }
       
-      // Regular login for non-demo users
       return await loginBase(email, password);
     } catch (error) {
       console.error('Login error:', error);
@@ -112,22 +110,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    // Set logging out state to prevent race conditions
     setIsLoggingOut(true);
     try {
-      // Clear user state immediately to prevent UI flashing
       setUser(null);
-      // Call the base logout function
       await logoutBase();
     } finally {
       setIsLoggingOut(false);
     }
   };
 
-  const handleOAuthCallback = async (provider: string, code: string) => {
+  const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      return await handleOAuthCallbackBase(provider, code, user);
+      await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
