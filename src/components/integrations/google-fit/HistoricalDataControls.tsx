@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HistoricalDataControlsProps } from './types';
 
 const HistoricalDataControls: React.FC<HistoricalDataControlsProps> = ({
@@ -10,36 +9,34 @@ const HistoricalDataControls: React.FC<HistoricalDataControlsProps> = ({
   setHistoryDataType
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-4">
-      <div className="w-full sm:w-1/2">
-        <label className="text-sm font-medium mb-2 block">Time Period</label>
-        <Select value={historyPeriod} onValueChange={setHistoryPeriod}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7days">Last 7 Days</SelectItem>
-            <SelectItem value="30days">Last 30 Days</SelectItem>
-            <SelectItem value="90days">Last 90 Days</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex items-center mr-4">
+        <label className="text-sm mr-2">Metric:</label>
+        <select 
+          className="text-sm border rounded p-1"
+          value={historyDataType}
+          onChange={(e) => setHistoryDataType(e.target.value)}
+        >
+          <option value="steps">Steps</option>
+          <option value="heart_rate">Heart Rate</option>
+          <option value="calories">Calories</option>
+          <option value="distance">Distance</option>
+          <option value="sleep">Sleep</option>
+          <option value="active_minutes">Active Minutes</option>
+        </select>
       </div>
       
-      <div className="w-full sm:w-1/2">
-        <label className="text-sm font-medium mb-2 block">Data Type</label>
-        <Select value={historyDataType} onValueChange={setHistoryDataType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select data type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="steps">Steps</SelectItem>
-            <SelectItem value="heart_rate">Heart Rate</SelectItem>
-            <SelectItem value="calories">Calories</SelectItem>
-            <SelectItem value="distance">Distance</SelectItem>
-            <SelectItem value="sleep">Sleep Duration</SelectItem>
-            <SelectItem value="active_minutes">Active Minutes</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex items-center">
+        <label className="text-sm mr-2">Period:</label>
+        <select 
+          className="text-sm border rounded p-1"
+          value={historyPeriod}
+          onChange={(e) => setHistoryPeriod(e.target.value)}
+        >
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="90days">Last 90 Days</option>
+        </select>
       </div>
     </div>
   );

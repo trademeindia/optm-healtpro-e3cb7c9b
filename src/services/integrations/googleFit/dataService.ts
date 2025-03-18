@@ -2,7 +2,7 @@
 import { GoogleFitDataPoint, GoogleFitSyncResult } from './types';
 import GoogleFitAuthManager from './authManager';
 import { generateMockHealthData, generateMockHistoricalData } from './mockDataGenerator';
-import { FitnessData } from '@/hooks/fitness';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
 
 class GoogleFitDataService {
   private authManager: GoogleFitAuthManager;
@@ -11,7 +11,7 @@ class GoogleFitDataService {
     this.authManager = authManager;
   }
 
-  public async syncHealthData(userId: string | null = null): Promise<GoogleFitSyncResult> {
+  public async syncHealthData(): Promise<GoogleFitSyncResult> {
     try {
       const hasValidToken = await this.authManager.ensureValidToken();
       if (!hasValidToken) {
@@ -23,26 +23,12 @@ class GoogleFitDataService {
         };
       }
       
-      if (userId) {
-        console.log(`Syncing Google Fit data for user: ${userId}`);
-      }
-      
       // In a real implementation, this would call Google Fit API endpoints
       // For demo purposes, we'll return mock data
       const currentTimestamp = new Date().toISOString();
       
       // Generate realistic mock data
       const mockData: FitnessData = generateMockHealthData();
-      
-      // Store user-specific data
-      if (userId) {
-        try {
-          localStorage.setItem(`googleFit_data_${userId}`, JSON.stringify(mockData));
-          localStorage.setItem(`googleFit_lastSync_${userId}`, currentTimestamp);
-        } catch (e) {
-          console.error('Error storing Google Fit data in localStorage:', e);
-        }
-      }
       
       return {
         success: true,
@@ -61,20 +47,11 @@ class GoogleFitDataService {
     }
   }
 
-  public async getHistoricalData(
-    dataType: string, 
-    startDate: Date, 
-    endDate: Date,
-    userId: string | null = null
-  ): Promise<GoogleFitDataPoint[]> {
+  public async getHistoricalData(dataType: string, startDate: Date, endDate: Date): Promise<GoogleFitDataPoint[]> {
     try {
       const hasValidToken = await this.authManager.ensureValidToken();
       if (!hasValidToken) {
         throw new Error("Not authenticated with Google Fit");
-      }
-      
-      if (userId) {
-        console.log(`Getting historical ${dataType} data for user: ${userId}`);
       }
       
       // In a real implementation, this would call Google Fit API endpoints

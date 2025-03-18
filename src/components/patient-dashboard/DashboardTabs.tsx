@@ -27,16 +27,11 @@ const DashboardTabs: React.FC<DashboardTabsProps> & {
 }) => {
   return (
     <Tabs defaultValue={initialTab} className="w-full">
-      <TabsList className="mb-6 bg-secondary text-foreground">
-        <TabsTrigger 
-          value="dashboard" 
-          className="px-4 py-2 text-foreground hover:text-primary data-[state=active]:bg-muted data-[state=active]:text-primary"
-        >
-          Dashboard
-        </TabsTrigger>
+      <TabsList className="mb-6">
+        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="dashboard" className="text-foreground">
+      <TabsContent value="dashboard">
         {children}
       </TabsContent>
     </Tabs>

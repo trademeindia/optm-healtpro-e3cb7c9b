@@ -2,7 +2,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import HealthMetric from '@/components/dashboard/HealthMetric';
-import { FitnessData } from '@/hooks/fitness';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
 import MetricIcon from './MetricIcon';
 
 interface CurrentDataTabProps {

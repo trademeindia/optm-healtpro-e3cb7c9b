@@ -1,7 +1,6 @@
 
 import { toast } from 'sonner';
-import { GOOGLE_FIT_CLIENT_ID, GOOGLE_FIT_SCOPES } from './types';
-import { useAuth } from '@/contexts/AuthContext';
+import { GOOGLE_FIT_CLIENT_ID } from './types';
 
 class GoogleFitAuthManager {
   private accessToken: string | null = null;
@@ -64,14 +63,8 @@ class GoogleFitAuthManager {
   }
 
   public initiateAuth(): void {
-    // In a real implementation, redirect to Google's OAuth with Google Fit scopes
+    // In a real implementation, this would redirect to Google's OAuth flow
     // For demo purposes, we'll simulate the auth flow with a mock
-    
-    // In a production app, we would construct a URL like:
-    // const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_FIT_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/oauth-callback')}&response_type=code&scope=${encodeURIComponent(GOOGLE_FIT_SCOPES)}&access_type=offline&prompt=consent`;
-    // window.location.href = authUrl;
-    
-    // For demo purposes:
     this.mockAuthFlow();
   }
 
@@ -129,25 +122,11 @@ class GoogleFitAuthManager {
     });
     
     setTimeout(() => {
-      // Get current user ID from auth context if available
-      let userId = 'default_user';
-      try {
-        // Try to get from localStorage if we have auth data saved
-        const authData = localStorage.getItem('authUser');
-        if (authData) {
-          const user = JSON.parse(authData);
-          if (user && user.id) {
-            userId = user.id;
-          }
-        }
-      } catch (e) {
-        console.error('Error getting user ID for Google Fit auth:', e);
-      }
-      
       // Simulate successful authentication with mock tokens
       const mockAccessToken = `mock_access_token_${Date.now()}`;
       const mockRefreshToken = `mock_refresh_token_${Date.now()}`;
       const expiresIn = 3600; // 1 hour
+      const userId = `user_${Date.now()}`;
       
       this.storeCredentials(mockAccessToken, mockRefreshToken, expiresIn, userId);
       
