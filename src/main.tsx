@@ -7,6 +7,13 @@ import './App.css'
 import './styles/main.css'
 import { Toaster } from 'sonner'
 
+// Declare the custom window property for TypeScript
+declare global {
+  interface Window {
+    hasShownSupabaseError?: boolean;
+  }
+}
+
 // Global error handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', event => {
   console.error('Unhandled Promise Rejection:', event.reason);
