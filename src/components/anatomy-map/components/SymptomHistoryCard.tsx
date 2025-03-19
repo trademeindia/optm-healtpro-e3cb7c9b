@@ -22,7 +22,7 @@ const SymptomHistoryCard: React.FC<SymptomHistoryCardProps> = ({
   loading
 }) => {
   return (
-    <Card>
+    <Card className="w-full shadow-md mt-4">
       <CardHeader>
         <CardTitle className="text-lg">Symptom History</CardTitle>
       </CardHeader>

@@ -29,23 +29,27 @@ const SymptomDialogs: React.FC<SymptomDialogsProps> = ({
 }) => {
   return (
     <>
-      <SymptomDialog
-        open={addDialogOpen}
-        onClose={onCloseAddDialog}
-        selectedRegion={selectedRegion}
-        existingSymptom={null}
-        isEditMode={false}
-        onAdd={onAddSymptom}
-        onUpdate={onUpdateSymptom}
-        onDelete={onDeleteSymptom}
-      />
+      {addDialogOpen && (
+        <SymptomDialog
+          open={addDialogOpen}
+          onClose={onCloseAddDialog}
+          selectedRegion={selectedRegion}
+          existingSymptom={null}
+          isEditMode={false}
+          onAdd={onAddSymptom}
+          onUpdate={onUpdateSymptom}
+          onDelete={onDeleteSymptom}
+        />
+      )}
 
-      <SymptomDetailsDialog
-        open={detailsDialogOpen}
-        onClose={onCloseDetailsDialog}
-        symptom={selectedSymptom}
-        region={selectedRegion}
-      />
+      {detailsDialogOpen && (
+        <SymptomDetailsDialog
+          open={detailsDialogOpen}
+          onClose={onCloseDetailsDialog}
+          symptom={selectedSymptom}
+          region={selectedRegion}
+        />
+      )}
     </>
   );
 };

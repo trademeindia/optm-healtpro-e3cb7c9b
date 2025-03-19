@@ -45,14 +45,14 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   };
   
   return (
-    <div className="w-full">
+    <div className="w-full anatomy-map-wrapper">
       <Tabs 
         defaultValue="front" 
         className="w-full" 
         onValueChange={(value) => setView(value as 'front' | 'back')}
       >
         <div className="flex justify-between items-center mb-4">
-          <TabsList>
+          <TabsList className="mb-2">
             <TabsTrigger value="front" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Front View
@@ -69,9 +69,9 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
         </div>
         
         <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-900">
-          <TabsContent value="front" className="mt-0">
+          <TabsContent value="front" className="mt-0 p-4 min-h-[500px]">
             <div 
-              className="relative h-[600px] w-full flex justify-center"
+              className="relative h-[500px] w-full flex justify-center items-center"
               style={{ 
                 transform: `scale(${zoom})`,
                 transformOrigin: 'center center',
@@ -82,7 +82,7 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
               <img 
                 src="/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png" 
                 alt="Human anatomy front view" 
-                className="h-full max-h-[600px] w-auto object-contain"
+                className="h-full max-h-[500px] w-auto object-contain"
               />
               
               {/* Front view hotspots */}
@@ -97,9 +97,9 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
             </div>
           </TabsContent>
           
-          <TabsContent value="back" className="mt-0">
+          <TabsContent value="back" className="mt-0 p-4 min-h-[500px]">
             <div 
-              className="relative h-[600px] w-full flex justify-center"
+              className="relative h-[500px] w-full flex justify-center items-center"
               style={{ 
                 transform: `scale(${zoom})`,
                 transformOrigin: 'center center',
@@ -110,7 +110,7 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
               <img 
                 src="/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png" 
                 alt="Human anatomy back view" 
-                className="h-full max-h-[600px] w-auto object-contain"
+                className="h-full max-h-[500px] w-auto object-contain"
               />
               
               {/* Back view hotspots */}

@@ -16,7 +16,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
   // Determine marker styling based on symptom severity
   const getMarkerStyle = () => {
     if (!symptom) {
-      return 'w-4 h-4 bg-transparent border border-gray-400 hover:border-primary';
+      return 'w-4 h-4 bg-transparent border border-gray-400 hover:border-primary hover:bg-primary/10';
     }
     
     const severityOption = painSeverityOptions.find(option => option.value === symptom.severity);
@@ -39,15 +39,14 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
               top: `${region.y}%`,
               transform: 'translate(-50%, -50%)'
             }}
-            onClick={() => {
-              // Log interaction for synchronization
-              console.log(`Patient interacted with region: ${region.name}`);
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log(`Region clicked: ${region.name}`);
               onClick();
             }}
             onMouseEnter={() => {
               setIsHovered(true);
-              // Log hover interaction
-              console.log(`Patient hovered over region: ${region.name}`);
+              console.log(`Region hovered: ${region.name}`);
             }}
             onMouseLeave={() => setIsHovered(false)}
             data-testid={`region-marker-${region.id}`}

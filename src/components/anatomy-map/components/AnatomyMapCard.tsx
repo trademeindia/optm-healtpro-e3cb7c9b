@@ -27,7 +27,7 @@ const AnatomyMapCard: React.FC<AnatomyMapCardProps> = ({
   onRefresh
 }) => {
   return (
-    <Card>
+    <Card className="w-full shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl">Interactive Anatomy Map</CardTitle>
         <MapControls

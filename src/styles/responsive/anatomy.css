@@ -18,6 +18,15 @@
   transform-origin: center center !important;
 }
 
+.anatomy-map-wrapper {
+  width: 100%;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
 .model-image {
   object-fit: contain !important;
   max-width: 70% !important;
@@ -100,4 +109,32 @@
     max-height: 70%;
     max-width: 70%;
   }
+}
+
+/* Add better visibility for the region markers */
+[data-testid^="region-marker"] {
+  z-index: 10;
+  opacity: 0.9;
+}
+
+[data-testid^="region-marker"]:hover {
+  opacity: 1;
+  z-index: 20;
+}
+
+/* Make the images more visible */
+img[alt*="anatomy"] {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Ensure tabs content is visible */
+.tabs-content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
 }

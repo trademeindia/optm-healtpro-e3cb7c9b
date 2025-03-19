@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BodyRegion, PainSymptom } from '../types';
 import { useSymptomSync } from '@/contexts/SymptomSyncContext';
 import { toast } from 'sonner';
@@ -19,22 +19,30 @@ export const useAnatomyMap = () => {
 
   // Load symptoms from local storage on initial render
   useEffect(() => {
-    const savedSymptoms = localStorage.getItem('patientSymptoms');
-    if (savedSymptoms) {
-      try {
-        setSymptoms(JSON.parse(savedSymptoms));
-      } catch (error) {
-        console.error('Error parsing saved symptoms:', error);
+    try {
+      const savedSymptoms = localStorage.getItem('patientSymptoms');
+      console.log('Loading symptoms from localStorage:', savedSymptoms);
+      
+      if (savedSymptoms) {
+        const parsedSymptoms = JSON.parse(savedSymptoms);
+        console.log('Parsed symptoms:', parsedSymptoms);
+        setSymptoms(parsedSymptoms);
       }
+    } catch (error) {
+      console.error('Error parsing saved symptoms:', error);
     }
   }, []);
 
   // Save symptoms to local storage whenever they change
   useEffect(() => {
-    localStorage.setItem('patientSymptoms', JSON.stringify(symptoms));
+    if (symptoms.length > 0) {
+      console.log('Saving symptoms to localStorage:', symptoms);
+      localStorage.setItem('patientSymptoms', JSON.stringify(symptoms));
+    }
   }, [symptoms]);
 
-  const handleRegionClick = (region: BodyRegion) => {
+  const handleRegionClick = useCallback((region: BodyRegion) => {
+    console.log('Region clicked:', region);
     setSelectedRegion(region);
     
     // Track that this region was viewed
@@ -46,14 +54,16 @@ export const useAnatomyMap = () => {
     );
     
     if (existingSymptom) {
+      console.log('Existing symptom found:', existingSymptom);
       setSelectedSymptom(existingSymptom);
       setIsDetailsDialogOpen(true);
     } else {
+      console.log('No existing symptom, opening add dialog');
       setIsAddDialogOpen(true);
     }
-  };
+  }, [symptoms, trackRegionView]);
 
-  const handleAddSymptom = (data: Omit<PainSymptom, 'id' | 'createdAt' | 'updatedAt' | 'isActive'>) => {
+  const handleAddSymptom = useCallback((data: Omit<PainSymptom, 'id' | 'createdAt' | 'updatedAt' | 'isActive'>) => {
     if (!selectedRegion) return;
 
     const now = new Date().toISOString();
@@ -69,6 +79,7 @@ export const useAnatomyMap = () => {
       isActive: true
     };
 
+    console.log('Adding new symptom:', newSymptom);
     setSymptoms(prev => [...prev, newSymptom]);
     setIsAddDialogOpen(false);
     setSelectedRegion(null);
@@ -79,9 +90,10 @@ export const useAnatomyMap = () => {
     toast.success(`Symptom added for ${selectedRegion.name}`, {
       description: "Your healthcare provider will be notified of this update."
     });
-  };
+  }, [selectedRegion, trackSymptomUpdate]);
 
-  const handleUpdateSymptom = (updatedSymptom: PainSymptom) => {
+  const handleUpdateSymptom = useCallback((updatedSymptom: PainSymptom) => {
+    console.log('Updating symptom:', updatedSymptom);
     setSymptoms(prev => 
       prev.map(symptom => 
         symptom.id === updatedSymptom.id 
@@ -101,9 +113,10 @@ export const useAnatomyMap = () => {
     toast.success("Symptom updated", {
       description: "Your changes have been saved and synchronized."
     });
-  };
+  }, [trackSymptomUpdate]);
 
-  const handleDeleteSymptom = (symptomId: string) => {
+  const handleDeleteSymptom = useCallback((symptomId: string) => {
+    console.log('Deleting symptom:', symptomId);
     setSymptoms(prev => 
       prev.map(symptom => 
         symptom.id === symptomId 
@@ -117,22 +130,24 @@ export const useAnatomyMap = () => {
     toast.success("Symptom removed", {
       description: "This area will no longer show as symptomatic."
     });
-  };
+  }, []);
 
-  const handleZoomIn = () => {
-    if (zoom < 1.5) setZoom(prev => prev + 0.1);
-  };
+  const handleZoomIn = useCallback(() => {
+    if (zoom < 1.5) setZoom(prev => Math.min(prev + 0.1, 1.5));
+  }, [zoom]);
 
-  const handleZoomOut = () => {
-    if (zoom > 0.6) setZoom(prev => prev - 0.1);
-  };
+  const handleZoomOut = useCallback(() => {
+    if (zoom > 0.6) setZoom(prev => Math.max(prev - 0.1, 0.6));
+  }, [zoom]);
 
-  const toggleHistory = () => {
+  const toggleHistory = useCallback(() => {
+    console.log('Toggling history visibility');
     setShowHistory(prev => !prev);
-  };
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     // Mock synchronization with doctor's dashboard
+    console.log('Refreshing symptom data');
     toast.info("Synchronizing data...", { id: "sync" });
     
     setTimeout(() => {
@@ -141,9 +156,10 @@ export const useAnatomyMap = () => {
         description: "Your symptom data is now up-to-date across all dashboards."
       });
     }, 1500);
-  };
+  }, []);
 
-  const handleToggleActive = (symptomId: string, isActive: boolean) => {
+  const handleToggleActive = useCallback((symptomId: string, isActive: boolean) => {
+    console.log('Toggling symptom active state:', symptomId, isActive);
     setSymptoms(prev => 
       prev.map(symptom => 
         symptom.id === symptomId 
@@ -155,7 +171,7 @@ export const useAnatomyMap = () => {
     toast.success(isActive ? "Symptom activated" : "Symptom deactivated", {
       description: isActive ? "This area will now show as symptomatic." : "This area will no longer show as symptomatic."
     });
-  };
+  }, []);
 
   // Filter for active symptoms only
   const activeSymptoms = symptoms.filter(s => s.isActive);
