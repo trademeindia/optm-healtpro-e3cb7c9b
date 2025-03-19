@@ -30,7 +30,7 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
         className="relative w-full h-full flex justify-center items-center"
         style={{
           scale: zoom,
-          transition: 'scale 0.2s ease-out'
+          transition: 'scale 0.3s ease-out'
         }}
       >
         {/* Anatomical model image */}

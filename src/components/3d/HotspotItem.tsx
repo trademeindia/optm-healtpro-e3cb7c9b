@@ -77,9 +77,12 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
             className={cn(
               "absolute flex items-center justify-center cursor-pointer",
               getPulseAnimation(hotspot.status),
-              hotspot.status === 'critical' ? "w-7 h-7" : "w-6 h-6",
-              hotspot.status !== 'normal' ? "ring-2 ring-white ring-opacity-50" : "",
-              activeHotspot === hotspot.id ? "z-40" : "z-10",
+              hotspot.status === 'critical' ? "w-8 h-8" : "w-7 h-7",
+              "border-2 rounded-full shadow-lg",
+              hotspot.status === 'critical' ? "border-red-300" : 
+              hotspot.status === 'warning' ? "border-yellow-300" : 
+              "border-green-300",
+              activeHotspot === hotspot.id ? "z-40 ring-4 ring-white/30" : "z-10",
               editMode && !readOnly ? "hover:ring-2 hover:ring-destructive" : ""
             )}
             style={{
@@ -88,10 +91,12 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
                               '#52C41A',
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
-              borderRadius: '50%',
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
+              boxShadow: activeHotspot === hotspot.id ? 
+                '0 0 15px rgba(0, 0, 0, 0.4)' : 
+                '0 0 8px rgba(0, 0, 0, 0.2)'
             }}
-            whileHover={{ scale: 1.3 }}
+            whileHover={{ scale: 1.3, boxShadow: '0 0 15px rgba(0, 0, 0, 0.5)' }}
             whileTap={{ scale: 0.9 }}
             animate={{
               scale: activeHotspot === hotspot.id ? [1, 1.2, 1] : 1,
@@ -99,7 +104,7 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
                 scale: activeHotspot === hotspot.id ? {
                   repeat: Infinity,
                   repeatType: "reverse",
-                  duration: 1
+                  duration: 1.5
                 } : {}
               }
             }}
@@ -113,15 +118,15 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
         <TooltipContent 
           side={getTooltipSide()} 
           align={getTooltipAlign()}
-          sideOffset={20}
+          sideOffset={15}
           avoidCollisions={true}
           collisionPadding={getCollisionPadding()}
-          className="p-0 z-50"
+          className="hotspot-tooltip p-0 z-50"
         >
           <div className="w-full max-w-[300px] space-y-2 p-4 overflow-visible">
             <div className="flex items-center gap-2">
               <span className={cn(
-                "inline-block w-2 h-2 rounded-full",
+                "inline-block w-3 h-3 rounded-full",
                 hotspot.status === 'critical' ? "bg-red-500" : 
                 hotspot.status === 'warning' ? "bg-yellow-500" : 
                 "bg-green-500"

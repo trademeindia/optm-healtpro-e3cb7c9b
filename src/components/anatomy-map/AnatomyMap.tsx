@@ -85,7 +85,11 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
       <div className="flex-1 overflow-hidden anatomy-position-container">
         <div 
           className="anatomy-map-wrapper"
-          style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
+          style={{ 
+            transform: `scale(${zoomLevel})`, 
+            transformOrigin: 'center center',
+            transition: 'transform 0.3s ease-out'
+          }}
         >
           <img
             src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
