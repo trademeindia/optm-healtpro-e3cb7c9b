@@ -1,7 +1,7 @@
 
 import { Provider } from '@supabase/supabase-js';
 
-export type UserRole = 'admin' | 'doctor' | 'patient';
+export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
 export type AuthProviderType = Provider | 'email';
 
 export type User = {

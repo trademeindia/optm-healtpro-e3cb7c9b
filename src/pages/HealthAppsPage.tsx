@@ -1,11 +1,15 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import FitnessIntegrations from '@/components/dashboard/FitnessIntegrations';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
 
 const HealthAppsPage: React.FC = () => {
   const { 
@@ -14,6 +18,29 @@ const HealthAppsPage: React.FC = () => {
     disconnectProvider, 
     refreshProviderData 
   } = useFitnessIntegration();
+  
+  const location = useLocation();
+  
+  // Handle connection status from URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const connected = params.get('connected');
+    const error = params.get('error');
+    
+    if (connected === 'true') {
+      toast.success('Google Fit connected successfully', {
+        description: 'Your health data will now sync automatically.',
+        duration: 5000
+      });
+    }
+    
+    if (error) {
+      toast.error('Failed to connect Google Fit', {
+        description: error,
+        duration: 8000
+      });
+    }
+  }, [location]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -29,6 +56,22 @@ const HealthAppsPage: React.FC = () => {
               Connect and manage your health and fitness applications
             </p>
           </div>
+          
+          {/* Connection instructions alert */}
+          <Alert className="mb-6 border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertTitle className="text-blue-800 dark:text-blue-300">Connect with Google Fit</AlertTitle>
+            <AlertDescription className="text-blue-700 dark:text-blue-400">
+              Connect your Google Fit account to sync your health data. Your data is securely stored and will be
+              visible only to you and your healthcare providers.
+            </AlertDescription>
+            <div className="mt-3">
+              <GoogleFitConnect 
+                variant="outline" 
+                className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700" 
+              />
+            </div>
+          </Alert>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8">

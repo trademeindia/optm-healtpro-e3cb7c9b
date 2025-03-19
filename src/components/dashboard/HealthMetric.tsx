@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ArrowUp, ArrowDown, Minus, ExternalLink } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HealthMetricProps {
   title: string;
@@ -42,6 +43,14 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
 
   const getChangeColor = () => {
     if (!change) return 'text-muted-foreground bg-muted/30';
+    
+    // For heart rate, reverse the colors (lower is typically better)
+    if (title === 'Heart Rate') {
+      return change > 0
+        ? 'text-medical-red bg-medical-red/10'
+        : 'text-medical-green bg-medical-green/10';
+    }
+    
     return change > 0
       ? 'text-medical-green bg-medical-green/10'
       : 'text-medical-red bg-medical-red/10';
@@ -67,17 +76,28 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
       </div>
       
       {typeof change !== 'undefined' && (
-        <div className="mt-1 md:mt-2 flex items-center">
-          <div className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded", getChangeColor())}>
-            {getChangeIcon()}
-            <span>{Math.abs(change)}%</span>
-          </div>
-          {changeLabel && (
-            <span className="text-xs text-muted-foreground ml-1.5">
-              {changeLabel}
-            </span>
-          )}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mt-1 md:mt-2 flex items-center cursor-help">
+                <div className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded", getChangeColor())}>
+                  {getChangeIcon()}
+                  <span>{Math.abs(change)}%</span>
+                </div>
+                {changeLabel && (
+                  <span className="text-xs text-muted-foreground ml-1.5">
+                    {changeLabel}
+                  </span>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-xs">
+                {change > 0 ? 'Increased' : 'Decreased'} by {Math.abs(change)}% compared to previous period
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {source && (
@@ -91,9 +111,18 @@ const HealthMetric: React.FC<HealthMetricProps> = ({
             </span>
           </div>
           {lastSync && (
-            <span className="text-xs text-muted-foreground">
-              Updated {lastSync}
-            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-muted-foreground cursor-help">
+                    Updated {lastSync}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">Data synchronized at {lastSync}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       )}
