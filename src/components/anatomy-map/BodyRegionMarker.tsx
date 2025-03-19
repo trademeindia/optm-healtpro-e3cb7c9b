@@ -15,7 +15,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
   // Determine marker styling based on symptom severity
   const getMarkerStyle = () => {
     if (!symptom) {
-      return 'w-4 h-4 bg-transparent border-2 border-gray-400 hover:border-primary dark:border-gray-500 dark:hover:border-primary ring-offset-2';
+      return 'w-4 h-4 bg-transparent border-2 border-gray-400 hover:border-primary dark:border-gray-500 dark:hover:border-primary';
     }
     
     const severityOption = painSeverityOptions.find(option => option.value === symptom.severity);
@@ -26,7 +26,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
     const colorClass = symptom.severity === 'severe' ? 'bg-red-500' : 
                        symptom.severity === 'moderate' ? 'bg-orange-500' : 'bg-yellow-400';
     
-    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white dark:border-gray-200 shadow-md ring-offset-2`;
+    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white dark:border-gray-200 shadow-md`;
   };
   
   return (

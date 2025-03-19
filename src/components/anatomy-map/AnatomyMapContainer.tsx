@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { PainSymptom } from './types';
 import AnatomyMap from './AnatomyMap';
@@ -121,48 +122,44 @@ const AnatomyMapContainer: React.FC = () => {
   };
 
   return (
-    <Card className="w-full shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 rounded-none border-b border-gray-200 dark:border-gray-700 bg-transparent">
+    <Card className="w-full shadow-sm border border-gray-200 dark:border-gray-700">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2 p-1">
           <TabsTrigger 
             value="map" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary py-3"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             Anatomy Map
           </TabsTrigger>
           <TabsTrigger 
             value="history"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary py-3"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             Symptom History
           </TabsTrigger>
         </TabsList>
         
-        <CardContent className="p-0">
+        <CardContent className="pt-6">
           <TabsContent value="map" className="mt-0">
-            <div className="p-4 md:p-6">
-              <AnatomyMap 
-                symptoms={symptoms}
-                bodyRegions={bodyRegions}
-                onAddSymptom={handleAddSymptom}
-                onUpdateSymptom={handleUpdateSymptom}
-                onDeleteSymptom={handleDeleteSymptom}
-                loading={loading}
-              />
-            </div>
+            <AnatomyMap 
+              symptoms={symptoms}
+              bodyRegions={bodyRegions}
+              onAddSymptom={handleAddSymptom}
+              onUpdateSymptom={handleUpdateSymptom}
+              onDeleteSymptom={handleDeleteSymptom}
+              loading={loading}
+            />
           </TabsContent>
           
           <TabsContent value="history" className="mt-0">
-            <div className="p-4 md:p-6">
-              <SymptomHistoryTable 
-                symptoms={symptoms}
-                bodyRegions={bodyRegions}
-                onUpdateSymptom={handleUpdateSymptom}
-                onDeleteSymptom={handleDeleteSymptom}
-                onToggleActive={handleToggleActive}
-                loading={loading}
-              />
-            </div>
+            <SymptomHistoryTable 
+              symptoms={symptoms}
+              bodyRegions={bodyRegions}
+              onUpdateSymptom={handleUpdateSymptom}
+              onDeleteSymptom={handleDeleteSymptom}
+              onToggleActive={handleToggleActive}
+              loading={loading}
+            />
           </TabsContent>
         </CardContent>
       </Tabs>
