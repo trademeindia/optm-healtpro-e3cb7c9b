@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -9,30 +8,28 @@ type UseAuthManagementProps = {
 export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
   const logout = async (): Promise<void> => {
     try {
-      // Check if we have a demo user in localStorage
+      // First check if we have a demo user in localStorage
       const demoUserData = localStorage.getItem('demoUser');
+      
+      // Clear any user data from localStorage
       if (demoUserData) {
-        // Clear demo user from localStorage
         localStorage.removeItem('demoUser');
-        toast.info('You have been logged out', {
-          duration: 3000
-        });
-        navigate('/login');
-        return;
       }
       
-      // Regular logout for authenticated users
-      const { error } = await supabase.auth.signOut();
+      // Always attempt to sign out from Supabase regardless of demo user
+      // This ensures we clean up any lingering sessions
+      await supabase.auth.signOut();
       
-      if (error) {
-        console.error('Supabase signOut error:', error);
-        throw error;
-      }
-      
+      // Show logout notification
       toast.info('You have been logged out', {
         duration: 3000
       });
-      navigate('/login');
+      
+      // Navigate to login page after all cleanup is complete
+      setTimeout(() => {
+        navigate('/login');
+      }, 100); // Short timeout to ensure state updates complete
+      
     } catch (error: any) {
       console.error('Logout error:', error);
       toast.error('Failed to log out', {
