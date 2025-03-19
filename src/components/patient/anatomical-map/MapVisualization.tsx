@@ -27,7 +27,7 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
   return (
     <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[550px]">
       <motion.div
-        className="relative w-full h-full flex justify-center items-center"
+        className="relative w-full h-full flex justify-center items-center anatomy-model-wrapper"
         style={{
           scale: zoom,
           transition: 'scale 0.3s ease-out'

@@ -18,10 +18,18 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
     return "top";
   };
 
-  // Get appropriate size based on severity
-  const getMarkerSize = () => {
-    if (isActive) return 'w-7 h-7';
-    return `w-${Math.min(6, Math.max(4, Math.floor(hotspot.size / 7)))} h-${Math.min(6, Math.max(4, Math.floor(hotspot.size / 7)))}`;
+  // Get the severity class for styling
+  const getSeverityClass = () => {
+    if (!hotspot.severity) return 'hotspot-severity-medium';
+    if (hotspot.severity <= 3) return 'hotspot-severity-low';
+    if (hotspot.severity <= 6) return 'hotspot-severity-medium';
+    return 'hotspot-severity-high';
+  };
+  
+  // Get size class based on severity and active state
+  const getSizeClass = () => {
+    if (isActive) return 'hotspot-size-lg';
+    return hotspot.severity && hotspot.severity > 5 ? 'hotspot-size-md' : 'hotspot-size-sm';
   };
   
   return (
@@ -29,33 +37,26 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={`absolute cursor-pointer rounded-full flex items-center justify-center region-marker-transition ${isActive ? 'hotspot-pulse' : ''}`}
+            className={`hotspot-marker ${getSizeClass()} ${getSeverityClass()} rounded-full ${isActive ? 'hotspot-active hotspot-pulse' : ''}`}
             style={{
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
-              backgroundColor: isActive ? hotspot.color : 'rgba(255, 255, 255, 0.7)',
-              border: `2px solid ${hotspot.color}`,
-              boxShadow: isActive ? '0 0 15px rgba(0, 0, 0, 0.4)' : '0 0 10px rgba(0, 0, 0, 0.3)',
-              transform: 'translate(-50%, -50%)', 
-              zIndex: isActive ? 30 : 20
             }}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            whileHover={{ scale: 1.2, boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)' }}
+            whileHover={{ scale: 1.2 }}
             onClick={() => onClick(hotspot)}
           >
-            {isActive ? (
+            {isActive && (
               <span className="text-white text-xs font-bold">{hotspot.id}</span>
-            ) : (
-              <span className="text-xs font-bold" style={{ color: hotspot.color }}>{hotspot.id}</span>
             )}
           </motion.div>
         </TooltipTrigger>
         <TooltipContent 
           side={getTooltipSide()} 
-          className="region-tooltip z-50"
+          className="hotspot-tooltip z-50"
           sideOffset={10}
         >
           <div className="p-2 space-y-1">

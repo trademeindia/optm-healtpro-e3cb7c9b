@@ -3,41 +3,42 @@
 .hotspot-marker {
   @apply absolute flex items-center justify-center cursor-pointer z-10;
   transform: translate(-50%, -50%); /* Center the hotspot on its position */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease-out;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Pulsing animation for active hotspots */
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   }
-  50% {
+  70% {
     transform: scale(1.05);
-    opacity: 0.9;
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
   }
   100% {
     transform: scale(0.95);
-    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
 
 .hotspot-pulse {
-  animation: pulse-ring 2s ease-out infinite;
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
-/* Better visibility with subtle glow effect */
+/* Better visibility with glow effect */
 .hotspot-marker::before {
   content: '';
-  @apply absolute inset-0 rounded-full opacity-30;
+  @apply absolute inset-0 rounded-full opacity-40;
   background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
   z-index: -1;
+  transform: scale(1.1);
 }
 
 /* Different size classes for different severity levels */
 .hotspot-size-sm {
-  @apply w-5 h-5;
+  @apply w-4 h-4;
 }
 
 .hotspot-size-md {
@@ -50,34 +51,35 @@
 
 /* Enhanced styling based on severity */
 .hotspot-severity-low {
-  @apply bg-green-400 border-2 border-green-200;
+  @apply bg-green-500 border-2 border-green-300;
 }
 
 .hotspot-severity-medium {
-  @apply bg-amber-400 border-2 border-amber-200;
+  @apply bg-amber-500 border-2 border-amber-300;
 }
 
 .hotspot-severity-high {
-  @apply bg-red-400 border-2 border-red-200;
+  @apply bg-red-500 border-2 border-red-300;
 }
 
 .hotspot-active {
-  @apply ring-4 ring-white/30;
+  @apply ring-4 ring-white/50;
   z-index: 40 !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .hotspot-size-sm {
-    @apply w-4 h-4;
+    @apply w-3 h-3;
   }
   
   .hotspot-size-md {
-    @apply w-5 h-5;
+    @apply w-4 h-4;
   }
   
   .hotspot-size-lg {
-    @apply w-6 h-6;
+    @apply w-5 h-5;
   }
 }
 

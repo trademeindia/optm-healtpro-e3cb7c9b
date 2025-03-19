@@ -35,11 +35,14 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
     // Generate a color based on severity
     const severityColor = getSeverityColor(symptom.painLevel || 1);
     
+    // Ensure proper positioning with fine-tuned adjustments
+    const position = getAdjustedPosition(region?.x || 50, region?.y || 50, symptom.location);
+    
     return {
       id: symptom.id,
       region: regionId,
-      x: region?.x || 50, // Default to center if region not found
-      y: region?.y || 50, // Default to center if region not found
+      x: position.x, 
+      y: position.y,
       size: getHotspotSize(symptom.painLevel || 1),
       color: severityColor,
       label: symptom.symptomName,
@@ -47,6 +50,37 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
       severity: symptom.painLevel || 1
     };
   });
+};
+
+/**
+ * Fine-tune position based on specific body part
+ */
+const getAdjustedPosition = (x: number, y: number, location: string) => {
+  // Minor adjustments to better align hotspots with the anatomical regions
+  switch(location) {
+    case 'right-shoulder':
+    case 'rightShoulder':
+      return { x: x - 2, y: y + 1 };
+    case 'left-shoulder':
+    case 'leftShoulder':
+      return { x: x + 2, y: y + 1 };
+    case 'right-knee':
+    case 'rightKnee':
+      return { x: x - 1, y };
+    case 'left-knee':
+    case 'leftKnee':
+      return { x: x + 1, y };
+    case 'lower-back':
+    case 'lowerBack':
+      return { x, y: y - 1 };
+    case 'upper-back':
+    case 'upperBack':
+      return { x, y: y - 2 };
+    case 'neck':
+      return { x, y: y - 1 };
+    default:
+      return { x, y };
+  }
 };
 
 /**
@@ -91,11 +125,11 @@ const getHotspotSize = (severity: number): number => {
  */
 const getSeverityColor = (severity: number): string => {
   if (severity <= 3) {
-    return 'rgba(52, 211, 153, 0.8)'; // Green for mild
+    return 'rgba(52, 211, 153, 0.9)'; // Green for mild
   } else if (severity <= 6) {
-    return 'rgba(251, 191, 36, 0.8)'; // Yellow for moderate
+    return 'rgba(251, 191, 36, 0.9)'; // Yellow for moderate
   } else {
-    return 'rgba(239, 68, 68, 0.8)';  // Red for severe
+    return 'rgba(239, 68, 68, 0.9)';  // Red for severe
   }
 };
 

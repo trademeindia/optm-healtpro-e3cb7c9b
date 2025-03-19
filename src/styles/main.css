@@ -18,6 +18,7 @@
 @import './responsive/cards.css';
 @import './responsive/layout.css';
 @import './responsive/buttons.css';
+@import './responsive/hotspots.css'; /* Ensure hotspots CSS is properly imported */
 
 /* Layout styles */
 .min-h-screen {
