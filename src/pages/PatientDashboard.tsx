@@ -35,7 +35,18 @@ const PatientDashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Left Column (4 columns on md screens) */}
               <div className="md:col-span-3 space-y-6">
-                <LeftColumn />
+                <LeftColumn 
+                  healthMetrics={healthMetrics}
+                  activityData={activityData}
+                  treatmentTasks={treatmentTasks}
+                  upcomingAppointments={upcomingAppointments}
+                  biologicalAge={biologicalAge}
+                  chronologicalAge={chronologicalAge}
+                  hasConnectedApps={hasConnectedApps}
+                  onSyncData={handleSyncAllData}
+                  handleConfirmAppointment={handleConfirmAppointment}
+                  handleRescheduleAppointment={handleRescheduleAppointment}
+                />
                 <RecentAnatomyActivity />
               </div>
               
@@ -57,7 +68,18 @@ const PatientDashboard: React.FC = () => {
               
               {/* Right Column (3 columns on md screens) */}
               <div className="md:col-span-3">
-                <RightColumn />
+                <RightColumn 
+                  healthMetrics={healthMetrics}
+                  activityData={activityData}
+                  treatmentTasks={treatmentTasks}
+                  upcomingAppointments={upcomingAppointments}
+                  biologicalAge={biologicalAge}
+                  chronologicalAge={chronologicalAge}
+                  hasConnectedApps={hasConnectedApps}
+                  onSyncData={handleSyncAllData}
+                  handleConfirmAppointment={handleConfirmAppointment}
+                  handleRescheduleAppointment={handleRescheduleAppointment}
+                />
               </div>
             </div>
           </div>
