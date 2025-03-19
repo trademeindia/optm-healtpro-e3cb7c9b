@@ -41,16 +41,33 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
       y: Math.min(Math.max(position.y, 5), 95)
     };
     
+    // Determine size based on severity - more severe symptoms are slightly larger
+    const size = symptom.painLevel ? Math.min(10 + symptom.painLevel * 0.5, 16) : 12;
+    
+    // Determine color based on severity
+    const color = getSeverityColor(symptom.painLevel || 1);
+    
     return {
       id: symptom.id,
       region: regionId,
       x: constrainedPosition.x, 
       y: constrainedPosition.y,
+      size: size,
+      color: color,
       label: symptom.symptomName,
       description: symptom.notes || 'No description provided',
       severity: symptom.painLevel || 1
     };
   });
+};
+
+/**
+ * Get color based on severity level
+ */
+const getSeverityColor = (severity: number): string => {
+  if (severity <= 3) return 'rgba(33, 150, 243, 0.6)'; // Light blue for mild
+  if (severity <= 6) return 'rgba(33, 150, 243, 0.7)'; // Medium blue for moderate
+  return 'rgba(33, 150, 243, 0.8)';                    // Darker blue for severe
 };
 
 /**
