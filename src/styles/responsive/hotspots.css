@@ -100,7 +100,7 @@
   }
 
   .hotspot-icon {
-    @apply scale-75; /* Changed from scale-80 to scale-75 which is valid in Tailwind */
+    @apply scale-75;
   }
 }
 

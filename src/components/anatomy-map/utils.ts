@@ -95,20 +95,3 @@ const getCoordinateByRegionId = (regionId: string): { x: number; y: number } | n
   
   return regionCoordinates[regionId] || null;
 };
-
-// Add to types.ts if needed
-export interface HotSpot {
-  id: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  label: string;
-  description: string;
-  color: string;
-  type: 'symptom' | 'health-issue';
-  metadata: {
-    severity: string;
-    [key: string]: any;
-  };
-}
