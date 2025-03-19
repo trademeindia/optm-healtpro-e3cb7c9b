@@ -41,6 +41,11 @@ const SymptomHistoryContainer: React.FC<SymptomHistoryContainerProps> = ({
     setDetailsDialogOpen(true);
   };
 
+  // Dummy function for passing to SymptomDialog when in edit mode
+  const handleDummyAdd = (symptom: PainSymptom) => {
+    // This function is not used in edit mode, but is required by the interface
+  };
+
   return (
     <div className="w-full space-y-4">
       <h2 className="text-xl font-semibold">Symptom History</h2>
@@ -63,9 +68,12 @@ const SymptomHistoryContainer: React.FC<SymptomHistoryContainerProps> = ({
           selectedRegion={selectedRegion}
           existingSymptom={selectedSymptom}
           isEditMode={true}
-          onAdd={() => {}}
-          onUpdate={onUpdateSymptom}
-          onDelete={onDeleteSymptom}
+          onAddSymptom={handleDummyAdd}
+          onUpdateSymptom={onUpdateSymptom}
+          onDeleteSymptom={onDeleteSymptom}
+          bodyRegions={bodyRegions}
+          existingSymptoms={symptoms.filter(s => s.bodyRegionId === selectedRegion.id)}
+          loading={loading}
         />
       )}
       

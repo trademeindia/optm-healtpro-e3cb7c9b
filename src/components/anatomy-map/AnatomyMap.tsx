@@ -110,7 +110,7 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
         <SymptomDialog
           open={showDialog}
           onClose={handleCloseDialog}
-          bodyRegion={activeRegion}
+          selectedRegion={activeRegion}
           bodyRegions={bodyRegions}
           existingSymptoms={symptoms.filter(s => s.bodyRegionId === activeRegion.id)}
           onAddSymptom={onAddSymptom}

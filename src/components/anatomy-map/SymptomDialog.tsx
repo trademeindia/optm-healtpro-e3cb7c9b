@@ -35,11 +35,14 @@ interface SymptomDialogProps {
   open: boolean;
   onClose: () => void;
   selectedRegion: BodyRegion | null;
-  existingSymptom: PainSymptom | null;
-  isEditMode: boolean;
-  onAdd: (symptom: PainSymptom) => void;
-  onUpdate: (symptom: PainSymptom) => void;
-  onDelete: (symptomId: string) => void;
+  existingSymptom?: PainSymptom | null;
+  isEditMode?: boolean;
+  bodyRegions: BodyRegion[];
+  existingSymptoms: PainSymptom[];
+  onAddSymptom: (symptom: PainSymptom) => void;
+  onUpdateSymptom: (symptom: PainSymptom) => void;
+  onDeleteSymptom: (symptomId: string) => void;
+  loading: boolean;
 }
 
 const formSchema = z.object({
@@ -55,11 +58,14 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
   open,
   onClose,
   selectedRegion,
-  existingSymptom,
-  isEditMode,
-  onAdd,
-  onUpdate,
-  onDelete
+  existingSymptom = null,
+  isEditMode = false,
+  onAddSymptom,
+  onUpdateSymptom,
+  onDeleteSymptom,
+  loading,
+  bodyRegions,
+  existingSymptoms
 }) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -105,7 +111,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
         triggers,
         updatedAt: new Date().toISOString(),
       };
-      onUpdate(updatedSymptom);
+      onUpdateSymptom(updatedSymptom);
     } else if (selectedRegion) {
       // Add new symptom
       const newSymptom: PainSymptom = {
@@ -119,7 +125,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
         updatedAt: new Date().toISOString(),
         isActive: true,
       };
-      onAdd(newSymptom);
+      onAddSymptom(newSymptom);
     }
     
     onClose();
@@ -127,7 +133,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
 
   const handleDelete = () => {
     if (existingSymptom) {
-      onDelete(existingSymptom.id);
+      onDeleteSymptom(existingSymptom.id);
       onClose();
     }
   };

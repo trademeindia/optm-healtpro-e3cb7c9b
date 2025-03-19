@@ -25,11 +25,18 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
   const getMarkerColor = () => {
     if (!hasSymptoms) return 'bg-blue-400 dark:bg-blue-600';
     
-    // Find max pain level for this region
-    const maxPain = Math.max(...regionSymptoms.map(s => s.painLevel || 0));
+    // Find max severity for this region
+    const maxSeverity = Math.max(...regionSymptoms.map(s => {
+      switch (s.severity) {
+        case 'severe': return 8;
+        case 'moderate': return 5;
+        case 'mild': return 3;
+        default: return 1;
+      }
+    }));
     
-    if (maxPain >= 7) return 'bg-red-500 dark:bg-red-600';
-    if (maxPain >= 4) return 'bg-amber-500 dark:bg-amber-600';
+    if (maxSeverity >= 7) return 'bg-red-500 dark:bg-red-600';
+    if (maxSeverity >= 4) return 'bg-amber-500 dark:bg-amber-600';
     return 'bg-green-500 dark:bg-green-600';
   };
   
