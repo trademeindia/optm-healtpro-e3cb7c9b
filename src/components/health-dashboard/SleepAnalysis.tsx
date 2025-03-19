@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HealthMetric, TimeRange } from '@/services/healthDataService';
+import { HealthMetric, TimeRange } from '@/services/health';
 import { Moon, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';

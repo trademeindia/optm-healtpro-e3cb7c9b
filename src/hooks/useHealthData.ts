@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { 
@@ -7,7 +6,7 @@ import {
   HealthMetricType, 
   TimeRange, 
   FitnessConnection 
-} from '@/services/healthDataService';
+} from '@/services/health';
 
 export interface UseHealthDataOptions {
   autoSync?: boolean;
