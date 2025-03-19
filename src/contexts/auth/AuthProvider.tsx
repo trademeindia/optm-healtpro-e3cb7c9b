@@ -45,19 +45,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     checkSession();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Add event listener for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
       
       // If the user is signed out, make sure we clear the user state
       if (event === 'SIGNED_OUT') {
         setUser(null);
       }
+      
+      // If the user is signed in, update the user state
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        // Import formatUser dynamically to avoid circular dependencies
+        const { formatUser } = await import('./utils');
+        try {
+          const formattedUser = await formatUser(session.user);
+          if (formattedUser && !user) {
+            console.log('Updating user state after auth state change:', formattedUser);
+            setUser(formattedUser);
+          }
+        } catch (error) {
+          console.error('Error formatting user after auth state change:', error);
+        }
+      }
     });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser]);
+  }, [setUser, user]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {

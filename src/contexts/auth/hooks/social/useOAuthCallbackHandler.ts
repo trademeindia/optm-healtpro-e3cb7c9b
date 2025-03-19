@@ -25,93 +25,85 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         return;
       }
       
-      if (!user) {
-        // Try to get the session directly
-        const { data, error } = await supabase.auth.getSession();
-        console.log("Session check:", data?.session ? "Session exists" : "No session", error ? `Error: ${error.message}` : "No error");
-        
-        if (error) {
-          toast.error(`Authentication verification failed: ${error.message}`, {
-            duration: 5000
-          });
-          navigate('/login');
-          return;
-        }
-        
-        if (data.session) {
-          // We have a session but no formatted user yet
-          try {
-            const formattedUser = await formatUser(data.session.user);
-            if (formattedUser) {
-              console.log("Successfully retrieved user after OAuth flow:", formattedUser);
-              toast.success(`Successfully signed in with ${provider}!`, {
-                duration: 3000
-              });
-              // Use navigate instead of direct window.location.href to prevent blank screen
-              navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-              return;
-            } else {
-              console.error("Failed to format user from session");
-              // Instead of failing, let's try to create a profile with default values
-              const defaultRole = 'patient';
+      // Check for existing session since OAuth might have already completed
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log("Session check on callback:", sessionData?.session ? "Session exists" : "No session");
+      
+      if (sessionData?.session) {
+        // We have a session, try to get the user profile
+        try {
+          const formattedUser = await formatUser(sessionData.session.user);
+          
+          if (formattedUser) {
+            console.log("Successfully retrieved user after OAuth flow:", formattedUser);
+            toast.success(`Successfully signed in with ${provider}!`, {
+              duration: 3000
+            });
+            
+            // Navigate based on user role
+            navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+            return;
+          } else {
+            console.error("Failed to format user from session, creating default profile");
+            
+            // Create default profile if formatUser fails but session exists
+            const defaultRole = 'patient';
+            
+            const { data: newProfile, error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: sessionData.session.user.id,
+                email: sessionData.session.user.email,
+                name: sessionData.session.user.user_metadata?.full_name || 
+                      sessionData.session.user.user_metadata?.name || 
+                      sessionData.session.user.email?.split('@')[0] || 'User',
+                role: defaultRole,
+                provider: provider as any,
+                picture: sessionData.session.user.user_metadata?.avatar_url || ''
+              })
+              .select()
+              .single();
               
-              // Insert a new profile for the OAuth user if formatUser failed but we have a session
-              const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert({
-                  id: data.session.user.id,
-                  email: data.session.user.email,
-                  name: data.session.user.user_metadata?.full_name || 
-                        data.session.user.user_metadata?.name || 
-                        data.session.user.email?.split('@')[0] || 'User',
-                  role: defaultRole,
-                  provider: provider as any,
-                  picture: data.session.user.user_metadata?.avatar_url || ''
-                })
-                .select()
-                .single();
-                
-              if (insertError) {
-                console.error('Error creating user profile:', insertError);
-                toast.error('Failed to create user profile', {
-                  duration: 5000
-                });
-                navigate('/login');
-                return;
-              }
-              
-              console.log("Created new profile for OAuth user:", newProfile);
-              toast.success(`Successfully signed in with ${provider}!`, {
-                duration: 3000
+            if (insertError) {
+              console.error('Error creating user profile:', insertError);
+              toast.error('Failed to create user profile', {
+                duration: 5000
               });
-              // Use navigate instead of window.location.href for a smoother transition
-              navigate('/patient-dashboard');
+              navigate('/login');
               return;
             }
-          } catch (formatError) {
-            console.error("Error formatting user from session:", formatError);
+            
+            console.log("Created new profile for OAuth user:", newProfile);
+            toast.success(`Successfully signed in with ${provider}!`, {
+              duration: 3000
+            });
+            
+            navigate('/patient-dashboard');
+            return;
           }
+        } catch (formatError) {
+          console.error("Error formatting user from session:", formatError);
         }
-        
-        // Add additional debug information to help diagnose the issue
-        console.error("OAuth callback failed to find a user despite having a code");
-        console.log("Examining URL parameters:", window.location.search);
-        
-        toast.error('Authentication failed. Please try again and check the debug section.', {
-          duration: 5000
+      }
+      
+      // If we have a user object passed in, use that
+      if (user) {
+        toast.success(`Successfully signed in with ${provider}!`, {
+          duration: 3000
         });
-        navigate('/login');
+        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
         return;
       }
       
-      toast.success(`Successfully signed in with ${provider}!`, {
-        duration: 3000
+      // If we get here, something went wrong with the OAuth flow
+      console.error("OAuth callback failed to authenticate user");
+      toast.error('Authentication failed. Please try again.', {
+        duration: 5000
       });
-      // Use navigate instead of window.location.href for smoother transition
-      navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+      navigate('/login');
     } catch (error: any) {
       console.error(`${provider} OAuth callback error:`, error);
-      toast.error('Authentication failed. Please try again and check the debug section.', {
+      toast.error('Authentication failed. Please try again.', {
         duration: 5000
       });
       navigate('/login');

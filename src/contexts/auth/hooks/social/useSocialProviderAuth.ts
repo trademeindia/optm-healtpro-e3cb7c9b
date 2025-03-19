@@ -21,10 +21,11 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
         toast.error('Unable to connect to authentication service. Please try again later.', {
           duration: 5000
         });
+        setIsLoading(false);
         return;
       }
       
-      // Build and log the redirect URL - crucial for debugging OAuth redirects
+      // Build the redirect URL - crucial for debugging OAuth redirects
       const redirectTo = `${window.location.origin}/oauth-callback`;
       console.log(`OAuth redirect URL: ${redirectTo}`);
       
@@ -40,12 +41,20 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       // Use the correct structure for Google OAuth with scopes
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: provider === 'google' ? 
-          { ...options, scopes: 'openid email profile' } : 
-          options
+        options: {
+          ...options,
+          scopes: 'email profile',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
       });
 
-      console.log("OAuth initiation response:", data ? "Data received" : "No data", error ? `Error: ${error.message}` : "No error");
+      console.log("OAuth initiation response:", 
+        data ? `Data received, URL: ${data.url ? 'exists' : 'missing'}` : "No data", 
+        error ? `Error: ${error.message}` : "No error"
+      );
 
       if (error) {
         // Enhanced error diagnostics with more specific messages
@@ -64,12 +73,6 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
             duration: 5000
           });
           console.error(`Error: Your Supabase project needs Site URL and Redirect URLs configured in Authentication > URL Configuration. Check that ${redirectTo} is added as a valid redirect URL.`);
-        } else if (error.status === 403 || error.message.includes('403')) {
-          toast.error('Access denied by the authentication provider. Please check your provider configuration.', {
-            duration: 5000
-          });
-          console.error(`OAuth 403 error with ${provider}:`, error);
-          console.log('This could be due to incorrect configuration in the OAuth provider or restrictions on your app.');
         } else {
           toast.error(`${provider} authentication failed: ${error.message}`, {
             duration: 5000
@@ -79,14 +82,23 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
         throw error;
       }
       
-      // If we get this far with no error, the user will be redirected to the provider's login page
-      console.log(`Successfully initiated ${provider} auth flow, user should be redirected.`);
+      // If we have a URL to redirect to, use it
+      if (data?.url) {
+        console.log(`Redirecting to OAuth provider URL: ${data.url}`);
+        
+        // Use window.location.href for a full page reload to the provider's login page
+        window.location.href = data.url;
+      } else {
+        console.error("OAuth initiation failed: No redirect URL returned");
+        toast.error(`Login with ${provider} failed. No redirect URL received.`, {
+          duration: 5000
+        });
+      }
     } catch (error: any) {
       console.error(`Error initiating ${provider} authentication:`, error);
       toast.error(`Login with ${provider} failed. Please try again.`, {
         duration: 5000
       });
-      throw error;
     } finally {
       setIsLoading(false);
     }
