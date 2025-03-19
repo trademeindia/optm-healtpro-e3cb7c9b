@@ -26,7 +26,8 @@ const Index: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen w-full bg-background">
-        <div className="animate-pulse text-foreground p-4 text-center">
+        <div className="text-foreground p-6 text-center border border-gray-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">
+          <div className="w-12 h-12 mb-4 mx-auto rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
           <h2 className="text-xl font-medium">Loading...</h2>
           <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
         </div>
@@ -34,7 +35,21 @@ const Index: React.FC = () => {
     );
   }
 
-  return null;
+  // Fallback UI for any unexpected state
+  return (
+    <div className="flex items-center justify-center min-h-screen w-full bg-background">
+      <div className="text-foreground p-6 text-center border border-gray-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">
+        <h2 className="text-xl font-medium">Welcome to Medical Dashboard</h2>
+        <p className="mt-2 text-muted-foreground">Initializing application...</p>
+        <button 
+          onClick={() => navigate('/login')} 
+          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Go to Login
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default Index;
