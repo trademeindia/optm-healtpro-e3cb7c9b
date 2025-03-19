@@ -5,8 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 import { ThemeProvider } from 'next-themes';
 import './App.css';
-
-// Import pages
 import Login from './pages/Login';
 import Index from './pages/Index';
 import DashboardPage from './pages/dashboard/DashboardPage';
@@ -24,11 +22,7 @@ import OAuthCallback from './pages/OAuthCallback';
 import HealthAppsPage from './pages/HealthAppsPage';
 import AIAnalysisPage from './pages/AIAnalysisPage';
 import AnatomyMapPage from './pages/AnatomyMapPage';
-
-// Import providers
-import { AuthProvider } from './contexts/auth';
-import { SymptomSyncProvider } from './contexts/SymptomSyncContext';
-import { SymptomProvider } from './contexts/SymptomContext';
+import { AuthProvider } from './contexts/auth'; // Fix import path
 
 // Create a client
 const queryClient = new QueryClient();
@@ -39,32 +33,26 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthProvider>
-            <SymptomProvider>
-              <SymptomSyncProvider>
-                <div className="min-h-screen bg-background">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/patients" element={<PatientsPage />} />
-                    <Route path="/reports" element={<ReportsPage />} />
-                    <Route path="/biomarkers" element={<BiomarkersPage />} />
-                    <Route path="/exercises" element={<ExercisePage />} />
-                    <Route path="/appointments" element={<AppointmentsPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/help" element={<HelpPage />} />
-                    <Route path="/patient-dashboard" element={<PatientDashboard />} />
-                    <Route path="/patient-reports" element={<PatientReportsPage />} />
-                    <Route path="/oauth-callback" element={<OAuthCallback />} />
-                    <Route path="/health-apps" element={<HealthAppsPage />} />
-                    <Route path="/ai-analysis" element={<AIAnalysisPage />} />
-                    <Route path="/anatomy-map" element={<AnatomyMapPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Toaster position="bottom-right" richColors closeButton />
-                </div>
-              </SymptomSyncProvider>
-            </SymptomProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/patients" element={<PatientsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/biomarkers" element={<BiomarkersPage />} />
+              <Route path="/exercises" element={<ExercisePage />} />
+              <Route path="/appointments" element={<AppointmentsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/patient-dashboard" element={<PatientDashboard />} />
+              <Route path="/patient-reports" element={<PatientReportsPage />} />
+              <Route path="/oauth-callback" element={<OAuthCallback />} />
+              <Route path="/health-apps" element={<HealthAppsPage />} />
+              <Route path="/ai-analysis" element={<AIAnalysisPage />} />
+              <Route path="/anatomy-map" element={<AnatomyMapPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster position="bottom-right" richColors closeButton />
           </AuthProvider>
         </Router>
       </QueryClientProvider>
