@@ -24,6 +24,7 @@ const PatientDashboard: React.FC = () => {
   
   const {
     activityData,
+    fitnessData,
     treatmentTasks,
     upcomingAppointments,
     healthMetrics,
@@ -111,7 +112,7 @@ const PatientDashboard: React.FC = () => {
                     </div>
                   )}
                   
-                  {hasConnectedApps && <FitnessDataCharts fitnessData={activityData} />}
+                  {hasConnectedApps && <FitnessDataCharts fitnessData={fitnessData} />}
                   
                   <div className="grid lg:grid-cols-2 gap-6">
                     <div className="space-y-6">

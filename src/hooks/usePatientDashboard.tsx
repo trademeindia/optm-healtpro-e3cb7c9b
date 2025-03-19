@@ -16,7 +16,7 @@ export const usePatientDashboard = () => {
   } = useFitnessIntegration();
 
   const healthMetrics: HealthMetric[] = useHealthMetrics(fitnessData);
-  const activityData = useActivityData(fitnessData);
+  const { activityData, fitnessData: transformedFitnessData } = useActivityData(fitnessData);
   const treatmentTasks = useTreatmentTasks();
   const { 
     upcomingAppointments, 
@@ -53,6 +53,7 @@ export const usePatientDashboard = () => {
 
   return {
     activityData,
+    fitnessData, // Now we're returning the original fitnessData
     treatmentTasks,
     upcomingAppointments,
     healthMetrics,

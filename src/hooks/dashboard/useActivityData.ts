@@ -1,8 +1,8 @@
-
 import { FitnessData } from '@/hooks/useFitnessIntegration';
 
 export const useActivityData = (fitnessData: FitnessData) => {
-  // Extract and transform data from fitnessData for activity visualization
+  // Transform data from fitnessData for activity visualization, but keep the original structure
+  // for components that need the raw FitnessData format
   
   const activityData = {
     steps: {
@@ -32,5 +32,9 @@ export const useActivityData = (fitnessData: FitnessData) => {
     }
   };
 
-  return activityData;
+  // Return both the transformed activity data and the original fitnessData
+  return {
+    activityData,
+    fitnessData
+  };
 };
