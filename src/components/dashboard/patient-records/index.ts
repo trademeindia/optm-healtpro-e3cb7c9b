@@ -8,3 +8,4 @@ export * from './PatientTableHeader';
 export * from './PatientTableRow';
 export * from './PatientRecordsPagination';
 export * from './PatientStatisticsPanel';
+export * from './MedicalRecordsManager';
