@@ -9,10 +9,12 @@ import { PainSymptom } from './types';
 import AnatomyMap from './AnatomyMap';
 import SymptomHistoryTable from './SymptomHistoryTable';
 import { getBodyRegions } from './data/bodyRegions';
+import { useSymptoms } from '@/contexts/SymptomContext';
+import { toast } from 'sonner';
 
 const AnatomyMapContainer: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { addSymptom: updateGlobalSymptoms, loadPatientSymptoms } = useSymptoms();
   const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
@@ -31,14 +33,14 @@ const AnatomyMapContainer: React.FC = () => {
       // For now, we'll use local storage as a temporary solution
       const storedSymptoms = localStorage.getItem(`symptoms_${user?.id}`);
       if (storedSymptoms) {
-        setSymptoms(JSON.parse(storedSymptoms));
+        const parsedSymptoms = JSON.parse(storedSymptoms);
+        setSymptoms(parsedSymptoms);
+        console.log("Fetched symptoms:", parsedSymptoms);
       }
     } catch (error) {
       console.error('Error fetching symptoms:', error);
-      toast({
-        title: 'Error loading symptoms',
-        description: 'There was a problem loading your symptom data.',
-        variant: 'destructive',
+      toast.error('Error loading symptoms', {
+        description: 'There was a problem loading your symptom data.'
       });
     } finally {
       setLoading(false);
@@ -50,17 +52,35 @@ const AnatomyMapContainer: React.FC = () => {
       // In a real implementation, this would save to Supabase
       // For now, we'll use local storage as a temporary solution
       localStorage.setItem(`symptoms_${user?.id}`, JSON.stringify(updatedSymptoms));
+      
+      // Update the context data as well for global access
+      updatedSymptoms.forEach(symptom => {
+        const symptomEntry = {
+          id: symptom.id,
+          date: new Date(symptom.createdAt),
+          symptomName: symptom.painType,
+          painLevel: symptom.severity === 'severe' ? 8 : symptom.severity === 'moderate' ? 5 : 2,
+          location: bodyRegions.find(r => r.id === symptom.bodyRegionId)?.name || 'Unknown',
+          notes: symptom.description,
+          patientId: user?.id ? parseInt(user.id.substring(0, 5), 16) % 10 : 1 // Simple hash for demo
+        };
+        updateGlobalSymptoms(symptomEntry);
+      });
+      
+      // Reload patient symptoms to update any dashboard components
+      if (user?.id) {
+        const patientId = parseInt(user.id.substring(0, 5), 16) % 10;
+        loadPatientSymptoms(patientId);
+      }
+      
       setSymptoms(updatedSymptoms);
-      toast({
-        title: 'Symptoms updated',
-        description: 'Your symptom information has been saved.',
+      toast.success('Symptoms updated', {
+        description: 'Your symptom information has been saved.'
       });
     } catch (error) {
       console.error('Error saving symptoms:', error);
-      toast({
-        title: 'Error saving symptoms',
-        description: 'There was a problem saving your symptom data.',
-        variant: 'destructive',
+      toast.error('Error saving symptoms', {
+        description: 'There was a problem saving your symptom data.'
       });
     }
   };
@@ -90,11 +110,21 @@ const AnatomyMapContainer: React.FC = () => {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full shadow-sm border border-gray-200 dark:border-gray-700">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="map">Anatomy Map</TabsTrigger>
-          <TabsTrigger value="history">Symptom History</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 p-1">
+          <TabsTrigger 
+            value="map" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Anatomy Map
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Symptom History
+          </TabsTrigger>
         </TabsList>
         
         <CardContent className="pt-6">

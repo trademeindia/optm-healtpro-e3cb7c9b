@@ -22,7 +22,11 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
     const sizeClass = symptom.severity === 'severe' ? 'w-6 h-6' : 
                       symptom.severity === 'moderate' ? 'w-5 h-5' : 'w-4 h-4';
     
-    return `${sizeClass} ${severityOption?.color || 'bg-blue-500'} border-2 border-white shadow-md`;
+    // Use more vibrant colors based on severity
+    const colorClass = symptom.severity === 'severe' ? 'bg-red-500' : 
+                       symptom.severity === 'moderate' ? 'bg-orange-500' : 'bg-yellow-400';
+    
+    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white shadow-md`;
   };
   
   return (
@@ -31,7 +35,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
         <TooltipTrigger asChild>
           <div
             className={`absolute rounded-full cursor-pointer flex items-center justify-center transition-all duration-200 ${getMarkerStyle()} ${
-              isHovered ? 'scale-110 z-10' : ''
+              isHovered ? 'scale-125 z-10 ring-2 ring-primary ring-opacity-50' : ''
             }`}
             style={{
               left: `${region.x}%`,
@@ -44,20 +48,28 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
             data-testid={`region-marker-${region.id}`}
           />
         </TooltipTrigger>
-        <TooltipContent side="right" className="z-50 max-w-[220px] p-3">
-          <p className="font-semibold">{region.name}</p>
+        <TooltipContent side="right" className="z-50 max-w-[220px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+          <p className="font-semibold text-foreground">{region.name}</p>
           {region.description && (
             <p className="text-xs text-muted-foreground mt-1">{region.description}</p>
           )}
           {symptom ? (
-            <div className="mt-2">
-              <p className="text-sm font-medium">Reported Symptoms:</p>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm font-medium text-foreground">Reported Symptoms:</p>
               <p className="text-xs"><span className="font-medium">Type:</span> {symptom.painType}</p>
-              <p className="text-xs"><span className="font-medium">Severity:</span> {symptom.severity}</p>
+              <p className="text-xs">
+                <span className="font-medium">Severity:</span> 
+                <span className={`ml-1 ${
+                  symptom.severity === 'severe' ? 'text-red-500 font-semibold' : 
+                  symptom.severity === 'moderate' ? 'text-orange-500' : 'text-yellow-600'
+                }`}>
+                  {symptom.severity}
+                </span>
+              </p>
               <p className="text-xs mt-1 text-muted-foreground">{symptom.description}</p>
             </div>
           ) : (
-            <p className="text-xs mt-1 italic">Click to add symptoms</p>
+            <p className="text-xs mt-1 italic text-muted-foreground">Click to add symptoms</p>
           )}
         </TooltipContent>
       </Tooltip>
