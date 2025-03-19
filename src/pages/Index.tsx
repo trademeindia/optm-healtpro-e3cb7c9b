@@ -13,7 +13,21 @@ const Index: React.FC = () => {
     if (!isLoading) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
-        const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+        
+        // Redirect based on role
+        let dashboard;
+        switch(user.role) {
+          case 'doctor':
+            dashboard = '/dashboard';
+            break;
+          case 'admin': // We're using admin role for receptionist temporarily
+            dashboard = '/receptionist-dashboard';
+            break;
+          case 'patient':
+          default:
+            dashboard = '/patient-dashboard';
+        }
+        
         console.log(`Navigating to ${dashboard}`);
         navigate(dashboard);
       } else {

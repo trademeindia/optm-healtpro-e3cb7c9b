@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { UserRole } from '@/contexts/auth/types';
 
 export const useLoginState = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export const useLoginState = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [userType, setUserType] = useState<'doctor' | 'patient'>('doctor');
+  const [userType, setUserType] = useState<'doctor' | 'patient' | 'receptionist'>('doctor');
   const [showSignupDialog, setShowSignupDialog] = useState(false);
   const [signupData, setSignupData] = useState({
     name: '',
@@ -32,13 +33,33 @@ export const useLoginState = () => {
     
     setIsSubmitting(true);
     try {
-      const result = await login(email, password);
+      // Map UI user type to backend role
+      const role: UserRole = userType === 'receptionist' ? 'admin' : (userType as UserRole);
+      
+      // For demo logins, use predefined emails
+      let loginEmail = email;
+      if (userType === 'receptionist' && email === 'receptionist@example.com') {
+        loginEmail = 'admin@example.com'; // Map to admin email for demo
+      }
+      
+      const result = await login(loginEmail, password);
       
       if (result) {
         console.log('Login successful, redirecting to dashboard');
         // Manually navigate to dashboard based on user role
         setTimeout(() => {
-          const dashboard = result.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+          let dashboard;
+          switch(result.role) {
+            case 'doctor':
+              dashboard = '/dashboard';
+              break;
+            case 'admin': // Temporary for receptionist
+              dashboard = '/receptionist-dashboard';
+              break;
+            case 'patient':
+            default:
+              dashboard = '/patient-dashboard';
+          }
           console.log(`Navigating to ${dashboard}`);
           navigate(dashboard);
         }, 500);
@@ -54,7 +75,18 @@ export const useLoginState = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, redirecting to dashboard');
-      const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+      let dashboard;
+      switch(user.role) {
+        case 'doctor':
+          dashboard = '/dashboard';
+          break;
+        case 'admin': // Temporary for receptionist
+          dashboard = '/receptionist-dashboard';
+          break;
+        case 'patient':
+        default:
+          dashboard = '/patient-dashboard';
+      }
       navigate(dashboard);
     }
   }, [isAuthenticated, user, navigate]);
@@ -91,7 +123,9 @@ export const useLoginState = () => {
     
     setIsSubmitting(true);
     try {
-      await signup(signupData.email, signupData.password, signupData.name, userType);
+      // Map UI user type to backend role
+      const role: UserRole = userType === 'receptionist' ? 'admin' : (userType as UserRole);
+      await signup(signupData.email, signupData.password, signupData.name, role);
       setShowSignupDialog(false);
     } catch (error) {
       console.error('Signup failed:', error);
@@ -129,8 +163,8 @@ export const useLoginState = () => {
   };
 
   const handleTabChange = (value: string) => {
-    if (value === 'doctor' || value === 'patient') {
-      setUserType(value);
+    if (value === 'doctor' || value === 'patient' || value === 'receptionist') {
+      setUserType(value as 'doctor' | 'patient' | 'receptionist');
       setEmail('');
       setPassword('');
     }

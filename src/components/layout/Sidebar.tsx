@@ -7,7 +7,8 @@ import { useAuth } from '@/contexts/auth'; // Fix import path
 import { SidebarProps } from './sidebar/types';
 import { 
   getDoctorMenuItems, 
-  getPatientMenuItems, 
+  getPatientMenuItems,
+  getReceptionistMenuItems,
   getBottomMenuItems 
 } from './sidebar/menu-config';
 import { MobileToggle } from './sidebar/MobileToggle';
@@ -20,9 +21,19 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const { isOpen, isMobile, toggleSidebar, setIsOpen } = useSidebarResponsive();
   
   // Determine which menu items to show based on user role
-  const menuItems = user?.role === 'doctor' 
-    ? getDoctorMenuItems() 
-    : getPatientMenuItems();
+  let menuItems;
+  
+  switch(user?.role) {
+    case 'doctor':
+      menuItems = getDoctorMenuItems();
+      break;
+    case 'admin': // Temporary for receptionist
+      menuItems = getReceptionistMenuItems();
+      break;
+    case 'patient':
+    default:
+      menuItems = getPatientMenuItems();
+  }
 
   const bottomMenuItems = getBottomMenuItems();
 

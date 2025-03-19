@@ -92,6 +92,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.success('Admin demo login successful');
         return demoUser;
       }
+      else if (email === 'receptionist@example.com' && password === 'password123') {
+        const demoUser: User = {
+          id: `demo-receptionist-${Date.now()}`,
+          email: email,
+          name: 'Receptionist Demo Account',
+          role: 'admin', // Using admin role for receptionist
+          provider: 'email',
+          picture: null
+        };
+        
+        setUser(demoUser);
+        toast.success('Receptionist demo login successful');
+        return demoUser;
+      }
       else if (email === 'doctor@example.com' && password === 'password123') {
         const demoUser: User = {
           id: `demo-doctor-${Date.now()}`,
