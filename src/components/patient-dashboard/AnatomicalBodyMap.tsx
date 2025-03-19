@@ -51,7 +51,7 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             style={{ transform: `scale(${zoom})` }}
           >
             <img 
-              src="/lovable-uploads/ae7aa427-882b-48d7-99bc-d5ac420d22df.png" 
+              src="/lovable-uploads/cc5c1cf4-bddf-4fc8-bc1a-6a1387ebbdf8.png" 
               alt="Human muscular anatomy" 
               className="anatomy-map-image"
             />
