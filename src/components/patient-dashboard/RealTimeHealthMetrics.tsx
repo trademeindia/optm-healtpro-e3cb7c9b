@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, ActivitySquare, Thermometer, Lungs } from 'lucide-react';
+import { Heart, ActivitySquare, Thermometer, Wind } from 'lucide-react';
 import { HealthMetric } from '@/types/health';
 import { cn } from '@/lib/utils';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
@@ -64,7 +64,7 @@ const RealTimeHealthMetrics: React.FC<RealTimeHealthMetricsProps> = ({ metrics }
       name: "Respiratory Rate",
       value: "16",
       unit: "bpm",
-      icon: Lungs,
+      icon: Wind,
       color: "text-emerald-500",
       bgColor: "bg-emerald-100",
       data: respiratoryRateData,
@@ -144,13 +144,13 @@ const RealTimeHealthMetrics: React.FC<RealTimeHealthMetricsProps> = ({ metrics }
                             if (vital.name === "Blood Pressure") {
                               return (
                                 <div className="bg-background p-2 rounded shadow-lg text-xs border">
-                                  <p>{`${Math.round(payload[0].value)}/${Math.round(payload[1].value)} ${vital.unit}`}</p>
+                                  <p>{`${Math.round(Number(payload[0].value))}/${Math.round(Number(payload[1].value))} ${vital.unit}`}</p>
                                 </div>
                               );
                             }
                             return (
                               <div className="bg-background p-2 rounded shadow-lg text-xs border">
-                                <p>{`${payload[0].value.toFixed(1)} ${vital.unit}`}</p>
+                                <p>{`${Number(payload[0].value).toFixed(1)} ${vital.unit}`}</p>
                               </div>
                             );
                           }
