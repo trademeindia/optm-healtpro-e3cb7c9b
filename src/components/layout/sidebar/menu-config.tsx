@@ -10,7 +10,8 @@ import {
   Smartphone,
   Dumbbell,
   Calendar,
-  Brain
+  Brain,
+  Activity
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -53,6 +54,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     label: 'AI Report Analysis', 
     path: '/ai-analysis',
     description: 'Get AI-powered analysis of your medical reports'
+  },
+  { 
+    icon: Activity, 
+    label: 'Anatomy Map', 
+    path: '/anatomy-map',
+    description: 'Track pain symptoms on an interactive anatomy map'
   },
   { 
     icon: TestTube, 

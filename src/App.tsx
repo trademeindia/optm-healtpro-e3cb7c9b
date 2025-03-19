@@ -21,6 +21,7 @@ import { PatientReportsPage } from './pages/PatientReportsPage';
 import OAuthCallback from './pages/OAuthCallback';
 import HealthAppsPage from './pages/HealthAppsPage';
 import AIAnalysisPage from './pages/AIAnalysisPage';
+import AnatomyMapPage from './pages/AnatomyMapPage';
 import { AuthProvider } from './contexts/auth'; // Fix import path
 
 // Create a client
@@ -48,6 +49,7 @@ function App() {
               <Route path="/oauth-callback" element={<OAuthCallback />} />
               <Route path="/health-apps" element={<HealthAppsPage />} />
               <Route path="/ai-analysis" element={<AIAnalysisPage />} />
+              <Route path="/anatomy-map" element={<AnatomyMapPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster position="bottom-right" richColors closeButton />
