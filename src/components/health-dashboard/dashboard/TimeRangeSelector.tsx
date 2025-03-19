@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 import { TimeRange } from '@/services/health';
 
 interface TimeRangeSelectorProps {
@@ -14,35 +14,36 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
   onTimeRangeChange
 }) => {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center space-x-2">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Time Range:</span>
-      </div>
-      <div className="flex space-x-1">
-        <Button 
-          variant={selectedTimeRange === 'day' ? 'default' : 'outline'} 
+    <div className="flex flex-wrap items-center gap-2 mb-6">
+      <Calendar
+        mode="single"
+        className="hidden lg:block border rounded-md shadow-sm"
+      />
+      
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={selectedTimeRange === 'day' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onTimeRangeChange('day')}
         >
           Day
         </Button>
-        <Button 
-          variant={selectedTimeRange === 'week' ? 'default' : 'outline'} 
+        <Button
+          variant={selectedTimeRange === 'week' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onTimeRangeChange('week')}
         >
           Week
         </Button>
-        <Button 
-          variant={selectedTimeRange === 'month' ? 'default' : 'outline'} 
+        <Button
+          variant={selectedTimeRange === 'month' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onTimeRangeChange('month')}
         >
           Month
         </Button>
-        <Button 
-          variant={selectedTimeRange === 'year' ? 'default' : 'outline'} 
+        <Button
+          variant={selectedTimeRange === 'year' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onTimeRangeChange('year')}
         >
