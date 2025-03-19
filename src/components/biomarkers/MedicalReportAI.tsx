@@ -28,7 +28,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   } = useReportProcessing({ onAnalysisComplete });
 
   return (
-    <Card className="w-full shadow-lg border-0 rounded-lg transition-all duration-300 hover:shadow-xl overflow-hidden">
+    <Card className="w-full shadow-lg border border-border/30 rounded-lg transition-all duration-300 hover:shadow-xl overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 pb-4 space-y-2">
         <CardTitle className="flex items-center gap-2 text-xl md:text-2xl font-bold">
           <Brain className="h-6 w-6 text-primary" />
