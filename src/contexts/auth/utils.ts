@@ -76,7 +76,9 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
           name: newProfile.name,
           role: newProfile.role as UserRole,
           provider: newProfile.provider as AuthProviderType,
-          picture: newProfile.picture
+          picture: newProfile.picture,
+          // Handle patient_id in a type-safe way
+          patientId: newProfile.patient_id || undefined
         };
       }
       
@@ -93,6 +95,7 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
       role: (data.role as UserRole) || 'patient',
       provider: (data.provider as AuthProviderType) || providerInfo,
       picture: data.picture || userPicture || null,
+      // Handle patient_id in a type-safe way - use optional chaining
       patientId: data.patient_id || undefined
     };
   } catch (error) {
