@@ -40,7 +40,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative" 
+         style={{border: '1px solid rgba(255,0,0,0.2)'}}>
       <Card className="max-w-md w-full border shadow">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">Medical Dashboard Login</CardTitle>
