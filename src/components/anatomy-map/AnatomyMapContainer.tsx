@@ -21,21 +21,30 @@ const AnatomyMapContainer: React.FC = () => {
   const bodyRegions = getBodyRegions();
 
   useEffect(() => {
-    if (user) {
-      fetchSymptoms();
-    }
+    // Even without a user, let's initialize with empty symptoms
+    fetchSymptoms();
   }, [user]);
 
   const fetchSymptoms = async () => {
     setLoading(true);
     try {
-      // In a real implementation, this would fetch from Supabase
-      // For now, we'll use local storage as a temporary solution
-      const storedSymptoms = localStorage.getItem(`symptoms_${user?.id}`);
-      if (storedSymptoms) {
-        const parsedSymptoms = JSON.parse(storedSymptoms);
-        setSymptoms(parsedSymptoms);
-        console.log("Fetched symptoms:", parsedSymptoms);
+      if (user) {
+        // In a real implementation, this would fetch from Supabase
+        // For now, we'll use local storage as a temporary solution
+        const storedSymptoms = localStorage.getItem(`symptoms_${user?.id}`);
+        if (storedSymptoms) {
+          const parsedSymptoms = JSON.parse(storedSymptoms);
+          setSymptoms(parsedSymptoms);
+          console.log("Fetched symptoms:", parsedSymptoms);
+        }
+      } else {
+        console.log("No user found, using demo symptoms");
+        // For demo purposes, we can still allow interaction
+        const storedSymptoms = localStorage.getItem(`symptoms_demo`);
+        if (storedSymptoms) {
+          const parsedSymptoms = JSON.parse(storedSymptoms);
+          setSymptoms(parsedSymptoms);
+        }
       }
     } catch (error) {
       console.error('Error fetching symptoms:', error);
@@ -49,26 +58,29 @@ const AnatomyMapContainer: React.FC = () => {
 
   const saveSymptoms = async (updatedSymptoms: PainSymptom[]) => {
     try {
+      // Storage key - use user ID if available, otherwise use 'demo'
+      const storageKey = user?.id ? `symptoms_${user.id}` : 'symptoms_demo';
+      
       // In a real implementation, this would save to Supabase
       // For now, we'll use local storage as a temporary solution
-      localStorage.setItem(`symptoms_${user?.id}`, JSON.stringify(updatedSymptoms));
+      localStorage.setItem(storageKey, JSON.stringify(updatedSymptoms));
       
       // Update the context data as well for global access
-      updatedSymptoms.forEach(symptom => {
-        const symptomEntry = {
-          id: symptom.id,
-          date: new Date(symptom.createdAt),
-          symptomName: symptom.painType,
-          painLevel: symptom.severity === 'severe' ? 8 : symptom.severity === 'moderate' ? 5 : 2,
-          location: bodyRegions.find(r => r.id === symptom.bodyRegionId)?.name || 'Unknown',
-          notes: symptom.description,
-          patientId: user?.id ? parseInt(user.id.substring(0, 5), 16) % 10 : 1 // Simple hash for demo
-        };
-        updateGlobalSymptoms(symptomEntry);
-      });
-      
-      // Reload patient symptoms to update any dashboard components
-      if (user?.id) {
+      if (user) {
+        updatedSymptoms.forEach(symptom => {
+          const symptomEntry = {
+            id: symptom.id,
+            date: new Date(symptom.createdAt),
+            symptomName: symptom.painType,
+            painLevel: symptom.severity === 'severe' ? 8 : symptom.severity === 'moderate' ? 5 : 2,
+            location: bodyRegions.find(r => r.id === symptom.bodyRegionId)?.name || 'Unknown',
+            notes: symptom.description,
+            patientId: user?.id ? parseInt(user.id.substring(0, 5), 16) % 10 : 1 // Simple hash for demo
+          };
+          updateGlobalSymptoms(symptomEntry);
+        });
+        
+        // Reload patient symptoms to update any dashboard components
         const patientId = parseInt(user.id.substring(0, 5), 16) % 10;
         loadPatientSymptoms(patientId);
       }

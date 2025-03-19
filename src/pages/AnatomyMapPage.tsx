@@ -2,6 +2,7 @@
 import React from 'react';
 import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
+import { SymptomProvider } from '@/contexts/SymptomContext';
 
 // Create a simple layout component since the imported one isn't available
 const PageLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -22,8 +23,10 @@ const AnatomyMapPage: React.FC = () => {
           discomfort and provide details to help your healthcare provider understand your condition better.
         </p>
         
-        <AnatomyMapContainer />
-        <Toaster position="bottom-right" />
+        <SymptomProvider>
+          <AnatomyMapContainer />
+          <Toaster position="bottom-right" />
+        </SymptomProvider>
       </div>
     </PageLayout>
   );

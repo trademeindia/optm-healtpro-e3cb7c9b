@@ -15,7 +15,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
   // Determine marker styling based on symptom severity
   const getMarkerStyle = () => {
     if (!symptom) {
-      return 'w-4 h-4 bg-transparent border border-gray-400 hover:border-primary';
+      return 'w-4 h-4 bg-transparent border-2 border-gray-400 hover:border-primary dark:border-gray-500 dark:hover:border-primary';
     }
     
     const severityOption = painSeverityOptions.find(option => option.value === symptom.severity);
@@ -26,7 +26,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
     const colorClass = symptom.severity === 'severe' ? 'bg-red-500' : 
                        symptom.severity === 'moderate' ? 'bg-orange-500' : 'bg-yellow-400';
     
-    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white shadow-md`;
+    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white dark:border-gray-200 shadow-md`;
   };
   
   return (
@@ -49,15 +49,15 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
           />
         </TooltipTrigger>
         <TooltipContent side="right" className="z-50 max-w-[220px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
-          <p className="font-semibold text-foreground">{region.name}</p>
+          <p className="font-semibold text-foreground dark:text-white">{region.name}</p>
           {region.description && (
-            <p className="text-xs text-muted-foreground mt-1">{region.description}</p>
+            <p className="text-xs text-muted-foreground dark:text-gray-300 mt-1">{region.description}</p>
           )}
           {symptom ? (
             <div className="mt-2 space-y-1">
-              <p className="text-sm font-medium text-foreground">Reported Symptoms:</p>
-              <p className="text-xs"><span className="font-medium">Type:</span> {symptom.painType}</p>
-              <p className="text-xs">
+              <p className="text-sm font-medium text-foreground dark:text-white">Reported Symptoms:</p>
+              <p className="text-xs dark:text-gray-300"><span className="font-medium">Type:</span> {symptom.painType}</p>
+              <p className="text-xs dark:text-gray-300">
                 <span className="font-medium">Severity:</span> 
                 <span className={`ml-1 ${
                   symptom.severity === 'severe' ? 'text-red-500 font-semibold' : 
@@ -66,10 +66,10 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
                   {symptom.severity}
                 </span>
               </p>
-              <p className="text-xs mt-1 text-muted-foreground">{symptom.description}</p>
+              <p className="text-xs mt-1 text-muted-foreground dark:text-gray-400">{symptom.description}</p>
             </div>
           ) : (
-            <p className="text-xs mt-1 italic text-muted-foreground">Click to add symptoms</p>
+            <p className="text-xs mt-1 italic text-muted-foreground dark:text-gray-400">Click to add symptoms</p>
           )}
         </TooltipContent>
       </Tooltip>
