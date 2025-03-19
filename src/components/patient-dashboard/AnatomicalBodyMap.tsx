@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleAlert, ZoomIn, ZoomOut, Info, Dumbbell, Activity } from 'lucide-react';
+import { CircleAlert, ZoomIn, ZoomOut, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,7 +25,6 @@ interface MuscleFlexion {
 const AnatomicalBodyMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
-  const [showFlexionData, setShowFlexionData] = useState(false);
   
   const healthIssues: HealthIssue[] = [
     {
@@ -60,18 +59,6 @@ const AnatomicalBodyMap: React.FC = () => {
   
   const muscleFlexionData: MuscleFlexion[] = [
     {
-      muscle: 'Biceps',
-      flexionPercentage: 82,
-      status: 'healthy',
-      lastReading: '2 hours ago'
-    },
-    {
-      muscle: 'Quadriceps',
-      flexionPercentage: 65,
-      status: 'weak',
-      lastReading: '2 hours ago'
-    },
-    {
       muscle: 'Rotator Cuff',
       flexionPercentage: 45,
       status: 'weak',
@@ -81,6 +68,18 @@ const AnatomicalBodyMap: React.FC = () => {
       muscle: 'Erector Spinae',
       flexionPercentage: 30,
       status: 'overworked',
+      lastReading: '2 hours ago'
+    },
+    {
+      muscle: 'Quadriceps',
+      flexionPercentage: 65,
+      status: 'weak',
+      lastReading: '2 hours ago'
+    },
+    {
+      muscle: 'Biceps',
+      flexionPercentage: 72,
+      status: 'healthy',
       lastReading: '2 hours ago'
     }
   ];
@@ -95,10 +94,6 @@ const AnatomicalBodyMap: React.FC = () => {
   
   const handleIssueClick = (issue: HealthIssue) => {
     setSelectedIssue(issue === selectedIssue ? null : issue);
-  };
-  
-  const toggleFlexionData = () => {
-    setShowFlexionData(!showFlexionData);
   };
   
   const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
@@ -139,10 +134,6 @@ const AnatomicalBodyMap: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-1">
-          <Button variant="outline" size="sm" onClick={toggleFlexionData}>
-            <Dumbbell className="h-4 w-4 mr-1" />
-            <span className="text-xs">{showFlexionData ? 'Hide' : 'Show'} Flexion</span>
-          </Button>
           <Button variant="outline" size="sm" onClick={handleZoomOut}>
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -153,13 +144,13 @@ const AnatomicalBodyMap: React.FC = () => {
       </CardHeader>
       <CardContent className="relative">
         <div 
-          className="relative w-full h-[400px] flex items-center justify-center overflow-hidden"
+          className="relative w-full h-[350px] flex items-center justify-center overflow-hidden"
           style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
         >
           <img 
             src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
             alt="Muscular system anatomical model" 
-            className="h-full max-h-[390px] w-auto object-contain"
+            className="h-full max-h-[340px] w-auto object-contain"
           />
           
           <TooltipProvider>
@@ -188,43 +179,40 @@ const AnatomicalBodyMap: React.FC = () => {
           </TooltipProvider>
         </div>
         
-        {showFlexionData && (
-          <div className="mt-4 border rounded-md p-3 bg-card">
-            <div className="flex items-center mb-2">
-              <Activity className="h-4 w-4 mr-1.5 text-primary" />
-              <h3 className="text-sm font-semibold">Muscle Flexion Readings</h3>
-              <span className="text-xs text-muted-foreground ml-2">Last updated: {muscleFlexionData[0].lastReading}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {muscleFlexionData.map((item, index) => (
-                <div key={index} className="border p-2 rounded-md bg-background">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium">{item.muscle}</span>
-                      <Badge className="ml-2 text-xs" variant="outline">
-                        <span className={getFlexionStatusColor(item.status)}>{item.status}</span>
-                      </Badge>
-                    </div>
-                    <div className="text-sm font-bold">{item.flexionPercentage}%</div>
-                  </div>
-                  <Progress 
-                    value={item.flexionPercentage} 
-                    className="h-2" 
-                    indicatorClassName={getFlexionProgressColor(item.status)}
-                  />
-                  <div className="flex items-center mt-2">
-                    <Info className="h-3 w-3 text-muted-foreground mr-1" />
-                    <span className="text-xs text-muted-foreground">
-                      {item.status === 'weak' && 'Strength training recommended'}
-                      {item.status === 'overworked' && 'Rest and recovery needed'}
-                      {item.status === 'healthy' && 'Optimal performance'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="mt-4 border rounded-md p-3 bg-card">
+          <div className="flex items-center mb-2">
+            <Activity className="h-4 w-4 mr-1.5 text-primary" />
+            <h3 className="text-sm font-semibold">Muscle Flexion Assessment</h3>
+            <span className="text-xs text-muted-foreground ml-2">Last updated: {muscleFlexionData[0].lastReading}</span>
           </div>
-        )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {muscleFlexionData.map((item, index) => (
+              <div key={index} className="border p-2 rounded-md bg-background">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium">{item.muscle}</span>
+                    <Badge className="ml-2 text-xs" variant="outline">
+                      <span className={getFlexionStatusColor(item.status)}>{item.status}</span>
+                    </Badge>
+                  </div>
+                  <div className="text-sm font-bold">{item.flexionPercentage}%</div>
+                </div>
+                <Progress 
+                  value={item.flexionPercentage} 
+                  className="h-2" 
+                  indicatorClassName={getFlexionProgressColor(item.status)}
+                />
+                <div className="flex items-center mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    {item.status === 'weak' && 'Strength training recommended'}
+                    {item.status === 'overworked' && 'Rest and recovery needed'}
+                    {item.status === 'healthy' && 'Optimal performance'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         
         {selectedIssue && (
           <div className="absolute bottom-3 left-3 right-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
