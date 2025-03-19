@@ -102,6 +102,7 @@
   @apply relative mx-auto inline-block;
   height: 450px;
   perspective: 1000px; /* Improves 3D transforms */
+  transition: transform 0.3s ease-out;
 }
 
 .anatomy-map-image {
@@ -141,4 +142,42 @@
   opacity: 1;
   transform: translate(-50%, -50%) scale(1.1);
   box-shadow: 0 0 12px rgba(255, 86, 48, 0.5);
+}
+
+/* Create a floating effect on active hotspots */
+@keyframes float {
+  0% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-5px);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+}
+
+.hotspot-active {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Add a slight shadow effect to make hotspots stand out */
+.hotspot-marker {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a subtle highlight to hotspots */
+.hotspot-marker::after {
+  content: '';
+  @apply absolute rounded-full w-full h-full;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+/* Ensure the anatomy container is responsive */
+.anatomy-position-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

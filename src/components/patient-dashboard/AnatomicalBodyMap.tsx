@@ -45,15 +45,15 @@ const AnatomicalBodyMap: React.FC = memo(() => {
         </div>
       </CardHeader>
       <CardContent className="pt-0 pb-4 px-4">
-        <div className="anatomy-position-container">
+        <div className="anatomy-position-container relative">
           <div 
-            className="anatomy-map-wrapper"
+            className="anatomy-map-wrapper mx-auto"
             style={{ transform: `scale(${zoom})` }}
           >
             <img 
               src="/lovable-uploads/cc5c1cf4-bddf-4fc8-bc1a-6a1387ebbdf8.png" 
               alt="Human muscular anatomy" 
-              className="anatomy-map-image"
+              className="anatomy-map-image max-h-[450px] w-auto object-contain"
             />
             
             {isLoaded && healthIssues.map((issue) => (

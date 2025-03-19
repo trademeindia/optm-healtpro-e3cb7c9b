@@ -10,7 +10,7 @@ export const useAnatomicalMap = () => {
   // Mark the map as loaded
   useEffect(() => {
     const img = new Image();
-    img.src = '/lovable-uploads/ae7aa427-882b-48d7-99bc-d5ac420d22df.png';
+    img.src = '/lovable-uploads/cc5c1cf4-bddf-4fc8-bc1a-6a1387ebbdf8.png';
     img.onload = () => setIsLoaded(true);
     
     return () => {
@@ -36,7 +36,7 @@ export const useAnatomicalMap = () => {
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 26, y: 19 },
+      location: { x: 25, y: 17 },
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -72,7 +72,7 @@ export const useAnatomicalMap = () => {
     {
       id: '3',
       name: 'Hamstring Strain',
-      location: { x: 50, y: 58 },
+      location: { x: 49, y: 58 },
       severity: 'low',
       description: 'Mild pull in the hamstring muscle fibers with some discomfort during flexion.',
       muscleGroup: 'Hamstrings',
@@ -90,7 +90,7 @@ export const useAnatomicalMap = () => {
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 73, y: 30 },
+      location: { x: 72, y: 29 },
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -108,7 +108,7 @@ export const useAnatomicalMap = () => {
     {
       id: '5',
       name: 'Quadriceps Tendinitis',
-      location: { x: 48, y: 65 },
+      location: { x: 50, y: 65 },
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
       muscleGroup: 'Quadriceps',
@@ -121,6 +121,42 @@ export const useAnatomicalMap = () => {
         'Rest from high-impact activities',
         'Ice therapy',
         'Strengthening exercises'
+      ]
+    },
+    {
+      id: '6',
+      name: 'Neck Muscle Tension',
+      location: { x: 50, y: 9 },
+      severity: 'medium',
+      description: 'Tension in the trapezius and levator scapulae muscles causing neck stiffness.',
+      muscleGroup: 'Neck Muscles',
+      symptoms: [
+        'Stiffness in neck',
+        'Limited range of motion',
+        'Headaches originating from neck'
+      ],
+      recommendedActions: [
+        'Gentle neck stretches',
+        'Heat therapy',
+        'Improve desk ergonomics'
+      ]
+    },
+    {
+      id: '7',
+      name: 'Calf Strain',
+      location: { x: 50, y: 78 },
+      severity: 'low',
+      description: 'Mild strain in the gastrocnemius muscle with some discomfort during walking.',
+      muscleGroup: 'Calf Muscles',
+      symptoms: [
+        'Tightness in calf',
+        'Mild pain when walking',
+        'Tenderness to touch'
+      ],
+      recommendedActions: [
+        'Rest and elevation',
+        'Gentle stretching',
+        'Compression wrap if swollen'
       ]
     }
   ];
@@ -161,6 +197,20 @@ export const useAnatomicalMap = () => {
       status: 'weak',
       lastReading: '2 hours ago',
       relatedIssues: ['3']
+    },
+    {
+      muscle: 'Neck Muscles',
+      flexionPercentage: 40,
+      status: 'weak',
+      lastReading: '2 hours ago',
+      relatedIssues: ['6']
+    },
+    {
+      muscle: 'Calf Muscles',
+      flexionPercentage: 70,
+      status: 'healthy',
+      lastReading: '2 hours ago',
+      relatedIssues: ['7']
     }
   ];
   
