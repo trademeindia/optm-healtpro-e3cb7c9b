@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
 
-// Import new enhanced components
+// Import components
 import PatientProfileCard from '@/components/patient-dashboard/PatientProfileCard';
 import EnhancedMetricsOverview from '@/components/patient-dashboard/EnhancedMetricsOverview';
 import EnhancedBiologicalAgeMeter from '@/components/patient-dashboard/EnhancedBiologicalAgeMeter';
@@ -16,6 +16,7 @@ import EnhancedAppointmentsList from '@/components/patient-dashboard/EnhancedApp
 import FitnessDataCharts from '@/components/dashboard/FitnessDataCharts';
 import AnatomicalBodyMap from '@/components/patient-dashboard/AnatomicalBodyMap';
 import RealTimeHealthMetrics from '@/components/patient-dashboard/RealTimeHealthMetrics';
+import AIHealthInsights from '@/components/patient-dashboard/AIHealthInsights';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,9 @@ const PatientDashboard: React.FC = () => {
                   
                   {/* Real-time health metrics */}
                   <RealTimeHealthMetrics metrics={healthMetrics} />
+                  
+                  {/* NEW: AI Health Insights */}
+                  <AIHealthInsights fitnessData={fitnessData} />
                   
                   {/* Health metrics and biological age */}
                   <div className="grid md:grid-cols-3 gap-4">
