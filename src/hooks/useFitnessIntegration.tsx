@@ -13,9 +13,34 @@ export interface FitnessProvider {
   metrics: string[]; // Add the required metrics property
 }
 
+export interface FitnessData {
+  steps: { 
+    data: Array<{timestamp: string; value: number}>;
+    lastSync: Date | null;
+  };
+  heartRate: { 
+    data: Array<{timestamp: string; value: number}>;
+    lastSync: Date | null;
+  };
+  sleep: { 
+    data: Array<{timestamp: string; value: number}>;
+    lastSync: Date | null;
+  };
+  calories: { 
+    data: Array<{timestamp: string; value: number}>;
+    lastSync: Date | null;
+  };
+}
+
 const useFitnessIntegration = () => {
   const [providers, setProviders] = useState<FitnessProvider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fitnessData, setFitnessData] = useState<FitnessData>({
+    steps: { data: [], lastSync: null },
+    heartRate: { data: [], lastSync: null },
+    sleep: { data: [], lastSync: null },
+    calories: { data: [], lastSync: null }
+  });
   const { user } = useAuth();
 
   const fetchConnectedProviders = useCallback(async () => {
@@ -113,6 +138,117 @@ const useFitnessIntegration = () => {
     }
   }, [user?.id]);
 
+  // Add a function to fetch fitness data from a provider
+  const fetchProviderData = useCallback(async (providerId: string): Promise<boolean> => {
+    if (!user?.id) return false;
+    
+    // For demo users, generate mock data
+    if (user.id.startsWith('demo-')) {
+      setFitnessData(prev => {
+        // Generate random steps data for the last 7 days
+        const stepsData = Array(7).fill(0).map((_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - 6 + i);
+          return {
+            timestamp: date.toISOString(),
+            value: 5000 + Math.floor(Math.random() * 5000) // Random steps between 5000-10000
+          };
+        });
+        
+        // Generate random heart rate data
+        const heartRateData = Array(24).fill(0).map((_, i) => {
+          const date = new Date();
+          date.setHours(date.getHours() - 23 + i);
+          return {
+            timestamp: date.toISOString(),
+            value: 60 + Math.floor(Math.random() * 40) // Random HR between 60-100
+          };
+        });
+        
+        // Mock calorie data
+        const caloriesData = Array(7).fill(0).map((_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - 6 + i);
+          return {
+            timestamp: date.toISOString(),
+            value: 1800 + Math.floor(Math.random() * 800) // Random calories between 1800-2600
+          };
+        });
+        
+        return {
+          steps: { data: stepsData, lastSync: new Date() },
+          heartRate: { data: heartRateData, lastSync: new Date() },
+          calories: { data: caloriesData, lastSync: new Date() },
+          sleep: prev.sleep // Keep existing sleep data
+        };
+      });
+      
+      return true;
+    }
+    
+    try {
+      // For real implementation, fetch data from Supabase Edge Function
+      if (providerId === 'google_fit') {
+        const { data, error } = await supabase
+          .from('fitness_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('source', 'google_fit')
+          .order('start_time', { ascending: false });
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          // Process and transform the data
+          const stepsData = data
+            .filter(item => item.data_type === 'steps')
+            .map(item => ({
+              timestamp: item.start_time,
+              value: item.value
+            }));
+            
+          const heartRateData = data
+            .filter(item => item.data_type === 'heart_rate')
+            .map(item => ({
+              timestamp: item.start_time,
+              value: item.value
+            }));
+            
+          const caloriesData = data
+            .filter(item => item.data_type === 'calories')
+            .map(item => ({
+              timestamp: item.start_time,
+              value: item.value
+            }));
+            
+          setFitnessData({
+            steps: { 
+              data: stepsData,
+              lastSync: new Date()
+            },
+            heartRate: { 
+              data: heartRateData,
+              lastSync: new Date()
+            },
+            calories: { 
+              data: caloriesData,
+              lastSync: new Date()
+            },
+            sleep: { 
+              data: [], // Not implemented yet
+              lastSync: null
+            }
+          });
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error fetching provider data:', error);
+      return false;
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     fetchConnectedProviders();
   }, [fetchConnectedProviders]);
@@ -141,6 +277,10 @@ const useFitnessIntegration = () => {
       
       toast.success(`Demo ${providerId.replace('_', ' ')} connected successfully`);
       setIsLoading(false);
+      
+      // Generate mock data for the newly connected provider
+      await fetchProviderData(providerId);
+      
       return true;
     }
 
@@ -234,6 +374,9 @@ const useFitnessIntegration = () => {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Fetch new mock data
+      await fetchProviderData(providerId);
+      
       // Update the provider state with a new sync time
       setProviders(prev => 
         prev.map(provider => 
@@ -279,8 +422,9 @@ const useFitnessIntegration = () => {
 
       if (error) throw error;
 
-      // Fetch the updated providers
+      // Fetch the updated providers and data
       await fetchConnectedProviders();
+      await fetchProviderData(providerId);
       
       toast.success(`${providerId.replace('_', ' ')} data refreshed successfully`);
       return true;
@@ -293,14 +437,6 @@ const useFitnessIntegration = () => {
     }
   };
 
-  // Add a mock fitnessData property for the usePatientDashboard hook
-  const fitnessData = {
-    steps: { data: [], lastSync: null },
-    heartRate: { data: [], lastSync: null },
-    sleep: { data: [], lastSync: null },
-    calories: { data: [], lastSync: null }
-  };
-
   return {
     providers,
     isLoading,
@@ -308,7 +444,7 @@ const useFitnessIntegration = () => {
     disconnectProvider,
     refreshProviderData,
     refreshProviders: fetchConnectedProviders,
-    fitnessData // Add the missing fitnessData property
+    fitnessData // Add the fitnessData property
   };
 };
 
