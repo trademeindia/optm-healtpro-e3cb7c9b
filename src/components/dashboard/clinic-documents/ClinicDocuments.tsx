@@ -18,8 +18,13 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
   onViewAll,
   patientId
 }) => {
-  const { documents, handleDeleteDocument } = useDocumentsStorage(patientId);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { 
+    documents, 
+    searchTerm, 
+    setSearchTerm,
+    deleteDocument
+  } = useDocumentsStorage(patientId);
+  
   const [displayDocuments, setDisplayDocuments] = useState(propDocuments || documents);
 
   useEffect(() => {
@@ -43,8 +48,8 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
   };
 
   const filteredDocuments = displayDocuments.filter(doc => 
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    doc.type.toLowerCase().includes(searchQuery.toLowerCase())
+    doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    doc.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -62,20 +67,20 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
       <CardContent>
         <div className="space-y-4">
           <DocumentSearch 
-            searchQuery={searchQuery} 
-            onSearchChange={setSearchQuery} 
+            searchQuery={searchTerm} 
+            onSearchChange={setSearchTerm} 
           />
           
           {filteredDocuments.length > 0 ? (
             <DocumentsList 
               documents={filteredDocuments}
               onEdit={handleEditDocument}
-              onDelete={handleDeleteDocument}
+              onDelete={deleteDocument}
               onViewAll={onViewAll}
             />
           ) : (
             <EmptyDocumentsState 
-              searchQuery={searchQuery}
+              searchQuery={searchTerm}
               onUpload={handleAddDocument}
             />
           )}
