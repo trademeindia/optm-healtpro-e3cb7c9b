@@ -67,10 +67,10 @@ export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData 
       const stages = stageData.metadata.sleepStages as Record<string, number>;
       sleepStages.push({
         date,
-        deep: stages.deep || 0,
-        light: stages.light || 0,
-        rem: stages.rem || 0,
-        awake: stages.awake || 0
+        deep: Number(stages.deep) || 0,
+        light: Number(stages.light) || 0,
+        rem: Number(stages.rem) || 0,
+        awake: Number(stages.awake) || 0
       });
     }
   });

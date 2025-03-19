@@ -8,10 +8,10 @@ interface SleepDurationChartProps {
 }
 
 const SleepDurationChart: React.FC<SleepDurationChartProps> = ({ dailySleep }) => {
-  // Prepare chart data to use the 'value' field instead of 'sleepMinutes'
+  // Prepare chart data to use the 'value' field as 'sleepMinutes'
   const chartData = dailySleep.map(sleep => ({
-    ...sleep,
-    sleepMinutes: sleep.value // Map value to sleepMinutes for the chart
+    date: sleep.date,
+    sleepMinutes: sleep.value
   }));
 
   return (

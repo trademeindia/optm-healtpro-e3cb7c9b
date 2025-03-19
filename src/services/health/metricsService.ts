@@ -1,136 +1,122 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { HealthMetric, HealthMetricType, TimeRange } from './types';
 
-/**
- * Service for retrieving and managing health metrics
- */
-export class HealthMetricsService {
-  // Cache for quick access to the latest metrics
-  private metricCache: Map<string, HealthMetric> = new Map();
-  
+// Mock data service for health metrics
+export const healthDataService = {
   /**
-   * Get health metrics for a specific user
+   * Get the latest metric of a specific type for a user
    */
-  public async getHealthMetrics(
-    userId: string,
-    metricType?: HealthMetricType,
-    timeRange: TimeRange = 'week',
-    limit: number = 100
-  ): Promise<HealthMetric[]> {
-    try {
-      let query = supabase
-        .from('fitness_data')
-        .select('*')
-        .eq('user_id', userId)
-        .order('start_time', { ascending: false })
-        .limit(limit);
-        
-      if (metricType) {
-        query = query.eq('data_type', metricType);
-      }
-      
-      // Apply time range filter
-      const now = new Date();
-      let startDate = new Date();
-      
-      switch (timeRange) {
-        case 'day':
-          startDate.setDate(now.getDate() - 1);
-          break;
-        case 'week':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          startDate.setMonth(now.getMonth() - 1);
-          break;
-        case 'year':
-          startDate.setFullYear(now.getFullYear() - 1);
-          break;
-      }
-      
-      query = query.gte('start_time', startDate.toISOString());
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        throw error;
-      }
-      
-      return data.map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        type: item.data_type as HealthMetricType,
-        value: Number(item.value),
-        unit: item.unit,
-        timestamp: item.start_time,
-        source: item.source,
-        metadata: item.metadata ? (item.metadata as Record<string, any>) : undefined
-      })) as HealthMetric[];
-    } catch (error) {
-      console.error('Error fetching health metrics:', error);
-      return [];
-    }
-  }
-  
-  /**
-   * Get the latest value for a specific metric
-   */
-  public async getLatestMetric(
-    userId: string,
-    metricType: HealthMetricType
-  ): Promise<HealthMetric | null> {
-    try {
-      // Check cache first
-      const cacheKey = `${userId}:${metricType}`;
-      if (this.metricCache.has(cacheKey)) {
-        return this.metricCache.get(cacheKey) || null;
-      }
-      
-      const { data, error } = await supabase
-        .from('fitness_data')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('data_type', metricType)
-        .order('start_time', { ascending: false })
-        .limit(1);
-        
-      if (error) {
-        throw error;
-      }
-      
-      if (data && data.length > 0) {
-        const metric: HealthMetric = {
-          id: data[0].id,
-          userId: data[0].user_id,
-          type: data[0].data_type as HealthMetricType,
-          value: Number(data[0].value),
-          unit: data[0].unit,
-          timestamp: data[0].start_time,
-          source: data[0].source,
-          metadata: data[0].metadata ? (data[0].metadata as Record<string, any>) : undefined
-        };
-        
-        // Cache the result
-        this.metricCache.set(cacheKey, metric);
-        
-        return metric;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error(`Error fetching latest ${metricType} metric:`, error);
-      return null;
-    }
-  }
+  getLatestMetric: async (userId: string, type: HealthMetricType): Promise<HealthMetric | null> => {
+    // This would normally fetch from an API, but for now we're using mock data
+    const metrics = await healthDataService.getHealthMetrics(userId, type, 'day');
+    return metrics.length > 0 ? metrics[0] : null;
+  },
 
   /**
-   * Update cache with new metric data
+   * Get health metrics for a specific type and time range
    */
-  public updateCache(metric: HealthMetric): void {
-    const cacheKey = `${metric.userId}:${metric.type}`;
-    this.metricCache.set(cacheKey, metric);
+  getHealthMetrics: async (
+    userId: string, 
+    type: HealthMetricType, 
+    timeRange: TimeRange
+  ): Promise<HealthMetric[]> => {
+    // In a real app, this would fetch from an API based on the time range
+    // For now, we're returning mock data
+    
+    // Generate different amounts of data based on time range
+    const daysToGenerate = 
+      timeRange === 'day' ? 1 : 
+      timeRange === 'week' ? 7 : 
+      timeRange === 'month' ? 30 : 365;
+    
+    // Generate mock data
+    const metrics: HealthMetric[] = [];
+    const now = new Date();
+    
+    for (let i = 0; i < daysToGenerate; i++) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      
+      // Generate values appropriate for each metric type
+      let value = 0;
+      let unit = '';
+      let metadata = {};
+      
+      switch (type) {
+        case 'steps':
+          value = Math.floor(Math.random() * 5000) + 3000; // 3000-8000 steps
+          unit = 'steps';
+          break;
+        case 'heart_rate':
+          value = Math.floor(Math.random() * 30) + 60; // 60-90 bpm
+          unit = 'bpm';
+          metadata = {
+            min: value - Math.floor(Math.random() * 10),
+            max: value + Math.floor(Math.random() * 15),
+            resting: value - Math.floor(Math.random() * 5)
+          };
+          break;
+        case 'calories':
+          value = Math.floor(Math.random() * 500) + 1500; // 1500-2000 calories
+          unit = 'kcal';
+          break;
+        case 'distance':
+          value = Math.random() * 5 + 1; // 1-6 km
+          unit = 'km';
+          break;
+        case 'sleep':
+          value = Math.floor(Math.random() * 120) + 360; // 360-480 minutes (6-8 hours)
+          unit = 'min';
+          
+          // Add sleep stages data for sleep metrics
+          const totalSleep = value;
+          const deep = Math.floor(totalSleep * (Math.random() * 0.1 + 0.15)); // 15-25% deep sleep
+          const rem = Math.floor(totalSleep * (Math.random() * 0.1 + 0.2)); // 20-30% REM
+          const awake = Math.floor(totalSleep * (Math.random() * 0.05 + 0.05)); // 5-10% awake
+          const light = totalSleep - deep - rem - awake; // Remaining is light sleep
+          
+          metadata = {
+            sleepStages: {
+              deep,
+              light,
+              rem,
+              awake
+            },
+            bedtime: '22:30',
+            wakeup: '06:30'
+          };
+          break;
+        case 'workout':
+          const workoutTypes = ['Running', 'Cycling', 'Swimming', 'Strength', 'Yoga', 'HIIT'];
+          const workoutType = workoutTypes[Math.floor(Math.random() * workoutTypes.length)];
+          
+          value = 1; // One workout
+          unit = 'session';
+          metadata = {
+            type: workoutType,
+            duration: Math.floor(Math.random() * 30) + 30, // 30-60 minutes
+            calories: Math.floor(Math.random() * 300) + 200, // 200-500 calories
+            distance: Math.random() * 5 + 2, // 2-7 km
+            intensity: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)]
+          };
+          break;
+      }
+      
+      metrics.push({
+        id: `${type}-${i}`,
+        userId,
+        type,
+        value,
+        unit,
+        timestamp: date.toISOString(),
+        source: 'health_app',
+        metadata
+      });
+    }
+    
+    // Sort by most recent first
+    return metrics.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   }
-}
-
-export const healthMetricsService = new HealthMetricsService();
+};

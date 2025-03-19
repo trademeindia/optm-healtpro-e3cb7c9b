@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
-import { HealthMetric, HealthMetricType, TimeRange, healthDataService } from '@/services/health';
+import { HealthMetric, HealthMetricType, TimeRange } from '@/services/health/types';
+import { healthDataService } from '@/services/health/metricsService';
 
 export const useMetricsData = (userId: string | undefined, timeRange: TimeRange) => {
   // Store the latest value for each metric type
