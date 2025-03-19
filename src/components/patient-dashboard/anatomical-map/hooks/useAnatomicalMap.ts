@@ -11,7 +11,7 @@ export const useAnatomicalMap = () => {
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 23, y: 21 }, // Updated to correct shoulder position
+      location: { x: 27, y: 21 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -29,7 +29,7 @@ export const useAnatomicalMap = () => {
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 39 }, // Updated to correct lower back position
+      location: { x: 50, y: 42 }, // Adjusted for better alignment
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
       muscleGroup: 'Erector Spinae',
@@ -47,7 +47,7 @@ export const useAnatomicalMap = () => {
     {
       id: '3',
       name: 'Quadriceps Tendinitis',
-      location: { x: 48, y: 65 }, // Updated to correct upper thigh position
+      location: { x: 43, y: 65 }, // Adjusted for better alignment
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
       muscleGroup: 'Quadriceps',
@@ -65,7 +65,7 @@ export const useAnatomicalMap = () => {
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 77, y: 30 }, // Updated to correct bicep position
+      location: { x: 73, y: 30 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -83,7 +83,7 @@ export const useAnatomicalMap = () => {
     {
       id: '5',
       name: 'Hamstring Strain',
-      location: { x: 52, y: 77 }, // Updated to correct hamstring position
+      location: { x: 56, y: 77 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Partial tear in the hamstring muscle fibers causing pain in the back of the thigh.',
       muscleGroup: 'Hamstrings',

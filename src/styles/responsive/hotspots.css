@@ -103,7 +103,8 @@
 
 /* Better positioning container */
 .anatomy-position-container {
-  @apply relative w-full h-full;
+  @apply relative w-full;
+  max-width: 500px;
 }
 
 /* Improved container for map image and hotspots */
