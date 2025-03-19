@@ -1,148 +1,58 @@
 
-/* Hotspot positioning and alignment styles */
-.hotspot-marker {
-  @apply absolute flex items-center justify-center cursor-pointer z-10;
-  transform: translate(-50%, -50%); /* Center the hotspot on its position */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease-out;
-  border-radius: 50%;
-  backdrop-filter: blur(1px);
-  opacity: 0.9; /* More visible by default */
-  will-change: transform, opacity; /* Optimize for animations */
-}
+/* This file should be created if it doesn't exist */
+/* Hotspot styling for anatomical map */
 
-/* Pulsing animation for active hotspots */
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+@layer components {
+  .hotspot-marker {
+    @apply absolute cursor-pointer rounded-full shadow-md border-2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-30;
   }
-  70% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 5px rgba(33, 150, 243, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
-  }
-}
-
-.hotspot-pulse {
-  animation: pulse-ring 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* Improved glow effect */
-.hotspot-marker::before {
-  content: '';
-  @apply absolute inset-0 rounded-full opacity-30;
-  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
-  z-index: -1;
-  transform: scale(1.1);
-}
-
-/* Adjusted size classes for better visibility */
-.hotspot-size-sm {
-  @apply w-6 h-6;
-}
-
-.hotspot-size-md {
-  @apply w-7 h-7;
-}
-
-.hotspot-size-lg {
-  @apply w-8 h-8;
-}
-
-/* Enhanced styling based on severity - using more visible colors */
-.hotspot-severity-low {
-  @apply bg-blue-500/90 border border-blue-300 text-white;
-}
-
-.hotspot-severity-medium {
-  @apply bg-blue-600/90 border border-blue-400 text-white;
-}
-
-.hotspot-severity-high {
-  @apply bg-blue-700/90 border border-blue-500 text-white;
-}
-
-.hotspot-active {
-  @apply ring-2 ring-white;
-  z-index: 40 !important;
-  opacity: 1; /* Fully opaque when active */
-  box-shadow: 0 0 10px rgba(33, 150, 243, 0.7);
-}
-
-/* Icon styling */
-.hotspot-icon {
-  @apply text-white drop-shadow-sm opacity-90 scale-90;
-}
-
-/* Enhanced label styling */
-.hotspot-label {
-  @apply absolute -bottom-7 left-1/2 -translate-x-1/2 bg-black/70 px-2 py-1 rounded whitespace-nowrap text-xs text-white;
-  min-width: 70px;
-  text-align: center;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
+  
   .hotspot-size-sm {
-    @apply w-5 h-5;
+    @apply h-3 w-3 md:h-4 md:w-4;
   }
   
   .hotspot-size-md {
-    @apply w-6 h-6;
+    @apply h-5 w-5 md:h-6 md:w-6;
   }
   
   .hotspot-size-lg {
-    @apply w-7 h-7;
+    @apply h-6 w-6 md:h-8 md:w-8;
   }
-
+  
+  .hotspot-severity-low {
+    @apply bg-yellow-400/80 border-yellow-400;
+  }
+  
+  .hotspot-severity-medium {
+    @apply bg-orange-400/80 border-orange-400;
+  }
+  
+  .hotspot-severity-high {
+    @apply bg-red-500/80 border-red-500;
+  }
+  
+  .hotspot-active {
+    @apply scale-125 z-40;
+  }
+  
+  .hotspot-pulse::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-current opacity-30 animate-pulse-light;
+  }
+  
   .hotspot-icon {
-    @apply scale-75;
+    @apply text-white opacity-70;
   }
-}
-
-/* Improved container for map image and hotspots */
-.anatomy-map-wrapper {
-  @apply relative mx-auto;
-  max-width: 500px;
-  min-height: 400px;
-  height: auto;
-  perspective: 1000px; /* Improves 3D transforms */
-}
-
-.anatomy-map-image {
-  @apply w-full h-auto max-h-full object-contain;
-  transform: translateZ(0); /* Hardware acceleration */
-}
-
-/* Enhanced tooltip styling */
-.hotspot-tooltip {
-  @apply z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg;
-  max-width: 250px !important;
-}
-
-/* Animation for new hotspots appearing */
-@keyframes hotspot-appear {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
+  
+  .hotspot-label {
+    @apply absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs whitespace-nowrap;
   }
-  100% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1);
+  
+  .anatomy-map-wrapper {
+    @apply relative transition-all duration-300 ease-in-out max-w-full mx-auto;
   }
-}
-
-.hotspot-new {
-  animation: hotspot-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Enhanced hover effect for better interactivity */
-.hotspot-marker:hover {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.1);
-  box-shadow: 0 0 12px rgba(33, 150, 243, 0.5);
+  
+  .anatomy-map-image {
+    @apply w-full h-auto max-h-[70vh] object-contain;
+  }
 }
