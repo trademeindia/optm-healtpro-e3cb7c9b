@@ -52,6 +52,26 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       return;
     }
 
+    // For demo users, simulate connection
+    if (user.id.startsWith('demo-')) {
+      setIsConnecting(true);
+      
+      // Simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate success
+      toast.success("Demo Google Fit connected successfully", {
+        description: "This is a simulated connection for the demo account."
+      });
+      
+      if (onConnected) {
+        onConnected();
+      }
+      
+      setIsConnecting(false);
+      return;
+    }
+
     setIsConnecting(true);
     try {
       // Use the edge function directly via Supabase - this is the core fix

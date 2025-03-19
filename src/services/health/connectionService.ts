@@ -11,6 +11,12 @@ export class ConnectionService {
    */
   public async hasGoogleFitConnected(userId: string): Promise<boolean> {
     try {
+      // For demo users, return a mocked connection state
+      if (userId?.startsWith('demo-')) {
+        // Return true for demo-patient-* users to simulate a connected account
+        return userId.includes('patient');
+      }
+      
       const { data, error } = await supabase
         .from('fitness_connections')
         .select('*')
@@ -34,6 +40,21 @@ export class ConnectionService {
    */
   public async getFitnessConnections(userId: string): Promise<FitnessConnection[]> {
     try {
+      // For demo users, return mock data
+      if (userId?.startsWith('demo-')) {
+        if (userId.includes('patient')) {
+          // Simulate a connected Google Fit account for demo patients
+          return [{
+            id: 'demo-connection-1',
+            userId: userId,
+            provider: 'google_fit',
+            isConnected: true,
+            lastSync: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+          }];
+        }
+        return [];
+      }
+      
       const { data, error } = await supabase
         .from('fitness_connections')
         .select('*')

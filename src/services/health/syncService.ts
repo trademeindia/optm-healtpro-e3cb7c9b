@@ -27,6 +27,13 @@ export class HealthSyncService {
     this.isSyncing = true;
     
     try {
+      // For demo users, just simulate a successful sync
+      if (userId.startsWith('demo-')) {
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return true;
+      }
+      
       // Get all connected fitness providers
       const { data: connections, error } = await supabase
         .from('fitness_connections')
