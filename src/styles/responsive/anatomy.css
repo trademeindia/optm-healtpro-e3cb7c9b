@@ -6,7 +6,6 @@
   min-height: 550px;
   position: relative;
   overflow: hidden;
-  background-color: white;
 }
 
 .anatomy-model-wrapper {
@@ -17,15 +16,6 @@
   justify-content: center !important;
   overflow: visible !important;
   transform-origin: center center !important;
-}
-
-.anatomy-map-wrapper {
-  width: 100%;
-  margin: 0 auto;
-  background-color: white;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .model-image {
@@ -46,7 +36,6 @@
   justify-content: center !important;
   overflow: visible !important;
   padding: 0 !important;
-  background-color: white;
 }
 
 /* Specific screen size adjustments for anatomy model */
@@ -111,60 +100,4 @@
     max-height: 70%;
     max-width: 70%;
   }
-}
-
-/* Add better visibility for the region markers */
-[data-testid^="region-marker"] {
-  z-index: 10;
-  opacity: 0.9;
-}
-
-[data-testid^="region-marker"]:hover {
-  opacity: 1;
-  z-index: 20;
-}
-
-/* Make the images more visible */
-img[alt*="anatomy"],
-img[alt*="Human body"] {
-  object-fit: contain;
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0 auto;
-  display: block;
-  background-color: white;
-}
-
-/* Ensure tabs content is visible */
-.tabs-content {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  height: auto !important;
-}
-
-/* Region marker styling */
-.region-marker {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  z-index: 5;
-}
-
-.region-marker:hover {
-  transform: translate(-50%, -50%) scale(1.3);
-  transition: transform 0.2s ease;
-}
-
-.region-marker-active {
-  background-color: #f56565;
-  border: 2px solid #e53e3e;
-}
-
-.region-marker-inactive {
-  background-color: #3182ce;
-  border: 2px solid #2b6cb0;
 }

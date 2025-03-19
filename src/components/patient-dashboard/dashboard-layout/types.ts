@@ -1,18 +1,5 @@
 
 export interface DashboardMainContentProps {
-  healthMetrics: any[]; // We keep this as any[] for DashboardMainContent
-  activityData: any;
-  treatmentTasks: any[];
-  upcomingAppointments: any[];
-  biologicalAge: number;
-  chronologicalAge: number;
-  hasConnectedApps: boolean;
-  onSyncData: () => Promise<void>;
-  handleConfirmAppointment?: (id: string) => void;
-  handleRescheduleAppointment?: (id: string) => void;
-}
-
-export interface ColumnProps {
   healthMetrics: {
     heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
     bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
@@ -45,3 +32,5 @@ export interface ColumnProps {
   handleConfirmAppointment?: (id: string) => void;
   handleRescheduleAppointment?: (id: string) => void;
 }
+
+export type ColumnProps = DashboardMainContentProps;
