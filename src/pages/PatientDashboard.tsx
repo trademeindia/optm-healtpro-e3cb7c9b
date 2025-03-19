@@ -7,14 +7,20 @@ import LeftColumn from '@/components/patient-dashboard/dashboard-layout/LeftColu
 import RightColumn from '@/components/patient-dashboard/dashboard-layout/RightColumn';
 import RecentAnatomyActivity from '@/components/patient-dashboard/RecentAnatomyActivity';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
+import { 
+  transformHealthMetrics, 
+  transformActivityData, 
+  transformTreatmentTasks, 
+  transformAppointments 
+} from '@/utils/dashboardDataAdapter';
 
 const PatientDashboard: React.FC = () => {
   const {
-    activityData,
+    activityData: rawActivityData,
     fitnessData,
-    treatmentTasks,
-    upcomingAppointments,
-    healthMetrics,
+    treatmentTasks: rawTreatmentTasks,
+    upcomingAppointments: rawAppointments,
+    healthMetrics: rawHealthMetrics,
     hasConnectedApps,
     biologicalAge,
     chronologicalAge,
@@ -22,6 +28,12 @@ const PatientDashboard: React.FC = () => {
     handleRescheduleAppointment,
     handleSyncAllData
   } = usePatientDashboard();
+
+  // Transform data to match the expected props format
+  const healthMetrics = transformHealthMetrics(rawHealthMetrics);
+  const activityData = transformActivityData(fitnessData);
+  const treatmentTasks = transformTreatmentTasks(rawTreatmentTasks);
+  const upcomingAppointments = transformAppointments(rawAppointments);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -53,10 +65,10 @@ const PatientDashboard: React.FC = () => {
               {/* Main Content (5 columns on md screens) */}
               <div className="md:col-span-6">
                 <DashboardMainContent 
-                  healthMetrics={healthMetrics}
-                  activityData={activityData}
-                  treatmentTasks={treatmentTasks}
-                  upcomingAppointments={upcomingAppointments}
+                  healthMetrics={rawHealthMetrics}
+                  activityData={rawActivityData}
+                  treatmentTasks={rawTreatmentTasks}
+                  upcomingAppointments={rawAppointments}
                   biologicalAge={biologicalAge}
                   chronologicalAge={chronologicalAge}
                   hasConnectedApps={hasConnectedApps}
@@ -68,18 +80,7 @@ const PatientDashboard: React.FC = () => {
               
               {/* Right Column (3 columns on md screens) */}
               <div className="md:col-span-3">
-                <RightColumn 
-                  healthMetrics={healthMetrics}
-                  activityData={activityData}
-                  treatmentTasks={treatmentTasks}
-                  upcomingAppointments={upcomingAppointments}
-                  biologicalAge={biologicalAge}
-                  chronologicalAge={chronologicalAge}
-                  hasConnectedApps={hasConnectedApps}
-                  onSyncData={handleSyncAllData}
-                  handleConfirmAppointment={handleConfirmAppointment}
-                  handleRescheduleAppointment={handleRescheduleAppointment}
-                />
+                <RightColumn />
               </div>
             </div>
           </div>
