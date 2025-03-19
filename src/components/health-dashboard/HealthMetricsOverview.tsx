@@ -1,17 +1,20 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useHealthData } from '@/hooks/health';
 import { HealthMetric } from '@/services/health';
 import { Activity, TrendingUp, Flame, Heart } from 'lucide-react';
 
 interface HealthMetricsOverviewProps {
+  metrics: Record<string, HealthMetric | null>;
+  isLoading: boolean;
   className?: string;
 }
 
-const HealthMetricsOverview: React.FC<HealthMetricsOverviewProps> = ({ className }) => {
-  const { metrics, isLoading } = useHealthData();
-  
+const HealthMetricsOverview: React.FC<HealthMetricsOverviewProps> = ({ 
+  metrics, 
+  isLoading, 
+  className 
+}) => {
   const steps = metrics.steps?.value || 0;
   const calories = metrics.calories?.value || 0;
   const heartRate = metrics.heart_rate?.value || 0;

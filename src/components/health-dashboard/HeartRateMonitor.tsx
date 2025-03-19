@@ -1,6 +1,6 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useHealthData } from '@/hooks/useHealthData';
 import { HealthMetric } from '@/services/health';
 import { Heart } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';

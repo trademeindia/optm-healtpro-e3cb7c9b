@@ -1,140 +1,133 @@
 
 import { HealthMetric } from '@/services/health';
 
-export interface SleepData {
+export interface SleepStage {
+  stage: string;
+  minutes: number;
+}
+
+export interface DailySleep {
   date: string;
-  duration: number;
-  quality: number;
-  deepSleep: number;
-  lightSleep: number;
-  remSleep: number;
-  awake: number;
+  durationMinutes: number;
+  qualityScore: number;
 }
 
 export interface ProcessedSleepData {
-  sleepData: SleepData[];
-  averageSleepHours: number;
-  averageSleepMinutesRemainder: number;
-  sleepQualityScore: number;
-  qualityText: { text: string; color: string };
+  dailySleep: DailySleep[];
+  sleepStages: SleepStage[];
 }
 
-/**
- * Calculate the sleep quality score (0-100)
- */
-export const calculateSleepQuality = (
-  deepSleepPercentage: number,
-  remSleepPercentage: number,
-  awakeTimePercentage: number
-): number => {
-  // Weight factors for sleep quality calculation
-  const deepSleepWeight = 0.5;
-  const remSleepWeight = 0.3;
-  const awakeTimeWeight = 0.2;
-  
-  // Calculate quality score (0-100)
-  // Deep sleep and REM sleep contribute positively, awake time contributes negatively
-  let score = 
-    (deepSleepPercentage * deepSleepWeight * 100) + 
-    (remSleepPercentage * remSleepWeight * 100) - 
-    (awakeTimePercentage * awakeTimeWeight * 100);
-  
-  // Ensure score is within 0-100 range
-  score = Math.max(0, Math.min(100, score));
-  
-  return Math.round(score);
+// Sleep stage names and colors for charts
+export const sleepStageNames = {
+  'deep': 'Deep Sleep',
+  'light': 'Light Sleep',
+  'rem': 'REM Sleep',
+  'awake': 'Awake'
+};
+
+export const sleepStageColors = {
+  'deep': '#3b82f6',  // blue
+  'light': '#22c55e', // green
+  'rem': '#8b5cf6',   // purple
+  'awake': '#f97316'  // orange
 };
 
 /**
- * Get a text description of sleep quality based on score
+ * Process raw sleep data into formats needed for visualization
  */
-export const getSleepQualityText = (score: number): { text: string; color: string } => {
-  if (score >= 85) return { text: 'Excellent', color: 'text-green-500' };
-  if (score >= 70) return { text: 'Good', color: 'text-green-400' };
-  if (score >= 50) return { text: 'Fair', color: 'text-yellow-500' };
-  if (score >= 30) return { text: 'Poor', color: 'text-orange-500' };
-  return { text: 'Very Poor', color: 'text-red-500' };
-};
-
-/**
- * Process sleep metrics into display-friendly format
- */
-export const processSleepData = (sleepMetrics: HealthMetric[]): ProcessedSleepData => {
-  const defaultResponse = {
-    sleepData: [],
-    averageSleepHours: 0,
-    averageSleepMinutesRemainder: 0,
-    sleepQualityScore: 0,
-    qualityText: { text: 'No Data', color: 'text-gray-500' }
-  };
-  
-  if (!sleepMetrics || sleepMetrics.length === 0) {
-    return defaultResponse;
+export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData => {
+  if (!sleepData || sleepData.length === 0) {
+    return {
+      dailySleep: [],
+      sleepStages: []
+    };
   }
-  
-  const sleepData: SleepData[] = sleepMetrics
-    .filter(metric => metric.metadata?.stages) // Ensure we have sleep stage data
-    .map(metric => {
-      const sleepDateStr = new Date(metric.timestamp).toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      
-      const sleepStages = metric.metadata?.stages || {};
-      const totalSleepMinutes = Number(metric.value);
-      
-      // Convert to hours for display
-      const durationHours = totalSleepMinutes / 60;
-      
-      // Calculate percentages for each sleep stage
-      const deepSleepMinutes = Number(sleepStages.deep || 0);
-      const lightSleepMinutes = Number(sleepStages.light || 0);
-      const remSleepMinutes = Number(sleepStages.rem || 0);
-      const awakeMinutes = Number(sleepStages.awake || 0);
-      
-      // Calculate sleep quality score
-      const deepSleepPercentage = deepSleepMinutes / totalSleepMinutes;
-      const remSleepPercentage = remSleepMinutes / totalSleepMinutes;
-      const awakeTimePercentage = awakeMinutes / totalSleepMinutes;
-      
-      const qualityScore = calculateSleepQuality(
-        deepSleepPercentage,
-        remSleepPercentage,
-        awakeTimePercentage
-      );
-      
-      return {
-        date: sleepDateStr,
-        duration: durationHours,
-        quality: qualityScore,
-        deepSleep: deepSleepMinutes,
-        lightSleep: lightSleepMinutes,
-        remSleep: remSleepMinutes,
-        awake: awakeMinutes
-      };
-    });
-  
-  // Calculate overall metrics
-  let totalSleepHours = 0;
-  let totalQualityScore = 0;
-  
-  sleepData.forEach(data => {
-    totalSleepHours += data.duration;
-    totalQualityScore += data.quality;
-  });
-  
-  const averageSleepHours = Math.floor(totalSleepHours / sleepData.length);
-  const averageSleepMinutesRemainder = Math.round(
-    (totalSleepHours / sleepData.length - averageSleepHours) * 60
+
+  // Sort data by date
+  const sortedData = [...sleepData].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
-  const sleepQualityScore = Math.round(totalQualityScore / sleepData.length);
-  const qualityText = getSleepQualityText(sleepQualityScore);
+
+  // Process daily sleep durations
+  const dailySleep: DailySleep[] = sortedData.map(metric => {
+    const date = new Date(metric.timestamp);
+    return {
+      date: date.toLocaleDateString(),
+      durationMinutes: metric.value,
+      qualityScore: metric.metadata?.quality || 0
+    };
+  });
+
+  // Process sleep stages if available
+  const sleepStages: SleepStage[] = [];
   
+  // Extract sleep stage data from metadata if available
+  sortedData.forEach(metric => {
+    if (metric.metadata?.stages) {
+      const stages = metric.metadata.stages;
+      
+      Object.entries(stages).forEach(([stage, minutes]) => {
+        const existingStage = sleepStages.find(s => s.stage === stage);
+        
+        if (existingStage) {
+          existingStage.minutes += Number(minutes);
+        } else {
+          sleepStages.push({
+            stage,
+            minutes: Number(minutes)
+          });
+        }
+      });
+    }
+  });
+
   return {
-    sleepData,
-    averageSleepHours,
-    averageSleepMinutesRemainder,
-    sleepQualityScore,
-    qualityText
+    dailySleep,
+    sleepStages
   };
+};
+
+/**
+ * Calculate average sleep duration in minutes
+ */
+export const calculateAverageSleep = (dailySleep: DailySleep[]): number => {
+  if (dailySleep.length === 0) return 0;
+  
+  const totalMinutes = dailySleep.reduce((sum, day) => sum + day.durationMinutes, 0);
+  return Math.round(totalMinutes / dailySleep.length);
+};
+
+/**
+ * Calculate sleep quality score based on stage distribution
+ */
+export const calculateSleepQuality = (sleepStages: SleepStage[]): number => {
+  if (sleepStages.length === 0) return 0;
+  
+  const totalMinutes = sleepStages.reduce((sum, stage) => sum + stage.minutes, 0);
+  if (totalMinutes === 0) return 0;
+  
+  // Weight different sleep stages by their importance for quality sleep
+  const deepSleepMinutes = sleepStages.find(s => s.stage === 'deep')?.minutes || 0;
+  const remSleepMinutes = sleepStages.find(s => s.stage === 'rem')?.minutes || 0;
+  const awakeTimes = sleepStages.find(s => s.stage === 'awake')?.minutes || 0;
+  
+  // Simple quality formula: deep sleep and REM are good, being awake is bad
+  const qualityScore = Math.min(100, Math.max(0, 
+    (deepSleepMinutes / totalMinutes) * 40 + 
+    (remSleepMinutes / totalMinutes) * 30 + 
+    (1 - (awakeTimes / totalMinutes)) * 30
+  ));
+  
+  return Math.round(qualityScore);
+};
+
+/**
+ * Get descriptive text for sleep quality score
+ */
+export const getSleepQualityText = (qualityScore: number): string => {
+  if (qualityScore >= 85) return 'Excellent';
+  if (qualityScore >= 70) return 'Good';
+  if (qualityScore >= 50) return 'Fair';
+  if (qualityScore >= 30) return 'Poor';
+  return 'Very Poor';
 };

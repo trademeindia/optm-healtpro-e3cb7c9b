@@ -2,28 +2,29 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useHealthData } from '@/hooks/health';
 import { FitnessConnection } from '@/services/health';
 import { RefreshCw } from 'lucide-react';
 
 interface HealthSyncProps {
+  connections: FitnessConnection[];
+  lastSyncTime: Date | null;
+  onManualSync: () => Promise<void>;
+  isSyncing: boolean;
   className?: string;
 }
 
-const HealthSync: React.FC<HealthSyncProps> = ({ className }) => {
-  const { 
-    isSyncing, 
-    lastSyncTime, 
-    syncData, 
-    hasGoogleFitConnected,
-    connections
-  } = useHealthData();
-  
+const HealthSync: React.FC<HealthSyncProps> = ({ 
+  connections, 
+  lastSyncTime, 
+  onManualSync, 
+  isSyncing,
+  className 
+}) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const handleSync = async () => {
     setIsRefreshing(true);
-    await syncData(true);
+    await onManualSync();
     setIsRefreshing(false);
   };
   
@@ -68,7 +69,7 @@ const HealthSync: React.FC<HealthSyncProps> = ({ className }) => {
         </div>
         <Button 
           onClick={handleSync} 
-          disabled={isSyncing || isRefreshing || !hasGoogleFitConnected}
+          disabled={isSyncing || isRefreshing}
         >
           <RefreshCw className="mr-2 h-4 w-4 animate-spin" style={{animationDuration: isSyncing || isRefreshing ? '1s' : '0s'}} />
           {isSyncing || isRefreshing ? 'Syncing...' : 'Sync Now'}

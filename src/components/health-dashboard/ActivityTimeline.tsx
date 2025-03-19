@@ -2,25 +2,32 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useHealthData } from '@/hooks/health';
-import { HealthMetric, HealthMetricType } from '@/services/health';
+import { HealthMetric, TimeRange } from '@/services/health';
 import { Activity, ChevronRight } from 'lucide-react';
 
 interface ActivityTimelineProps {
-  timeRange?: string;
+  stepsData: HealthMetric[];
+  caloriesData: HealthMetric[];
+  distanceData: HealthMetric[];
+  timeRange: TimeRange;
+  isLoading: boolean;
+  showDetails?: boolean;
 }
 
-const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ timeRange = 'week' }) => {
-  const { metricsHistory, isLoading } = useHealthData();
-  
+const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ 
+  stepsData, 
+  caloriesData, 
+  distanceData, 
+  timeRange,
+  isLoading,
+  showDetails = false
+}) => {
   // Combine relevant metric histories into a single activity array
   const activities: HealthMetric[] = React.useMemo(() => {
-    const steps = metricsHistory.steps || [];
-    const workouts = metricsHistory.workout || [];
-    
     // Combine and sort by timestamp
-    return [...steps, ...workouts].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  }, [metricsHistory]);
+    return [...stepsData, ...caloriesData, ...distanceData]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [stepsData, caloriesData, distanceData]);
   
   return (
     <Card>
@@ -30,7 +37,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ timeRange = 'week' 
           Activity Timeline
         </CardTitle>
         <CardDescription>
-          Recent activities and workouts
+          Recent activities for {timeRange} time range
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4">
@@ -45,26 +52,23 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ timeRange = 'week' 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">
-                      {activity.type === 'steps' ? 'Steps' : 'Workout'}
+                      {activity.type === 'steps' ? 'Steps' : 
+                       activity.type === 'calories' ? 'Calories' : 
+                       activity.type === 'distance' ? 'Distance' : 'Activity'}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(activity.timestamp).toLocaleString()}
                     </p>
-                    {activity.type === 'steps' && (
-                      <p className="text-sm">
-                        {activity.value} steps
-                      </p>
-                    )}
-                    {activity.type === 'workout' && (
-                      <p className="text-sm">
-                        {activity.value} {activity.unit}
-                      </p>
-                    )}
+                    <p className="text-sm">
+                      {activity.value} {activity.unit}
+                    </p>
                   </div>
-                  <Button size="sm" variant="outline">
-                    View Details
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  {showDetails && (
+                    <Button size="sm" variant="outline">
+                      View Details
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
