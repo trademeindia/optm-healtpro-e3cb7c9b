@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircleAlert, ZoomIn, ZoomOut } from 'lucide-react';
@@ -21,28 +22,28 @@ const AnatomicalBodyMap: React.FC = () => {
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 32, y: 20 },
+      location: { x: 42, y: 21 },
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.'
     },
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 47 },
+      location: { x: 49, y: 49 },
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.'
     },
     {
       id: '3',
       name: 'Quadriceps Tendinitis',
-      location: { x: 37, y: 65 },
+      location: { x: 45, y: 75 },
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.'
     },
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 30, y: 32 },
+      location: { x: 36, y: 33 },
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.'
     }
