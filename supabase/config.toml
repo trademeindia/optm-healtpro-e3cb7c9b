@@ -4,12 +4,3 @@
 # The project ID
 project_id = "xjxxuqqyjqzgmvtgrpgv"
 
-# Database schema definition
-[db]
-# Default schema to use for database operations
-schema = "public"
-
-# API configuration
-[api]
-# Port to run the API on
-port = 54321
