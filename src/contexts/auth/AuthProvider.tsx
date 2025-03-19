@@ -47,12 +47,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
+      
+      // If the user is signed out, make sure we clear the user state
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
     });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setUser]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
