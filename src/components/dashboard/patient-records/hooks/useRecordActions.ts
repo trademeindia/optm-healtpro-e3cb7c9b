@@ -1,139 +1,129 @@
-
-import { useState } from 'react';
-import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
-import { RecordFormData } from '../../patient-history/types';
+import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { RecordItem } from '../types';
+import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
 import { toast } from 'sonner';
-import { MedicalRecord } from '../types';
 
-export const useRecordActions = (
-  patientId?: string,
-  onRecordUpdated?: () => void,
-  setRecords?: React.Dispatch<React.SetStateAction<MedicalRecord[]>>
-) => {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [currentRecordType, setCurrentRecordType] = useState('');
-  const [recordForm, setRecordForm] = useState<RecordFormData>({
-    name: '',
-    date: '',
-    type: '',
-    notes: '',
-    file: null
-  });
+export const useRecordActions = (patientId: string) => {
+  const [sortField, setSortField] = useState<'date' | 'name'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [records, setRecords] = useState<RecordItem[]>([]);
+  const [reports, setReports] = useState<RecordItem[]>([]);
 
-  const handleAddRecord = (type: string) => {
-    setCurrentRecordType(type);
-    setIsAddDialogOpen(true);
-    
-    setRecordForm({
-      name: '',
-      date: new Date().toISOString().split('T')[0],
-      type: '',
-      notes: '',
-      file: null
-    });
-  };
+  const loadRecords = useCallback(() => {
+    try {
+      const storedRecords = getFromLocalStorage('patient_records') || [];
+      const patientRecords = storedRecords.filter((record: RecordItem) => record.patientId === patientId);
+      setRecords(patientRecords);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setRecordForm({
-      ...recordForm,
-      [e.target.name]: e.target.value
-    });
-  };
+      const storedReports = getFromLocalStorage('patient_reports') || [];
+      const patientReports = storedReports.filter((report: RecordItem) => report.patientId === patientId);
+      setReports(patientReports);
+    } catch (error) {
+      console.error('Error loading records:', error);
+      toast.error('Failed to load patient records');
+    }
+  }, [patientId]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setRecordForm({
-        ...recordForm,
-        file: e.target.files[0]
-      });
+  const handleSort = (field: 'date' | 'name') => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  const handleSelectChange = (value: string) => {
-    setRecordForm({
-      ...recordForm,
-      type: value
+  const sortItems = (items: RecordItem[]) => {
+    return [...items].sort((a, b) => {
+      if (sortField === 'date') {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      } else {
+        return sortDirection === 'asc'
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      }
     });
   };
 
-  const handleRecordSubmit = async () => {
+  const handleAddRecord = (record: Omit<RecordItem, 'id'>) => {
     try {
-      const recordId = uuidv4();
-      let fileId = null;
-      
-      if (recordForm.file) {
-        fileId = uuidv4();
-      }
-      
-      const newRecord: any = {
-        id: recordId,
-        patientId: patientId || 'default',
-        name: recordForm.name,
-        date: recordForm.date,
-        type: currentRecordType,
-        recordType: recordForm.type || currentRecordType,
-        notes: recordForm.notes,
-        fileId: fileId,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString()
+      const newRecord = {
+        ...record,
+        id: uuidv4(),
+        patientId
       };
+
+      const storedRecords = getFromLocalStorage('patient_records') || [];
+      storeInLocalStorage('patient_records', [...storedRecords, newRecord]);
       
-      const existingRecords = getFromLocalStorage('patient_records');
-      storeInLocalStorage('patient_records', [...existingRecords, newRecord]);
-      
-      if (setRecords) {
-        setRecords(prev => [...prev, newRecord]);
-      }
-      
-      setIsAddDialogOpen(false);
-      
+      loadRecords();
       toast.success('Record added successfully');
-      
-      if (onRecordUpdated) {
-        onRecordUpdated();
-      }
+      return true;
     } catch (error) {
       console.error('Error adding record:', error);
       toast.error('Failed to add record');
+      return false;
     }
   };
 
-  const handleDeleteRecord = (id: string, isReport: boolean = false) => {
+  const handleAddReport = (report: Omit<RecordItem, 'id'>) => {
+    try {
+      const newReport = {
+        ...report,
+        id: uuidv4(),
+        patientId,
+        isReport: true
+      };
+
+      const storedReports = getFromLocalStorage('patient_reports') || [];
+      storeInLocalStorage('patient_reports', [...storedReports, newReport]);
+      
+      loadRecords();
+      toast.success('Report added successfully');
+      return true;
+    } catch (error) {
+      console.error('Error adding report:', error);
+      toast.error('Failed to add report');
+      return false;
+    }
+  };
+
+  const handleDeleteRecord = (id: string, isReport = false) => {
     try {
       if (isReport) {
-        const storedReports = getFromLocalStorage('patient_reports')
-          .filter((report: any) => report.id !== id);
-        
-        storeInLocalStorage('patient_reports', storedReports);
+        const storedReports = getFromLocalStorage('patient_reports') || [];
+        const updatedReports = storedReports.filter((report: RecordItem) => report.id !== id);
+        storeInLocalStorage('patient_reports', updatedReports);
       } else {
-        const storedRecords = getFromLocalStorage('patient_records')
-          .filter((record: any) => record.id !== id);
-        
-        storeInLocalStorage('patient_records', storedRecords);
+        const storedRecords = getFromLocalStorage('patient_records') || [];
+        const updatedRecords = storedRecords.filter((record: RecordItem) => record.id !== id);
+        storeInLocalStorage('patient_records', updatedRecords);
       }
       
+      loadRecords();
       toast.success('Record deleted successfully');
-      
-      if (onRecordUpdated) {
-        onRecordUpdated();
-      }
+      return true;
     } catch (error) {
       console.error('Error deleting record:', error);
       toast.error('Failed to delete record');
+      return false;
     }
   };
 
   return {
-    isAddDialogOpen,
-    setIsAddDialogOpen,
-    currentRecordType,
-    recordForm,
+    records,
+    reports,
+    sortedRecords: sortItems(records),
+    sortedReports: sortItems(reports),
+    sortField,
+    sortDirection,
+    loadRecords,
+    handleSort,
     handleAddRecord,
-    handleInputChange,
-    handleFileChange,
-    handleSelectChange,
-    handleRecordSubmit,
+    handleAddReport,
     handleDeleteRecord
   };
 };
