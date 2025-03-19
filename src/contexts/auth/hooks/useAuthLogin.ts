@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
-import { User } from '../types';
+import { User, UserRole } from '../types';
 
 type UseAuthLoginProps = {
   setIsLoading: (isLoading: boolean) => void;

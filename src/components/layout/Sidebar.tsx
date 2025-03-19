@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { toast } from "sonner";
-import { useAuth } from '@/contexts/auth'; // Fix import path
+import { useAuth } from '@/contexts/auth'; 
 import { SidebarProps } from './sidebar/types';
 import { 
   getDoctorMenuItems, 

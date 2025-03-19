@@ -21,6 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } = useAuthOperations();
 
   const isLoading = sessionLoading || operationsLoading;
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     console.log("Auth state updated:", { 
@@ -141,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Login failed. Please check your credentials and try again.');
+      setError(error as Error);
       return null;
     }
   };
@@ -152,8 +154,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');
+      setError(error as Error);
       throw error;
     }
+  };
+
+  const updateProfile = async (data: Partial<User>): Promise<void> => {
+    // Implementation for update profile
+    console.log("Update profile:", data);
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return (
@@ -162,12 +174,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isLoading,
+        error,
         login,
         loginWithSocialProvider,
         handleOAuthCallback,
         signup,
         logout,
-        forgotPassword
+        forgotPassword,
+        updateProfile,
+        clearError
       }}
     >
       {children}
