@@ -1,22 +1,36 @@
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MoveHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HealthIssue } from './anatomical-map/types';
-import useAnatomicalMap from './anatomical-map/hooks/useAnatomicalMap';
+import { useAnatomicalData } from '@/contexts/AnatomicalDataContext';
 
 // Optimize with memo to prevent unnecessary re-renders
 const AnatomicalBodyMap: React.FC = memo(() => {
   const { 
     zoom, 
+    setZoom,
     isLoaded,
     selectedIssue, 
     healthIssues, 
-    handleZoomIn, 
-    handleZoomOut, 
     handleIssueClick 
-  } = useAnatomicalMap();
+  } = useAnatomicalData();
+  
+  const handleZoomIn = () => {
+    setZoom(Math.min(zoom + 0.1, 1.5));
+  };
+  
+  const handleZoomOut = () => {
+    setZoom(Math.max(zoom - 0.1, 0.7));
+  };
+  
+  // Sync with symptom context when the component mounts
+  useEffect(() => {
+    if (isLoaded) {
+      // This will be implemented in the AnatomicalDataContext
+      // syncWithSymptoms();
+    }
+  }, [isLoaded]);
   
   return (
     <Card className="h-full">
