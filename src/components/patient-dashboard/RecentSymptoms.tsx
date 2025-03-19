@@ -1,119 +1,114 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, AlertCircle, ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { AlertCircle, ThermometerIcon, ArrowUp, ArrowDown, MinusIcon } from 'lucide-react';
 
-interface Symptom {
-  id: string;
-  name: string;
-  intensity: number;
-  trend: 'improving' | 'worsening' | 'stable';
-  date: string;
-}
+const mockSymptoms = [
+  { 
+    id: 's1', 
+    name: 'Headache', 
+    severity: 'mild',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    trend: 'improving'
+  },
+  { 
+    id: 's2', 
+    name: 'Fatigue', 
+    severity: 'moderate',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+    trend: 'stable'
+  },
+  { 
+    id: 's3', 
+    name: 'Joint Pain', 
+    severity: 'moderate',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+    trend: 'worsening'
+  }
+];
 
 const RecentSymptoms: React.FC = () => {
-  // Mock data for symptoms (in production this would come from props or context)
-  const symptoms: Symptom[] = [
-    {
-      id: '1',
-      name: 'Back pain',
-      intensity: 3,
-      trend: 'improving',
-      date: new Date(Date.now() - 86400000 * 2).toISOString()
-    },
-    {
-      id: '2',
-      name: 'Headache',
-      intensity: 2,
-      trend: 'stable',
-      date: new Date(Date.now() - 86400000 * 4).toISOString()
-    },
-    {
-      id: '3',
-      name: 'Joint stiffness',
-      intensity: 4,
-      trend: 'worsening',
-      date: new Date(Date.now() - 86400000 * 1).toISOString()
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'mild':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'moderate':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+      case 'severe':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      default:
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
     }
-  ];
+  };
 
-  // Get trend icon based on symptom trend
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'improving':
-        return <ArrowDown className="h-4 w-4 text-green-500" />;
+        return <ArrowDown className="h-3.5 w-3.5 text-green-500" />;
       case 'worsening':
-        return <ArrowUp className="h-4 w-4 text-red-500" />;
+        return <ArrowUp className="h-3.5 w-3.5 text-red-500" />;
+      case 'stable':
       default:
-        return <Minus className="h-4 w-4 text-gray-500" />;
+        return <MinusIcon className="h-3.5 w-3.5 text-amber-500" />;
     }
   };
 
-  // Get intensity style based on level (1-5)
-  const getIntensityStyle = (intensity: number) => {
-    const colors = [
-      'bg-green-200 dark:bg-green-900',
-      'bg-lime-200 dark:bg-lime-900',
-      'bg-yellow-200 dark:bg-yellow-900',
-      'bg-orange-200 dark:bg-orange-900',
-      'bg-red-200 dark:bg-red-900'
-    ];
-    return colors[Math.min(intensity - 1, 4)];
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    }).format(date);
   };
 
   return (
-    <Card>
+    <Card className="shadow-md border-0">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Recent Symptoms</CardTitle>
+        <CardTitle className="text-lg">Recent Symptoms</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {symptoms.length > 0 ? (
-          symptoms.map((symptom) => (
-            <div key={symptom.id} className="flex items-start space-x-3 rounded-md border p-3">
-              <div className="mt-0.5">
-                <Activity className="h-4 w-4 text-primary" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">{symptom.name}</p>
-                  <div className="flex items-center space-x-1">
-                    {getTrendIcon(symptom.trend)}
-                    <span className="text-xs">
-                      {symptom.trend.charAt(0).toUpperCase() + symptom.trend.slice(1)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="flex h-2 w-24">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div 
-                        key={level}
-                        className={`h-2 w-1/5 first:rounded-l-full last:rounded-r-full ${
-                          level <= symptom.intensity 
-                            ? getIntensityStyle(level)
-                            : 'bg-gray-100 dark:bg-gray-800'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    Level {symptom.intensity}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(symptom.date).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric'
-                  })}
-                </div>
-              </div>
-            </div>
-          ))
+      <CardContent>
+        {mockSymptoms.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <ThermometerIcon className="h-12 w-12 text-muted-foreground/50 mb-3" />
+            <h3 className="text-lg font-medium">No Recent Symptoms</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              You haven't reported any symptoms recently.
+            </p>
+          </div>
         ) : (
-          <div className="flex items-center justify-center py-6 text-center">
-            <div className="space-y-2">
-              <AlertCircle className="mx-auto h-6 w-6 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No symptoms recorded</p>
+          <div className="space-y-3">
+            {mockSymptoms.map(symptom => (
+              <div key={symptom.id} className="p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-primary" />
+                    <div>
+                      <h4 className="font-medium">{symptom.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${getSeverityColor(symptom.severity)}`}>
+                          {symptom.severity}
+                        </span>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          {getTrendIcon(symptom.trend)}
+                          <span className="ml-1">{symptom.trend}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatDate(symptom.date)}
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <div className="pt-2">
+              <button className="text-xs text-primary hover:underline flex items-center">
+                View all symptoms
+                <ArrowUp className="ml-1 h-3 w-3 rotate-90" />
+              </button>
             </div>
           </div>
         )}

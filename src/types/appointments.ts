@@ -16,6 +16,7 @@ export interface Appointment {
   type: string;
   location: string;
   notes?: string;
+  doctor?: string; // Added for compatibility
 }
 
 export interface AppointmentWithProvider extends Appointment {
