@@ -2,6 +2,8 @@
 /* This file should be created if it doesn't exist */
 /* Hotspot styling for anatomical map */
 
+@tailwind components;
+
 @layer components {
   .hotspot-marker {
     @apply absolute cursor-pointer rounded-full shadow-md border-2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-30;
