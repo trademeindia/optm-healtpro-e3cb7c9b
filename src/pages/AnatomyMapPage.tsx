@@ -4,6 +4,7 @@ import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header';
 
 const AnatomyMapPage: React.FC = () => {
   // Add effect to prevent excessive re-renders
@@ -20,26 +21,29 @@ const AnatomyMapPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto px-4 py-6 max-w-7xl">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Anatomy Map</h1>
-              <p className="text-muted-foreground">
-                Use this interactive map to track and update your pain symptoms. Select areas where you experience
-                discomfort and provide details to help your healthcare provider understand your condition better.
-              </p>
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto max-w-7xl">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">Anatomy Map</h1>
+                <p className="text-muted-foreground">
+                  Use this interactive map to track and update your pain symptoms. Select areas where you experience
+                  discomfort and provide details to help your healthcare provider understand your condition better.
+                </p>
+              </div>
+              
+              <SymptomProvider>
+                <AnatomyMapContainer />
+                <Toaster position="bottom-right" />
+              </SymptomProvider>
             </div>
-            
-            <SymptomProvider>
-              <AnatomyMapContainer />
-              <Toaster position="bottom-right" />
-            </SymptomProvider>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

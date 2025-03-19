@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import AnatomicalView from '@/components/patient/AnatomicalView';
 import PatientProfile from '@/components/patient/PatientProfile';
+import { SymptomProvider } from '@/contexts/SymptomContext';
 
 interface MainContentProps {
   patient: any;
@@ -20,12 +21,14 @@ const MainContent: React.FC<MainContentProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left panel - Anatomical view */}
       <div className="lg:col-span-7 xl:col-span-8">
-        <div className="h-[80vh]">
-          <AnatomicalView 
-            selectedRegion={selectedRegion}
-            onSelectRegion={onSelectRegion}
-            patientId={patient.id}
-          />
+        <div className="h-full flex flex-col">
+          <SymptomProvider>
+            <AnatomicalView 
+              selectedRegion={selectedRegion}
+              onSelectRegion={onSelectRegion}
+              patientId={patient.id}
+            />
+          </SymptomProvider>
         </div>
       </div>
 
