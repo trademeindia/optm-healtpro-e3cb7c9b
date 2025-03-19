@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { HealthMetric, TimeRange } from '@/services/healthDataService';
@@ -49,8 +48,12 @@ const SleepAnalysis: React.FC<SleepAnalysisProps> = ({
     
     sleepData.forEach(metric => {
       const date = new Date(metric.timestamp).toLocaleDateString();
-      // Convert value to number to ensure it's a numeric type
-      const durationMinutes = Number(metric.value);
+      // Properly convert value to number to avoid type errors
+      // Cast to unknown first if the value might be a string
+      const durationMinutes = typeof metric.value === 'string' 
+        ? Number(metric.value as unknown as string) 
+        : Number(metric.value);
+      
       const sleepStage = metric.metadata?.sleepStage as number;
       
       // Add to daily sleep total
