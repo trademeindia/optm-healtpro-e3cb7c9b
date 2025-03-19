@@ -1,17 +1,42 @@
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { HealthIssue, MuscleFlexion } from '../types';
 
 export const useAnatomicalMap = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Mark the map as loaded
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/lovable-uploads/f9cf0fb7-42a3-40b1-90b9-c7c2b44003a3.png'; // Update with the correct path to your anatomy image
+    img.onload = () => setIsLoaded(true);
+    
+    return () => {
+      img.onload = null;
+    };
+  }, []);
+  
+  // Properly memoized functions for zoom
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev + 0.1, 1.5));
+  }, []);
+  
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev - 0.1, 0.7));
+  }, []);
+  
+  const handleIssueClick = useCallback((issue: HealthIssue) => {
+    setSelectedIssue(prev => prev?.id === issue.id ? null : issue);
+  }, []);
   
   // Updated hotspot positions based on anatomical accuracy
   const healthIssues: HealthIssue[] = [
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 23, y: 21 }, // Updated to correct shoulder position
+      location: { x: 27, y: 21 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -29,7 +54,7 @@ export const useAnatomicalMap = () => {
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 39 }, // Updated to correct lower back position
+      location: { x: 50, y: 42 }, // Adjusted for better alignment
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
       muscleGroup: 'Erector Spinae',
@@ -47,7 +72,7 @@ export const useAnatomicalMap = () => {
     {
       id: '3',
       name: 'Quadriceps Tendinitis',
-      location: { x: 48, y: 65 }, // Updated to correct upper thigh position
+      location: { x: 43, y: 65 }, // Adjusted for better alignment
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
       muscleGroup: 'Quadriceps',
@@ -65,7 +90,7 @@ export const useAnatomicalMap = () => {
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 77, y: 30 }, // Updated to correct bicep position
+      location: { x: 73, y: 30 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -83,7 +108,7 @@ export const useAnatomicalMap = () => {
     {
       id: '5',
       name: 'Hamstring Strain',
-      location: { x: 52, y: 77 }, // Updated to correct hamstring position
+      location: { x: 56, y: 77 }, // Adjusted for better alignment
       severity: 'medium',
       description: 'Partial tear in the hamstring muscle fibers causing pain in the back of the thigh.',
       muscleGroup: 'Hamstrings',
@@ -138,20 +163,9 @@ export const useAnatomicalMap = () => {
     }
   ];
   
-  const handleZoomIn = () => {
-    if (zoom < 1.5) setZoom(zoom + 0.1);
-  };
-  
-  const handleZoomOut = () => {
-    if (zoom > 0.7) setZoom(zoom - 0.1);
-  };
-  
-  const handleIssueClick = (issue: HealthIssue) => {
-    setSelectedIssue(issue === selectedIssue ? null : issue);
-  };
-  
   return {
     zoom,
+    isLoaded,
     selectedIssue,
     healthIssues,
     muscleFlexionData,

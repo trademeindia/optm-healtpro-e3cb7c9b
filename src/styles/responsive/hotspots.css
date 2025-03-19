@@ -1,5 +1,5 @@
+
 @tailwind components;
-@tailwind utilities;
 
 /* Hotspot positioning and alignment styles */
 .hotspot-marker {
@@ -29,41 +29,62 @@
   }
 }
 
-/* Hotspot styling and animations */
-.hotspot-marker.active {
-  animation: pulse-ring 1.5s infinite;
+.hotspot-pulse {
+  animation: pulse-ring 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
-.hotspot-marker:hover {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.1);
+/* Improved glow effect */
+.hotspot-marker::before {
+  content: '';
+  @apply absolute inset-0 rounded-full opacity-30;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+  z-index: -1;
+  transform: scale(1.1);
 }
 
-.hotspot-icon {
-  @apply text-white;
-  font-size: 0.75rem;
-}
-
+/* Adjusted size classes for better visibility */
 .hotspot-size-sm {
   @apply w-6 h-6;
 }
 
 .hotspot-size-md {
-  @apply w-8 h-8;
+  @apply w-7 h-7;
 }
 
 .hotspot-size-lg {
-  @apply w-10 h-10;
+  @apply w-8 h-8;
 }
 
-/* Anatomy map container */
-.anatomy-map-container {
-  @apply relative w-full h-full overflow-hidden;
+/* Enhanced styling based on severity - using more visible colors */
+.hotspot-severity-low {
+  @apply bg-blue-500/90 border border-blue-300 text-white;
 }
 
-/* Anatomy model styles */
-.anatomy-model {
-  @apply w-full h-auto object-contain;
+.hotspot-severity-medium {
+  @apply bg-blue-600/90 border border-blue-400 text-white;
+}
+
+.hotspot-severity-high {
+  @apply bg-blue-700/90 border border-blue-500 text-white;
+}
+
+.hotspot-active {
+  @apply ring-2 ring-white;
+  z-index: 40 !important;
+  opacity: 1; /* Fully opaque when active */
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.7);
+}
+
+/* Icon styling */
+.hotspot-icon {
+  @apply text-white drop-shadow-sm opacity-90 scale-90;
+}
+
+/* Enhanced label styling */
+.hotspot-label {
+  @apply absolute -bottom-7 left-1/2 -translate-x-1/2 bg-black/70 px-2 py-1 rounded whitespace-nowrap text-xs text-white;
+  min-width: 70px;
+  text-align: center;
 }
 
 /* Responsive adjustments */
@@ -85,11 +106,45 @@
   }
 }
 
-/* Additional styles for anatomy map components */
+/* Improved container for map image and hotspots */
 .anatomy-map-wrapper {
-  @apply relative w-full h-full;
+  @apply relative mx-auto;
+  max-width: 500px;
+  min-height: 400px;
+  height: auto;
+  perspective: 1000px; /* Improves 3D transforms */
 }
 
-.anatomy-map-overlay {
-  @apply absolute top-0 left-0 w-full h-full pointer-events-none;
+.anatomy-map-image {
+  @apply w-full h-auto max-h-full object-contain;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+/* Enhanced tooltip styling */
+.hotspot-tooltip {
+  @apply z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg;
+  max-width: 250px !important;
+}
+
+/* Animation for new hotspots appearing */
+@keyframes hotspot-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.hotspot-new {
+  animation: hotspot-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Enhanced hover effect for better interactivity */
+.hotspot-marker:hover {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 0 12px rgba(33, 150, 243, 0.5);
 }

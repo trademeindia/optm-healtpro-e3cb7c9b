@@ -1,11 +1,24 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Sidebar from '@/components/layout/Sidebar';
 
 const AnatomyMapPage: React.FC = () => {
+  // Add effect to prevent excessive re-renders
+  useEffect(() => {
+    // Prevent page refresh on form submissions
+    const handleSubmit = (e: SubmitEvent) => {
+      if (e.target instanceof HTMLFormElement) {
+        e.preventDefault();
+      }
+    };
+    
+    document.addEventListener('submit', handleSubmit);
+    return () => document.removeEventListener('submit', handleSubmit);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
