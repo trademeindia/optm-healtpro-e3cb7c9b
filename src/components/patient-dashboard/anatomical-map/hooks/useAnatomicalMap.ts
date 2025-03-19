@@ -1,10 +1,35 @@
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { HealthIssue, MuscleFlexion } from '../types';
 
 export const useAnatomicalMap = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Mark the map as loaded
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/lovable-uploads/f9cf0fb7-42a3-40b1-90b9-c7c2b44003a3.png'; // Update with the correct path to your anatomy image
+    img.onload = () => setIsLoaded(true);
+    
+    return () => {
+      img.onload = null;
+    };
+  }, []);
+  
+  // Properly memoized functions for zoom
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev + 0.1, 1.5));
+  }, []);
+  
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev - 0.1, 0.7));
+  }, []);
+  
+  const handleIssueClick = useCallback((issue: HealthIssue) => {
+    setSelectedIssue(prev => prev?.id === issue.id ? null : issue);
+  }, []);
   
   // Updated hotspot positions based on anatomical accuracy
   const healthIssues: HealthIssue[] = [
@@ -138,20 +163,9 @@ export const useAnatomicalMap = () => {
     }
   ];
   
-  const handleZoomIn = () => {
-    if (zoom < 1.5) setZoom(zoom + 0.1);
-  };
-  
-  const handleZoomOut = () => {
-    if (zoom > 0.7) setZoom(zoom - 0.1);
-  };
-  
-  const handleIssueClick = (issue: HealthIssue) => {
-    setSelectedIssue(issue === selectedIssue ? null : issue);
-  };
-  
   return {
     zoom,
+    isLoaded,
     selectedIssue,
     healthIssues,
     muscleFlexionData,

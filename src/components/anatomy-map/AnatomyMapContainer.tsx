@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AnatomyMap from './AnatomyMap';
@@ -14,6 +14,33 @@ const AnatomyMapContainer: React.FC = memo(() => {
   const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('map');
+  const [initialized, setInitialized] = useState(false);
+  
+  // Load saved symptoms from localStorage on component mount
+  useEffect(() => {
+    if (!initialized) {
+      try {
+        const savedSymptoms = localStorage.getItem('pain-symptoms');
+        if (savedSymptoms) {
+          setSymptoms(JSON.parse(savedSymptoms));
+        }
+        setInitialized(true);
+      } catch (error) {
+        console.error('Failed to load symptoms from localStorage:', error);
+      }
+    }
+  }, [initialized]);
+
+  // Save symptoms to localStorage whenever they change
+  useEffect(() => {
+    if (initialized && symptoms.length > 0) {
+      try {
+        localStorage.setItem('pain-symptoms', JSON.stringify(symptoms));
+      } catch (error) {
+        console.error('Failed to save symptoms to localStorage:', error);
+      }
+    }
+  }, [symptoms, initialized]);
   
   // Handle adding a new symptom with useCallback to prevent recreation on every render
   const handleAddSymptom = useCallback((symptom: PainSymptom) => {
