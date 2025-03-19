@@ -29,7 +29,8 @@ export const useRecordsState = (patientId?: string) => {
           recordType: record.recordType,
           notes: record.notes,
           fileId: record.fileId,
-          timestamp: record.timestamp || record.createdAt
+          timestamp: record.timestamp || record.createdAt,
+          description: record.description
         }));
 
       const storedReports = getFromLocalStorage('patient_reports')
@@ -37,11 +38,15 @@ export const useRecordsState = (patientId?: string) => {
         .map((report: any) => ({
           id: report.id,
           patientId: report.patientId,
-          title: report.title,
+          name: report.title || report.name, // Ensure name property is set
           date: report.date,
+          type: report.type || 'Medical Report',
           fileType: report.fileType,
           fileSize: report.fileSize,
-          fileId: report.fileId
+          fileId: report.fileId,
+          title: report.title,
+          description: report.description,
+          isReport: true
         }));
 
       setRecords(storedRecords);

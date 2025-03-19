@@ -1,27 +1,44 @@
 
-import { Provider } from '@supabase/supabase-js';
-
-export type UserRole = 'admin' | 'doctor' | 'patient';
-export type AuthProviderType = Provider | 'email';
-
-export type User = {
+export interface User {
   id: string;
   email: string;
-  name: string;
-  role: UserRole;
-  provider?: AuthProviderType;
-  picture?: string | null;
-  patientId?: string; // Added to link patient users to their records
-};
+  name?: string;
+  role: 'doctor' | 'patient' | 'receptionist';
+  avatar?: string;
+  settings?: UserSettings;
+  metadata?: any;
+}
 
-export type AuthContextType = {
+export interface UserSettings {
+  darkMode?: boolean;
+  notifications?: {
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  language?: string;
+}
+
+export interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<User | null>;
-  loginWithSocialProvider: (provider: Provider) => Promise<void>;
-  handleOAuthCallback: (provider: string, code: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
+  isAuthenticated: boolean;
+  error: Error | null;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithApple: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  signup: (email: string, password: string, role: 'doctor' | 'patient' | 'receptionist', name?: string) => Promise<void>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-};
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  clearError: () => void;
+}
+
+export interface OAuthResponseType {
+  status: 'success' | 'error';
+  message?: string;
+  code?: string;
+  provider?: string;
+  action?: string;
+}
