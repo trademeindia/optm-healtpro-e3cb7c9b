@@ -77,9 +77,7 @@ const AnatomyMapContainer: React.FC = () => {
         onDeleteSymptom={handleDeleteSymptom}
       />
       
-      <div className="fixed bottom-4 right-4">
-        <Toaster />
-      </div>
+      {/* The Toaster component was here but isn't needed as it's rendered in the parent page */}
     </div>
   );
 };
