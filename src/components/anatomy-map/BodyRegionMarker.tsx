@@ -23,7 +23,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
   const markerColor = hasSymptom ? 'bg-red-500 border-red-600' : 'bg-blue-400 border-blue-500';
   
   // Add debug info
-  console.log(`Rendering marker for ${region.name} at (${region.posX}%, ${region.posY}%)${hasSymptom ? ' with symptom' : ''}`);
+  console.log(`Rendering marker for ${region.name} at (${region.x}%, ${region.y}%)${hasSymptom ? ' with symptom' : ''}`);
 
   return (
     <TooltipProvider>
@@ -33,8 +33,8 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
             type="button"
             className={`absolute w-4 h-4 rounded-full ${markerColor} border-2 hover:scale-125 transition-transform z-10`}
             style={{
-              left: `${region.posX}%`,
-              top: `${region.posY}%`,
+              left: `${region.x}%`,
+              top: `${region.y}%`,
               transform: 'translate(-50%, -50%)',
             }}
             onClick={onClick}
