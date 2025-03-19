@@ -10,7 +10,7 @@ interface LoginFormProps {
   setEmail: (email: string) => void;
   password: string;
   setPassword: (password: string) => void;
-  userType: 'doctor' | 'patient' | 'receptionist' | 'admin';
+  userType: 'doctor' | 'patient';
   isSubmitting: boolean;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   onForgotPassword: () => void;

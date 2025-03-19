@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
-import { User, UserRole } from '../types';
+import { User } from '../types';
 
 type UseAuthLoginProps = {
   setIsLoading: (isLoading: boolean) => void;
@@ -18,20 +18,16 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       // Check if using demo credentials
       const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
       const isDemoPatient = email === 'patient@example.com' && password === 'password123';
-      const isDemoReceptionist = email === 'receptionist@example.com' && password === 'password123';
       
-      if (isDemoDoctor || isDemoPatient || isDemoReceptionist) {
+      if (isDemoDoctor || isDemoPatient) {
         console.log('Using demo account login');
         
         // Create a demo user without actually authenticating
         const demoUser: User = {
-          id: isDemoDoctor ? 'demo-doctor-id' : 
-              isDemoReceptionist ? 'demo-receptionist-id' : 'demo-patient-id',
+          id: isDemoDoctor ? 'demo-doctor-id' : 'demo-patient-id',
           email: email,
-          name: isDemoDoctor ? 'Demo Doctor' : 
-               isDemoReceptionist ? 'Demo Receptionist' : 'Demo Patient',
-          role: isDemoDoctor ? 'doctor' : 
-               isDemoReceptionist ? 'admin' : 'patient',
+          name: isDemoDoctor ? 'Demo Doctor' : 'Demo Patient',
+          role: isDemoDoctor ? 'doctor' : 'patient',
           provider: 'email',
           picture: null
         };
@@ -40,8 +36,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         
         // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
         setTimeout(() => {
-          const dashboard = isDemoDoctor ? '/dashboard' : 
-                           isDemoReceptionist ? '/receptionist-dashboard' : '/patient-dashboard';
+          const dashboard = isDemoDoctor ? '/dashboard' : '/patient-dashboard';
           console.log(`Navigating to ${dashboard}`);
           navigate(dashboard);
         }, 100);

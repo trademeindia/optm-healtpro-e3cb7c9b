@@ -5,7 +5,7 @@ import { ChevronLeft, FileText, Upload, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MedicalRecordsManager } from '@/components/dashboard/patient-records';
+import { MedicalRecordsManager } from '@/components/dashboard/patient-records/MedicalRecordsManager';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -66,7 +66,7 @@ const PatientRecordsPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="records" className="space-y-6">
-            <MedicalRecordsManager patientId={patientId || ''} />
+            <MedicalRecordsManager patientId={patientId} />
           </TabsContent>
           
           <TabsContent value="analytics" className="space-y-6">

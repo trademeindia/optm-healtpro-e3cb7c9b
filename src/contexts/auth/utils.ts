@@ -70,17 +70,13 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
           return null;
         }
         
-        // Use type assertion to tell TypeScript that newProfile might have patient_id property
-        // but we'll check if it exists first
         return {
           id: newProfile.id,
           email: newProfile.email,
           name: newProfile.name,
           role: newProfile.role as UserRole,
           provider: newProfile.provider as AuthProviderType,
-          picture: newProfile.picture,
-          // Check if the property exists before trying to access it
-          patientId: 'patient_id' in newProfile ? (newProfile as any).patient_id : undefined
+          picture: newProfile.picture
         };
       }
       
@@ -89,16 +85,14 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
 
     if (!data) return null;
 
-    // Type-safe access to profile data with type assertion
+    // Type-safe access to profile data
     return {
       id: data.id,
       email: data.email,
       name: data.name || userName || '',
       role: (data.role as UserRole) || 'patient',
       provider: (data.provider as AuthProviderType) || providerInfo,
-      picture: data.picture || userPicture || null,
-      // Check if the property exists before trying to access it
-      patientId: 'patient_id' in data ? (data as any).patient_id : undefined
+      picture: data.picture || userPicture || ''
     };
   } catch (error) {
     console.error('Error formatting user:', error);

@@ -17,7 +17,6 @@ import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import NotFound from './pages/NotFound';
 import PatientDashboard from './pages/PatientDashboard';
-import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import { PatientReportsPage } from './pages/PatientReportsPage';
 import OAuthCallback from './pages/OAuthCallback';
 import HealthAppsPage from './pages/HealthAppsPage';
@@ -45,7 +44,6 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/help" element={<HelpPage />} />
               <Route path="/patient-dashboard" element={<PatientDashboard />} />
-              <Route path="/receptionist-dashboard" element={<ReceptionistDashboard />} />
               <Route path="/patient-reports" element={<PatientReportsPage />} />
               <Route path="/oauth-callback" element={<OAuthCallback />} />
               <Route path="/health-apps" element={<HealthAppsPage />} />
