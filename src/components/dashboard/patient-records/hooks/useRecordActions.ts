@@ -80,7 +80,7 @@ export const useRecordActions = (
       };
       
       const existingRecords = getFromLocalStorage('patient_records');
-      storeInLocalStorage('patient_records', [...existingRecords, newRecord], true);
+      storeInLocalStorage('patient_records', [...existingRecords, newRecord]);
       
       if (setRecords) {
         setRecords(prev => [...prev, newRecord]);
@@ -105,12 +105,12 @@ export const useRecordActions = (
         const storedReports = getFromLocalStorage('patient_reports')
           .filter((report: any) => report.id !== id);
         
-        storeInLocalStorage('patient_reports', storedReports, true);
+        storeInLocalStorage('patient_reports', storedReports);
       } else {
         const storedRecords = getFromLocalStorage('patient_records')
           .filter((record: any) => record.id !== id);
         
-        storeInLocalStorage('patient_records', storedRecords, true);
+        storeInLocalStorage('patient_records', storedRecords);
       }
       
       toast.success('Record deleted successfully');

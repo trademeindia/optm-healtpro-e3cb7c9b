@@ -1,82 +1,105 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getFromLocalStorage, storeInLocalStorage } from '@/services/storage/localStorageService';
 import { Document } from './types';
+import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
 export const useDocumentsStorage = (patientId?: string) => {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [documentType, setDocumentType] = useState('all');
+  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    loadDocumentsFromStorage();
+  const loadDocuments = useCallback(() => {
+    try {
+      // Get documents from localStorage
+      const storedDocuments = getFromLocalStorage('clinic_documents');
+      
+      // Filter for current patient if patientId is provided
+      const filteredDocuments = patientId
+        ? storedDocuments.filter((doc: any) => doc.patientId === patientId)
+        : storedDocuments;
+      
+      setDocuments(filteredDocuments);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      setDocuments([]);
+    }
   }, [patientId]);
 
-  const loadDocumentsFromStorage = () => {
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
+
+  const addDocument = (document: Omit<Document, 'id' | 'createdAt'>) => {
     try {
-      const patientReports = getFromLocalStorage('patient_reports');
-      const patientRecords = getFromLocalStorage('patient_records').filter((record: any) => 
-        record.fileId && (!patientId || record.patientId === patientId)
-      );
+      const newDocument = {
+        ...document,
+        id: uuidv4(),
+        createdAt: new Date().toISOString()
+      };
 
-      const reportDocs = patientReports
-        .filter((report: any) => !patientId || report.patientId === patientId)
-        .map((report: any) => ({
-          id: report.id,
-          name: report.title || 'Medical Report',
-          type: report.fileType || 'PDF',
-          date: report.date || new Date().toISOString().split('T')[0],
-          size: report.fileSize || '1.0 MB'
-        }));
+      const storedDocuments = getFromLocalStorage('clinic_documents');
+      storeInLocalStorage('clinic_documents', [...storedDocuments, newDocument]);
       
-      const recordDocs = patientRecords.map((record: any) => ({
-        id: record.id,
-        name: record.name || 'Medical Record',
-        type: record.recordType === 'xray' ? 'Image' : 'PDF',
-        date: record.date || new Date().toISOString().split('T')[0],
-        size: '1.0 MB'
-      }));
-
-      const allDocuments = [...reportDocs, ...recordDocs].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      
-      setDocuments(allDocuments);
+      loadDocuments();
+      return true;
     } catch (error) {
-      console.error('Error loading documents from storage:', error);
+      console.error('Error adding document:', error);
+      return false;
     }
   };
 
-  const handleDeleteDocument = (documentId: string) => {
+  const deleteDocument = (id: string) => {
     try {
-      const records = getFromLocalStorage('patient_records');
-      const reports = getFromLocalStorage('patient_reports');
+      const storedDocuments = getFromLocalStorage('clinic_documents');
+      const updatedDocuments = storedDocuments.filter((doc: any) => doc.id !== id);
       
-      const recordIndex = records.findIndex((record: any) => record.id === documentId);
+      storeInLocalStorage('clinic_documents', updatedDocuments);
+      loadDocuments();
       
-      if (recordIndex !== -1) {
-        records.splice(recordIndex, 1);
-        storeInLocalStorage('patient_records', records, true);
-        toast.success('Document deleted successfully');
-      } else {
-        const reportIndex = reports.findIndex((report: any) => report.id === documentId);
-        
-        if (reportIndex !== -1) {
-          reports.splice(reportIndex, 1);
-          storeInLocalStorage('patient_reports', reports, true);
-          toast.success('Document deleted successfully');
-        }
-      }
-      
-      setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== documentId));
+      toast.success('Document deleted successfully');
+      return true;
     } catch (error) {
       console.error('Error deleting document:', error);
       toast.error('Failed to delete document');
+      return false;
     }
   };
 
+  // Filter and sort documents
+  const filteredDocuments = documents.filter((doc) => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = documentType === 'all' || doc.type === documentType;
+    return matchesSearch && matchesType;
+  });
+
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    if (sortBy === 'date') {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    } else {
+      return sortOrder === 'asc' 
+        ? a.name.localeCompare(b.name) 
+        : b.name.localeCompare(a.name);
+    }
+  });
+
   return {
-    documents,
-    handleDeleteDocument,
-    loadDocumentsFromStorage
+    documents: sortedDocuments,
+    searchTerm,
+    setSearchTerm,
+    documentType,
+    setDocumentType,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    addDocument,
+    deleteDocument,
+    loadDocuments
   };
 };
