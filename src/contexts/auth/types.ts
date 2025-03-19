@@ -3,11 +3,18 @@ export interface User {
   id: string;
   email: string;
   name?: string;
-  role: 'doctor' | 'patient' | 'receptionist';
+  role: 'doctor' | 'patient' | 'receptionist' | 'admin';
   avatar?: string;
   settings?: UserSettings;
   metadata?: any;
+  patientId?: string;
+  provider?: AuthProviderType;
+  picture?: string;
 }
+
+export type AuthProviderType = 'email' | 'google' | 'github' | 'apple';
+
+export type UserRole = 'doctor' | 'patient' | 'receptionist' | 'admin';
 
 export interface UserSettings {
   darkMode?: boolean;
@@ -24,13 +31,12 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   error: Error | null;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
-  loginWithApple: () => Promise<void>;
-  loginWithGithub: () => Promise<void>;
-  signup: (email: string, password: string, role: 'doctor' | 'patient' | 'receptionist', name?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
+  loginWithSocialProvider: (provider: 'google' | 'apple' | 'github') => Promise<void>;
+  handleOAuthCallback: (provider: string, code: string, existingUser?: User | null) => Promise<any>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   clearError: () => void;
 }

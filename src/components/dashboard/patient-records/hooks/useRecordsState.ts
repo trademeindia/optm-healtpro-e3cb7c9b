@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { getFromLocalStorage } from '@/services/storage/localStorageService';
-import { MedicalRecord, MedicalReport } from '../types';
+import { RecordItem } from '../types';
 
 export const useRecordsState = (patientId?: string) => {
-  const [records, setRecords] = useState<MedicalRecord[]>([]);
-  const [reports, setReports] = useState<MedicalReport[]>([]);
+  const [records, setRecords] = useState<RecordItem[]>([]);
+  const [reports, setReports] = useState<RecordItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [recordType, setRecordType] = useState('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
