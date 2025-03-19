@@ -28,3 +28,5 @@ export interface FilteredState {
   filteredReports: RecordItem[];
 }
 
+export type SortField = 'date' | 'name';
+export type SortDirection = 'asc' | 'desc';

@@ -3,7 +3,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
-  role: 'doctor' | 'patient' | 'receptionist' | 'admin';
+  role: UserRole;
   avatar?: string;
   settings?: UserSettings;
   metadata?: any;
