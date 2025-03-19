@@ -1,4 +1,5 @@
 
+
 .hotspot {
   @apply absolute w-8 h-8 rounded-full bg-white/80 flex items-center justify-center cursor-pointer 
          shadow-md border-2 border-white transition-all duration-300 ease-in-out z-10;
@@ -39,3 +40,4 @@
   @apply backdrop-blur-xl bg-white/80 dark:bg-black/50 border border-white/20 dark:border-white/5 shadow-lg
          p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-xl;
 }
+
