@@ -126,6 +126,12 @@ export default {
 			backdropFilter: {
 				'none': 'none',
 				'blur': 'blur(20px)'
+			},
+			scale: {
+				'65': '0.65',
+				'75': '0.75',
+				'85': '0.85',
+				'175': '1.75',
 			}
 		}
 	},

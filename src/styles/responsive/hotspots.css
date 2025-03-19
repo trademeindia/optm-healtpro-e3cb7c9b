@@ -97,7 +97,7 @@
   }
 
   .hotspot-icon {
-    @apply scale-70;
+    @apply scale-75;
   }
 }
 
