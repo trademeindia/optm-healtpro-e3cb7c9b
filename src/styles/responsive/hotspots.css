@@ -9,7 +9,7 @@
   transition: all 0.2s ease-out;
   border-radius: 50%;
   backdrop-filter: blur(1px);
-  opacity: 0.9; /* More visible by default */
+  opacity: 0.95; /* More visible by default */
   will-change: transform, opacity; /* Optimize for animations */
 }
 
@@ -17,20 +17,20 @@
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+    box-shadow: 0 0 0 0 rgba(255, 125, 0, 0.4);
   }
   70% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 5px rgba(33, 150, 243, 0);
+    box-shadow: 0 0 0 5px rgba(255, 125, 0, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    box-shadow: 0 0 0 0 rgba(255, 125, 0, 0);
   }
 }
 
 .hotspot-pulse {
-  animation: pulse-ring 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
 /* Improved glow effect */
@@ -57,27 +57,22 @@
 
 /* Enhanced styling based on severity - using more visible colors */
 .hotspot-severity-low {
-  @apply bg-blue-500/90 border border-blue-300 text-white;
+  @apply bg-yellow-500 border border-yellow-300 text-white;
 }
 
 .hotspot-severity-medium {
-  @apply bg-blue-600/90 border border-blue-400 text-white;
+  @apply bg-orange-500 border border-orange-300 text-white;
 }
 
 .hotspot-severity-high {
-  @apply bg-blue-700/90 border border-blue-500 text-white;
+  @apply bg-red-500 border border-red-300 text-white;
 }
 
 .hotspot-active {
   @apply ring-2 ring-white;
   z-index: 40 !important;
   opacity: 1; /* Fully opaque when active */
-  box-shadow: 0 0 10px rgba(33, 150, 243, 0.7);
-}
-
-/* Icon styling */
-.hotspot-icon {
-  @apply text-white drop-shadow-sm opacity-90 scale-90;
+  box-shadow: 0 0 10px rgba(255, 86, 48, 0.7);
 }
 
 /* Enhanced label styling */
@@ -100,24 +95,23 @@
   .hotspot-size-lg {
     @apply w-7 h-7;
   }
-
-  .hotspot-icon {
-    @apply scale-75;
-  }
 }
 
 /* Improved container for map image and hotspots */
 .anatomy-map-wrapper {
-  @apply relative mx-auto;
-  max-width: 500px;
-  min-height: 400px;
-  height: auto;
+  @apply relative mx-auto inline-block;
+  height: 450px;
   perspective: 1000px; /* Improves 3D transforms */
 }
 
 .anatomy-map-image {
-  @apply w-full h-auto max-h-full object-contain;
+  @apply h-full w-auto max-h-full object-contain;
   transform: translateZ(0); /* Hardware acceleration */
+}
+
+.anatomy-position-container {
+  @apply flex justify-center items-center overflow-hidden;
+  min-height: 450px;
 }
 
 /* Enhanced tooltip styling */
@@ -146,5 +140,5 @@
 .hotspot-marker:hover {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1.1);
-  box-shadow: 0 0 12px rgba(33, 150, 243, 0.5);
+  box-shadow: 0 0 12px rgba(255, 86, 48, 0.5);
 }

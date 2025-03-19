@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HealthIssue } from './types';
-import { getSeverityColor, getSeverityLabel } from './utils';
 
 interface HotspotMarkerProps {
   issue: HealthIssue;
@@ -15,15 +14,22 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
   
   // Get proper size based on selection state
   const getMarkerSize = () => {
-    if (isSelected) return 'w-7 h-7';
-    if (isHovered) return 'w-6 h-6';
-    return 'w-5 h-5';
+    if (isSelected) return 'w-8 h-8';
+    if (isHovered) return 'w-7 h-7';
+    return 'w-6 h-6';
   };
   
   // Get proper z-index to ensure visibility
   const getZIndex = () => {
     if (isSelected) return 'z-30';
     return 'z-20';
+  };
+  
+  // Get color based on severity
+  const getSeverityColor = () => {
+    if (issue.severity === 'high') return 'bg-red-500';
+    if (issue.severity === 'medium') return 'bg-orange-500';
+    return 'bg-yellow-500';
   };
   
   // Determine tooltip positioning based on issue location
@@ -39,9 +45,9 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className={`absolute ${getMarkerSize()} rounded-full cursor-pointer ${getSeverityColor(issue.severity)} flex items-center justify-center ${
+            className={`absolute ${getMarkerSize()} rounded-full cursor-pointer ${getSeverityColor()} flex items-center justify-center ${
               isSelected ? 'border-2 border-white scale-110 shadow-lg hotspot-pulse' : 
-              isHovered ? 'border-2 border-white/80 scale-105 shadow-md' : 'border-2 border-white/60 shadow-sm'
+              isHovered ? 'border-2 border-white/80 scale-105 shadow-md' : 'border border-white/60 shadow-sm'
             } transition-all duration-200 ${getZIndex()}`}
             style={{
               left: `${issue.location.x}%`,
@@ -66,12 +72,16 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
             <div className="flex items-center gap-2">
               <span className={`inline-block w-2 h-2 rounded-full ${
                 issue.severity === 'high' ? "bg-red-500" :
-                issue.severity === 'medium' ? "bg-amber-500" :
-                "bg-green-500"
+                issue.severity === 'medium' ? "bg-orange-500" :
+                "bg-yellow-500"
               }`}></span>
               <h3 className="font-semibold text-sm">{issue.name}</h3>
             </div>
-            <p className="text-xs text-muted-foreground">{getSeverityLabel(issue.severity)} severity</p>
+            <p className="text-xs text-muted-foreground">{
+              issue.severity === 'high' ? 'Severe' :
+              issue.severity === 'medium' ? 'Moderate' :
+              'Mild'
+            } severity</p>
             {issue.muscleGroup && (
               <p className="text-xs mt-1">Affects: {issue.muscleGroup}</p>
             )}

@@ -10,7 +10,7 @@ export const useAnatomicalMap = () => {
   // Mark the map as loaded
   useEffect(() => {
     const img = new Image();
-    img.src = '/lovable-uploads/f9cf0fb7-42a3-40b1-90b9-c7c2b44003a3.png'; // Update with the correct path to your anatomy image
+    img.src = '/lovable-uploads/ae7aa427-882b-48d7-99bc-d5ac420d22df.png';
     img.onload = () => setIsLoaded(true);
     
     return () => {
@@ -36,7 +36,7 @@ export const useAnatomicalMap = () => {
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 27, y: 21 }, // Adjusted for better alignment
+      location: { x: 26, y: 19 },
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -54,7 +54,7 @@ export const useAnatomicalMap = () => {
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 42 }, // Adjusted for better alignment
+      location: { x: 50, y: 38 },
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
       muscleGroup: 'Erector Spinae',
@@ -71,26 +71,26 @@ export const useAnatomicalMap = () => {
     },
     {
       id: '3',
-      name: 'Quadriceps Tendinitis',
-      location: { x: 43, y: 65 }, // Adjusted for better alignment
+      name: 'Hamstring Strain',
+      location: { x: 50, y: 58 },
       severity: 'low',
-      description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
-      muscleGroup: 'Quadriceps',
+      description: 'Mild pull in the hamstring muscle fibers with some discomfort during flexion.',
+      muscleGroup: 'Hamstrings',
       symptoms: [
-        'Pain above the kneecap',
-        'Discomfort when straightening leg',
-        'Tenderness when pressing on tendon'
+        'Pain in back of thigh',
+        'Discomfort when bending knee',
+        'Tenderness when pressing on muscle'
       ],
       recommendedActions: [
         'Rest from high-impact activities',
         'Ice therapy',
-        'Strengthening exercises'
+        'Gentle stretching'
       ]
     },
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 73, y: 30 }, // Adjusted for better alignment
+      location: { x: 73, y: 30 },
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -107,24 +107,25 @@ export const useAnatomicalMap = () => {
     },
     {
       id: '5',
-      name: 'Hamstring Strain',
-      location: { x: 56, y: 77 }, // Adjusted for better alignment
-      severity: 'medium',
-      description: 'Partial tear in the hamstring muscle fibers causing pain in the back of the thigh.',
-      muscleGroup: 'Hamstrings',
+      name: 'Quadriceps Tendinitis',
+      location: { x: 48, y: 65 },
+      severity: 'low',
+      description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
+      muscleGroup: 'Quadriceps',
       symptoms: [
-        'Sudden pain during activity',
-        'Muscle weakness',
-        'Bruising and swelling'
+        'Pain above the kneecap',
+        'Discomfort when straightening leg',
+        'Tenderness when pressing on tendon'
       ],
       recommendedActions: [
-        'RICE protocol (Rest, Ice, Compression, Elevation)',
-        'Gentle stretching when pain subsides',
-        'Gradual return to activity'
+        'Rest from high-impact activities',
+        'Ice therapy',
+        'Strengthening exercises'
       ]
     }
   ];
   
+  // Muscle flexion data that corresponds to the hotspots
   const muscleFlexionData: MuscleFlexion[] = [
     {
       muscle: 'Rotator Cuff',
@@ -145,11 +146,11 @@ export const useAnatomicalMap = () => {
       flexionPercentage: 65,
       status: 'weak',
       lastReading: '2 hours ago',
-      relatedIssues: ['3']
+      relatedIssues: ['5']
     },
     {
       muscle: 'Biceps',
-      flexionPercentage: 72,
+      flexionPercentage: 82,
       status: 'healthy',
       lastReading: '2 hours ago',
       relatedIssues: ['4']
@@ -159,7 +160,7 @@ export const useAnatomicalMap = () => {
       flexionPercentage: 55,
       status: 'weak',
       lastReading: '2 hours ago',
-      relatedIssues: ['5']
+      relatedIssues: ['3']
     }
   ];
   

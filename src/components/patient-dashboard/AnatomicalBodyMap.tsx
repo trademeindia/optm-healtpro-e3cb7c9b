@@ -1,9 +1,9 @@
 
 import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoveHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HealthIssue } from './anatomical-map/types';
+import { HotspotMarker } from './anatomical-map';
 import useAnatomicalMap from './anatomical-map/hooks/useAnatomicalMap';
 
 // Optimize with memo to prevent unnecessary re-renders
@@ -13,6 +13,7 @@ const AnatomicalBodyMap: React.FC = memo(() => {
     isLoaded,
     selectedIssue, 
     healthIssues, 
+    muscleFlexionData,
     handleZoomIn, 
     handleZoomOut, 
     handleIssueClick 
@@ -50,10 +51,9 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             style={{ transform: `scale(${zoom})` }}
           >
             <img 
-              src="/lovable-uploads/f9cf0fb7-42a3-40b1-90b9-c7c2b44003a3.png" 
-              alt="Human anatomy" 
+              src="/lovable-uploads/ae7aa427-882b-48d7-99bc-d5ac420d22df.png" 
+              alt="Human muscular anatomy" 
               className="anatomy-map-image"
-              onLoad={() => console.log('Anatomy image loaded')}
             />
             
             {isLoaded && healthIssues.map((issue) => (
@@ -67,19 +67,81 @@ const AnatomicalBodyMap: React.FC = memo(() => {
           </div>
         </div>
         
+        {/* Muscle group status indicators */}
+        {muscleFlexionData && muscleFlexionData.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {muscleFlexionData.map((item) => (
+              <div key={item.muscle} className="flex flex-col">
+                <div className="text-xs font-medium">{item.muscle}</div>
+                <div className="flex items-center gap-1.5">
+                  <div 
+                    className={`h-1 w-20 rounded-full ${
+                      item.status === 'healthy' ? 'bg-green-500' : 
+                      item.status === 'weak' ? 'bg-yellow-500' : 
+                      'bg-red-500'
+                    }`}
+                  ></div>
+                  <span 
+                    className={`text-xs ${
+                      item.status === 'healthy' ? 'text-green-600' : 
+                      item.status === 'weak' ? 'text-yellow-600' : 
+                      'text-red-600'
+                    }`}
+                  >
+                    {item.status === 'healthy' ? 'Healthy' : 
+                     item.status === 'weak' ? 'Weak' : 
+                     'Overworked'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Selected issue details */}
         {selectedIssue && (
           <div className="mt-4 p-3 bg-muted/80 rounded-lg border">
-            <h3 className="font-medium mb-1">{selectedIssue.name}</h3>
-            <p className="text-sm text-muted-foreground mb-2">{selectedIssue.description}</p>
-            
-            <div className="text-sm">
-              <span className="text-xs font-medium">Recommended:</span>
-              <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                {selectedIssue.recommendedActions.map((action, i) => (
-                  <li key={i} className="text-xs">{action}</li>
-                ))}
-              </ul>
+            <div className="flex justify-between items-start">
+              <h3 className="font-medium">{selectedIssue.name}</h3>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                selectedIssue.severity === 'high' ? 'bg-red-100 text-red-800' : 
+                selectedIssue.severity === 'medium' ? 'bg-orange-100 text-orange-800' : 
+                'bg-green-100 text-green-800'
+              }`}>
+                {selectedIssue.severity === 'high' ? 'Severe' : 
+                selectedIssue.severity === 'medium' ? 'Moderate' : 'Mild'}
+              </span>
             </div>
+            
+            {selectedIssue.muscleGroup && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Muscle Group: {selectedIssue.muscleGroup}
+              </div>
+            )}
+            
+            <p className="text-sm text-muted-foreground mt-2">{selectedIssue.description}</p>
+            
+            {selectedIssue.symptoms && (
+              <div className="mt-3">
+                <span className="text-xs font-medium">Common Symptoms:</span>
+                <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                  {selectedIssue.symptoms.map((symptom, i) => (
+                    <li key={i} className="text-xs">{symptom}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {selectedIssue.recommendedActions && (
+              <div className="mt-3">
+                <span className="text-xs font-medium">Recommended Actions:</span>
+                <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                  {selectedIssue.recommendedActions.map((action, i) => (
+                    <li key={i} className="text-xs">{action}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
@@ -87,38 +149,6 @@ const AnatomicalBodyMap: React.FC = memo(() => {
   );
 });
 
-// Optimized HotspotMarker component using memo
-const HotspotMarker = memo(({ 
-  issue, 
-  isSelected, 
-  onClick 
-}: { 
-  issue: HealthIssue; 
-  isSelected: boolean; 
-  onClick: () => void;
-}) => {
-  const { x, y } = issue.location;
-  
-  return (
-    <div
-      className={`hotspot-marker hotspot-size-md hotspot-severity-${issue.severity} ${isSelected ? 'hotspot-active hotspot-pulse' : ''}`}
-      style={{ 
-        left: `${x}%`, 
-        top: `${y}%`,
-      }}
-      onClick={onClick}
-      role="button"
-      aria-label={`${issue.name} hotspot`}
-    >
-      <MoveHorizontal className="hotspot-icon" size={16} />
-      {isSelected && (
-        <span className="hotspot-label">{issue.name}</span>
-      )}
-    </div>
-  );
-});
-
-HotspotMarker.displayName = 'HotspotMarker';
 AnatomicalBodyMap.displayName = 'AnatomicalBodyMap';
 
 export default AnatomicalBodyMap;
