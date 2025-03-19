@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 interface DashboardTabsProps {
   initialTab: string;
   upcomingAppointments: {
@@ -15,30 +13,25 @@ interface DashboardTabsProps {
   onRescheduleAppointment: (id: string) => void;
   children?: React.ReactNode;
 }
-
 const DashboardTabs: React.FC<DashboardTabsProps> & {
   Content: typeof TabsContent;
 } = ({
   initialTab,
-  upcomingAppointments = [], // Provide default empty array
+  upcomingAppointments = [],
+  // Provide default empty array
   onConfirmAppointment,
   onRescheduleAppointment,
   children
 }) => {
-  return (
-    <Tabs defaultValue={initialTab} className="w-full">
-      <TabsList className="mb-6">
-        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-      </TabsList>
+  return <Tabs defaultValue={initialTab} className="w-full">
+      
       
       <TabsContent value="dashboard">
         {children}
       </TabsContent>
-    </Tabs>
-  );
+    </Tabs>;
 };
 
 // Attach the TabsContent component to DashboardTabs
 DashboardTabs.Content = TabsContent;
-
 export default DashboardTabs;
