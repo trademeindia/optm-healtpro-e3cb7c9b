@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MoveHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnatomicalData } from '@/contexts/AnatomicalDataContext';
+import { HealthIssue } from '@/components/patient-dashboard/anatomical-map/types';
 
 // Optimize with memo to prevent unnecessary re-renders
 const AnatomicalBodyMap: React.FC = memo(() => {

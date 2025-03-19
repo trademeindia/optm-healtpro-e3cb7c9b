@@ -21,7 +21,7 @@ export default {
     extend: {
       scale: {
         '75': '0.75',
-        '80': '0.80', // Add this line for scale-80
+        '80': '0.80',
       },
       colors: {
         border: "hsl(var(--border))",
@@ -72,10 +72,15 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-light": {
+          '0%, 100%': { opacity: 0.3 },
+          '50%': { opacity: 0.6 },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-light": "pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },
