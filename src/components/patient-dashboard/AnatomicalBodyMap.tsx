@@ -26,8 +26,12 @@ const AnatomicalBodyMap: React.FC = () => {
       </CardHeader>
       <CardContent className="relative">
         <div 
-          className="relative w-full h-[350px] flex items-center justify-center overflow-hidden"
-          style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+          className="relative w-full h-[350px] flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800/20 rounded-md"
+          style={{ 
+            transform: `scale(${zoom})`, 
+            transformOrigin: 'center center',
+            transition: 'transform 0.2s ease-out'
+          }}
         >
           <img 
             src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
@@ -45,7 +49,10 @@ const AnatomicalBodyMap: React.FC = () => {
           ))}
         </div>
         
-        <MuscleFlexionPanel flexionData={muscleFlexionData} />
+        <MuscleFlexionPanel 
+          flexionData={muscleFlexionData} 
+          healthIssues={healthIssues}
+        />
         
         {selectedIssue && <IssueDetailPanel issue={selectedIssue} />}
       </CardContent>
