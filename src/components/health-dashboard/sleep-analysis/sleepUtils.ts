@@ -52,7 +52,7 @@ export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData 
   Object.entries(groupedByDate).forEach(([date, metrics]) => {
     // Calculate total sleep duration
     const totalSleep = metrics.reduce((sum, metric) => {
-      return sum + (metric.value as number || 0);
+      return sum + (Number(metric.value) || 0);
     }, 0);
     
     dailySleep.push({
