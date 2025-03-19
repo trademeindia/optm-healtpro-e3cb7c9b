@@ -1,3 +1,4 @@
+
 import { HotSpot } from './types';
 import { SymptomEntry } from '@/contexts/SymptomContext';
 import { anatomicalRegions } from './regions';
@@ -31,16 +32,13 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
     // Find the corresponding anatomical region
     const region = anatomicalRegions.find(r => r.id === regionId);
     
-    // Generate a color based on severity
-    const severityColor = getSeverityColor(symptom.painLevel || 1);
+    // Get precise position with fine-tuned adjustments for accurate alignment
+    const position = getPrecisePosition(region?.x || 50, region?.y || 50, symptom.location);
     
-    // Ensure proper positioning with fine-tuned adjustments
-    const position = getAdjustedPosition(region?.x || 50, region?.y || 50, symptom.location);
-    
-    // Constrain position to stay within the image boundaries
+    // Constrain position to stay within the image boundaries (5-95% range)
     const constrainedPosition = {
-      x: Math.min(Math.max(position.x, 5), 95), // Keep x between 5% and 95%
-      y: Math.min(Math.max(position.y, 5), 95)  // Keep y between 5% and 95%
+      x: Math.min(Math.max(position.x, 5), 95),
+      y: Math.min(Math.max(position.y, 5), 95)
     };
     
     return {
@@ -48,8 +46,6 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
       region: regionId,
       x: constrainedPosition.x, 
       y: constrainedPosition.y,
-      size: getHotspotSize(symptom.painLevel || 1),
-      color: severityColor,
       label: symptom.symptomName,
       description: symptom.notes || 'No description provided',
       severity: symptom.painLevel || 1
@@ -58,49 +54,75 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
 };
 
 /**
- * Fine-tune position based on specific body part
+ * Fine-tune position based on specific body part for precise alignment
  */
-const getAdjustedPosition = (x: number, y: number, location: string) => {
-  // Enhanced adjustments to better align hotspots with the anatomical regions
+const getPrecisePosition = (x: number, y: number, location: string) => {
+  // Better adjustments for more accurate placement on the muscular system
   switch(location) {
-    case 'right-shoulder':
-    case 'rightShoulder':
-      return { x: x - 2, y: y + 1 };
-    case 'left-shoulder':
-    case 'leftShoulder':
-      return { x: x + 2, y: y + 1 };
-    case 'right-knee':
-    case 'rightKnee':
-      return { x: x - 1, y };
-    case 'left-knee':
-    case 'leftKnee':
-      return { x: x + 1, y };
-    case 'lower-back':
-    case 'lowerBack':
-      return { x, y: y - 1 };
-    case 'upper-back':
-    case 'upperBack':
+    // Head and neck region
+    case 'head':
       return { x, y: y - 2 };
     case 'neck':
-      return { x, y: y - 1 };
+      return { x, y };
+      
+    // Upper body regions
+    case 'right-shoulder':
+    case 'rightShoulder':
+      return { x: x - 1, y };
+    case 'left-shoulder':
+    case 'leftShoulder':
+      return { x: x + 1, y };
     case 'chest':
+      return { x, y: y - 0.5 };
+    case 'upper-back':
+    case 'upperBack':
       return { x, y: y - 1 };
+      
+    // Mid body regions
     case 'abdomen':
+      return { x, y };
+    case 'lower-back':
+    case 'lowerBack':
       return { x, y: y + 1 };
+      
+    // Arms and hands
     case 'right-elbow':
     case 'rightElbow':
-      return { x: x - 2, y };
+      return { x: x - 1, y };
     case 'left-elbow':
     case 'leftElbow':
-      return { x: x + 2, y };
+      return { x: x + 1, y };
     case 'right-hand':
     case 'rightWrist':
-      return { x: x - 1, y: y + 1 };
+    case 'rightHand':
+      return { x: x - 1, y };
     case 'left-hand':
     case 'leftWrist':
-      return { x: x + 1, y: y + 1 };
-    case 'head':
-      return { x, y: y - 1 };
+    case 'leftHand':
+      return { x: x + 1, y };
+      
+    // Lower body
+    case 'right-hip':
+    case 'rightHip':
+      return { x: x - 1, y };
+    case 'left-hip':
+    case 'leftHip':
+      return { x: x + 1, y };
+    case 'right-knee':
+    case 'rightKnee':
+      return { x: x - 0.5, y };
+    case 'left-knee':
+    case 'leftKnee':
+      return { x: x + 0.5, y };
+    case 'right-foot':
+    case 'rightAnkle':
+    case 'rightFoot':
+      return { x: x - 0.5, y };
+    case 'left-foot':
+    case 'leftAnkle':
+    case 'leftFoot':
+      return { x: x + 0.5, y };
+      
     default:
       return { x, y };
   }
@@ -121,14 +143,18 @@ const mapSymptomLocationToRegion = (location: string): string => {
     case 'leftShoulder': return 'left-shoulder';
     case 'rightElbow': return 'right-elbow';
     case 'leftElbow': return 'left-elbow';
-    case 'rightWrist': return 'right-hand';
-    case 'leftWrist': return 'left-hand';
+    case 'rightWrist': 
+    case 'rightHand': return 'right-hand';
+    case 'leftWrist': 
+    case 'leftHand': return 'left-hand';
     case 'rightHip': return 'right-hip';
     case 'leftHip': return 'left-hip';
     case 'rightKnee': return 'right-knee';
     case 'leftKnee': return 'left-knee';
-    case 'rightAnkle': return 'right-foot';
-    case 'leftAnkle': return 'left-foot';
+    case 'rightAnkle': 
+    case 'rightFoot': return 'right-foot';
+    case 'leftAnkle': 
+    case 'leftFoot': return 'left-foot';
     case 'upperBack': return 'upper-back';
     case 'lowerBack': return 'lower-back';
     default: return 'chest'; // Default to chest if no matching region
@@ -136,33 +162,8 @@ const mapSymptomLocationToRegion = (location: string): string => {
 };
 
 /**
- * Determines hotspot size based on symptom severity
- */
-const getHotspotSize = (severity: number): number => {
-  // Scale size based on severity (1-10), but keep sizes smaller overall
-  return Math.max(18, Math.min(30, 18 + (severity * 1.3)));
-};
-
-/**
- * Generates a color based on symptom severity
- */
-const getSeverityColor = (severity: number): string => {
-  if (severity <= 3) {
-    return 'rgba(52, 211, 153, 0.6)'; // Green for mild with transparency
-  } else if (severity <= 6) {
-    return 'rgba(251, 191, 36, 0.6)'; // Yellow for moderate with transparency
-  } else {
-    return 'rgba(239, 68, 68, 0.6)';  // Red for severe with transparency
-  }
-};
-
-/**
  * Get text color for contrast against the background
  */
 export const getContrastTextColor = (backgroundColor: string): string => {
-  // Simple implementation - if using a dark color, return white, otherwise black
-  if (backgroundColor.includes('239, 68, 68') || backgroundColor.includes('251, 191, 36')) {
-    return 'white';
-  }
-  return 'black';
+  return 'white'; // Using white consistently for text contrast
 };

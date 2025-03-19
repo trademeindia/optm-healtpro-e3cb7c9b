@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HotspotMarkerProps } from './types';
-import { MapPin, AlertCircle, Activity, CircleDot } from 'lucide-react';
+import { CircleDot, CircleEllipsis, Activity } from 'lucide-react';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
   // Determine tooltip positioning based on hotspot coordinates
@@ -19,7 +19,7 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
     return "top";
   };
 
-  // Get the severity class for styling
+  // Get the severity class for styling - using consistent blue theme
   const getSeverityClass = () => {
     if (!hotspot.severity) return 'hotspot-severity-medium';
     if (hotspot.severity <= 3) return 'hotspot-severity-low';
@@ -29,18 +29,18 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
   
   // Get size class based on severity and active state
   const getSizeClass = () => {
-    if (isActive) return 'hotspot-size-lg';
-    return hotspot.severity && hotspot.severity > 5 ? 'hotspot-size-md' : 'hotspot-size-sm';
+    if (isActive) return 'hotspot-size-md';
+    return 'hotspot-size-sm';
   };
 
   // Render appropriate icon based on severity
   const renderIcon = () => {
     if (!hotspot.severity || hotspot.severity <= 3) {
-      return <CircleDot className="hotspot-icon" size={isActive ? 16 : 12} />;
+      return <CircleDot className="hotspot-icon" size={14} strokeWidth={2.5} />;
     } else if (hotspot.severity <= 6) {
-      return <Activity className="hotspot-icon" size={isActive ? 16 : 12} />;
+      return <Activity className="hotspot-icon" size={14} strokeWidth={2.5} />;
     } else {
-      return <AlertCircle className="hotspot-icon" size={isActive ? 16 : 12} />;
+      return <CircleEllipsis className="hotspot-icon" size={14} strokeWidth={2.5} />;
     }
   };
   
@@ -53,15 +53,14 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             style={{
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
-              backgroundColor: isActive ? 
-                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.6)` :
-                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.5)`
+              backgroundColor: `rgba(33, 150, 243, ${isActive ? 0.6 : 0.4})`,
+              borderColor: `rgba(33, 150, 243, ${isActive ? 0.4 : 0.3})`,
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: isActive ? 0.9 : 0.75 }}
+            animate={{ scale: 1, opacity: isActive ? 0.8 : 0.6 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.15, opacity: 1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.1, opacity: 0.9 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => onClick(hotspot)}
           >
             {renderIcon()}
@@ -73,15 +72,15 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
         <TooltipContent 
           side={getTooltipSide()} 
           className="hotspot-tooltip z-50 shadow-lg"
-          sideOffset={12}
+          sideOffset={10}
         >
-          <div className="p-3 space-y-2">
-            <p className="font-semibold text-sm">{hotspot.label}</p>
+          <div className="p-2.5 space-y-1.5">
+            <p className="font-medium text-sm">{hotspot.label}</p>
             {hotspot.severity && (
-              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                hotspot.severity <= 3 ? 'bg-green-100 text-green-800' : 
-                hotspot.severity <= 6 ? 'bg-amber-100 text-amber-800' : 
-                'bg-red-100 text-red-800'
+              <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
+                hotspot.severity <= 3 ? 'bg-blue-100 text-blue-800' : 
+                hotspot.severity <= 6 ? 'bg-blue-200 text-blue-800' : 
+                'bg-blue-300 text-blue-800'
               }`}>
                 Pain level: {hotspot.severity}/10
               </div>
