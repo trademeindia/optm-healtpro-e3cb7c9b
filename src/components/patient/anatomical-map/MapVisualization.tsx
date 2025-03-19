@@ -27,37 +27,40 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
   return (
     <div className="relative flex justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800/30 dark:to-gray-900/30 rounded-lg h-[550px] shadow-inner">
       <motion.div
-        className="relative w-full h-full flex justify-center items-center anatomy-model-wrapper"
+        className="relative flex justify-center items-center w-full h-full anatomy-model-wrapper"
         style={{
           scale: zoom,
           transition: 'scale 0.3s ease-out'
         }}
       >
-        {/* Container to ensure hotspots stay within bounds */}
-        <div className="relative w-auto h-auto">
-          {/* Anatomical model image */}
-          <img
-            src={getSystemImage(activeSystem)}
-            alt={`${activeSystem} Anatomical System`}
-            className="model-image max-h-full max-w-full object-contain"
-            style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
-            onLoad={onImageLoad}
-            draggable={false}
-          />
-          
-          {/* Hotspots - Only render if image is loaded */}
-          {imageLoaded && (
-            <AnimatePresence mode="sync">
-              {hotspots.map((hotspot, index) => (
-                <HotspotMarker
-                  key={hotspot.id || `hotspot-${index}`}
-                  hotspot={hotspot}
-                  isActive={activeHotspot?.id === hotspot.id}
-                  onClick={onHotspotClick}
-                />
-              ))}
-            </AnimatePresence>
-          )}
+        {/* Improved container for better positioning */}
+        <div className="relative w-full h-full flex justify-center items-center">
+          <div className="relative max-w-full max-h-full">
+            {/* Anatomical model image with improved sizing */}
+            <img
+              src={getSystemImage(activeSystem)}
+              alt={`${activeSystem} Anatomical System`}
+              className="max-h-[500px] w-auto object-contain"
+              onLoad={onImageLoad}
+              draggable={false}
+            />
+            
+            {/* Hotspots container with absolute positioning */}
+            {imageLoaded && (
+              <div className="absolute inset-0 pointer-events-none">
+                <AnimatePresence mode="sync">
+                  {hotspots.map((hotspot, index) => (
+                    <HotspotMarker
+                      key={hotspot.id || `hotspot-${index}`}
+                      hotspot={hotspot}
+                      isActive={activeHotspot?.id === hotspot.id}
+                      onClick={onHotspotClick}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
