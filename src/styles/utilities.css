@@ -51,4 +51,13 @@
   .foreground-element {
     @apply z-20;
   }
+  
+  /* Loading state utilities */
+  .loading-container {
+    @apply fixed inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm z-50;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary;
+  }
 }

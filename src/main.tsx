@@ -3,13 +3,18 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 
-// Import all CSS in the correct order - this is critical for proper styling
+// Import base styles first
 import './styles/base.css'
-import './styles/main.css'
-import './App.css'
-import './styles/components.css'
+// Then import utility and component styles
 import './styles/utilities.css'
+import './styles/components.css'
 import './styles/animations.css'
+// Then import main styles
+import './styles/main.css'
+// Finally import App styles
+import './App.css'
+
+// Import responsive styles
 import './styles/responsive/hotspots.css'
 import './styles/responsive/anatomy.css'
 import './styles/responsive/anatomy-components.css'

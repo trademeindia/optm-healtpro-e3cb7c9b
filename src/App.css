@@ -15,6 +15,7 @@
   overflow-x: hidden;
   opacity: 1 !important;
   visibility: visible !important;
+  z-index: 1;
 }
 
 /* Fix for white screen when content doesn't fill viewport */
@@ -34,6 +35,8 @@ html, body, #root {
   flex-direction: column;
   opacity: 1 !important;
   visibility: visible !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Prevent layout shifts */
@@ -42,8 +45,9 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   position: relative;
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 2;
 }
 
 /* Prevent stuck scrolling issues */
@@ -77,7 +81,7 @@ body.overflow-hidden {
   justify-content: center;
   max-width: 500px;
   margin: 0 auto;
-  visibility: visible;
+  visibility: visible !important;
 }
 
 /* Prevent nested scrolling issues */
@@ -106,8 +110,8 @@ body.overflow-hidden {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   overflow: hidden;
-  visibility: visible;
-  opacity: 1;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Fix dialog content visibility */
@@ -119,8 +123,8 @@ body.overflow-hidden {
   max-height: 90vh;
   overflow: auto;
   z-index: 50;
-  visibility: visible;
-  opacity: 1;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Dark mode text contrast improvement */
@@ -133,4 +137,26 @@ body.overflow-hidden {
 :root {
   --high-contrast-text: rgb(30, 30, 30);
   --card-border: rgba(0, 0, 0, 0.1);
+}
+
+/* General loading spinner styles */
+.global-loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+}
+
+/* Make sure headers and footers are always visible */
+header, footer {
+  position: relative;
+  z-index: 10;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

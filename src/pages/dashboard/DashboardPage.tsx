@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ const Dashboard: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [filterPeriod, setFilterPeriod] = useState("thisWeek");
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const { 
@@ -31,12 +32,18 @@ const Dashboard: React.FC = () => {
     getUpcomingReminders 
   } = useReminders();
 
-  // Check user authentication status
+  // Check user authentication status and set loading state
   useEffect(() => {
     if (user) {
       console.log(`Dashboard accessed by: ${user.name} (${user.role})`);
+      // Simulate loading time for dashboard components
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
     } else {
       console.log('Dashboard accessed by unauthenticated user');
+      setIsLoading(true);
     }
   }, [user]);
 
@@ -108,8 +115,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full overflow-hidden">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-background dashboard-container">
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden w-full">
