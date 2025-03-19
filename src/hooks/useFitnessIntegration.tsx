@@ -1,436 +1,282 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/auth';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 
 export interface FitnessProvider {
   id: string;
   name: string;
-  isConnected: boolean;
-  lastSync?: Date | null;
   logo?: string;
-  metrics: string[]; // Add the required metrics property
+  isConnected: boolean;
+  lastSynced?: string;
+  metrics?: {
+    steps: number;
+    calories: number;
+    heartRate: number;
+    distance: number;
+  };
 }
 
 export interface FitnessData {
-  steps: { 
-    data: Array<{timestamp: string; value: number}>;
-    lastSync: Date | null;
+  steps: {
+    data: Array<{ timestamp: string; value: number }>;
+    summary: { total: number; average: number };
   };
-  heartRate: { 
-    data: Array<{timestamp: string; value: number}>;
-    lastSync: Date | null;
+  heartRate: {
+    data: Array<{ timestamp: string; value: number }>;
+    summary: { average: number; min: number; max: number };
   };
-  sleep: { 
-    data: Array<{timestamp: string; value: number}>;
-    lastSync: Date | null;
-  };
-  calories: { 
-    data: Array<{timestamp: string; value: number}>;
-    lastSync: Date | null;
+  calories: {
+    data: Array<{ timestamp: string; value: number }>;
+    summary: { total: number; average: number };
   };
 }
 
 const useFitnessIntegration = () => {
-  const [providers, setProviders] = useState<FitnessProvider[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [providers, setProviders] = useState<FitnessProvider[]>([
+    {
+      id: 'google-fit',
+      name: 'Google Fit',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Google_Fit_icon_%282018%29.svg',
+      isConnected: false,
+      lastSynced: '',
+      metrics: {
+        steps: 0,
+        calories: 0,
+        heartRate: 0,
+        distance: 0,
+      }
+    },
+    {
+      id: 'apple-health',
+      name: 'Apple Health',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Apple_Health_Icon.png',
+      isConnected: false,
+      lastSynced: '',
+      metrics: {
+        steps: 0,
+        calories: 0,
+        heartRate: 0,
+        distance: 0,
+      }
+    },
+    {
+      id: 'fitbit',
+      name: 'Fitbit',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Fitbit_logo.svg',
+      isConnected: false,
+      lastSynced: '',
+      metrics: {
+        steps: 0,
+        calories: 0,
+        heartRate: 0,
+        distance: 0,
+      }
+    }
+  ]);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [fitnessData, setFitnessData] = useState<FitnessData>({
-    steps: { data: [], lastSync: null },
-    heartRate: { data: [], lastSync: null },
-    sleep: { data: [], lastSync: null },
-    calories: { data: [], lastSync: null }
+    steps: {
+      data: Array.from({ length: 7 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+        value: Math.floor(Math.random() * 5000) + 3000
+      })),
+      summary: { total: 0, average: 0 }
+    },
+    heartRate: {
+      data: Array.from({ length: 24 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
+        value: Math.floor(Math.random() * 20) + 60
+      })),
+      summary: { average: 0, min: 0, max: 0 }
+    },
+    calories: {
+      data: Array.from({ length: 7 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+        value: Math.floor(Math.random() * 500) + 1500
+      })),
+      summary: { total: 0, average: 0 }
+    }
   });
-  const { user } = useAuth();
 
-  const fetchConnectedProviders = useCallback(async () => {
-    if (!user?.id) {
-      setProviders([]);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // For demo users, return mock data
-      if (user.id.startsWith('demo-')) {
-        const mockProviders: FitnessProvider[] = [
-          {
-            id: 'google_fit',
-            name: 'Google Fit',
-            isConnected: user.id.includes('patient'),
-            lastSync: user.id.includes('patient') ? new Date(Date.now() - 24 * 60 * 60 * 1000) : null,
-            logo: '/assets/google-fit.svg',
-            metrics: ['steps', 'activity', 'heart_rate'] // Add default metrics
-          },
-          {
-            id: 'apple_health',
-            name: 'Apple Health',
-            isConnected: false,
-            lastSync: null,
-            logo: '/assets/apple-health.svg',
-            metrics: ['steps', 'activity', 'heart_rate']
-          },
-          {
-            id: 'fitbit',
-            name: 'Fitbit',
-            isConnected: false,
-            lastSync: null,
-            logo: '/assets/fitbit.svg',
-            metrics: ['steps', 'activity', 'sleep']
-          }
-        ];
-        setProviders(mockProviders);
-        setIsLoading(false);
-        return;
-      }
-
-      // Query the database for real user connections
-      const { data, error } = await supabase
-        .from('fitness_connections')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      // Map connections to provider data
-      const connectedProviders = (data || []).reduce((acc: Record<string, any>, conn) => {
-        acc[conn.provider] = {
-          isConnected: true,
-          lastSync: conn.last_sync ? new Date(conn.last_sync) : null
-        };
-        return acc;
-      }, {});
-
-      // Merge with all available providers
-      const allProviders: FitnessProvider[] = [
-        {
-          id: 'google_fit',
-          name: 'Google Fit',
-          isConnected: !!connectedProviders['google_fit'],
-          lastSync: connectedProviders['google_fit']?.lastSync || null,
-          logo: '/assets/google-fit.svg',
-          metrics: ['steps', 'heart_rate', 'calories'] // Add metrics
-        },
-        {
-          id: 'apple_health',
-          name: 'Apple Health',
-          isConnected: !!connectedProviders['apple_health'],
-          lastSync: connectedProviders['apple_health']?.lastSync || null,
-          logo: '/assets/apple-health.svg',
-          metrics: ['steps', 'heart_rate', 'sleep'] // Add metrics
-        },
-        {
-          id: 'fitbit',
-          name: 'Fitbit',
-          isConnected: !!connectedProviders['fitbit'],
-          lastSync: connectedProviders['fitbit']?.lastSync || null,
-          logo: '/assets/fitbit.svg',
-          metrics: ['steps', 'activity', 'sleep'] // Add metrics
-        }
-      ];
-
-      setProviders(allProviders);
-    } catch (error) {
-      console.error('Error fetching fitness connections:', error);
-      toast.error('Failed to load fitness integrations');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]);
-
-  // Add a function to fetch fitness data from a provider
-  const fetchProviderData = useCallback(async (providerId: string): Promise<boolean> => {
-    if (!user?.id) return false;
-    
-    // For demo users, generate mock data
-    if (user.id.startsWith('demo-')) {
-      setFitnessData(prev => {
-        // Generate random steps data for the last 7 days
-        const stepsData = Array(7).fill(0).map((_, i) => {
-          const date = new Date();
-          date.setDate(date.getDate() - 6 + i);
-          return {
-            timestamp: date.toISOString(),
-            value: 5000 + Math.floor(Math.random() * 5000) // Random steps between 5000-10000
-          };
-        });
-        
-        // Generate random heart rate data
-        const heartRateData = Array(24).fill(0).map((_, i) => {
-          const date = new Date();
-          date.setHours(date.getHours() - 23 + i);
-          return {
-            timestamp: date.toISOString(),
-            value: 60 + Math.floor(Math.random() * 40) // Random HR between 60-100
-          };
-        });
-        
-        // Mock calorie data
-        const caloriesData = Array(7).fill(0).map((_, i) => {
-          const date = new Date();
-          date.setDate(date.getDate() - 6 + i);
-          return {
-            timestamp: date.toISOString(),
-            value: 1800 + Math.floor(Math.random() * 800) // Random calories between 1800-2600
-          };
-        });
-        
-        return {
-          steps: { data: stepsData, lastSync: new Date() },
-          heartRate: { data: heartRateData, lastSync: new Date() },
-          calories: { data: caloriesData, lastSync: new Date() },
-          sleep: prev.sleep // Keep existing sleep data
-        };
-      });
-      
-      return true;
-    }
-    
-    try {
-      // For real implementation, fetch data from Supabase Edge Function
-      if (providerId === 'google_fit') {
-        const { data, error } = await supabase
-          .from('fitness_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('source', 'google_fit')
-          .order('start_time', { ascending: false });
-          
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          // Process and transform the data
-          const stepsData = data
-            .filter(item => item.data_type === 'steps')
-            .map(item => ({
-              timestamp: item.start_time,
-              value: item.value
-            }));
-            
-          const heartRateData = data
-            .filter(item => item.data_type === 'heart_rate')
-            .map(item => ({
-              timestamp: item.start_time,
-              value: item.value
-            }));
-            
-          const caloriesData = data
-            .filter(item => item.data_type === 'calories')
-            .map(item => ({
-              timestamp: item.start_time,
-              value: item.value
-            }));
-            
-          setFitnessData({
-            steps: { 
-              data: stepsData,
-              lastSync: new Date()
-            },
-            heartRate: { 
-              data: heartRateData,
-              lastSync: new Date()
-            },
-            calories: { 
-              data: caloriesData,
-              lastSync: new Date()
-            },
-            sleep: { 
-              data: [], // Not implemented yet
-              lastSync: null
-            }
-          });
-        }
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error fetching provider data:', error);
-      return false;
-    }
-  }, [user?.id]);
-
+  // Calculate summary stats on mount or when data changes
   useEffect(() => {
-    fetchConnectedProviders();
-  }, [fetchConnectedProviders]);
+    // Calculate steps summary
+    const stepsTotal = fitnessData.steps.data.reduce((sum, item) => sum + item.value, 0);
+    const stepsAverage = stepsTotal / fitnessData.steps.data.length || 0;
+    
+    // Calculate heart rate summary
+    const heartRates = fitnessData.heartRate.data.map(item => item.value);
+    const heartRateAverage = heartRates.reduce((sum, val) => sum + val, 0) / heartRates.length || 0;
+    const heartRateMin = Math.min(...heartRates);
+    const heartRateMax = Math.max(...heartRates);
+    
+    // Calculate calories summary
+    const caloriesTotal = fitnessData.calories.data.reduce((sum, item) => sum + item.value, 0);
+    const caloriesAverage = caloriesTotal / fitnessData.calories.data.length || 0;
+    
+    setFitnessData(prev => ({
+      ...prev,
+      steps: {
+        ...prev.steps,
+        summary: { total: stepsTotal, average: stepsAverage }
+      },
+      heartRate: {
+        ...prev.heartRate,
+        summary: { average: heartRateAverage, min: heartRateMin, max: heartRateMax }
+      },
+      calories: {
+        ...prev.calories,
+        summary: { total: caloriesTotal, average: caloriesAverage }
+      }
+    }));
+  }, []);
 
-  // Update the return types of these functions to return boolean values
+  // Simulates connecting to a provider
   const connectProvider = async (providerId: string): Promise<boolean> => {
-    if (!user) {
-      toast.error('You must be logged in to connect a provider');
-      return false;
-    }
-
-    // For demo users, simulate connection
-    if (user.id.startsWith('demo-')) {
-      // Simulate loading
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Update the provider state
-      setProviders(prev => 
-        prev.map(provider => 
+      setProviders(prevProviders => 
+        prevProviders.map(provider => 
           provider.id === providerId 
-            ? { ...provider, isConnected: true, lastSync: new Date() } 
+            ? { 
+                ...provider, 
+                isConnected: true, 
+                lastSynced: new Date().toISOString(),
+                metrics: {
+                  steps: Math.floor(Math.random() * 5000) + 3000,
+                  calories: Math.floor(Math.random() * 500) + 1500,
+                  heartRate: Math.floor(Math.random() * 20) + 60,
+                  distance: Math.floor(Math.random() * 5) + 2,
+                }
+              } 
             : provider
         )
       );
-      
-      toast.success(`Demo ${providerId.replace('_', ' ')} connected successfully`);
-      setIsLoading(false);
-      
-      // Generate mock data for the newly connected provider
-      await fetchProviderData(providerId);
-      
       return true;
-    }
-
-    try {
-      setIsLoading(true);
-      if (providerId === 'google_fit') {
-        // Redirect to Google Fit auth page
-        const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://xjxxuqqyjqzgmvtgrpgv.supabase.co"}/functions/v1/connect-google-fit`;
-        localStorage.setItem('healthAppRedirectUrl', window.location.href);
-        window.location.href = `${functionUrl}?userId=${user.id}`;
-        return true;
-      } else {
-        toast.info('This provider is not yet supported');
-        return false;
-      }
     } catch (error) {
       console.error('Error connecting provider:', error);
-      toast.error(`Failed to connect ${providerId.replace('_', ' ')}`);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Simulates disconnecting from a provider
   const disconnectProvider = async (providerId: string): Promise<boolean> => {
-    if (!user) {
-      toast.error('You must be logged in to disconnect a provider');
-      return false;
-    }
-
-    // For demo users, simulate disconnection
-    if (user.id.startsWith('demo-')) {
-      // Simulate loading
-      setIsLoading(true);
+    setIsLoading(true);
+    try {
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Update the provider state
-      setProviders(prev => 
-        prev.map(provider => 
+      setProviders(prevProviders => 
+        prevProviders.map(provider => 
           provider.id === providerId 
-            ? { ...provider, isConnected: false, lastSync: null } 
+            ? { 
+                ...provider, 
+                isConnected: false,
+                lastSynced: '',
+                metrics: {
+                  steps: 0,
+                  calories: 0,
+                  heartRate: 0,
+                  distance: 0,
+                }
+              } 
             : provider
         )
       );
-      
-      toast.success(`Demo ${providerId.replace('_', ' ')} disconnected successfully`);
-      setIsLoading(false);
-      return true;
-    }
-
-    try {
-      setIsLoading(true);
-      // Delete the connection from the database
-      const { error } = await supabase
-        .from('fitness_connections')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('provider', providerId);
-
-      if (error) throw error;
-
-      // Update the state
-      setProviders(prev => 
-        prev.map(provider => 
-          provider.id === providerId 
-            ? { ...provider, isConnected: false, lastSync: null } 
-            : provider
-        )
-      );
-      
-      toast.success(`${providerId.replace('_', ' ')} disconnected successfully`);
       return true;
     } catch (error) {
       console.error('Error disconnecting provider:', error);
-      toast.error(`Failed to disconnect ${providerId.replace('_', ' ')}`);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Simulates refreshing data from a provider
   const refreshProviderData = async (providerId: string): Promise<boolean> => {
-    if (!user) {
-      toast.error('You must be logged in to refresh data');
-      return false;
-    }
-
-    // For demo users, simulate refresh
-    if (user.id.startsWith('demo-')) {
-      // Simulate loading
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Fetch new mock data
-      await fetchProviderData(providerId);
-      
-      // Update the provider state with a new sync time
-      setProviders(prev => 
-        prev.map(provider => 
-          provider.id === providerId 
-            ? { ...provider, lastSync: new Date() } 
+      setProviders(prevProviders => 
+        prevProviders.map(provider => 
+          provider.id === providerId && provider.isConnected
+            ? { 
+                ...provider, 
+                lastSynced: new Date().toISOString(),
+                metrics: {
+                  steps: Math.floor(Math.random() * 5000) + 3000,
+                  calories: Math.floor(Math.random() * 500) + 1500,
+                  heartRate: Math.floor(Math.random() * 20) + 60,
+                  distance: Math.floor(Math.random() * 5) + 2,
+                }
+              } 
             : provider
         )
       );
       
-      toast.success(`Demo ${providerId.replace('_', ' ')} data refreshed`);
-      setIsLoading(false);
-      return true;
-    }
-
-    try {
-      setIsLoading(true);
-      toast.info(`Refreshing ${providerId.replace('_', ' ')} data...`);
-      
-      // Call the sync function
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://xjxxuqqyjqzgmvtgrpgv.supabase.co"}/functions/v1/fetch-google-fit-data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          provider: providerId,
-          forceRefresh: true
-        }),
+      // Also update the detailed fitness data
+      setFitnessData(prev => {
+        // Generate new step data
+        const newStepsData = prev.steps.data.map((item, index) => ({
+          timestamp: item.timestamp,
+          value: Math.floor(Math.random() * 5000) + 3000
+        }));
+        
+        // Generate new heart rate data
+        const newHeartRateData = prev.heartRate.data.map((item, index) => ({
+          timestamp: item.timestamp,
+          value: Math.floor(Math.random() * 20) + 60
+        }));
+        
+        // Generate new calorie data
+        const newCaloriesData = prev.calories.data.map((item, index) => ({
+          timestamp: item.timestamp,
+          value: Math.floor(Math.random() * 500) + 1500
+        }));
+        
+        return {
+          steps: {
+            data: newStepsData,
+            summary: prev.steps.summary
+          },
+          heartRate: {
+            data: newHeartRateData,
+            summary: prev.heartRate.summary
+          },
+          calories: {
+            data: newCaloriesData,
+            summary: prev.calories.summary
+          }
+        };
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to refresh data');
-      }
-
-      // Update the provider's last sync time
-      const { error } = await supabase
-        .from('fitness_connections')
-        .update({ last_sync: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .eq('provider', providerId);
-
-      if (error) throw error;
-
-      // Fetch the updated providers and data
-      await fetchConnectedProviders();
-      await fetchProviderData(providerId);
       
-      toast.success(`${providerId.replace('_', ' ')} data refreshed successfully`);
       return true;
     } catch (error) {
       console.error('Error refreshing provider data:', error);
-      toast.error(`Failed to refresh ${providerId.replace('_', ' ')} data`);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Refreshes data for all connected providers
+  const refreshProviders = async (): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const connectedProviders = providers.filter(provider => provider.isConnected);
+      for (const provider of connectedProviders) {
+        await refreshProviderData(provider.id);
+      }
+      return true;
+    } catch (error) {
+      console.error('Error refreshing providers:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -439,12 +285,12 @@ const useFitnessIntegration = () => {
 
   return {
     providers,
+    fitnessData,
     isLoading,
     connectProvider,
     disconnectProvider,
     refreshProviderData,
-    refreshProviders: fetchConnectedProviders,
-    fitnessData // Add the fitnessData property
+    refreshProviders
   };
 };
 

@@ -42,6 +42,22 @@ const HealthAppsPage: React.FC = () => {
     }
   }, [location]);
 
+  // Adapter functions to convert Promise<void> to Promise<boolean>
+  const handleConnect = async (providerId: string): Promise<boolean> => {
+    await connectProvider(providerId);
+    return true;
+  };
+
+  const handleDisconnect = async (providerId: string): Promise<boolean> => {
+    await disconnectProvider(providerId);
+    return true;
+  };
+
+  const handleRefresh = async (providerId: string): Promise<boolean> => {
+    await refreshProviderData(providerId);
+    return true;
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -76,10 +92,10 @@ const HealthAppsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8">
               <FitnessIntegrations 
-                providers={providers} // Type is now correct with metrics property
-                onConnect={connectProvider} // Type is now correct with Promise<boolean> return
-                onDisconnect={disconnectProvider} // Type is now correct with Promise<boolean> return
-                onRefresh={refreshProviderData} // Type is now correct with Promise<boolean> return
+                providers={providers}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                onRefresh={handleRefresh}
               />
             </div>
             

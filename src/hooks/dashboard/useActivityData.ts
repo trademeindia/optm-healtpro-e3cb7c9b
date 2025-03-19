@@ -1,23 +1,36 @@
 
-export const useActivityData = (fitnessData: any) => {
-  const activityData = [
-    { day: 'Mon', value: 8500 },
-    { day: 'Tue', value: 9200 },
-    { day: 'Wed', value: 7800 },
-    { day: 'Thu', value: 8100 },
-    { day: 'Fri', value: 10200 },
-    { day: 'Sat', value: 6500 },
-    { day: 'Sun', value: 7300 }
-  ];
+import { FitnessData } from '@/hooks/useFitnessIntegration';
 
-  const getSteps = () => {
-    return fitnessData.steps ? {
-      data: activityData,
-      currentValue: Number(fitnessData.steps.value),
-      source: fitnessData.steps.source,
-      lastSync: new Date(fitnessData.steps.timestamp).toLocaleTimeString()
-    } : { data: activityData, currentValue: 8152 };
+export const useActivityData = (fitnessData: FitnessData) => {
+  // Extract and transform data from fitnessData for activity visualization
+  
+  const activityData = {
+    steps: {
+      daily: fitnessData.steps.data.map(item => ({
+        date: new Date(item.timestamp).toLocaleDateString('en-US', { weekday: 'short' }),
+        count: item.value
+      })),
+      weeklyTotal: fitnessData.steps.summary.total,
+      dailyAverage: fitnessData.steps.summary.average
+    },
+    calories: {
+      daily: fitnessData.calories.data.map(item => ({
+        date: new Date(item.timestamp).toLocaleDateString('en-US', { weekday: 'short' }),
+        count: item.value
+      })),
+      weeklyTotal: fitnessData.calories.summary.total,
+      dailyAverage: fitnessData.calories.summary.average
+    },
+    heartRate: {
+      readings: fitnessData.heartRate.data.map(item => ({
+        time: new Date(item.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        bpm: item.value
+      })),
+      average: fitnessData.heartRate.summary.average,
+      min: fitnessData.heartRate.summary.min,
+      max: fitnessData.heartRate.summary.max
+    }
   };
 
-  return getSteps();
+  return activityData;
 };

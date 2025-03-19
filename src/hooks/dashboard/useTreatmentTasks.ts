@@ -1,33 +1,38 @@
 
-import { TreatmentTask } from './types';
+import { useState } from 'react';
+import { TreatmentTask } from '@/types/treatment';
 
 export const useTreatmentTasks = () => {
-  const treatmentTasks: TreatmentTask[] = [
+  // Mock treatment tasks data
+  const [treatmentTasks] = useState<TreatmentTask[]>([
     {
-      id: '1',
-      title: 'Heat therapy - 15 minutes',
-      time: '08:00 AM',
-      completed: true
+      id: 't1',
+      title: 'Take medication',
+      description: 'Ibuprofen 400mg with food',
+      dueDate: new Date(Date.now() + 3600000 * 4).toISOString(),
+      priority: 'high',
+      status: 'pending',
+      type: 'medication'
     },
     {
-      id: '2',
-      title: 'Stretching exercises - Series A',
-      time: '11:30 AM',
-      completed: true
+      id: 't2',
+      title: 'Physical therapy exercises',
+      description: 'Complete the knee recovery routine',
+      dueDate: new Date(Date.now() + 3600000 * 8).toISOString(),
+      priority: 'medium',
+      status: 'pending',
+      type: 'exercise'
     },
     {
-      id: '3',
-      title: 'Apply anti-inflammatory cream',
-      time: '02:00 PM',
-      completed: false
-    },
-    {
-      id: '4',
-      title: 'Resistance band exercises',
-      time: '05:00 PM',
-      completed: false
+      id: 't3',
+      title: 'MRI scan appointment',
+      description: 'Check-in 15 minutes before appointment',
+      dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+      priority: 'medium',
+      status: 'pending',
+      type: 'checkup'
     }
-  ];
+  ]);
 
   return treatmentTasks;
 };

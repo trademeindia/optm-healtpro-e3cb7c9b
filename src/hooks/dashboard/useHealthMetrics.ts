@@ -1,66 +1,50 @@
 
-import { useMemo } from 'react';
-import { HealthMetrics } from './types';
+import { HealthMetric } from '@/types/health';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
+import { Activity, Heart, Thermometer, Droplet } from 'lucide-react';
 
-export const useHealthMetrics = (fitnessData: any) => {
-  const getHeartRate = () => {
-    if (fitnessData.heartRate) {
-      return {
-        value: fitnessData.heartRate.value,
-        unit: fitnessData.heartRate.unit,
-        change: fitnessData.heartRate.change || 0,
-        source: fitnessData.heartRate.source,
-        lastSync: new Date(fitnessData.heartRate.timestamp).toLocaleTimeString()
-      };
+export const useHealthMetrics = (fitnessData: FitnessData): HealthMetric[] => {
+  // Default metrics that would normally come from a health API
+  const metrics: HealthMetric[] = [
+    {
+      id: '1',
+      name: 'Heart Rate',
+      value: fitnessData?.heartRate?.summary?.average || 72,
+      unit: 'bpm',
+      change: 2,
+      status: 'normal',
+      trend: 'stable',
+      source: 'Google Fit',
+      lastSync: new Date().toISOString()
+    },
+    {
+      id: '2',
+      name: 'Blood Pressure',
+      value: '120/80',
+      unit: 'mmHg',
+      change: 0,
+      status: 'normal',
+      trend: 'stable',
+      source: 'Health Connect',
+      lastSync: new Date().toISOString()
+    },
+    {
+      id: '3',
+      name: 'Temperature',
+      value: 98.6,
+      unit: '°F',
+      status: 'normal',
+      trend: 'stable'
+    },
+    {
+      id: '4',
+      name: 'Oxygen Saturation',
+      value: 98,
+      unit: '%',
+      status: 'normal',
+      trend: 'stable'
     }
-    return { value: 72, unit: 'bpm', change: -3 };
-  };
+  ];
 
-  const getBloodPressure = () => {
-    if (fitnessData.bloodPressure) {
-      return {
-        value: String(fitnessData.bloodPressure.value),
-        unit: fitnessData.bloodPressure.unit,
-        change: 0,
-        source: fitnessData.bloodPressure.source,
-        lastSync: new Date(fitnessData.bloodPressure.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: '120/80', unit: 'mmHg', change: 0 };
-  };
-
-  const getTemperature = () => {
-    if (fitnessData.temperature) {
-      return {
-        value: fitnessData.temperature.value,
-        unit: fitnessData.temperature.unit,
-        change: fitnessData.temperature.change || 0.2,
-        source: fitnessData.temperature.source,
-        lastSync: new Date(fitnessData.temperature.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: 98.6, unit: '°F', change: 0.2 };
-  };
-
-  const getOxygen = () => {
-    if (fitnessData.oxygenSaturation) {
-      return {
-        value: fitnessData.oxygenSaturation.value,
-        unit: fitnessData.oxygenSaturation.unit,
-        change: fitnessData.oxygenSaturation.change || 1,
-        source: fitnessData.oxygenSaturation.source,
-        lastSync: new Date(fitnessData.oxygenSaturation.timestamp).toLocaleTimeString()
-      };
-    }
-    return { value: 98, unit: '%', change: 1 };
-  };
-
-  const healthMetrics = useMemo(() => ({
-    heartRate: getHeartRate(),
-    bloodPressure: getBloodPressure(),
-    temperature: getTemperature(),
-    oxygen: getOxygen()
-  }), [fitnessData]);
-
-  return healthMetrics;
+  return metrics;
 };

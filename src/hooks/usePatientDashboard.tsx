@@ -6,15 +6,16 @@ import { useHealthMetrics } from './dashboard/useHealthMetrics';
 import { useActivityData } from './dashboard/useActivityData';
 import { useAppointments } from './dashboard/useAppointments';
 import { useTreatmentTasks } from './dashboard/useTreatmentTasks';
+import { HealthMetric } from '@/types/health';
 
 export const usePatientDashboard = () => {
   const { 
     providers, 
-    fitnessData, // This property now exists in the useFitnessIntegration return value
+    fitnessData,
     refreshProviderData 
   } = useFitnessIntegration();
 
-  const healthMetrics = useHealthMetrics(fitnessData);
+  const healthMetrics: HealthMetric[] = useHealthMetrics(fitnessData);
   const activityData = useActivityData(fitnessData);
   const treatmentTasks = useTreatmentTasks();
   const { 
