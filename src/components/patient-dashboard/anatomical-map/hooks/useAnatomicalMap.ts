@@ -6,11 +6,12 @@ export const useAnatomicalMap = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
   
+  // Updated hotspot positions based on anatomical accuracy
   const healthIssues: HealthIssue[] = [
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 31, y: 19 }, // Updated for better accuracy
+      location: { x: 23, y: 21 }, // Updated to correct shoulder position
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -28,7 +29,7 @@ export const useAnatomicalMap = () => {
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 49, y: 45 }, // Updated for better accuracy
+      location: { x: 50, y: 39 }, // Updated to correct lower back position
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
       muscleGroup: 'Erector Spinae',
@@ -46,7 +47,7 @@ export const useAnatomicalMap = () => {
     {
       id: '3',
       name: 'Quadriceps Tendinitis',
-      location: { x: 45, y: 70 }, // Updated for better accuracy
+      location: { x: 48, y: 65 }, // Updated to correct upper thigh position
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
       muscleGroup: 'Quadriceps',
@@ -64,7 +65,7 @@ export const useAnatomicalMap = () => {
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 23, y: 30 }, // Updated for better accuracy
+      location: { x: 77, y: 30 }, // Updated to correct bicep position
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -82,7 +83,7 @@ export const useAnatomicalMap = () => {
     {
       id: '5',
       name: 'Hamstring Strain',
-      location: { x: 50, y: 60 }, // New hotspot
+      location: { x: 52, y: 77 }, // Updated to correct hamstring position
       severity: 'medium',
       description: 'Partial tear in the hamstring muscle fibers causing pain in the back of the thigh.',
       muscleGroup: 'Hamstrings',

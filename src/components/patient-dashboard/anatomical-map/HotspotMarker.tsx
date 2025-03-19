@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HealthIssue } from './types';
-import { getSeverityColor } from './utils';
+import { getSeverityColor, getSeverityLabel } from './utils';
 
 interface HotspotMarkerProps {
   issue: HealthIssue;
@@ -30,13 +30,14 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
             onClick={() => onClick(issue)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            data-testid={`hotspot-${issue.id}`}
           >
             <span className="text-white text-xs font-bold">{issue.id}</span>
           </div>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-[220px] bg-white/95 backdrop-blur-sm z-30">
           <p className="font-semibold">{issue.name}</p>
-          <p className="text-xs text-muted-foreground">{issue.severity.toUpperCase()} severity</p>
+          <p className="text-xs text-muted-foreground">{getSeverityLabel(issue.severity)} severity</p>
           {issue.muscleGroup && (
             <p className="text-xs mt-1">Affects: {issue.muscleGroup}</p>
           )}

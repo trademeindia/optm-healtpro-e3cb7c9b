@@ -34,3 +34,12 @@ export const getSeverityLabel = (severity: 'low' | 'medium' | 'high') => {
     default: return 'Unknown';
   }
 };
+
+export const getHotspotSize = (severity: 'low' | 'medium' | 'high') => {
+  switch (severity) {
+    case 'low': return 'w-4 h-4';
+    case 'medium': return 'w-5 h-5';
+    case 'high': return 'w-6 h-6';
+    default: return 'w-5 h-5';
+  }
+};
