@@ -3,6 +3,7 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  color-scheme: light dark;
 }
 
 .app-container {
@@ -13,6 +14,7 @@
   background-color: var(--background, #f8f9fa);
   color: var(--foreground, #333333);
   overflow-x: hidden;
+  position: relative;
 }
 
 /* Fix for white screen when content doesn't fill viewport */
@@ -21,13 +23,14 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f8f9fa;
+  background-color: var(--background, #f8f9fa);
   overflow-x: hidden;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+  min-height: 100vh; /* Ensure full height */
 }
 
 /* Prevent layout shifts */
@@ -80,4 +83,40 @@ body.overflow-hidden {
   .h-screen {
     height: -webkit-fill-available;
   }
+}
+
+/* Debug outlines for development (uncomment to use) */
+/* 
+.debug * {
+  outline: 1px solid rgba(255, 0, 0, 0.2);
+}
+*/
+
+/* Improved dark mode contrast */
+.dark .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Better card visibility in both modes */
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+/* Debug visibility helper */
+.debug-visible {
+  border: 2px dashed red !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+  min-height: 20px !important;
+  min-width: 20px !important;
+}
+
+/* Ensure page content visibility */
+body > div#root > div.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }

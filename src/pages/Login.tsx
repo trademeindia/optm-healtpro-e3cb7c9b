@@ -3,9 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   const handleDemoLogin = (role: 'doctor' | 'patient' | 'admin') => {
     // Simulate login with a demo account
@@ -24,18 +26,21 @@ const Login: React.FC = () => {
     navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
   };
 
+  // Add console log for debugging - will help trace component rendering
+  console.log('Login component rendered', { theme });
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+      <Card className="max-w-md w-full border shadow">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Medical Dashboard Login</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">Medical Dashboard Login</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Sign in to access your medical dashboard
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-center">Demo Accounts</h3>
+            <h3 className="text-sm font-medium text-center text-foreground">Demo Accounts</h3>
             <div className="grid gap-2">
               <Button 
                 variant="outline" 
@@ -73,7 +78,7 @@ const Login: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Button disabled className="w-full">
+            <Button className="w-full" disabled={false}>
               Email & Password Login (Disabled in Demo)
             </Button>
           </div>

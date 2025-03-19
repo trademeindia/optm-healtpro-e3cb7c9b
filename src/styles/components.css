@@ -13,7 +13,8 @@
 }
 
 .annotation {
-  @apply glass-morphism absolute p-4 rounded-lg max-w-xs z-30 
+  @apply backdrop-blur-xl bg-white/80 dark:bg-black/50 border border-white/20 dark:border-white/5 shadow-lg 
+         absolute p-4 rounded-lg max-w-xs z-30 
          opacity-0 scale-95 transition-all duration-300 ease-in-out pointer-events-none;
 }
 
@@ -30,9 +31,11 @@
 }
 
 .biomarker-card {
-  @apply glass-morphism p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-xl;
+  @apply backdrop-blur-xl bg-white/80 dark:bg-black/50 border border-white/20 dark:border-white/5 shadow-lg
+         p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-xl;
 }
 
 .metric-card {
-  @apply glass-morphism p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-xl;
+  @apply backdrop-blur-xl bg-white/80 dark:bg-black/50 border border-white/20 dark:border-white/5 shadow-lg
+         p-6 rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-xl;
 }
