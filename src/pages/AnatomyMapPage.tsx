@@ -21,11 +21,13 @@ const AnatomyMapPage: React.FC = () => {
         isOpen ? "lg:ml-64" : "ml-0"
       )}>
         <div className="container p-4 mx-auto max-w-7xl">
-          <h1 className="text-2xl font-bold mb-6">Anatomy Map</h1>
-          <p className="text-muted-foreground mb-6">
-            Use this interactive map to track and update your pain symptoms. Select areas where you experience
-            discomfort and provide details to help your healthcare provider understand your condition better.
-          </p>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-3 text-center md:text-left">Anatomy Map</h1>
+            <p className="text-muted-foreground text-center md:text-left max-w-3xl">
+              Use this interactive map to track and update your pain symptoms. Select areas where you experience
+              discomfort and provide details to help your healthcare provider understand your condition better.
+            </p>
+          </div>
           
           <SymptomProvider>
             <AnatomyMapContainer />
