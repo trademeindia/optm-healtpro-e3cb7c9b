@@ -39,11 +39,11 @@ const Dashboard: React.FC = () => {
       // Simulate loading time for dashboard components
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 800);
+      }, 500); // Reduced loading time for better UX
       return () => clearTimeout(timer);
     } else {
       console.log('Dashboard accessed by unauthenticated user');
-      setIsLoading(true);
+      setIsLoading(false); // Ensure we exit loading state even if no user
     }
   }, [user]);
 
@@ -117,24 +117,27 @@ const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full overflow-hidden">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">Loading dashboard...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-background z-50 fixed inset-0">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 max-w-md w-full">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="w-16 h-16 border-4 border-t-primary border-b-primary rounded-full animate-spin"></div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Loading dashboard...</h2>
+            <p className="text-gray-500 dark:text-gray-400">Please wait while we prepare your content</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background dashboard-container">
+    <div className="flex h-screen w-full overflow-hidden bg-background dashboard-container visible opacity-100">
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 overflow-container">
-          <div className="content-wrapper">
+          <div className="content-wrapper visible opacity-100">
             {/* Dashboard Header */}
             <DashboardHeader doctorName={user?.name?.split(' ')[0] || "Doctor"} />
             
@@ -153,11 +156,11 @@ const Dashboard: React.FC = () => {
             
             {/* Analytics Graph and Reminders Section */}
             <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 visible">
                 <ClinicAnalyticsGraph />
               </div>
               
-              <div>
+              <div className="visible">
                 <ClinicReminders 
                   reminders={getUpcomingReminders().slice(0, 5)} 
                   onAddReminder={handleAddReminder}
@@ -168,12 +171,12 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Legacy Charts Section */}
-            <div className="mb-8">
+            <div className="mb-8 visible">
               <LegacyCharts handleSaveReport={handleSaveReport} />
             </div>
           
             {/* Tabs for detailed content */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 mb-8 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 mb-8 overflow-hidden visible">
               <DashboardTabs 
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}

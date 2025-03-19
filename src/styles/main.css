@@ -1,4 +1,5 @@
 
+/* Import base styles first */
 @import './base.css';
 @import './utilities.css';
 @import './animations.css';
@@ -44,6 +45,7 @@ body {
   opacity: 1 !important;
   visibility: visible !important;
   overflow-x: hidden;
+  position: relative;
 }
 
 /* Ensure container visibility */
@@ -55,6 +57,7 @@ body {
   margin-left: auto;
   opacity: 1 !important;
   visibility: visible !important;
+  position: relative;
 }
 
 /* Text visibility */
@@ -78,6 +81,8 @@ h1, h2, h3, p {
   width: 100%;
   visibility: visible !important;
   opacity: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Fix for PatientReports page */
@@ -88,6 +93,8 @@ h1, h2, h3, p {
   min-height: 100%;
   visibility: visible !important;
   opacity: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Dashboard specific fixes */
@@ -99,6 +106,7 @@ h1, h2, h3, p {
   visibility: visible !important;
   opacity: 1 !important;
   z-index: 1;
+  position: relative;
 }
 
 /* Ensure loading states are properly shown */
@@ -111,6 +119,47 @@ h1, h2, h3, p {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   z-index: 9999;
+}
+
+/* Global wrapper class for all content */
+.visible-wrapper {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for card visibility */
+.card,
+.card-content,
+.card-container {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for list items */
+ul, ol, li {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for form elements */
+input, select, textarea, button {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* Fix for tab panels */
+[role="tabpanel"],
+.tab-content {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
 }

@@ -41,29 +41,29 @@ const queryClient = new QueryClient({
 
 // Loading fallback component with improved visibility
 const PageLoading = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-background">
-    <div className="text-center p-6 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-      <div className="w-16 h-16 border-t-4 border-b-4 border-primary rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-lg font-medium text-gray-900 dark:text-gray-100">Loading page...</p>
-      <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare your content</p>
+  <div className="flex h-screen w-full items-center justify-center bg-background z-50 fixed inset-0">
+    <div className="text-center p-8 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md w-full">
+      <div className="w-20 h-20 border-t-4 border-b-4 border-primary rounded-full animate-spin mx-auto mb-6"></div>
+      <p className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">Loading page...</p>
+      <p className="text-sm text-muted-foreground">Please wait while we prepare your content</p>
     </div>
   </div>
 );
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) => (
-  <div className="flex h-screen w-full items-center justify-center bg-background">
-    <div className="text-center p-6 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-md border border-destructive/20 max-w-md">
-      <div className="w-16 h-16 mx-auto mb-4 text-destructive">
+  <div className="flex h-screen w-full items-center justify-center bg-background z-50 fixed inset-0">
+    <div className="text-center p-8 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-lg border border-destructive/20 max-w-md">
+      <div className="w-20 h-20 mx-auto mb-6 text-destructive">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Application Error</h2>
-      <p className="text-muted-foreground mb-4">{error?.message || 'Something went wrong'}</p>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Application Error</h2>
+      <p className="text-muted-foreground mb-6">{error?.message || 'Something went wrong'}</p>
       <button 
         onClick={resetErrorBoundary}
-        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        className="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
       >
         Try Again
       </button>
@@ -74,11 +74,12 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: any; resetErrorBo
 function App() {
   const [appLoaded, setAppLoaded] = useState(false);
 
-  // Simulate initial load completion
+  // Ensure app loads quickly
   useEffect(() => {
     const timer = setTimeout(() => {
       setAppLoaded(true);
-    }, 500);
+      console.log('App loaded state set to true');
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -87,10 +88,13 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthProvider>
-            <div className="app-container min-h-screen bg-background text-foreground">
+            <div className="app-container min-h-screen bg-background text-foreground visible opacity-100">
               {!appLoaded ? (
-                <div className="global-loading-spinner">
-                  <div className="loading-spinner"></div>
+                <div className="global-loading-spinner z-[9999] fixed inset-0 flex items-center justify-center bg-white/90">
+                  <div className="text-center">
+                    <div className="w-20 h-20 border-t-4 border-b-4 border-primary rounded-full animate-spin"></div>
+                    <p className="mt-4 text-lg font-medium">Loading application...</p>
+                  </div>
                 </div>
               ) : (
                 <Suspense fallback={<PageLoading />}>

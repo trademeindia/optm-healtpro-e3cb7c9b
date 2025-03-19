@@ -16,6 +16,7 @@
   opacity: 1 !important;
   visibility: visible !important;
   z-index: 1;
+  position: relative;
 }
 
 /* Fix for white screen when content doesn't fill viewport */
@@ -105,19 +106,21 @@ body.overflow-hidden {
 
 /* Ensure card visibility */
 .card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
+  background-color: var(--card, white);
+  border: 1px solid var(--border, rgba(0,0,0,0.1));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   overflow: hidden;
   visibility: visible !important;
   opacity: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Fix dialog content visibility */
 .dialog-content {
-  background-color: var(--background);
-  border: 1px solid var(--border);
+  background-color: var(--background, white);
+  border: 1px solid var(--border, rgba(0,0,0,0.1));
   border-radius: 0.5rem;
   max-width: 90vw;
   max-height: 90vh;
@@ -149,14 +152,55 @@ body.overflow-hidden {
   position: fixed;
   top: 0;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   z-index: 9999;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary, #4f46e5);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Make sure headers and footers are always visible */
 header, footer {
   position: relative;
   z-index: 10;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Loading state styles */
+.loading-state {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Dashboard specific visibility fixes */
+.dashboard-container, 
+.dashboard-container * {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure tabs content visibility */
+.tabs-content,
+[role="tabpanel"] {
   visibility: visible !important;
   opacity: 1 !important;
 }
