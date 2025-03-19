@@ -1,7 +1,7 @@
 
 import { HealthMetric } from '@/services/health/types';
 
-interface SleepStage {
+export interface SleepStage {
   date: string;
   deep: number;
   light: number;
@@ -9,16 +9,30 @@ interface SleepStage {
   awake: number;
 }
 
-interface DailySleep {
+export interface DailySleep {
   date: string;
   value: number;
   unit: string;
 }
 
-interface ProcessedSleepData {
+export interface ProcessedSleepData {
   dailySleep: DailySleep[];
   sleepStages: SleepStage[];
 }
+
+export const sleepStageNames = {
+  deep: 'Deep Sleep',
+  light: 'Light Sleep',
+  rem: 'REM Sleep',
+  awake: 'Awake'
+};
+
+export const sleepStageColors = {
+  deep: '#3730a3',
+  light: '#6366f1',
+  rem: '#a5b4fc',
+  awake: '#e0e7ff'
+};
 
 export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData => {
   const dailySleep: DailySleep[] = [];
@@ -38,7 +52,7 @@ export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData 
   Object.entries(groupedByDate).forEach(([date, metrics]) => {
     // Calculate total sleep duration
     const totalSleep = metrics.reduce((sum, metric) => {
-      return sum + (metric.value || 0);
+      return sum + (metric.value as number || 0);
     }, 0);
     
     dailySleep.push({
@@ -107,10 +121,10 @@ export const calculateSleepQuality = (sleepStages: SleepStage[]): number => {
   return Math.round(totalScore / sleepStages.length);
 };
 
-export const getSleepQualityText = (qualityScore: number): string => {
-  if (qualityScore >= 80) return 'Excellent';
-  if (qualityScore >= 60) return 'Good';
-  if (qualityScore >= 40) return 'Fair';
-  if (qualityScore >= 20) return 'Poor';
-  return 'Very Poor';
+export const getSleepQualityText = (qualityScore: number): {text: string, color: string} => {
+  if (qualityScore >= 80) return {text: 'Excellent', color: 'text-green-500'};
+  if (qualityScore >= 60) return {text: 'Good', color: 'text-blue-500'};
+  if (qualityScore >= 40) return {text: 'Fair', color: 'text-yellow-500'};
+  if (qualityScore >= 20) return {text: 'Poor', color: 'text-orange-500'};
+  return {text: 'Very Poor', color: 'text-red-500'};
 };

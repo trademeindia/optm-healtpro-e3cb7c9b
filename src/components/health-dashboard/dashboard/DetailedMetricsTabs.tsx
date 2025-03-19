@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimeRange } from '@/services/health';
 import ActivityTimeline from '../ActivityTimeline';
 import HeartRateMonitor from '../HeartRateMonitor';
-import WorkoutSummary from '../WorkoutSummary';
+import WorkoutSummary from '../workout-summary';
 import SleepAnalysis from '../SleepAnalysis';
 import { useHealthData } from '@/hooks/health';
 
