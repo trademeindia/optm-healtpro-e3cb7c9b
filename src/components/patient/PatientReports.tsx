@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FileText, Upload, AlertTriangle, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,14 +43,19 @@ const PatientReports: React.FC = () => {
   const [fileError, setFileError] = useState<string | null>(null);
   
   useEffect(() => {
-    // Load reports from storage when component mounts
     loadReports();
   }, []);
 
   const loadReports = () => {
-    const storedReports = getFromLocalStorage('patient_reports');
-    console.log('Loading reports from storage:', storedReports.length);
-    setReports(storedReports);
+    try {
+      const storedReports = getFromLocalStorage('patient_reports');
+      console.log('Loading reports from storage:', storedReports.length);
+      setReports(storedReports || []);
+    } catch (error) {
+      console.error('Error loading reports:', error);
+      toast.error('Failed to load your reports');
+      setReports([]);
+    }
   };
 
   const handleViewReport = async (report: Report) => {
@@ -153,7 +157,6 @@ const PatientReports: React.FC = () => {
 
       storeInLocalStorage('patient_reports', newReport);
 
-      // Update local state
       setReports(prev => [...prev, newReport]);
       setUploadedFile(null);
       
@@ -165,7 +168,6 @@ const PatientReports: React.FC = () => {
         setUploadProgress(0);
         toast.success('Report uploaded successfully');
         
-        // Reload reports to ensure we have the latest data
         loadReports();
       }, 500);
       
@@ -191,19 +193,19 @@ const PatientReports: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 patient-reports-container visible-content bg-background">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Medical Reports</h2>
+        <h2 className="text-2xl font-bold high-contrast-text">My Medical Reports</h2>
         <Button onClick={() => setUploadOpen(true)} className="flex items-center gap-2">
           <Upload className="h-4 w-4" /> Upload Report
         </Button>
       </div>
       
       {reports.length === 0 ? (
-        <Card>
+        <Card className="visible-card">
           <CardContent className="flex flex-col items-center justify-center py-10">
             <FileText className="h-12 w-12 text-muted-foreground mb-3" />
-            <p className="text-lg font-medium">No reports yet</p>
+            <p className="text-lg font-medium high-contrast-text">No reports yet</p>
             <p className="text-muted-foreground mb-4">Upload your first medical report</p>
             <Button onClick={() => setUploadOpen(true)}>Upload Report</Button>
           </CardContent>
@@ -211,14 +213,14 @@ const PatientReports: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {reports.map((report) => (
-            <Card key={report.id} className="hover:shadow-md transition-shadow">
+            <Card key={report.id} className="hover:shadow-md transition-shadow visible-card">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     {getFileIcon(report.fileType)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{report.title}</h3>
+                    <h3 className="font-medium truncate high-contrast-text">{report.title}</h3>
                     <p className="text-sm text-muted-foreground">{formatDate(report.date)}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
@@ -246,9 +248,9 @@ const PatientReports: React.FC = () => {
       )}
       
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="high-contrast-text">
               {currentReport?.title}
             </DialogTitle>
           </DialogHeader>
@@ -264,7 +266,7 @@ const PatientReports: React.FC = () => {
             {currentReport?.fileType === 'PDF' ? (
               <div className="bg-muted p-4 rounded-md text-center">
                 <FileText className="h-10 w-10 mx-auto mb-2 text-primary" />
-                <p className="mb-3">PDF document preview</p>
+                <p className="mb-3 high-contrast-text">PDF document preview</p>
                 {currentReport.url ? (
                   <Button asChild size="sm">
                     <a 
@@ -311,9 +313,9 @@ const PatientReports: React.FC = () => {
       </Dialog>
       
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>Upload Medical Report</DialogTitle>
+            <DialogTitle className="high-contrast-text">Upload Medical Report</DialogTitle>
           </DialogHeader>
           
           <div 
@@ -328,7 +330,7 @@ const PatientReports: React.FC = () => {
               <div className="space-y-3">
                 <FileText className="h-10 w-10 mx-auto text-primary" />
                 <div>
-                  <p className="font-medium">{uploadedFile.name}</p>
+                  <p className="font-medium high-contrast-text">{uploadedFile.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
@@ -345,7 +347,7 @@ const PatientReports: React.FC = () => {
             ) : (
               <>
                 <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-lg font-medium">Drag & drop your file here</p>
+                <p className="text-lg font-medium high-contrast-text">Drag & drop your file here</p>
                 <p className="text-muted-foreground mb-4">Supports PDF, JPEG, and PNG (Max 10MB)</p>
                 <Button asChild variant="outline">
                   <label className="cursor-pointer">
@@ -372,10 +374,10 @@ const PatientReports: React.FC = () => {
           {uploadProgress > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Uploading...</span>
-                <span>{uploadProgress}%</span>
+                <span className="high-contrast-text">Uploading...</span>
+                <span className="high-contrast-text">{uploadProgress}%</span>
               </div>
-              <Progress value={uploadProgress} />
+              <Progress value={uploadProgress} className="h-2" />
             </div>
           )}
           

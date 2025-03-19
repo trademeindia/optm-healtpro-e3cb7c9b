@@ -18,15 +18,18 @@
 @import './responsive/cards.css';
 @import './responsive/layout.css';
 @import './responsive/buttons.css';
-@import './responsive/hotspots.css'; /* Ensure hotspots CSS is properly imported */
+@import './responsive/hotspots.css';
 
 /* Layout styles */
 .min-h-screen {
   min-height: 100vh;
 }
 
+/* Fix visibility issues with background */
 .bg-background {
   background-color: var(--background, #ffffff);
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Make sure body content is visible */
@@ -38,6 +41,9 @@ body {
   min-height: 100vh;
   background-color: var(--background, #f8f9fa);
   color: var(--foreground, #333);
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow-x: hidden;
 }
 
 /* Ensure container visibility */
@@ -47,13 +53,39 @@ body {
   padding-left: 1rem;
   margin-right: auto;
   margin-left: auto;
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Text visibility */
 h1, h2, h3, p {
   color: var(--foreground, #333);
+  opacity: 1;
+  visibility: visible;
 }
 
 .text-muted-foreground {
   color: var(--muted-foreground, #6c757d);
+  opacity: 0.9;
+  visibility: visible;
+}
+
+/* Fix for invisible content */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Fix for PatientReports page */
+.patient-reports-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  visibility: visible;
+  opacity: 1;
 }

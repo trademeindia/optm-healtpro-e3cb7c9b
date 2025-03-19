@@ -34,4 +34,21 @@
   .content-visible {
     @apply opacity-100 visible z-10;
   }
+
+  /* Visibility enhancement utilities */
+  .high-contrast-text {
+    @apply text-gray-900 dark:text-white;
+  }
+  
+  .visible-card {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm;
+  }
+  
+  .elevated-element {
+    @apply z-30 shadow-md;
+  }
+  
+  .foreground-element {
+    @apply z-20;
+  }
 }

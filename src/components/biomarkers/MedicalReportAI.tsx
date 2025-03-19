@@ -28,17 +28,17 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
   } = useReportProcessing({ onAnalysisComplete });
 
   return (
-    <Card className="w-full shadow-lg border border-border/30 rounded-lg transition-all duration-300 hover:shadow-xl overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 pb-4 space-y-2">
-        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl font-bold">
+    <Card className="w-full shadow-lg border border-border/30 rounded-lg transition-all duration-300 hover:shadow-xl overflow-hidden visible-card">
+      <CardHeader className="bg-gradient-to-r from-primary/15 to-primary/5 pb-4 space-y-2">
+        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl font-bold high-contrast-text">
           <Brain className="h-6 w-6 text-primary" />
           AI Medical Report Analysis
         </CardTitle>
-        <CardDescription className="text-sm md:text-base">
+        <CardDescription className="text-sm md:text-base opacity-90">
           Upload your medical report or paste its content for AI-powered analysis and explanation
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 md:p-6 pt-5">
+      <CardContent className="p-4 md:p-6 pt-5 bg-white dark:bg-gray-800">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-5 w-full grid grid-cols-3 bg-muted/30 rounded-xl p-1">
             <TabsTrigger 
@@ -63,7 +63,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
           </TabsList>
           
           <div className="min-h-[300px] md:min-h-[380px] relative">
-            <TabsContent value="upload" className="mt-0 absolute inset-0 h-full">
+            <TabsContent value="upload" className="mt-0 absolute inset-0 h-full visible-content">
               <UploadTab 
                 file={file}
                 isProcessing={isProcessing || isLoading}
@@ -73,7 +73,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
               />
             </TabsContent>
             
-            <TabsContent value="text-input" className="mt-0 absolute inset-0 h-full">
+            <TabsContent value="text-input" className="mt-0 absolute inset-0 h-full visible-content">
               <TextInputTab 
                 textInput={textInput}
                 isProcessing={isProcessing || isLoading}
@@ -83,7 +83,7 @@ const MedicalReportAI: React.FC<MedicalReportAIProps> = ({ onAnalysisComplete })
               />
             </TabsContent>
             
-            <TabsContent value="analysis" className="mt-0 absolute inset-0 h-full overflow-y-auto">
+            <TabsContent value="analysis" className="mt-0 absolute inset-0 h-full overflow-y-auto visible-content">
               {lastAnalysis && (
                 <AnalysisResultsTab 
                   analysis={convertToReportAnalysis(lastAnalysis)} 

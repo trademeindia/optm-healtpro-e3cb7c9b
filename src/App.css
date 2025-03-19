@@ -13,6 +13,8 @@
   background-color: var(--background, #f8f9fa);
   color: var(--foreground, #333333);
   overflow-x: hidden;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Fix for white screen when content doesn't fill viewport */
@@ -23,11 +25,15 @@ html, body, #root {
   padding: 0;
   background-color: #f8f9fa;
   overflow-x: hidden;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Prevent layout shifts */
@@ -36,6 +42,8 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   position: relative;
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Prevent stuck scrolling issues */
@@ -47,6 +55,8 @@ body.overflow-hidden {
 [role="dialog"] {
   max-height: 90vh;
   overflow-y: auto;
+  background-color: var(--background);
+  z-index: 100;
 }
 
 /* Improved hotspot visibility */
@@ -67,6 +77,7 @@ body.overflow-hidden {
   justify-content: center;
   max-width: 500px;
   margin: 0 auto;
+  visibility: visible;
 }
 
 /* Prevent nested scrolling issues */
@@ -80,4 +91,46 @@ body.overflow-hidden {
   .h-screen {
     height: -webkit-fill-available;
   }
+}
+
+/* Fix visibility issues with elements */
+.visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure card visibility */
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Fix dialog content visibility */
+.dialog-content {
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  z-index: 50;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Dark mode text contrast improvement */
+.dark {
+  --high-contrast-text: rgb(240, 240, 240);
+  --card-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode text contrast improvement */
+:root {
+  --high-contrast-text: rgb(30, 30, 30);
+  --card-border: rgba(0, 0, 0, 0.1);
 }
