@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Input } from '@/components/ui/input';
+import { UserRole } from '@/contexts/auth/types';
 
 interface EmailInputProps {
   email: string;
