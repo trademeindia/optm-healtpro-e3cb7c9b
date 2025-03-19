@@ -4,11 +4,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 
 // Import all CSS in the correct order - this is critical for proper styling
-import './styles/base.css'
-import './styles/utilities.css'  // glass-morphism is defined here
-import './styles/animations.css' // animation keyframes
-import './styles/components.css' // components using glass-morphism
-import './styles/main.css'
+import './styles/base.css'              // Base TailwindCSS directives
+import './styles/utilities.css'         // Custom utilities like glass-morphism
+import './styles/animations.css'        // Animation keyframes
+import './styles/components.css'        // Component styles that use utilities
 import './styles/cards/base.css'
 import './styles/cards/variants.css'
 import './styles/cards/utilities.css'
@@ -21,7 +20,8 @@ import './styles/responsive/cards.css'
 import './styles/responsive/layout.css'
 import './styles/responsive/buttons.css'
 import './styles/responsive/hotspots.css'
-import './App.css'
+import './styles/main.css'              // Additional main styles
+import './App.css'                      // App-specific overrides
 
 // Use createRoot API properly with proper error handling
 const rootElement = document.getElementById('root');
