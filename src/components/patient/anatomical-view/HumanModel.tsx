@@ -14,10 +14,14 @@ const HumanModel: React.FC<HumanModelProps> = ({
   const [modelLoaded, setModelLoaded] = useState(false);
   
   useEffect(() => {
+    // Reset loading state when system changes
+    setModelLoaded(false);
+    
     // Simulate loading time for the model
     const timer = setTimeout(() => {
       setModelLoaded(true);
     }, 800);
+    
     return () => clearTimeout(timer);
   }, [activeSystem]); // Reset loading when system changes
   
@@ -26,11 +30,13 @@ const HumanModel: React.FC<HumanModelProps> = ({
       {modelLoaded ? (
         <>
           <ModelImage activeSystem={activeSystem} />
-          <HotspotsGroup 
-            hotspots={hotspots} 
-            onHotspotClick={onHotspotClick}
-            isEditMode={isEditMode}
-          />
+          {hotspots && hotspots.length > 0 && (
+            <HotspotsGroup 
+              hotspots={hotspots} 
+              onHotspotClick={onHotspotClick}
+              isEditMode={isEditMode}
+            />
+          )}
         </>
       ) : (
         <LoadingSpinner />

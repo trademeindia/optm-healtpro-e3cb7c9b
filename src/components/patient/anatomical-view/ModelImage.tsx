@@ -32,13 +32,16 @@ const ModelImage: React.FC<ModelImageProps> = ({ activeSystem }) => {
       sprite 
       scale={[1, 1, 1]} 
       distanceFactor={7}
-      className="anatomy-model-wrapper"
     >
-      <div className="anatomy-model-container">
+      <div className="anatomy-model-container w-full h-full flex items-center justify-center">
         <img 
           src={getSystemImage(activeSystem)} 
           alt="Anatomical model" 
-          className="model-image"
+          className="model-image max-w-[70%] max-h-[70%] object-contain"
+          style={{ 
+            filter: "drop-shadow(0px 0px 10px rgba(255,255,255,0.5))",
+            opacity: 1
+          }}
         />
       </div>
     </Html>

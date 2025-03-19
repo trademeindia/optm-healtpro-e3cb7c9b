@@ -6,8 +6,9 @@
   min-height: 550px;
   position: relative;
   overflow: hidden;
-  background-color: rgba(249, 250, 251, 0.5);
+  background-color: rgb(255, 255, 255);
   border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .anatomy-model-wrapper {
@@ -28,6 +29,8 @@
   height: auto !important;
   object-position: center !important;
   margin: 0 auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .anatomy-model-container {
@@ -38,6 +41,7 @@
   justify-content: center !important;
   overflow: visible !important;
   padding: 0 !important;
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Specific screen size adjustments for anatomy model */
