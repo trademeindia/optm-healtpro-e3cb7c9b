@@ -36,7 +36,7 @@ export const useAnatomicalMap = () => {
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 25, y: 17 },
+      location: { x: 22, y: 18 },
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
       muscleGroup: 'Shoulder Muscles',
@@ -54,7 +54,7 @@ export const useAnatomicalMap = () => {
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 38 },
+      location: { x: 50, y: 39 },
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
       muscleGroup: 'Erector Spinae',
@@ -90,7 +90,7 @@ export const useAnatomicalMap = () => {
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 72, y: 29 },
+      location: { x: 76, y: 29 },
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
       muscleGroup: 'Biceps Brachii',
@@ -108,7 +108,7 @@ export const useAnatomicalMap = () => {
     {
       id: '5',
       name: 'Quadriceps Tendinitis',
-      location: { x: 50, y: 65 },
+      location: { x: 51, y: 65 },
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
       muscleGroup: 'Quadriceps',
@@ -144,7 +144,7 @@ export const useAnatomicalMap = () => {
     {
       id: '7',
       name: 'Calf Strain',
-      location: { x: 50, y: 78 },
+      location: { x: 51, y: 78 },
       severity: 'low',
       description: 'Mild strain in the gastrocnemius muscle with some discomfort during walking.',
       muscleGroup: 'Calf Muscles',
@@ -158,6 +158,42 @@ export const useAnatomicalMap = () => {
         'Gentle stretching',
         'Compression wrap if swollen'
       ]
+    },
+    {
+      id: '8',
+      name: 'Shoulder Impingement',
+      location: { x: 78, y: 18 },
+      severity: 'medium',
+      description: 'Pinching of tendons in the shoulder joint causing inflammation and restricted movement.',
+      muscleGroup: 'Rotator Cuff',
+      symptoms: [
+        'Pain with overhead movements',
+        'Weakness in shoulder',
+        'Pain when sleeping on affected side'
+      ],
+      recommendedActions: [
+        'Physical therapy',
+        'Posture correction',
+        'Anti-inflammatory medication'
+      ]
+    },
+    {
+      id: '9',
+      name: 'Abdominal Strain',
+      location: { x: 50, y: 32 },
+      severity: 'low',
+      description: 'Minor tear in the rectus abdominis muscle causing discomfort during trunk flexion.',
+      muscleGroup: 'Abdominal Muscles',
+      symptoms: [
+        'Pain during sit-ups',
+        'Tenderness to touch',
+        'Pain when coughing or sneezing'
+      ],
+      recommendedActions: [
+        'Rest from core exercises',
+        'Gradual return to activity',
+        'Proper warm-up techniques'
+      ]
     }
   ];
   
@@ -168,7 +204,7 @@ export const useAnatomicalMap = () => {
       flexionPercentage: 45,
       status: 'weak',
       lastReading: '2 hours ago',
-      relatedIssues: ['1']
+      relatedIssues: ['1', '8']
     },
     {
       muscle: 'Erector Spinae',
@@ -211,6 +247,13 @@ export const useAnatomicalMap = () => {
       status: 'healthy',
       lastReading: '2 hours ago',
       relatedIssues: ['7']
+    },
+    {
+      muscle: 'Abdominal Muscles',
+      flexionPercentage: 60,
+      status: 'weak',
+      lastReading: '2 hours ago',
+      relatedIssues: ['9']
     }
   ];
   

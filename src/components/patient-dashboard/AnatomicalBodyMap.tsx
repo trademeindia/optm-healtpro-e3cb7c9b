@@ -1,7 +1,7 @@
 
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotspotMarker } from './anatomical-map';
 import useAnatomicalMap from './anatomical-map/hooks/useAnatomicalMap';
@@ -19,8 +19,25 @@ const AnatomicalBodyMap: React.FC = memo(() => {
     handleIssueClick 
   } = useAnatomicalMap();
   
+  // Add a reset zoom function
+  const handleResetZoom = () => {
+    // The reset value should match the initial zoom value in useAnatomicalMap
+    window.location.reload();
+  };
+  
+  // Add animation when component mounts
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
-    <Card className="h-full">
+    <Card className={`h-full overflow-hidden transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       <CardHeader className="pb-3 flex flex-row justify-between items-center">
         <CardTitle className="text-lg">Anatomical View</CardTitle>
         <div className="flex items-center gap-1.5">
@@ -30,6 +47,7 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             className="h-8 w-8" 
             onClick={handleZoomOut}
             aria-label="Zoom out"
+            disabled={zoom <= 0.7}
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -37,18 +55,31 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             variant="ghost" 
             size="icon" 
             className="h-8 w-8" 
+            onClick={handleResetZoom}
+            aria-label="Reset view"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8" 
             onClick={handleZoomIn}
             aria-label="Zoom in"
+            disabled={zoom >= 1.5}
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 pb-4 px-4">
+      <CardContent className="pt-0 pb-4 px-4 overflow-hidden">
         <div className="anatomy-position-container relative">
           <div 
-            className="anatomy-map-wrapper mx-auto"
-            style={{ transform: `scale(${zoom})` }}
+            className="anatomy-map-wrapper mx-auto overflow-hidden rounded-lg"
+            style={{ 
+              transform: `scale(${zoom})`,
+              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
           >
             <img 
               src="/lovable-uploads/cc5c1cf4-bddf-4fc8-bc1a-6a1387ebbdf8.png" 
@@ -61,21 +92,21 @@ const AnatomicalBodyMap: React.FC = memo(() => {
                 key={issue.id}
                 issue={issue}
                 isSelected={selectedIssue?.id === issue.id}
-                onClick={() => handleIssueClick(issue)}
+                onClick={handleIssueClick}
               />
             ))}
           </div>
         </div>
         
-        {/* Muscle group status indicators */}
+        {/* Muscle group status indicators with improved visual design */}
         {muscleFlexionData && muscleFlexionData.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2 justify-center">
             {muscleFlexionData.map((item) => (
-              <div key={item.muscle} className="flex flex-col">
-                <div className="text-xs font-medium">{item.muscle}</div>
+              <div key={item.muscle} className="flex flex-col bg-gray-50 dark:bg-gray-800/50 p-2 rounded-md border border-gray-100 dark:border-gray-700 min-w-[120px]">
+                <div className="text-xs font-medium mb-1">{item.muscle}</div>
                 <div className="flex items-center gap-1.5">
                   <div 
-                    className={`h-1 w-20 rounded-full ${
+                    className={`h-1.5 w-20 rounded-full ${
                       item.status === 'healthy' ? 'bg-green-500' : 
                       item.status === 'weak' ? 'bg-yellow-500' : 
                       'bg-red-500'
@@ -98,12 +129,12 @@ const AnatomicalBodyMap: React.FC = memo(() => {
           </div>
         )}
         
-        {/* Selected issue details */}
+        {/* Selected issue details with improved styling */}
         {selectedIssue && (
-          <div className="mt-4 p-3 bg-muted/80 rounded-lg border">
+          <div className="mt-4 p-4 bg-muted/80 rounded-lg border shadow-sm">
             <div className="flex justify-between items-start">
-              <h3 className="font-medium">{selectedIssue.name}</h3>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              <h3 className="font-medium text-base">{selectedIssue.name}</h3>
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                 selectedIssue.severity === 'high' ? 'bg-red-100 text-red-800' : 
                 selectedIssue.severity === 'medium' ? 'bg-orange-100 text-orange-800' : 
                 'bg-green-100 text-green-800'
@@ -114,34 +145,36 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             </div>
             
             {selectedIssue.muscleGroup && (
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-2 font-medium">
                 Muscle Group: {selectedIssue.muscleGroup}
               </div>
             )}
             
             <p className="text-sm text-muted-foreground mt-2">{selectedIssue.description}</p>
             
-            {selectedIssue.symptoms && (
-              <div className="mt-3">
-                <span className="text-xs font-medium">Common Symptoms:</span>
-                <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                  {selectedIssue.symptoms.map((symptom, i) => (
-                    <li key={i} className="text-xs">{symptom}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {selectedIssue.recommendedActions && (
-              <div className="mt-3">
-                <span className="text-xs font-medium">Recommended Actions:</span>
-                <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                  {selectedIssue.recommendedActions.map((action, i) => (
-                    <li key={i} className="text-xs">{action}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              {selectedIssue.symptoms && (
+                <div className="mt-1">
+                  <span className="text-xs font-medium uppercase text-muted-foreground">Common Symptoms:</span>
+                  <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                    {selectedIssue.symptoms.map((symptom, i) => (
+                      <li key={i} className="text-xs">{symptom}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedIssue.recommendedActions && (
+                <div className="mt-1">
+                  <span className="text-xs font-medium uppercase text-muted-foreground">Recommended Actions:</span>
+                  <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                    {selectedIssue.recommendedActions.map((action, i) => (
+                      <li key={i} className="text-xs">{action}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

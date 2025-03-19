@@ -13,20 +13,25 @@ interface HotspotMarkerProps {
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
   
-  // Get proper size based on selection state
+  // Get proper size based on selection state and severity
   const getMarkerSize = () => {
-    if (isSelected) return 'w-9 h-9';
-    if (isHovered) return 'w-8 h-8';
-    return 'w-7 h-7';
+    // Base size on severity with larger sizes for more severe issues
+    const baseSizeByType = issue.severity === 'high' ? 'w-8 h-8' : 
+                            issue.severity === 'medium' ? 'w-7 h-7' : 'w-6 h-6';
+                            
+    // Adjust size for interaction states
+    if (isSelected) return issue.severity === 'high' ? 'w-9 h-9' : 'w-8 h-8';
+    if (isHovered) return baseSizeByType;
+    return baseSizeByType;
   };
   
   // Get proper z-index to ensure visibility
   const getZIndex = () => {
     if (isSelected) return 'z-30';
-    return 'z-20';
+    return issue.severity === 'high' ? 'z-25' : issue.severity === 'medium' ? 'z-20' : 'z-10';
   };
   
-  // Get color based on severity
+  // Get color based on severity with enhanced visual appeal
   const getSeverityColor = () => {
     if (issue.severity === 'high') return 'bg-red-500 shadow-red-500/50';
     if (issue.severity === 'medium') return 'bg-orange-500 shadow-orange-500/50';
@@ -35,10 +40,18 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
   
   // Determine tooltip positioning based on issue location
   const getTooltipSide = (): "top" | "right" | "bottom" | "left" => {
-    if (issue.location.x < 25) return "right";
-    if (issue.location.x > 75) return "left";
+    // Enhanced positioning logic for better tooltip placement
+    if (issue.location.x < 30) return "right";
+    if (issue.location.x > 70) return "left";
     if (issue.location.y < 30) return "bottom";
     return "top";
+  };
+  
+  // Get tooltip alignment based on position
+  const getTooltipAlign = (): "start" | "center" | "end" => {
+    if (issue.location.y < 25) return "start";
+    if (issue.location.y > 75) return "end";
+    return "center";
   };
   
   return (
@@ -49,7 +62,7 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
             className={`absolute ${getMarkerSize()} rounded-full cursor-pointer ${getSeverityColor()} flex items-center justify-center ${
               isSelected ? 'border-2 border-white shadow-lg' : 
               isHovered ? 'border-2 border-white/80 shadow-md' : 'border border-white/60 shadow-sm'
-            } transition-all duration-200 ${getZIndex()}`}
+            } transition-all duration-300 ${getZIndex()}`}
             style={{
               left: `${issue.location.x}%`,
               top: `${issue.location.y}%`,
@@ -65,7 +78,11 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
                   repeat: Infinity,
                   repeatType: "reverse",
                   duration: 2
-                } : {}
+                } : {
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 20
+                }
               }
             }}
             whileHover={{ scale: 1.1 }}
@@ -80,10 +97,13 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
         </TooltipTrigger>
         <TooltipContent 
           side={getTooltipSide()} 
+          align={getTooltipAlign()}
           className="hotspot-tooltip z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg p-3"
           sideOffset={12}
+          avoidCollisions={true}
+          collisionPadding={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
-          <div className="space-y-2">
+          <div className="space-y-2 max-w-[220px]">
             <div className="flex items-center gap-2">
               <span className={`inline-block w-2 h-2 rounded-full ${
                 issue.severity === 'high' ? "bg-red-500" :
@@ -99,6 +119,9 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
             } severity</p>
             {issue.muscleGroup && (
               <p className="text-xs mt-1">Affects: {issue.muscleGroup}</p>
+            )}
+            {issue.description && (
+              <p className="text-xs mt-1 text-muted-foreground line-clamp-2">{issue.description}</p>
             )}
             <p className="text-xs mt-1 italic">Click for details</p>
           </div>
