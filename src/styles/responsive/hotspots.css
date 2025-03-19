@@ -1,4 +1,6 @@
 
+@tailwind components;
+
 /* Hotspot positioning and alignment styles */
 .hotspot-marker {
   @apply absolute flex items-center justify-center cursor-pointer z-10;
@@ -100,7 +102,7 @@
   }
 
   .hotspot-icon {
-    @apply scale-80;
+    @apply scale-75;
   }
 }
 
