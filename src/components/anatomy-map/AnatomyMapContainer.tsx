@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { useSymptomSync } from '@/contexts/SymptomSyncContext';
 import { toast } from 'sonner';
 
 const AnatomyMapContainer: React.FC = () => {
+  
   const [bodyRegions] = useState<BodyRegion[]>(getBodyRegions());
   const [selectedRegion, setSelectedRegion] = useState<BodyRegion | null>(null);
   const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
@@ -21,6 +21,7 @@ const AnatomyMapContainer: React.FC = () => {
   const [selectedSymptom, setSelectedSymptom] = useState<PainSymptom | null>(null);
   const [zoom, setZoom] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Use the symptom sync context for real-time updates
   const { trackRegionView, trackSymptomUpdate } = useSymptomSync();
@@ -151,6 +152,20 @@ const AnatomyMapContainer: React.FC = () => {
     }, 1500);
   };
 
+  const handleToggleActive = (symptomId: string, isActive: boolean) => {
+    setSymptoms(prev => 
+      prev.map(symptom => 
+        symptom.id === symptomId 
+          ? { ...symptom, isActive, updatedAt: new Date().toISOString() } 
+          : symptom
+      )
+    );
+    
+    toast.success(isActive ? "Symptom activated" : "Symptom deactivated", {
+      description: isActive ? "This area will now show as symptomatic." : "This area will no longer show as symptomatic."
+    });
+  };
+
   // Filter for active symptoms only
   const activeSymptoms = symptoms.filter(s => s.isActive);
 
@@ -190,35 +205,40 @@ const AnatomyMapContainer: React.FC = () => {
             <CardTitle className="text-lg">Symptom History</CardTitle>
           </CardHeader>
           <CardContent>
-            <SymptomHistoryTable symptoms={symptoms} bodyRegions={bodyRegions} />
+            <SymptomHistoryTable 
+              symptoms={symptoms} 
+              bodyRegions={bodyRegions}
+              onUpdateSymptom={handleUpdateSymptom}
+              onDeleteSymptom={handleDeleteSymptom}
+              onToggleActive={handleToggleActive}
+              loading={isLoading}
+            />
           </CardContent>
         </Card>
       )}
 
       <SymptomDialog
-        isOpen={isAddDialogOpen}
+        open={isAddDialogOpen}
         onClose={() => {
           setIsAddDialogOpen(false);
           setSelectedRegion(null);
         }}
-        onSubmit={handleAddSymptom}
-        bodyRegion={selectedRegion}
-        painSeverityOptions={painSeverityOptions}
-        painTypeOptions={painTypeOptions}
+        selectedRegion={selectedRegion}
+        existingSymptom={null}
+        isEditMode={false}
+        onAdd={handleAddSymptom}
+        onUpdate={handleUpdateSymptom}
+        onDelete={handleDeleteSymptom}
       />
 
       <SymptomDetailsDialog
-        isOpen={isDetailsDialogOpen}
+        open={isDetailsDialogOpen}
         onClose={() => {
           setIsDetailsDialogOpen(false);
           setSelectedSymptom(null);
         }}
         symptom={selectedSymptom}
-        bodyRegion={selectedRegion}
-        painSeverityOptions={painSeverityOptions}
-        painTypeOptions={painTypeOptions}
-        onUpdate={handleUpdateSymptom}
-        onDelete={handleDeleteSymptom}
+        region={selectedRegion}
       />
     </div>
   );

@@ -6,8 +6,23 @@ import DashboardMainContent from '@/components/patient-dashboard/DashboardMainCo
 import LeftColumn from '@/components/patient-dashboard/dashboard-layout/LeftColumn';
 import RightColumn from '@/components/patient-dashboard/dashboard-layout/RightColumn';
 import RecentAnatomyActivity from '@/components/patient-dashboard/RecentAnatomyActivity';
+import usePatientDashboard from '@/hooks/usePatientDashboard';
 
 const PatientDashboard: React.FC = () => {
+  const {
+    activityData,
+    fitnessData,
+    treatmentTasks,
+    upcomingAppointments,
+    healthMetrics,
+    hasConnectedApps,
+    biologicalAge,
+    chronologicalAge,
+    handleConfirmAppointment,
+    handleRescheduleAppointment,
+    handleSyncAllData
+  } = usePatientDashboard();
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
@@ -26,7 +41,18 @@ const PatientDashboard: React.FC = () => {
               
               {/* Main Content (5 columns on md screens) */}
               <div className="md:col-span-6">
-                <DashboardMainContent />
+                <DashboardMainContent 
+                  healthMetrics={healthMetrics}
+                  activityData={activityData}
+                  treatmentTasks={treatmentTasks}
+                  upcomingAppointments={upcomingAppointments}
+                  biologicalAge={biologicalAge}
+                  chronologicalAge={chronologicalAge}
+                  hasConnectedApps={hasConnectedApps}
+                  onSyncData={handleSyncAllData}
+                  handleConfirmAppointment={handleConfirmAppointment}
+                  handleRescheduleAppointment={handleRescheduleAppointment}
+                />
               </div>
               
               {/* Right Column (3 columns on md screens) */}
