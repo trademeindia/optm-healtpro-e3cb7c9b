@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,20 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
+  // Add logging to debug visibility issues
+  useEffect(() => {
+    console.log('Login component mounted, theme:', theme);
+    // Check if container is visible
+    const container = document.querySelector('.min-h-screen');
+    if (container) {
+      console.log('Login container found in DOM');
+    } else {
+      console.warn('Login container not found in DOM');
+    }
+  }, [theme]);
+
   const handleDemoLogin = (role: 'doctor' | 'patient' | 'admin') => {
+    console.log(`Logging in as ${role}`);
     // Simulate login with a demo account
     const demoUser = {
       id: `demo-${role}-${Date.now()}`,
@@ -26,11 +39,9 @@ const Login: React.FC = () => {
     navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
   };
 
-  // Add console log for debugging - will help trace component rendering
-  console.log('Login component rendered', { theme });
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative" 
+         style={{border: '1px solid rgba(255,0,0,0.2)'}}>
       <Card className="max-w-md w-full border shadow">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">Medical Dashboard Login</CardTitle>
@@ -45,21 +56,21 @@ const Login: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('doctor')}
-                className="w-full"
+                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
               >
                 Continue as Doctor
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('patient')}
-                className="w-full"
+                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
               >
                 Continue as Patient
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('admin')}
-                className="w-full"
+                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
               >
                 Continue as Admin
               </Button>

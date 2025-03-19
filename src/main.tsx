@@ -5,9 +5,9 @@ import App from './App'
 
 // Import all CSS in the correct order - this is critical for proper styling
 import './styles/base.css'
-import './styles/utilities.css'
-import './styles/animations.css'
-import './styles/components.css'
+import './styles/utilities.css'  // glass-morphism is defined here
+import './styles/animations.css' // animation keyframes
+import './styles/components.css' // components using glass-morphism
 import './styles/main.css'
 import './styles/cards/base.css'
 import './styles/cards/variants.css'

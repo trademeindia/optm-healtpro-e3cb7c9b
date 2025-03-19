@@ -4,6 +4,15 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
+  
+  /* Fallback colors for visibility */
+  --background: #f8f9fa;
+  --foreground: #333333;
+  --card: #ffffff;
+  --card-foreground: #333333;
+  --border: #e2e8f0;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
 }
 
 .app-container {
@@ -85,12 +94,10 @@ body.overflow-hidden {
   }
 }
 
-/* Debug outlines for development (uncomment to use) */
-/* 
+/* Debug outlines for development - uncomment to use */
 .debug * {
   outline: 1px solid rgba(255, 0, 0, 0.2);
 }
-*/
 
 /* Improved dark mode contrast */
 .dark .text-muted-foreground {
@@ -99,10 +106,10 @@ body.overflow-hidden {
 
 /* Better card visibility in both modes */
 .card {
-  background-color: var(--card);
-  color: var(--card-foreground);
+  background-color: var(--card, #ffffff);
+  color: var(--card-foreground, #333333);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border, #e2e8f0);
 }
 
 /* Debug visibility helper */
@@ -119,4 +126,22 @@ body > div#root > div.app-container {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+}
+
+/* Visibility helpers */
+.force-visible {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  z-index: 9999 !important;
+}
+
+/* High contrast for text elements to ensure visibility */
+h1, h2, h3, h4, h5, h6, p, span, a, button {
+  text-shadow: 0 0 1px rgba(0,0,0,0.1);
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6, 
+.dark p, .dark span, .dark a, .dark button {
+  text-shadow: 0 0 1px rgba(255,255,255,0.1);
 }
