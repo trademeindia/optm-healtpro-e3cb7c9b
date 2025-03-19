@@ -1,11 +1,21 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { format, isToday, isTomorrow, addDays, isAfter, isBefore } from 'date-fns';
-import { Calendar, Clock, MapPin, Check, CalendarDays, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { AppointmentWithProvider } from '@/types/appointments';
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  User, 
+  Phone, 
+  Video, 
+  AlertCircle,
+  CheckCircle,
+  Calendar as CalendarIcon
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface EnhancedAppointmentsListProps {
   appointments: AppointmentWithProvider[];
@@ -18,149 +28,158 @@ const EnhancedAppointmentsList: React.FC<EnhancedAppointmentsListProps> = ({
   onConfirm,
   onReschedule
 }) => {
-  // Sort appointments by date
+  const getAppointmentTypeIcon = (type: string) => {
+    switch(type.toLowerCase()) {
+      case 'virtual':
+        return <Video className="h-4 w-4 text-indigo-500" />;
+      case 'phone':
+        return <Phone className="h-4 w-4 text-blue-500" />;
+      default:
+        return <User className="h-4 w-4 text-teal-500" />;
+    }
+  };
+  
+  const getAppointmentStatusColor = (status: string) => {
+    switch(status) {
+      case 'confirmed':
+        return 'text-green-500 bg-green-100 border-green-200';
+      case 'scheduled':
+        return 'text-amber-500 bg-amber-100 border-amber-200';
+      case 'cancelled':
+        return 'text-red-500 bg-red-100 border-red-200';
+      case 'completed':
+        return 'text-blue-500 bg-blue-100 border-blue-200';
+      case 'rescheduled':
+        return 'text-purple-500 bg-purple-100 border-purple-200';
+      default:
+        return 'text-gray-500 bg-gray-100 border-gray-200';
+    }
+  };
+  
+  const getFormattedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const isToday = date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0);
+    const isTomorrow = date.setHours(0, 0, 0, 0) === tomorrow.setHours(0, 0, 0, 0);
+    
+    const month = date.toLocaleString('default', { month: 'short' });
+    const day = date.getDate();
+    
+    if (isToday) return 'Today';
+    if (isTomorrow) return 'Tomorrow';
+    return `${month} ${day}`;
+  };
+  
   const sortedAppointments = [...appointments].sort((a, b) => {
-    return new Date(a.date).getTime() - new Date(b.date).getTime();
+    const dateA = new Date(`${a.date} ${a.time}`);
+    const dateB = new Date(`${b.date} ${b.time}`);
+    return dateA.getTime() - dateB.getTime();
   });
   
-  const getAppointmentDate = (dateString: string) => {
-    const date = new Date(dateString);
-    
-    if (isToday(date)) {
-      return 'Today';
-    } else if (isTomorrow(date)) {
-      return 'Tomorrow';
-    } else if (isAfter(date, new Date()) && isBefore(date, addDays(new Date(), 7))) {
-      return format(date, 'EEEE'); // Day of week
-    } else {
-      return format(date, 'MMM d, yyyy');
-    }
-  };
-  
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4
-      }
-    }
-  };
-
   return (
-    <Card className="shadow-md border-0">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
-          <Button variant="ghost" size="sm" className="flex items-center text-xs text-primary">
-            View all <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
-        </div>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          Upcoming Appointments
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {sortedAppointments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <CalendarDays className="h-12 w-12 text-muted-foreground/50 mb-3" />
-            <h3 className="text-lg font-medium">No Upcoming Appointments</h3>
+          <div className="text-center py-8">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium">No upcoming appointments</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              You don't have any scheduled appointments.
+              Schedule an appointment to see your doctor.
             </p>
+            <Button className="mt-4" variant="outline">
+              Schedule Appointment
+            </Button>
           </div>
         ) : (
-          <motion.div 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {sortedAppointments.map((appointment) => {
-              const appointmentDate = getAppointmentDate(appointment.date);
-              const isActionable = appointment.status === 'scheduled';
-              const doctor = appointment.provider ? appointment.provider.name : '';
-              const specialty = appointment.provider ? appointment.provider.specialty : '';
-              
-              return (
-                <motion.div 
-                  key={appointment.id}
-                  variants={itemVariants}
-                  className="p-4 rounded-lg border bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex items-start">
-                    <div className="mr-4 p-3 rounded-full bg-primary/10">
-                      <Calendar className="h-5 w-5 text-primary" />
+          <div className="space-y-4">
+            {sortedAppointments.map((appointment) => (
+              <div key={appointment.id} className="border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      {getAppointmentTypeIcon(appointment.type)}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{appointment.type}</h4>
-                          <p className="text-sm text-primary font-medium">{doctor}</p>
-                          {specialty && (
-                            <p className="text-xs text-muted-foreground">{specialty}</p>
-                          )}
-                        </div>
-                        
-                        <div className={`px-2 py-1 text-xs rounded-full ${
-                          appointment.status === 'confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                          appointment.status === 'scheduled' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                        }`}>
-                          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-3 mt-3 text-xs text-muted-foreground">
-                        <div className="flex items-center">
-                          <Calendar className="h-3.5 w-3.5 mr-1" />
-                          <span>{appointmentDate}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-3.5 w-3.5 mr-1" />
-                          <span>{appointment.time}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-3.5 w-3.5 mr-1" />
-                          <span>{appointment.location}</span>
-                        </div>
-                      </div>
-                      
-                      {isActionable && (
-                        <div className="flex gap-2 mt-4">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-xs h-8"
-                            onClick={() => onReschedule(appointment.id)}
-                          >
-                            Reschedule
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="text-xs h-8 flex items-center"
-                            onClick={() => onConfirm(appointment.id)}
-                          >
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            Confirm
-                          </Button>
-                        </div>
-                      )}
+                    <div>
+                      <h3 className="font-medium">{appointment.type} Appointment</h3>
+                      <p className="text-sm text-muted-foreground">
+                        with Dr. {appointment.provider.name}
+                      </p>
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                  <Badge className={cn("font-normal", getAppointmentStatusColor(appointment.status))}>
+                    {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{getFormattedDate(appointment.date)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{appointment.time}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{appointment.provider.specialty}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{appointment.location}</span>
+                  </div>
+                </div>
+                
+                {appointment.notes && (
+                  <div className="mt-3 flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">{appointment.notes}</p>
+                  </div>
+                )}
+                
+                <div className="mt-4 flex justify-end gap-2">
+                  {appointment.status === 'scheduled' && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onReschedule(appointment.id)}
+                      >
+                        Reschedule
+                      </Button>
+                      <Button 
+                        size="sm"
+                        onClick={() => onConfirm(appointment.id)}
+                      >
+                        Confirm
+                      </Button>
+                    </>
+                  )}
+                  
+                  {appointment.status === 'confirmed' && (
+                    <div className="flex items-center gap-1 text-green-500 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Confirmed</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>

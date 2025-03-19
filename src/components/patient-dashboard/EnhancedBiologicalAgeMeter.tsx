@@ -1,7 +1,15 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock } from 'lucide-react';
+import { HeartPulse } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import {
+  RadialBarChart,
+  RadialBar,
+  ResponsiveContainer,
+  PolarAngleAxis,
+  Legend
+} from 'recharts';
 
 interface EnhancedBiologicalAgeMeterProps {
   biologicalAge: number;
@@ -9,91 +17,140 @@ interface EnhancedBiologicalAgeMeterProps {
   className?: string;
 }
 
-const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({
+const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({ 
   biologicalAge,
   chronologicalAge,
-  className = ""
+  className
 }) => {
-  // Calculate difference and determine status
   const ageDifference = chronologicalAge - biologicalAge;
-  const percentage = Math.min(100, Math.max(0, (biologicalAge / Math.max(chronologicalAge + 5, biologicalAge + 5)) * 100));
+  const yearsYounger = ageDifference > 0;
   
-  const getStatusColor = () => {
-    if (ageDifference >= 5) return 'text-green-500';
-    if (ageDifference >= 0) return 'text-green-400';
-    if (ageDifference >= -5) return 'text-amber-500';
-    return 'text-orange-500';
+  // Calculate health score from 0-100 based on the difference
+  // If biological age is lower than chronological age, that's good
+  const healthScore = Math.min(100, Math.max(0, 50 + (ageDifference * 5)));
+  
+  // Data for the radial chart
+  const data = [
+    {
+      name: 'Health Score',
+      value: healthScore,
+      fill: healthScore >= 80 ? '#22c55e' : 
+            healthScore >= 60 ? '#84cc16' : 
+            healthScore >= 40 ? '#eab308' : 
+            healthScore >= 20 ? '#f97316' : '#ef4444',
+    },
+  ];
+  
+  // Get health status text based on health score
+  const getHealthStatus = () => {
+    if (healthScore >= 80) return { text: 'Excellent', color: 'text-green-500' };
+    if (healthScore >= 60) return { text: 'Good', color: 'text-lime-500' };
+    if (healthScore >= 40) return { text: 'Fair', color: 'text-yellow-500' };
+    if (healthScore >= 20) return { text: 'Poor', color: 'text-orange-500' };
+    return { text: 'Critical', color: 'text-red-500' };
   };
-
-  const getProgressColor = () => {
-    if (ageDifference >= 5) return 'from-green-300 to-green-500';
-    if (ageDifference >= 0) return 'from-green-200 to-green-400';
-    if (ageDifference >= -5) return 'from-amber-300 to-amber-500';
-    return 'from-orange-300 to-orange-500';
-  };
-
-  const getStatusText = () => {
-    if (ageDifference >= 5) return `Excellent: ${Math.abs(ageDifference)} years younger`;
-    if (ageDifference >= 0) return `Good: ${Math.abs(ageDifference)} years younger`;
-    if (ageDifference >= -5) return `Average: ${Math.abs(ageDifference)} years older`;
-    return `Concern: ${Math.abs(ageDifference)} years older`;
-  };
-
+  
+  const healthStatus = getHealthStatus();
+  
+  // Age comparison factors
+  const factors = [
+    { name: 'Cardiovascular Health', score: Math.round(healthScore * 0.9) },
+    { name: 'Metabolic Efficiency', score: Math.round(healthScore * 1.1) },
+    { name: 'Cellular Regeneration', score: Math.round(healthScore * 0.95) },
+    { name: 'Inflammation Levels', score: Math.round(healthScore * 1.05) }
+  ];
+  
   return (
-    <Card className={`shadow-md border-0 ${className}`}>
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-lg flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-primary/80" />
-          Biological Age
+    <Card className={className}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <HeartPulse className="h-5 w-5 text-primary" />
+          Biological Age Analysis
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent>
         <div className="flex flex-col items-center">
-          <div className="relative w-48 h-48">
-            {/* Circular progress background */}
-            <div className="absolute inset-0 rounded-full bg-gray-100 dark:bg-gray-800"></div>
-            
-            {/* Circular progress */}
-            <div 
-              className={`absolute inset-0 rounded-full bg-gradient-to-r ${getProgressColor()}`}
-              style={{ 
-                clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 ${100 - percentage}%)` 
-              }}
-            ></div>
-            
-            {/* Inner circle with content */}
-            <div className="absolute inset-4 rounded-full bg-white dark:bg-gray-900 flex flex-col items-center justify-center shadow-inner">
-              <div className="text-4xl font-bold">{biologicalAge}</div>
-              <div className="text-sm text-muted-foreground">Biological Age</div>
-              <div className="text-sm mt-1">vs</div>
-              <div className="text-lg font-medium">{chronologicalAge} <span className="text-sm font-normal text-muted-foreground">actual</span></div>
-            </div>
+          <div className="w-full h-[180px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart 
+                cx="50%" 
+                cy="50%" 
+                innerRadius="60%" 
+                outerRadius="100%" 
+                barSize={10} 
+                data={data}
+                startAngle={180} 
+                endAngle={0}
+              >
+                <PolarAngleAxis
+                  type="number"
+                  domain={[0, 100]}
+                  angleAxisId={0}
+                  tick={false}
+                />
+                <RadialBar
+                  background={{ fill: '#f1f5f9' }}
+                  dataKey="value"
+                  cornerRadius={12}
+                  label={{ position: 'center', fill: '#64748b', fontSize: 20, fontWeight: 'bold' }}
+                />
+                <text
+                  x="50%"
+                  y="50%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="radial-chart-text"
+                  style={{ fontSize: '26px', fontWeight: 'bold', fill: data[0].fill }}
+                >
+                  {healthScore}
+                </text>
+                <text
+                  x="50%"
+                  y="62%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="radial-chart-subtext"
+                  style={{ fontSize: '12px', fill: '#64748b' }}
+                >
+                  HEALTH SCORE
+                </text>
+              </RadialBarChart>
+            </ResponsiveContainer>
           </div>
           
-          <div className={`mt-4 text-sm font-medium ${getStatusColor()}`}>
-            {getStatusText()}
-          </div>
-          
-          <div className="mt-6 w-full">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-              <span>Biological</span>
-              <span>Chronological</span>
-            </div>
+          <div className="mt-2 text-center">
+            <h3 className="text-lg font-bold flex items-center justify-center gap-1">
+              {biologicalAge} <span className="text-muted-foreground text-sm">vs</span> {chronologicalAge}
+            </h3>
+            <p className="text-sm text-muted-foreground">Biological vs Chronological Age</p>
             
-            <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800 relative">
-              <div 
-                className={`h-2 rounded-full bg-gradient-to-r ${getProgressColor()}`}
-                style={{ width: `${percentage}%` }}
-              ></div>
-              <div 
-                className="absolute top-0 w-2 h-4 -mt-1 bg-gray-900 dark:bg-white rounded"
-                style={{ left: `${(chronologicalAge / Math.max(chronologicalAge + 5, biologicalAge + 5)) * 100}%` }}
-              ></div>
-            </div>
+            <p className="mt-3 font-semibold">
+              Your body is functioning like {' '}
+              <span className={yearsYounger ? 'text-green-500' : 'text-amber-500'}>
+                {yearsYounger ? 'someone younger' : 'someone older'}
+              </span>
+            </p>
             
-            <div className="flex justify-between text-xs mt-1">
-              <span className="font-medium">{biologicalAge} yrs</span>
-              <span className="font-medium">{chronologicalAge} yrs</span>
+            <p className="text-sm text-muted-foreground">
+              {yearsYounger
+                ? `You're ${Math.abs(ageDifference)} years younger biologically!`
+                : `You're ${Math.abs(ageDifference)} years older biologically.`}
+            </p>
+            
+            <div className="mt-4">
+              <p className="text-sm font-medium mb-2">Health Status: <span className={healthStatus.color}>{healthStatus.text}</span></p>
+              
+              <div className="space-y-3">
+                {factors.map((factor, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between items-center text-xs mb-1">
+                      <span>{factor.name}</span>
+                      <span>{factor.score}%</span>
+                    </div>
+                    <Progress value={factor.score} className="h-2" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

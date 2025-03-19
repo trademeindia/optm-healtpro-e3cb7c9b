@@ -14,6 +14,8 @@ import EnhancedBiologicalAgeMeter from '@/components/patient-dashboard/EnhancedB
 import EnhancedTreatmentTasks from '@/components/patient-dashboard/EnhancedTreatmentTasks';
 import EnhancedAppointmentsList from '@/components/patient-dashboard/EnhancedAppointmentsList';
 import FitnessDataCharts from '@/components/dashboard/FitnessDataCharts';
+import AnatomicalBodyMap from '@/components/patient-dashboard/AnatomicalBodyMap';
+import RealTimeHealthMetrics from '@/components/patient-dashboard/RealTimeHealthMetrics';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -78,13 +80,24 @@ const PatientDashboard: React.FC = () => {
                     </Alert>
                   )}
                   
-                  {/* Patient Profile Card */}
-                  <PatientProfileCard 
-                    name={user?.name || 'Patient'} 
-                    patientId={user?.id || 'ABC123'}
-                    age={35}
-                  />
+                  {/* Patient Profile and Anatomical Map in top row */}
+                  <div className="grid md:grid-cols-12 gap-4">
+                    <div className="md:col-span-4">
+                      <PatientProfileCard 
+                        name={user?.name || 'Patient'} 
+                        patientId={user?.id || 'ABC123'}
+                        age={chronologicalAge || 35}
+                      />
+                    </div>
+                    <div className="md:col-span-8">
+                      <AnatomicalBodyMap />
+                    </div>
+                  </div>
                   
+                  {/* Real-time health metrics */}
+                  <RealTimeHealthMetrics metrics={healthMetrics} />
+                  
+                  {/* Health metrics and biological age */}
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
                       <EnhancedMetricsOverview metrics={healthMetrics} />

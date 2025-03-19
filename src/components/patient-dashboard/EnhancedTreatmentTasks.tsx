@@ -1,172 +1,141 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pill, Dumbbell, Stethoscope, CheckCircle, Clock, Calendar } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TreatmentTask } from '@/types/treatment';
-import { motion } from 'framer-motion';
-import { format, isToday, isAfter, isBefore, addHours } from 'date-fns';
+import { CheckCircle2, Clock, Tag, Calendar, Trophy, HeartPulse } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface EnhancedTreatmentTasksProps {
   tasks: TreatmentTask[];
 }
 
 const EnhancedTreatmentTasks: React.FC<EnhancedTreatmentTasksProps> = ({ tasks }) => {
-  const getTaskIcon = (type: string) => {
-    switch (type) {
-      case 'medication':
-        return <Pill className="h-5 w-5 text-rose-500" />;
-      case 'exercise':
-        return <Dumbbell className="h-5 w-5 text-green-500" />;
-      case 'checkup':
-        return <Stethoscope className="h-5 w-5 text-blue-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-amber-500" />;
-    }
-  };
-
-  const getTaskBackground = (type: string) => {
-    switch (type) {
-      case 'medication':
-        return 'bg-rose-50 dark:bg-rose-900/20';
-      case 'exercise':
-        return 'bg-green-50 dark:bg-green-900/20';
-      case 'checkup':
-        return 'bg-blue-50 dark:bg-blue-900/20';
-      default:
-        return 'bg-amber-50 dark:bg-amber-900/20';
-    }
-  };
-
-  const getTaskIconBackground = (type: string) => {
-    switch (type) {
-      case 'medication':
-        return 'bg-rose-100 dark:bg-rose-900/40';
-      case 'exercise':
-        return 'bg-green-100 dark:bg-green-900/40';
-      case 'checkup':
-        return 'bg-blue-100 dark:bg-blue-900/40';
-      default:
-        return 'bg-amber-100 dark:bg-amber-900/40';
-    }
-  };
-
-  const getTaskStatus = (dueDate: string, status: string) => {
-    const now = new Date();
-    const due = new Date(dueDate);
-    
-    if (status === 'completed') {
-      return {
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />,
-        text: 'Completed',
-        color: 'text-green-500'
-      };
-    }
-    
-    if (isToday(due) && isAfter(due, now)) {
-      return {
-        icon: <Clock className="h-4 w-4 text-amber-500" />,
-        text: `Due ${format(due, 'h:mm a')}`,
-        color: 'text-amber-500'
-      };
-    }
-    
-    if (isBefore(due, now)) {
-      return {
-        icon: <Clock className="h-4 w-4 text-red-500" />,
-        text: 'Overdue',
-        color: 'text-red-500'
-      };
-    }
-    
-    return {
-      icon: <Calendar className="h-4 w-4 text-blue-500" />,
-      text: `Due ${format(due, 'MMM d')}`,
-      color: 'text-blue-500'
-    };
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  
+  const toggleTask = (taskId: string) => {
+    setCompletedTasks(prev => 
+      prev.includes(taskId)
+        ? prev.filter(id => id !== taskId)
+        : [...prev, taskId]
+    );
   };
   
-  const taskVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.3
-      }
-    })
-  };
+  // Calculate progress
+  const completionPercentage = Math.round((completedTasks.length / tasks.length) * 100);
   
-  // Sort tasks by due date and priority
-  const sortedTasks = [...tasks].sort((a, b) => {
-    // First sort by status (pending first)
-    if (a.status === 'pending' && b.status !== 'pending') return -1;
-    if (a.status !== 'pending' && b.status === 'pending') return 1;
-    
-    // Then sort by due date
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  // Group tasks by category
+  const groupedTasks: Record<string, TreatmentTask[]> = {};
+  tasks.forEach(task => {
+    if (!groupedTasks[task.category]) {
+      groupedTasks[task.category] = [];
+    }
+    groupedTasks[task.category].push(task);
   });
-
+  
+  // Get category icon
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'medication':
+        return HeartPulse;
+      case 'exercise':
+        return Trophy;
+      case 'appointment':
+        return Calendar;
+      default:
+        return Tag;
+    }
+  };
+  
   return (
-    <Card className="shadow-md border-0">
-      <CardHeader className="pb-2">
+    <Card>
+      <CardHeader className="pb-3 flex flex-row justify-between items-center">
         <CardTitle className="text-lg">Treatment Plan</CardTitle>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{completionPercentage}%</span>
+          <Progress value={completionPercentage} className="w-20 h-2" />
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {sortedTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mb-2" />
-            <h3 className="text-lg font-medium">All Done!</h3>
-            <p className="text-sm text-muted-foreground">
-              You have no pending treatment tasks.
-            </p>
-          </div>
-        ) : (
-          sortedTasks.map((task, index) => {
-            const taskStatus = getTaskStatus(task.dueDate, task.status);
-            
-            return (
-              <motion.div 
-                key={task.id}
-                custom={index}
-                initial="hidden"
-                animate="visible"
-                variants={taskVariants}
-                className={`p-4 rounded-lg ${getTaskBackground(task.type)} flex items-start space-x-4`}
-              >
-                <div className={`p-3 rounded-full ${getTaskIconBackground(task.type)} shrink-0`}>
-                  {getTaskIcon(task.type)}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium">{task.title}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+      <CardContent className="space-y-5">
+        {Object.entries(groupedTasks).map(([category, categoryTasks]) => {
+          const CategoryIcon = getCategoryIcon(category);
+          return (
+            <div key={category} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <CategoryIcon className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-medium">{category}</h3>
+              </div>
+              
+              <div className="space-y-2">
+                {categoryTasks.map(task => {
+                  const isCompleted = completedTasks.includes(task.id);
                   
-                  <div className="flex items-center mt-2 text-xs">
-                    <div className={`flex items-center ${taskStatus.color}`}>
-                      {taskStatus.icon}
-                      <span className="ml-1">{taskStatus.text}</span>
+                  return (
+                    <div 
+                      key={task.id}
+                      className={cn(
+                        "flex items-start gap-2 p-3 rounded-lg border transition-colors",
+                        isCompleted ? "bg-primary/5 border-primary/10" : "bg-card"
+                      )}
+                    >
+                      <Checkbox 
+                        id={task.id}
+                        checked={isCompleted}
+                        onCheckedChange={() => toggleTask(task.id)}
+                        className="mt-0.5"
+                      />
+                      
+                      <div className="flex-1">
+                        <label 
+                          htmlFor={task.id}
+                          className={cn(
+                            "font-medium cursor-pointer",
+                            isCompleted && "line-through text-muted-foreground"
+                          )}
+                        >
+                          {task.title}
+                        </label>
+                        
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {task.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>{task.dueTime}</span>
+                          </div>
+                          
+                          {task.frequency && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              <span>{task.frequency}</span>
+                            </div>
+                          )}
+                          
+                          {isCompleted && (
+                            <div className="ml-auto flex items-center gap-1 text-xs text-primary">
+                              <CheckCircle2 className="h-3 w-3" />
+                              <span>Completed</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className={`ml-4 px-2 py-0.5 rounded-full ${
-                      task.priority === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                      task.priority === 'medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                      'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                    }`}>
-                      {task.priority} priority
-                    </div>
-                  </div>
-                </div>
-                
-                <button className="p-2 hover:bg-white/80 dark:hover:bg-gray-800/50 rounded">
-                  <CheckCircle className={`h-5 w-5 ${
-                    task.status === 'completed' ? 'text-green-500' : 'text-muted-foreground'
-                  }`} />
-                </button>
-              </motion.div>
-            );
-          })
-        )}
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        
+        <div className="flex justify-center pt-2">
+          <div className="bg-primary/5 text-primary rounded-lg px-4 py-2 text-sm flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            <span>You've completed {completedTasks.length} of {tasks.length} tasks!</span>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
