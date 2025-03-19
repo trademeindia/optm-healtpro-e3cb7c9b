@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { FileText, Upload, Search, MoreHorizontal, Edit, Trash2, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +39,6 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
   const [documents, setDocuments] = useState<Document[]>(propDocuments || []);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load documents from localStorage if not provided through props
   useEffect(() => {
     if (propDocuments && propDocuments.length > 0) {
       setDocuments(propDocuments);
@@ -49,16 +47,13 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
     }
   }, [propDocuments, patientId]);
 
-  // Load documents from local storage
   const loadDocumentsFromStorage = () => {
     try {
-      // Check for documents in both patient_reports and patient_records
       const patientReports = getFromLocalStorage('patient_reports');
       const patientRecords = getFromLocalStorage('patient_records').filter((record: any) => 
         record.fileId && (!patientId || record.patientId === patientId)
       );
 
-      // Convert to Document format
       const reportDocs = patientReports
         .filter((report: any) => !patientId || report.patientId === patientId)
         .map((report: any) => ({
@@ -74,10 +69,9 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
         name: record.name || 'Medical Record',
         type: record.recordType === 'xray' ? 'Image' : 'PDF',
         date: record.date || new Date().toISOString().split('T')[0],
-        size: '1.0 MB' // We don't store this for records
+        size: '1.0 MB'
       }));
 
-      // Combine and sort by date (newest first)
       const allDocuments = [...reportDocs, ...recordDocs].sort((a, b) => 
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
@@ -90,31 +84,25 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
 
   const handleDeleteDocument = (documentId: string) => {
     try {
-      // Get existing records and reports
       const records = getFromLocalStorage('patient_records');
       const reports = getFromLocalStorage('patient_reports');
       
-      // Check if document exists in records
       const recordIndex = records.findIndex((record: any) => record.id === documentId);
       
       if (recordIndex !== -1) {
-        // Remove record
         records.splice(recordIndex, 1);
-        storeInLocalStorage('patient_records', records, true);
+        storeInLocalStorage('patient_records', records);
         toast.success('Document deleted successfully');
       } else {
-        // Check if document exists in reports
         const reportIndex = reports.findIndex((report: any) => report.id === documentId);
         
         if (reportIndex !== -1) {
-          // Remove report
           reports.splice(reportIndex, 1);
-          storeInLocalStorage('patient_reports', reports, true);
+          storeInLocalStorage('patient_reports', reports);
           toast.success('Document deleted successfully');
         }
       }
       
-      // Update local state
       setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== documentId));
       
     } catch (error) {
@@ -124,11 +112,9 @@ const ClinicDocuments: React.FC<ClinicDocumentsProps> = ({
   };
 
   const handleEditDocument = (documentId: string) => {
-    // This would open an edit modal in a real implementation
     toast.info('Edit functionality will be implemented soon');
   };
 
-  // Filter documents based on search
   const filteredDocuments = documents.filter(doc => 
     doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     doc.type.toLowerCase().includes(searchQuery.toLowerCase())

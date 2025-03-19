@@ -1,13 +1,15 @@
 
+# This is the main configuration file for Supabase
+
+# The project ID
 project_id = "xjxxuqqyjqzgmvtgrpgv"
 
-[api]
-# Disable APIs you don't use to improve performance
-enabled_apis = ["rest", "auth", "storage", "realtime"]
-
+# Database schema definition
 [db]
-# Add schemas for required tables
-[db.schemas]
-# Schema for medical data
-[db.schemas.public]
-tables = ["profiles", "medical_analyses", "biomarkers", "patients", "medical_reports", "symptom_records", "anatomical_mappings"]
+# Default schema to use for database operations
+schema = "public"
+
+# API configuration
+[api]
+# Port to run the API on
+port = 54321
