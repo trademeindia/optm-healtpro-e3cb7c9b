@@ -1,10 +1,8 @@
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, UserRound } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BodyRegion, PainSymptom } from './types';
 import BodyRegionMarker from './BodyRegionMarker';
-import { BodyRegion, PainSymptom } from './types'; 
-import { useSymptomSync } from '@/contexts/SymptomSyncContext';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AnatomyMapProps {
   bodyRegions: BodyRegion[];
@@ -13,119 +11,63 @@ interface AnatomyMapProps {
   zoom: number;
 }
 
-const AnatomyMap: React.FC<AnatomyMapProps> = ({ 
-  bodyRegions, 
-  symptoms, 
+const AnatomyMap: React.FC<AnatomyMapProps> = ({
+  bodyRegions,
+  symptoms,
   onRegionClick,
-  zoom 
+  zoom
 }) => {
-  const [view, setView] = useState<'front' | 'back'>('front');
-  const { trackRegionView } = useSymptomSync();
-  
-  // Filter regions based on current view
-  const frontRegions = bodyRegions.filter(region => 
-    !region.id.includes('back-') && !region.id.includes('-back')
-  );
-  
-  const backRegions = bodyRegions.filter(region => 
-    region.id.includes('back-') || region.id.includes('-back')
-  );
-  
-  // Function to find symptom for a body region
-  const findSymptomForRegion = (regionId: string) => {
-    return symptoms.find(symptom => symptom.bodyRegionId === regionId);
+  const [isLoading, setIsLoading] = useState(true);
+  const [imageHeight, setImageHeight] = useState(0);
+  const [imageWidth, setImageWidth] = useState(0);
+
+  // Handle image load to set dimensions
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    setImageHeight(img.offsetHeight);
+    setImageWidth(img.offsetWidth);
+    setIsLoading(false);
+    console.log(`Anatomy map image loaded: ${img.offsetWidth}x${img.offsetHeight}`);
   };
-  
-  const handleRegionClick = (region: BodyRegion) => {
-    // Track view in real time system
-    trackRegionView(region);
-    
-    // Call parent handler
-    onRegionClick(region);
-  };
-  
+
+  useEffect(() => {
+    console.log('AnatomyMap symptoms:', symptoms);
+  }, [symptoms]);
+
   return (
-    <div className="w-full anatomy-map-wrapper">
-      <Tabs 
-        defaultValue="front" 
-        className="w-full" 
-        onValueChange={(value) => setView(value as 'front' | 'back')}
+    <div className="relative w-full flex justify-center items-center bg-white dark:bg-gray-800 rounded-lg overflow-hidden min-h-[500px]">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Spinner size="lg" />
+          <span className="ml-3 text-muted-foreground">Loading anatomy map...</span>
+        </div>
+      )}
+      
+      <div 
+        className="relative w-full h-full flex justify-center items-center transition-transform p-4"
+        style={{ transform: `scale(${zoom})` }}
       >
-        <div className="flex justify-between items-center mb-4">
-          <TabsList className="mb-2">
-            <TabsTrigger value="front" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Front View
-            </TabsTrigger>
-            <TabsTrigger value="back" className="flex items-center gap-2">
-              <UserRound className="h-4 w-4" />
-              Back View
-            </TabsTrigger>
-          </TabsList>
-          
-          <div className="text-sm text-muted-foreground">
-            {symptoms.length} active {symptoms.length === 1 ? 'symptom' : 'symptoms'}
-          </div>
-        </div>
+        <img
+          src="/lovable-uploads/a6f71747-46dd-486d-97a5-2e263119b969.png"
+          alt="Human body diagram"
+          className="max-h-[500px] object-contain"
+          onLoad={handleImageLoad}
+        />
         
-        <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-900">
-          <TabsContent value="front" className="mt-0 p-4 min-h-[500px]">
-            <div 
-              className="relative h-[500px] w-full flex justify-center items-center"
-              style={{ 
-                transform: `scale(${zoom})`,
-                transformOrigin: 'center center',
-                transition: 'transform 0.3s ease-out'
-              }}
-            >
-              {/* Anatomy front view image */}
-              <img 
-                src="/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png" 
-                alt="Human anatomy front view" 
-                className="h-full max-h-[500px] w-auto object-contain"
+        {!isLoading && 
+          bodyRegions.map((region) => {
+            const hasSymptom = symptoms.some(s => s.bodyRegionId === region.id);
+            return (
+              <BodyRegionMarker
+                key={region.id}
+                region={region}
+                hasSymptom={hasSymptom}
+                onClick={() => onRegionClick(region)}
               />
-              
-              {/* Front view hotspots */}
-              {frontRegions.map(region => (
-                <BodyRegionMarker
-                  key={region.id}
-                  region={region}
-                  symptom={findSymptomForRegion(region.id)}
-                  onClick={() => handleRegionClick(region)}
-                />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="back" className="mt-0 p-4 min-h-[500px]">
-            <div 
-              className="relative h-[500px] w-full flex justify-center items-center"
-              style={{ 
-                transform: `scale(${zoom})`,
-                transformOrigin: 'center center',
-                transition: 'transform 0.3s ease-out'
-              }}
-            >
-              {/* Anatomy back view image */}
-              <img 
-                src="/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png" 
-                alt="Human anatomy back view" 
-                className="h-full max-h-[500px] w-auto object-contain"
-              />
-              
-              {/* Back view hotspots */}
-              {backRegions.map(region => (
-                <BodyRegionMarker
-                  key={region.id}
-                  region={region}
-                  symptom={findSymptomForRegion(region.id)}
-                  onClick={() => handleRegionClick(region)}
-                />
-              ))}
-            </div>
-          </TabsContent>
-        </div>
-      </Tabs>
+            );
+          })
+        }
+      </div>
     </div>
   );
 };

@@ -97,6 +97,10 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+  
+  .app-container {
+    @apply min-h-screen w-full bg-background text-foreground;
+  }
 }
 
 /* Biomarker detailed section styling */
@@ -130,4 +134,21 @@
 
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80;
+}
+
+/* Ensure visibility of anatomy maps */
+.anatomy-map-container {
+  @apply w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden;
+}
+
+.body-region-marker {
+  @apply absolute cursor-pointer transition-transform hover:scale-125;
+}
+
+.symptom-indicator {
+  @apply w-4 h-4 rounded-full border-2 border-primary bg-primary-foreground;
+}
+
+.symptom-indicator-active {
+  @apply w-4 h-4 rounded-full border-2 border-destructive bg-destructive;
 }

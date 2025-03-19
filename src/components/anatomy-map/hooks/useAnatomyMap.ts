@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { BodyRegion, PainSymptom } from '../types';
 import { useSymptomSync } from '@/contexts/SymptomSyncContext';
@@ -20,16 +19,25 @@ export const useAnatomyMap = () => {
   // Load symptoms from local storage on initial render
   useEffect(() => {
     try {
+      console.log('Loading symptoms from localStorage');
+      setIsLoading(true);
+      
       const savedSymptoms = localStorage.getItem('patientSymptoms');
-      console.log('Loading symptoms from localStorage:', savedSymptoms);
+      console.log('Raw saved symptoms:', savedSymptoms);
       
       if (savedSymptoms) {
         const parsedSymptoms = JSON.parse(savedSymptoms);
         console.log('Parsed symptoms:', parsedSymptoms);
         setSymptoms(parsedSymptoms);
+      } else {
+        console.log('No symptoms found in localStorage. Setting empty array.');
+        setSymptoms([]);
       }
     } catch (error) {
       console.error('Error parsing saved symptoms:', error);
+      setSymptoms([]);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -46,7 +54,7 @@ export const useAnatomyMap = () => {
     setSelectedRegion(region);
     
     // Track that this region was viewed
-    trackRegionView(region);
+    trackRegionView?.(region);
     
     // Check if this region already has a symptom
     const existingSymptom = symptoms.find(
@@ -85,7 +93,7 @@ export const useAnatomyMap = () => {
     setSelectedRegion(null);
     
     // Track this symptom update
-    trackSymptomUpdate(newSymptom);
+    trackSymptomUpdate?.(newSymptom);
     
     toast.success(`Symptom added for ${selectedRegion.name}`, {
       description: "Your healthcare provider will be notified of this update."
@@ -105,7 +113,7 @@ export const useAnatomyMap = () => {
     setSelectedSymptom(null);
     
     // Track this symptom update
-    trackSymptomUpdate({
+    trackSymptomUpdate?.({
       ...updatedSymptom,
       updatedAt: new Date().toISOString()
     });
@@ -134,16 +142,18 @@ export const useAnatomyMap = () => {
 
   const handleZoomIn = useCallback(() => {
     if (zoom < 1.5) setZoom(prev => Math.min(prev + 0.1, 1.5));
+    console.log('Zooming in:', zoom + 0.1);
   }, [zoom]);
 
   const handleZoomOut = useCallback(() => {
     if (zoom > 0.6) setZoom(prev => Math.max(prev - 0.1, 0.6));
+    console.log('Zooming out:', zoom - 0.1);
   }, [zoom]);
 
   const toggleHistory = useCallback(() => {
-    console.log('Toggling history visibility');
+    console.log('Toggling history visibility from', showHistory, 'to', !showHistory);
     setShowHistory(prev => !prev);
-  }, []);
+  }, [showHistory]);
 
   const handleRefresh = useCallback(() => {
     // Mock synchronization with doctor's dashboard

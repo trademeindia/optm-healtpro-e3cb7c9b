@@ -5,9 +5,9 @@ import AnatomyMapCard from './components/AnatomyMapCard';
 import SymptomHistoryCard from './components/SymptomHistoryCard';
 import SymptomDialogs from './components/SymptomDialogs';
 import useAnatomyMap from './hooks/useAnatomyMap';
-import { toast } from 'sonner';
 
 const AnatomyMapContainer: React.FC = () => {
+  console.log('Rendering AnatomyMapContainer');
   const [bodyRegions] = React.useState(getBodyRegions());
   
   const {
@@ -35,8 +35,15 @@ const AnatomyMapContainer: React.FC = () => {
     setSelectedSymptom
   } = useAnatomyMap();
 
+  console.log('AnatomyMapContainer state:', { 
+    symptomsCount: symptoms.length,
+    activeSymptoms: activeSymptoms.length,
+    showHistory,
+    zoom
+  });
+
   return (
-    <div className="space-y-4 max-w-5xl mx-auto px-4">
+    <div className="space-y-4 max-w-5xl mx-auto p-4 bg-background">
       <AnatomyMapCard
         bodyRegions={bodyRegions}
         symptoms={activeSymptoms}
@@ -76,8 +83,6 @@ const AnatomyMapContainer: React.FC = () => {
         onUpdateSymptom={handleUpdateSymptom}
         onDeleteSymptom={handleDeleteSymptom}
       />
-      
-      {/* The Toaster component was here but isn't needed as it's rendered in the parent page */}
     </div>
   );
 };

@@ -26,8 +26,13 @@ const AnatomyMapCard: React.FC<AnatomyMapCardProps> = ({
   onToggleHistory,
   onRefresh
 }) => {
+  console.log('Rendering AnatomyMapCard with', { 
+    bodyRegionsCount: bodyRegions.length,
+    symptomsCount: symptoms.length
+  });
+
   return (
-    <Card className="w-full shadow-md">
+    <Card className="w-full shadow-md bg-card text-card-foreground">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl">Interactive Anatomy Map</CardTitle>
         <MapControls
