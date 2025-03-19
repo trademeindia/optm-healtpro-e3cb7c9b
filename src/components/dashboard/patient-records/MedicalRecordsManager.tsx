@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRecordActions } from './hooks/useRecordActions';
 import { useRecordsFilter } from './hooks/useRecordsFilter';
@@ -51,7 +50,7 @@ const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({ patientId
     handleSelectChange,
     handleRecordSubmit,
     handleAddButtonClick
-  } = useRecordsForm(handleAddRecord, handleAddReport);
+  } = useRecordsForm(patientId, handleAddRecord, handleAddReport);
 
   const { 
     searchTerm, 
@@ -107,41 +106,43 @@ const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({ patientId
           <RecordsTabs
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            recordCount={records.length}
-            reportCount={reports.length}
+            recordsCount={records.length}
+            reportsCount={reports.length}
           />
           
-          <TabsContent value="records" className="m-0">
-            <RecordsTable 
-              data={filteredRecords}
-              handleSort={handleSort}
-              handleDeleteRecord={handleDeleteRecord}
-              emptyMessage={
+          <div className="mt-4">
+            {activeTab === 'records' ? (
+              filteredRecords.length > 0 ? (
+                <RecordsTable 
+                  data={filteredRecords}
+                  handleSort={handleSort}
+                  handleDeleteRecord={handleDeleteRecord}
+                />
+              ) : (
                 <EmptyState 
-                  title="No medical records found"
+                  message="No medical records found"
                   description="There are no medical records for this patient. Add a new record to get started."
                   buttonText={canAddRecords ? "Add Record" : undefined}
                   onButtonClick={canAddRecords ? () => handleAddButtonClick('record') : undefined}
                 />
-              }
-            />
-          </TabsContent>
-          
-          <TabsContent value="reports" className="m-0">
-            <RecordsTable 
-              data={filteredReports}
-              handleSort={handleSort}
-              handleDeleteRecord={handleDeleteRecord}
-              emptyMessage={
+              )
+            ) : (
+              filteredReports.length > 0 ? (
+                <RecordsTable 
+                  data={filteredReports}
+                  handleSort={handleSort}
+                  handleDeleteRecord={id => handleDeleteRecord(id, true)}
+                />
+              ) : (
                 <EmptyState 
-                  title="No reports found"
+                  message="No reports found"
                   description="There are no reports for this patient. Add a new report to get started."
                   buttonText={canAddRecords ? "Add Report" : undefined}
                   onButtonClick={canAddRecords ? () => handleAddButtonClick('report') : undefined}
                 />
-              }
-            />
-          </TabsContent>
+              )
+            )}
+          </div>
         </div>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

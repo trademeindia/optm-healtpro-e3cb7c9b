@@ -11,6 +11,7 @@ export interface RecordFormData {
 }
 
 export const useRecordsForm = (
+  patientId: string,
   handleAddRecord: (record: Omit<RecordItem, 'id'>) => boolean,
   handleAddReport: (report: Omit<RecordItem, 'id'>) => boolean
 ) => {
@@ -46,7 +47,8 @@ export const useRecordsForm = (
       name: recordForm.name,
       date: recordForm.date,
       type: recordForm.type,
-      description: recordForm.description || 'No description provided'
+      description: recordForm.description || 'No description provided',
+      patientId: patientId
     };
     
     let success = false;

@@ -1,70 +1,98 @@
 
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, FileIcon, Trash2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import { RecordItem } from '../types';
+import { useAuth } from '@/contexts/auth';
 
 interface RecordsTableProps {
   data: RecordItem[];
   handleSort: (field: 'date' | 'name') => void;
-  handleDeleteRecord: (id: string, isReport?: boolean) => void;
-  emptyMessage: React.ReactNode;
+  handleDeleteRecord: (id: string, isReport?: boolean) => boolean;
+  sortField?: 'date' | 'name';
+  sortDirection?: 'asc' | 'desc';
 }
 
 const RecordsTable: React.FC<RecordsTableProps> = ({
   data,
   handleSort,
   handleDeleteRecord,
-  emptyMessage
+  sortField = 'date',
+  sortDirection = 'desc'
 }) => {
-  if (data.length === 0) {
-    return <>{emptyMessage}</>;
-  }
+  const { user } = useAuth();
+  const canEdit = user?.role === 'doctor' || user?.role === 'admin';
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+
+  const getSortIcon = (field: 'date' | 'name') => {
+    if (sortField !== field) return null;
+    
+    return sortDirection === 'asc' 
+      ? <ChevronUp className="h-4 w-4 ml-1" /> 
+      : <ChevronDown className="h-4 w-4 ml-1" />;
+  };
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%] cursor-pointer hover:bg-accent/50" onClick={() => handleSort('name')}>
-              Name
-            </TableHead>
-            <TableHead className="w-[25%] cursor-pointer hover:bg-accent/50" onClick={() => handleSort('date')}>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => handleSort('name')}
+            >
               <div className="flex items-center">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                Date
+                Name {getSortIcon('name')}
               </div>
             </TableHead>
-            <TableHead className="w-[20%]">Type</TableHead>
-            <TableHead className="w-[15%] text-right">Actions</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => handleSort('date')}
+            >
+              <div className="flex items-center">
+                Date {getSortIcon('date')}
+              </div>
+            </TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Description</TableHead>
+            {canEdit && <TableHead className="w-[100px]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center">
-                  <FileIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                  {item.name}
-                </div>
-              </TableCell>
-              <TableCell>{item.date}</TableCell>
-              <TableCell>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {item.type}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteRecord(item.id, item.isReport)}
-                  aria-label="Delete record"
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </TableCell>
+          {data.map((record) => (
+            <TableRow key={record.id}>
+              <TableCell className="font-medium">{record.name}</TableCell>
+              <TableCell>{formatDate(record.date)}</TableCell>
+              <TableCell>{record.type}</TableCell>
+              <TableCell>{record.description || 'No description'}</TableCell>
+              {canEdit && (
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteRecord(record.id, record.isReport)}
+                    title="Delete record"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

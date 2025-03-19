@@ -3,36 +3,28 @@ import React from 'react';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface EmptyStateProps {
-  searchTerm: string;
-  type: 'record' | 'report' | 'all';
-  onAddClick: () => void;
+export interface EmptyStateProps {
+  message: string;
+  description: string;
+  buttonText?: string;
+  onButtonClick?: () => void;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ searchTerm, type, onAddClick }) => {
+const EmptyState: React.FC<EmptyStateProps> = ({
+  message,
+  description,
+  buttonText,
+  onButtonClick
+}) => {
   return (
-    <div className="flex flex-col items-center justify-center py-4">
-      <FileText className="h-8 w-8 text-muted-foreground mb-2" />
-      {searchTerm ? (
-        <p className="text-muted-foreground">No records matching your search</p>
-      ) : (
-        <>
-          <p className="font-medium">
-            {type === 'record' && 'No medical records found'}
-            {type === 'report' && 'No lab reports found'}
-            {type === 'all' && 'No records found'}
-          </p>
-          <p className="text-muted-foreground mb-4">
-            {type === 'record' && 'Add your first medical record'}
-            {type === 'report' && 'Upload your first lab report'}
-            {type === 'all' && 'Add your first medical record'}
-          </p>
-          <Button size="sm" onClick={onAddClick}>
-            {type === 'record' && 'Add Medical Record'}
-            {type === 'report' && 'Add Lab Report'}
-            {type === 'all' && 'Add Record'}
-          </Button>
-        </>
+    <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+      <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+      <h3 className="text-lg font-medium mb-2">{message}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      {buttonText && onButtonClick && (
+        <Button onClick={onButtonClick}>
+          {buttonText}
+        </Button>
       )}
     </div>
   );
