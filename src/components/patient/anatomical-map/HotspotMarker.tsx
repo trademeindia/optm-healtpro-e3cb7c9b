@@ -53,22 +53,21 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             style={{
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
-              opacity: isActive ? 0.9 : 0.5,
-              pointerEvents: 'auto',
-              zIndex: isActive ? 40 : 30,
-              position: 'absolute',
               backgroundColor: isActive ? 
-                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.7)` :
+                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.6)` :
                 `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.5)`
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: isActive ? 0.9 : 0.5 }}
+            animate={{ scale: 1, opacity: isActive ? 0.9 : 0.75 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.15, opacity: 0.95 }}
+            whileHover={{ scale: 1.15, opacity: 1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => onClick(hotspot)}
           >
             {renderIcon()}
+            {isActive && hotspot.id && (
+              <span className="hotspot-label text-white text-xs font-bold sr-only">{hotspot.id}</span>
+            )}
           </motion.div>
         </TooltipTrigger>
         <TooltipContent 

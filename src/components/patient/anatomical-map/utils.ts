@@ -37,10 +37,10 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
     // Ensure proper positioning with fine-tuned adjustments
     const position = getAdjustedPosition(region?.x || 50, region?.y || 50, symptom.location);
     
-    // Constrain position to stay within the image boundaries - narrower constraints
+    // Constrain position to stay within the image boundaries
     const constrainedPosition = {
-      x: Math.min(Math.max(position.x, 10), 90), // Keep x between 10% and 90%
-      y: Math.min(Math.max(position.y, 10), 90)  // Keep y between 10% and 90%
+      x: Math.min(Math.max(position.x, 5), 95), // Keep x between 5% and 95%
+      y: Math.min(Math.max(position.y, 5), 95)  // Keep y between 5% and 95%
     };
     
     return {
@@ -65,16 +65,16 @@ const getAdjustedPosition = (x: number, y: number, location: string) => {
   switch(location) {
     case 'right-shoulder':
     case 'rightShoulder':
-      return { x: x - 5, y: y + 1 };
+      return { x: x - 2, y: y + 1 };
     case 'left-shoulder':
     case 'leftShoulder':
-      return { x: x + 5, y: y + 1 };
+      return { x: x + 2, y: y + 1 };
     case 'right-knee':
     case 'rightKnee':
-      return { x: x - 3, y };
+      return { x: x - 1, y };
     case 'left-knee':
     case 'leftKnee':
-      return { x: x + 3, y };
+      return { x: x + 1, y };
     case 'lower-back':
     case 'lowerBack':
       return { x, y: y - 1 };
@@ -89,16 +89,16 @@ const getAdjustedPosition = (x: number, y: number, location: string) => {
       return { x, y: y + 1 };
     case 'right-elbow':
     case 'rightElbow':
-      return { x: x - 5, y };
+      return { x: x - 2, y };
     case 'left-elbow':
     case 'leftElbow':
-      return { x: x + 5, y };
+      return { x: x + 2, y };
     case 'right-hand':
     case 'rightWrist':
-      return { x: x - 3, y: y + 1 };
+      return { x: x - 1, y: y + 1 };
     case 'left-hand':
     case 'leftWrist':
-      return { x: x + 3, y: y + 1 };
+      return { x: x + 1, y: y + 1 };
     case 'head':
       return { x, y: y - 1 };
     default:
@@ -140,7 +140,7 @@ const mapSymptomLocationToRegion = (location: string): string => {
  */
 const getHotspotSize = (severity: number): number => {
   // Scale size based on severity (1-10), but keep sizes smaller overall
-  return Math.max(16, Math.min(24, 16 + (severity * 0.8)));
+  return Math.max(18, Math.min(30, 18 + (severity * 1.3)));
 };
 
 /**

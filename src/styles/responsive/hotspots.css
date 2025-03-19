@@ -1,26 +1,27 @@
 
 /* Hotspot positioning and alignment styles */
 .hotspot-marker {
-  @apply absolute flex items-center justify-center cursor-pointer;
+  @apply absolute flex items-center justify-center cursor-pointer z-10;
   transform: translate(-50%, -50%); /* Center the hotspot on its position */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
   backdrop-filter: blur(2px);
+  opacity: 0.75; /* Make hotspots semi-transparent */
 }
 
 /* Pulsing animation for active hotspots */
 @keyframes pulse-ring {
   0% {
-    transform: scale(0.95) translate(-50%, -50%);
+    transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
   }
   70% {
-    transform: scale(1.05) translate(-50%, -50%);
+    transform: scale(1.05);
     box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
   }
   100% {
-    transform: scale(0.95) translate(-50%, -50%);
+    transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
@@ -40,15 +41,15 @@
 
 /* Different size classes for different severity levels - slightly smaller */
 .hotspot-size-sm {
-  @apply w-6 h-6;
-}
-
-.hotspot-size-md {
   @apply w-7 h-7;
 }
 
-.hotspot-size-lg {
+.hotspot-size-md {
   @apply w-8 h-8;
+}
+
+.hotspot-size-lg {
+  @apply w-9 h-9;
 }
 
 /* Enhanced styling based on severity - more transparent */
@@ -67,6 +68,7 @@
 .hotspot-active {
   @apply ring-2 ring-white/30;
   z-index: 40 !important;
+  opacity: 0.9; /* Slightly more opaque when active */
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
 }
 
@@ -107,7 +109,7 @@
 /* Improved container for map image and hotspots */
 .anatomy-map-wrapper {
   @apply relative mx-auto;
-  max-width: 100%;
+  max-width: 500px;
   height: 100%;
 }
 
@@ -135,11 +137,11 @@
 @keyframes hotspot-appear {
   0% {
     opacity: 0;
-    transform: scale(0.5) translateY(5px) translate(-50%, -50%);
+    transform: scale(0.5) translateY(5px);
   }
   100% {
-    opacity: 0.5;
-    transform: scale(1) translateY(0) translate(-50%, -50%);
+    opacity: 0.75;
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -149,6 +151,6 @@
 
 /* Hover effect for better interactivity */
 .hotspot-marker:hover {
-  opacity: 0.9 !important;
+  opacity: 1;
   transform: translate(-50%, -50%) scale(1.1);
 }
