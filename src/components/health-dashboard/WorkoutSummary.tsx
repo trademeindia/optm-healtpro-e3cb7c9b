@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData } from '@/hooks/health';
 import { HealthMetric, HealthMetricType } from '@/services/health';
 import { Dumbbell } from 'lucide-react';
 

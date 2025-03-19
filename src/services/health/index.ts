@@ -3,7 +3,7 @@ import { healthSyncService } from './syncService';
 import { healthMetricsService } from './metricsService';
 import { connectionService } from './connectionService';
 import { realtimeService } from './realtimeService';
-import { SyncOptions, HealthMetricType, TimeRange } from './types';
+import { SyncOptions, HealthMetricType, TimeRange, HealthMetric, FitnessConnection } from './types';
 
 /**
  * Service for managing health data from various sources

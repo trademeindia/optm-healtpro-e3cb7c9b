@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData } from '@/hooks/health';
 import { HealthMetric, HealthMetricType } from '@/services/health';
 import { Activity, ChevronRight } from 'lucide-react';
 

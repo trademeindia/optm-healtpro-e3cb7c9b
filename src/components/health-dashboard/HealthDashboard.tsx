@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RefreshCw, Calendar } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuth } from '@/contexts/auth';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData } from '@/hooks/health';
 import { TimeRange } from '@/services/health';
 import HealthMetricsOverview from './HealthMetricsOverview';
 import HeartRateMonitor from './HeartRateMonitor';
@@ -10,6 +14,7 @@ import WorkoutSummary from './WorkoutSummary';
 import SleepAnalysis from './SleepAnalysis';
 import ActivityTimeline from './ActivityTimeline';
 import HealthSync from './HealthSync';
+import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
 
 interface HealthDashboardProps {
   className?: string;

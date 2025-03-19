@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData } from '@/hooks/health';
 import { FitnessConnection } from '@/services/health';
 import { RefreshCw } from 'lucide-react';
 
