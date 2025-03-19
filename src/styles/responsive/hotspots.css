@@ -8,6 +8,7 @@
   border-radius: 50%;
   backdrop-filter: blur(1px);
   opacity: 0.9; /* More visible by default */
+  will-change: transform; /* Optimize for animations */
 }
 
 /* Pulsing animation for active hotspots - more subtle */
@@ -103,8 +104,10 @@
 
 /* Better positioning container */
 .anatomy-position-container {
-  @apply relative w-full;
+  @apply relative w-full flex items-center justify-center;
   max-width: 500px;
+  height: 100%;
+  transform-style: preserve-3d; /* Improves performance */
 }
 
 /* Improved container for map image and hotspots */
@@ -112,10 +115,12 @@
   @apply relative mx-auto;
   max-width: 500px;
   height: 100%;
+  perspective: 1000px; /* Improves 3D transforms */
 }
 
 .anatomy-map-image {
   @apply w-full h-auto max-h-full object-contain;
+  transform: translateZ(0); /* Hardware acceleration */
 }
 
 /* Enhanced tooltip styling */

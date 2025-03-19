@@ -12,6 +12,7 @@
   width: 100%;
   background-color: var(--background, #f8f9fa);
   color: var(--foreground, #333333);
+  overflow-x: hidden;
 }
 
 /* Fix for white screen when content doesn't fill viewport */
@@ -21,11 +22,31 @@ html, body, #root {
   margin: 0;
   padding: 0;
   background-color: #f8f9fa;
+  overflow-x: hidden;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+}
+
+/* Prevent layout shifts */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Prevent stuck scrolling issues */
+body.overflow-hidden {
+  overflow: hidden;
+}
+
+/* Ensure dialogs don't cause page shifts */
+[role="dialog"] {
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 /* Add visible debugging borders only during development */
