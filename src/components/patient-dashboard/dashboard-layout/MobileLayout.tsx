@@ -16,12 +16,13 @@ import PostureAnalysis from '@/components/dashboard/PostureAnalysis';
 import MessageYourDoctor from '../MessageYourDoctor';
 import MedicalDocuments from '../MedicalDocuments';
 import { DashboardMainContentProps } from './types';
+import { transformHealthMetrics, transformActivityData, transformTreatmentTasks, transformAppointments } from '@/utils/dashboardDataAdapter';
 
 const MobileLayout: React.FC<DashboardMainContentProps> = ({
-  healthMetrics,
-  activityData,
-  treatmentTasks,
-  upcomingAppointments,
+  healthMetrics: rawHealthMetrics,
+  activityData: rawActivityData,
+  treatmentTasks: rawTreatmentTasks,
+  upcomingAppointments: rawAppointments,
   biologicalAge,
   chronologicalAge,
   hasConnectedApps,
@@ -29,6 +30,12 @@ const MobileLayout: React.FC<DashboardMainContentProps> = ({
   handleConfirmAppointment,
   handleRescheduleAppointment
 }) => {
+  // Transform the data before using it
+  const healthMetrics = transformHealthMetrics(rawHealthMetrics);
+  const activityData = transformActivityData(rawActivityData);
+  const treatmentTasks = transformTreatmentTasks(rawTreatmentTasks);
+  const upcomingAppointments = transformAppointments(rawAppointments);
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 lg:hidden space-y-4 md:space-y-6 p-4">
       {/* Personal Information */}

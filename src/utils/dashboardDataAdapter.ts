@@ -8,16 +8,43 @@ import { AppointmentWithProvider } from '@/types/appointments';
  */
 export const transformHealthMetrics = (metrics: HealthMetric[]) => {
   const heartRateMetric = metrics.find(m => m.name === 'Heart Rate') || { 
-    value: 0, unit: 'bpm', change: 0 
+    id: 'default-hr', 
+    name: 'Heart Rate',
+    value: 0, 
+    unit: 'bpm', 
+    change: 0,
+    source: '',
+    lastSync: ''
   };
+  
   const bloodPressureMetric = metrics.find(m => m.name === 'Blood Pressure') || { 
-    value: '120/80', unit: 'mmHg', change: 0 
+    id: 'default-bp',
+    name: 'Blood Pressure',
+    value: '120/80', 
+    unit: 'mmHg', 
+    change: 0,
+    source: '',
+    lastSync: ''
   };
+  
   const temperatureMetric = metrics.find(m => m.name === 'Temperature') || { 
-    value: 98.6, unit: '°F', change: 0 
+    id: 'default-temp',
+    name: 'Temperature',
+    value: 98.6, 
+    unit: '°F', 
+    change: 0,
+    source: '',
+    lastSync: ''
   };
+  
   const oxygenMetric = metrics.find(m => m.name === 'Oxygen Saturation') || { 
-    value: 98, unit: '%', change: 0 
+    id: 'default-o2',
+    name: 'Oxygen Saturation',
+    value: 98, 
+    unit: '%', 
+    change: 0,
+    source: '',
+    lastSync: ''
   };
 
   return {
@@ -62,8 +89,8 @@ export const transformActivityData = (fitnessData: any) => {
       value: item.value
     })) || [],
     currentValue: fitnessData.steps?.summary?.total || 0,
-    source: 'Fitness Tracker',
-    lastSync: new Date().toISOString()
+    source: fitnessData.steps?.source || 'Fitness Tracker',
+    lastSync: fitnessData.steps?.lastSync || new Date().toISOString()
   };
 };
 
@@ -74,7 +101,7 @@ export const transformTreatmentTasks = (tasks: TreatmentTask[]) => {
   return tasks.map(task => ({
     id: task.id,
     title: task.title,
-    time: task.dueTime,
+    time: task.dueTime || '12:00 PM',
     completed: task.status === 'completed'
   }));
 };

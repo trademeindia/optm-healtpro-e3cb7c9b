@@ -1,6 +1,6 @@
 
 export interface DashboardMainContentProps {
-  healthMetrics: any[]; // Change the type to match what DashboardMainContent expects
+  healthMetrics: any[]; // We keep this as any[] for DashboardMainContent
   activityData: any;
   treatmentTasks: any[];
   upcomingAppointments: any[];
