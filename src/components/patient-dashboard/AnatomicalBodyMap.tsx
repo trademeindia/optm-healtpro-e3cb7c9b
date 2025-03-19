@@ -18,28 +18,35 @@ const AnatomicalBodyMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
   
-  // Mock health issues for demonstration
+  // Updated health issues for muscular system
   const healthIssues: HealthIssue[] = [
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 65, y: 32 },
+      location: { x: 53, y: 25 },
       severity: 'medium',
-      description: 'Partial tear in the right rotator cuff showing inflammation.'
+      description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.'
     },
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 58 },
+      location: { x: 50, y: 53 },
       severity: 'high',
-      description: 'Muscle strain in the lumbar region, causing restricted movement.'
+      description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.'
     },
     {
       id: '3',
-      name: 'Patellar Tendinitis',
-      location: { x: 52, y: 80 },
+      name: 'Quadriceps Tendinitis',
+      location: { x: 43, y: 68 },
       severity: 'low',
-      description: 'Inflammation of the tendon connecting the kneecap to the shinbone.'
+      description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.'
+    },
+    {
+      id: '4',
+      name: 'Biceps Tendonitis',
+      location: { x: 36, y: 38 },
+      severity: 'medium',
+      description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.'
     }
   ];
   
