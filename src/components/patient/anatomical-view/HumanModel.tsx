@@ -21,18 +21,20 @@ const HumanModel: React.FC<HumanModelProps> = ({
     return () => clearTimeout(timer);
   }, [activeSystem]); // Reset loading when system changes
   
-  if (!modelLoaded) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <group position={[0, 0, 0]}>
-      <ModelImage activeSystem={activeSystem} />
-      <HotspotsGroup 
-        hotspots={hotspots} 
-        onHotspotClick={onHotspotClick}
-        isEditMode={isEditMode}
-      />
+      {modelLoaded ? (
+        <>
+          <ModelImage activeSystem={activeSystem} />
+          <HotspotsGroup 
+            hotspots={hotspots} 
+            onHotspotClick={onHotspotClick}
+            isEditMode={isEditMode}
+          />
+        </>
+      ) : (
+        <LoadingSpinner />
+      )}
     </group>
   );
 };

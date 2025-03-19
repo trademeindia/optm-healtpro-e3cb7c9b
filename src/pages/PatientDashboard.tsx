@@ -91,7 +91,9 @@ const PatientDashboard: React.FC = () => {
                       />
                     </div>
                     <div className="md:col-span-8">
-                      <AnatomicalBodyMap />
+                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full overflow-hidden">
+                        <AnatomicalBodyMap />
+                      </div>
                     </div>
                   </div>
                   
