@@ -1,26 +1,11 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleAlert, ZoomIn, ZoomOut, Activity } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Progress } from '@/components/ui/progress';
-
-interface HealthIssue {
-  id: string;
-  name: string;
-  location: { x: number; y: number };
-  severity: 'low' | 'medium' | 'high';
-  description: string;
-}
-
-interface MuscleFlexion {
-  muscle: string;
-  flexionPercentage: number;
-  status: 'healthy' | 'weak' | 'overworked';
-  lastReading: string;
-}
+import HeaderControls from './anatomical-map/HeaderControls';
+import HotspotMarker from './anatomical-map/HotspotMarker';
+import IssueDetailPanel from './anatomical-map/IssueDetailPanel';
+import MuscleFlexionPanel from './anatomical-map/MuscleFlexionPanel';
+import { HealthIssue, MuscleFlexion } from './anatomical-map/types';
 
 const AnatomicalBodyMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
@@ -96,51 +81,15 @@ const AnatomicalBodyMap: React.FC = () => {
     setSelectedIssue(issue === selectedIssue ? null : issue);
   };
   
-  const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
-    switch (severity) {
-      case 'low': return 'bg-yellow-500';
-      case 'medium': return 'bg-orange-500';
-      case 'high': return 'bg-red-500';
-      default: return 'bg-blue-500';
-    }
-  };
-  
-  const getFlexionStatusColor = (status: 'healthy' | 'weak' | 'overworked') => {
-    switch (status) {
-      case 'healthy': return 'text-green-500';
-      case 'weak': return 'text-orange-500';
-      case 'overworked': return 'text-red-500';
-      default: return 'text-blue-500';
-    }
-  };
-  
-  const getFlexionProgressColor = (status: 'healthy' | 'weak' | 'overworked') => {
-    switch (status) {
-      case 'healthy': return 'bg-green-500';
-      case 'weak': return 'bg-orange-500';
-      case 'overworked': return 'bg-red-500';
-      default: return 'bg-blue-500';
-    }
-  };
-  
   return (
     <Card className="h-full">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-lg">Anatomical Analysis</CardTitle>
-          <div className="flex items-center mt-1">
-            <CircleAlert className="h-4 w-4 text-amber-500 mr-1.5" />
-            <span className="text-sm text-muted-foreground">{healthIssues.length} issues detected</span>
-          </div>
-        </div>
-        <div className="flex space-x-1">
-          <Button variant="outline" size="sm" onClick={handleZoomOut}>
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleZoomIn}>
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Anatomical Analysis</CardTitle>
+        <HeaderControls 
+          issuesCount={healthIssues.length}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+        />
       </CardHeader>
       <CardContent className="relative">
         <div 
@@ -153,80 +102,19 @@ const AnatomicalBodyMap: React.FC = () => {
             className="h-full max-h-[340px] w-auto object-contain"
           />
           
-          <TooltipProvider>
-            {healthIssues.map((issue) => (
-              <Tooltip key={issue.id}>
-                <TooltipTrigger asChild>
-                  <div
-                    className={`absolute w-5 h-5 rounded-full cursor-pointer ${getSeverityColor(issue.severity)} flex items-center justify-center border-2 border-white shadow-md ${selectedIssue?.id === issue.id ? 'w-7 h-7 z-10' : ''}`}
-                    style={{
-                      left: `${issue.location.x}%`,
-                      top: `${issue.location.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    onClick={() => handleIssueClick(issue)}
-                  >
-                    <span className="text-white text-xs font-bold">{issue.id}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p className="font-semibold">{issue.name}</p>
-                  <p className="text-xs">{issue.severity.toUpperCase()} severity</p>
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </TooltipProvider>
+          {healthIssues.map((issue) => (
+            <HotspotMarker
+              key={issue.id}
+              issue={issue}
+              isSelected={selectedIssue?.id === issue.id}
+              onClick={handleIssueClick}
+            />
+          ))}
         </div>
         
-        <div className="mt-4 border rounded-md p-3 bg-card">
-          <div className="flex items-center mb-2">
-            <Activity className="h-4 w-4 mr-1.5 text-primary" />
-            <h3 className="text-sm font-semibold">Muscle Flexion Assessment</h3>
-            <span className="text-xs text-muted-foreground ml-2">Last updated: {muscleFlexionData[0].lastReading}</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {muscleFlexionData.map((item, index) => (
-              <div key={index} className="border p-2 rounded-md bg-background">
-                <div className="flex justify-between items-center mb-1">
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium">{item.muscle}</span>
-                    <Badge className="ml-2 text-xs" variant="outline">
-                      <span className={getFlexionStatusColor(item.status)}>{item.status}</span>
-                    </Badge>
-                  </div>
-                  <div className="text-sm font-bold">{item.flexionPercentage}%</div>
-                </div>
-                <Progress 
-                  value={item.flexionPercentage} 
-                  className="h-2" 
-                  indicatorClassName={getFlexionProgressColor(item.status)}
-                />
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    {item.status === 'weak' && 'Strength training recommended'}
-                    {item.status === 'overworked' && 'Rest and recovery needed'}
-                    {item.status === 'healthy' && 'Optimal performance'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MuscleFlexionPanel flexionData={muscleFlexionData} />
         
-        {selectedIssue && (
-          <div className="absolute bottom-3 left-3 right-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-medium">{selectedIssue.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{selectedIssue.description}</p>
-              </div>
-              <Badge className={`${getSeverityColor(selectedIssue.severity)} text-white`}>
-                {selectedIssue.severity.toUpperCase()}
-              </Badge>
-            </div>
-          </div>
-        )}
+        {selectedIssue && <IssueDetailPanel issue={selectedIssue} />}
       </CardContent>
     </Card>
   );
