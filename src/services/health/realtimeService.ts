@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { HealthMetric, HealthMetricType } from './types';
-import { healthMetricsService } from './metricsService';
+import { healthDataService } from './metricsService';
 
 /**
  * Service for handling realtime updates to health data
@@ -38,8 +38,8 @@ export class RealtimeService {
                 metadata: newData.metadata ? (newData.metadata as Record<string, any>) : undefined
               };
               
-              // Update the cache
-              healthMetricsService.updateCache(metric);
+              // Update the cache - fix the reference to use healthDataService
+              healthDataService.updateCache?.(metric);
             }
           }
         )

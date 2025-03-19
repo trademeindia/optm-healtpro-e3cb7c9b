@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
-import { TimeRange } from '@/services/health';
+import { TimeRange, SyncOptions } from '@/services/health';
 import { useSyncData } from './useSyncData';
 import { useMetricsData } from './useMetricsData';
 import { useConnections } from './useConnections';
@@ -21,10 +20,15 @@ export const useHealthData = (options: UseHealthDataOptions = {}): UseHealthData
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange);
   
-  const { isSyncing, lastSyncTime, syncData } = useSyncData(user?.id);
+  const { isSyncing, lastSyncTime, syncData: originalSyncData } = useSyncData(user?.id);
   const { metrics, metricsHistory, getMetricHistory, loadInitialMetrics } = useMetricsData(user?.id, timeRange);
   const { hasGoogleFitConnected, connections, loadConnections } = useConnections(user?.id);
   
+  // Create an adapter function to match the expected interface
+  const syncData = async (forceRefresh?: boolean): Promise<boolean> => {
+    return originalSyncData({ forceRefresh });
+  };
+
   /**
    * Load initial data and check for Google Fit connection
    */
@@ -56,7 +60,7 @@ export const useHealthData = (options: UseHealthDataOptions = {}): UseHealthData
     };
     
     loadInitialData();
-  }, [user, autoSync, syncData, loadConnections, loadInitialMetrics, hasGoogleFitConnected]);
+  }, [user, autoSync, originalSyncData, loadConnections, loadInitialMetrics, hasGoogleFitConnected]);
   
   /**
    * Set up automatic sync on interval
@@ -65,11 +69,11 @@ export const useHealthData = (options: UseHealthDataOptions = {}): UseHealthData
     if (!user || !autoSync || !hasGoogleFitConnected) return;
     
     const interval = setInterval(() => {
-      syncData();
+      originalSyncData();
     }, syncInterval);
     
     return () => clearInterval(interval);
-  }, [user, autoSync, syncInterval, hasGoogleFitConnected, syncData]);
+  }, [user, autoSync, syncInterval, hasGoogleFitConnected, originalSyncData]);
   
   return {
     metrics,

@@ -3,6 +3,17 @@ import { HealthMetric, HealthMetricType, TimeRange } from './types';
 
 // Mock data service for health metrics
 export const healthDataService = {
+  // Cache to store recently retrieved metrics for quick access
+  _cache: new Map<string, HealthMetric>(),
+  
+  /**
+   * Update the cache with a new metric
+   */
+  updateCache: (metric: HealthMetric): void => {
+    const cacheKey = `${metric.userId}-${metric.type}-${metric.id}`;
+    healthDataService._cache.set(cacheKey, metric);
+  },
+
   /**
    * Get the latest metric of a specific type for a user
    */
