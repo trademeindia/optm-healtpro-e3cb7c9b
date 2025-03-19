@@ -88,10 +88,10 @@ const AnatomicalBodyMap: React.FC = () => {
           className="relative w-full h-[400px] flex items-center justify-center overflow-hidden"
           style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
         >
-          {/* Anatomical model image */}
+          {/* Updated anatomical model image with the new muscular system image */}
           <img 
-            src="/lovable-uploads/58d7c82f-c734-4735-93a0-fdd18967ec6a.png" 
-            alt="Anatomical model" 
+            src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
+            alt="Muscular system anatomical model" 
             className="h-full max-h-[390px] w-auto object-contain"
           />
           
