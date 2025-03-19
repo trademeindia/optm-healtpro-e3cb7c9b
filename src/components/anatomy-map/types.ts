@@ -53,35 +53,3 @@ export const painTypeOptions: PainTypeOption[] = [
   { value: 'tingling', label: 'Tingling' },
   { value: 'stiffness', label: 'Stiffness' },
 ];
-
-// Hotspot interface for the anatomy map
-export interface HotSpot {
-  id: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  label: string;
-  description: string;
-  color: string;
-  type: 'symptom' | 'health-issue';
-  metadata: {
-    severity: string;
-    createdAt?: string;
-    regionId?: string;
-    muscleGroup?: string;
-    symptoms?: string[];
-    recommendedActions?: string[];
-    [key: string]: any;
-  };
-}
-
-export interface AnatomicalMapProps {
-  className?: string;
-  symptoms: PainSymptom[];
-  bodyRegions: BodyRegion[];
-  onAddSymptom: (symptom: PainSymptom) => void;
-  onUpdateSymptom: (symptom: PainSymptom) => void;
-  onDeleteSymptom: (symptomId: string) => void;
-  loading: boolean;
-}

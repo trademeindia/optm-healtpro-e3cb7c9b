@@ -8,7 +8,6 @@ import { SymptomHistoryContainer } from './symptom-history';
 import { PainSymptom } from './types';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { useAnatomicalData } from '@/contexts/AnatomicalDataContext';
 
 // Memoize the component to prevent unnecessary re-renders
 const AnatomyMapContainer: React.FC = memo(() => {
@@ -16,9 +15,6 @@ const AnatomyMapContainer: React.FC = memo(() => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('map');
   const [initialized, setInitialized] = useState(false);
-  
-  // Get shared anatomical data
-  const { healthIssues, syncWithSymptoms } = useAnatomicalData();
   
   // Load saved symptoms from localStorage on component mount
   useEffect(() => {
@@ -45,13 +41,6 @@ const AnatomyMapContainer: React.FC = memo(() => {
       }
     }
   }, [symptoms, initialized]);
-
-  // Sync with anatomical data
-  useEffect(() => {
-    if (initialized && healthIssues.length > 0) {
-      syncWithSymptoms();
-    }
-  }, [healthIssues, initialized, syncWithSymptoms]);
   
   // Handle adding a new symptom with useCallback to prevent recreation on every render
   const handleAddSymptom = useCallback((symptom: PainSymptom) => {
@@ -132,7 +121,6 @@ const AnatomyMapContainer: React.FC = memo(() => {
                 onUpdateSymptom={handleUpdateSymptom}
                 onDeleteSymptom={handleDeleteSymptom}
                 loading={loading}
-                anatomicalHealthIssues={healthIssues}
               />
             </TabsContent>
             <TabsContent value="history" className="h-full m-0 p-4 pt-0">

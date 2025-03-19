@@ -1,6 +1,4 @@
 
-@tailwind utilities;
-
 @layer utilities {
   .scrollbar-none {
     -ms-overflow-style: none;
@@ -21,10 +19,5 @@
   
   .text-gradient {
     @apply bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent;
-  }
-  
-  /* Add animation utility */
-  .animate-pulse-light {
-    animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }

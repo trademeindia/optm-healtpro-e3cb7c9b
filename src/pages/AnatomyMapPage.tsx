@@ -4,7 +4,6 @@ import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Sidebar from '@/components/layout/Sidebar';
-import { AnatomicalDataProvider } from '@/contexts/AnatomicalDataContext';
 
 const AnatomyMapPage: React.FC = () => {
   // Add effect to prevent excessive re-renders
@@ -35,10 +34,8 @@ const AnatomyMapPage: React.FC = () => {
             </div>
             
             <SymptomProvider>
-              <AnatomicalDataProvider>
-                <AnatomyMapContainer />
-                <Toaster position="bottom-right" />
-              </AnatomicalDataProvider>
+              <AnatomyMapContainer />
+              <Toaster position="bottom-right" />
             </SymptomProvider>
           </div>
         </div>

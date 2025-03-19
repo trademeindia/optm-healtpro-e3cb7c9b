@@ -1,193 +1,178 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { HealthIssue, MuscleFlexion } from '../types';
 
-// Type for the return value of the hook
-interface UseAnatomicalMapReturn {
-  healthIssues: HealthIssue[];
-  muscleFlexionData: MuscleFlexion[]; // Changed from muscleFlexions to muscleFlexionData
-  selectedIssue: HealthIssue | null;
-  selectedMuscle: MuscleFlexion | null;
-  isLoading: boolean;
-  isLoaded: boolean; // Added isLoaded property
-  zoom: number;
-  setZoom: (zoom: number) => void;
-  handleIssueClick: (issue: HealthIssue) => void;
-  handleMuscleClick: (muscle: MuscleFlexion) => void;
-  handleTabChange: (tab: string) => void;
-  activeTab: string;
-}
-
-export const useAnatomicalMap = (): UseAnatomicalMapReturn => {
-  const [healthIssues, setHealthIssues] = useState<HealthIssue[]>([]);
-  const [muscleFlexionData, setMuscleFlexionData] = useState<MuscleFlexion[]>([]); // Renamed to match context
-  const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
-  const [selectedMuscle, setSelectedMuscle] = useState<MuscleFlexion | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false); // Added isLoaded state
+export const useAnatomicalMap = () => {
   const [zoom, setZoom] = useState(1);
-  const [activeTab, setActiveTab] = useState('issues');
-
-  // Fetch health issues
+  const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Mark the map as loaded
   useEffect(() => {
-    const fetchHealthIssues = async () => {
-      try {
-        // Simulating API fetch
-        setTimeout(() => {
-          setHealthIssues(mockHealthIssues);
-          setIsLoading(false);
-          setIsLoaded(true); // Set isLoaded to true after data is fetched
-        }, 800);
-      } catch (error) {
-        console.error('Error fetching health issues:', error);
-        setIsLoading(false);
-      }
+    const img = new Image();
+    img.src = '/lovable-uploads/f9cf0fb7-42a3-40b1-90b9-c7c2b44003a3.png'; // Update with the correct path to your anatomy image
+    img.onload = () => setIsLoaded(true);
+    
+    return () => {
+      img.onload = null;
     };
-
-    fetchHealthIssues();
   }, []);
-
-  // Fetch muscle flexions
-  useEffect(() => {
-    const fetchMuscleFlexions = async () => {
-      try {
-        // Simulating API fetch
-        setTimeout(() => {
-          setMuscleFlexionData(mockMuscleFlexions); // Renamed to match context
-        }, 1000);
-      } catch (error) {
-        console.error('Error fetching muscle flexions:', error);
-      }
-    };
-
-    fetchMuscleFlexions();
+  
+  // Properly memoized functions for zoom
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev + 0.1, 1.5));
   }, []);
-
+  
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev - 0.1, 0.7));
+  }, []);
+  
   const handleIssueClick = useCallback((issue: HealthIssue) => {
-    setSelectedIssue(prevIssue => prevIssue?.id === issue.id ? null : issue);
-    setSelectedMuscle(null);
-    setActiveTab('issues');
+    setSelectedIssue(prev => prev?.id === issue.id ? null : issue);
   }, []);
-
-  const handleMuscleClick = useCallback((muscle: MuscleFlexion) => {
-    setSelectedMuscle(prevMuscle => prevMuscle?.id === muscle.id ? null : muscle);
-    setSelectedIssue(null);
-    setActiveTab('muscles');
-  }, []);
-
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab);
-    if (tab === 'issues') {
-      setSelectedMuscle(null);
-    } else if (tab === 'muscles') {
-      setSelectedIssue(null);
+  
+  // Updated hotspot positions based on anatomical accuracy
+  const healthIssues: HealthIssue[] = [
+    {
+      id: '1',
+      name: 'Rotator Cuff Tear',
+      location: { x: 27, y: 21 }, // Adjusted for better alignment
+      severity: 'medium',
+      description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.',
+      muscleGroup: 'Shoulder Muscles',
+      symptoms: [
+        'Pain when lifting arm',
+        'Weakness in the shoulder',
+        'Difficulty reaching behind back'
+      ],
+      recommendedActions: [
+        'Physical therapy exercises',
+        'Rest and ice',
+        'Anti-inflammatory medication'
+      ]
+    },
+    {
+      id: '2',
+      name: 'Lower Back Strain',
+      location: { x: 50, y: 42 }, // Adjusted for better alignment
+      severity: 'high',
+      description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.',
+      muscleGroup: 'Erector Spinae',
+      symptoms: [
+        'Acute lower back pain',
+        'Muscle spasms',
+        'Limited mobility'
+      ],
+      recommendedActions: [
+        'Rest with proper support',
+        'Heat therapy',
+        'Gentle stretching exercises'
+      ]
+    },
+    {
+      id: '3',
+      name: 'Quadriceps Tendinitis',
+      location: { x: 43, y: 65 }, // Adjusted for better alignment
+      severity: 'low',
+      description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.',
+      muscleGroup: 'Quadriceps',
+      symptoms: [
+        'Pain above the kneecap',
+        'Discomfort when straightening leg',
+        'Tenderness when pressing on tendon'
+      ],
+      recommendedActions: [
+        'Rest from high-impact activities',
+        'Ice therapy',
+        'Strengthening exercises'
+      ]
+    },
+    {
+      id: '4',
+      name: 'Biceps Tendonitis',
+      location: { x: 73, y: 30 }, // Adjusted for better alignment
+      severity: 'medium',
+      description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.',
+      muscleGroup: 'Biceps Brachii',
+      symptoms: [
+        'Pain in the front of the shoulder',
+        'Tenderness when touching the biceps tendon',
+        'Pain when lifting or pulling'
+      ],
+      recommendedActions: [
+        'Rest from activities that aggravate pain',
+        'Ice therapy',
+        'Gentle stretching'
+      ]
+    },
+    {
+      id: '5',
+      name: 'Hamstring Strain',
+      location: { x: 56, y: 77 }, // Adjusted for better alignment
+      severity: 'medium',
+      description: 'Partial tear in the hamstring muscle fibers causing pain in the back of the thigh.',
+      muscleGroup: 'Hamstrings',
+      symptoms: [
+        'Sudden pain during activity',
+        'Muscle weakness',
+        'Bruising and swelling'
+      ],
+      recommendedActions: [
+        'RICE protocol (Rest, Ice, Compression, Elevation)',
+        'Gentle stretching when pain subsides',
+        'Gradual return to activity'
+      ]
     }
-  }, []);
-
+  ];
+  
+  const muscleFlexionData: MuscleFlexion[] = [
+    {
+      muscle: 'Rotator Cuff',
+      flexionPercentage: 45,
+      status: 'weak',
+      lastReading: '2 hours ago',
+      relatedIssues: ['1']
+    },
+    {
+      muscle: 'Erector Spinae',
+      flexionPercentage: 30,
+      status: 'overworked',
+      lastReading: '2 hours ago',
+      relatedIssues: ['2']
+    },
+    {
+      muscle: 'Quadriceps',
+      flexionPercentage: 65,
+      status: 'weak',
+      lastReading: '2 hours ago',
+      relatedIssues: ['3']
+    },
+    {
+      muscle: 'Biceps',
+      flexionPercentage: 72,
+      status: 'healthy',
+      lastReading: '2 hours ago',
+      relatedIssues: ['4']
+    },
+    {
+      muscle: 'Hamstrings',
+      flexionPercentage: 55,
+      status: 'weak',
+      lastReading: '2 hours ago',
+      relatedIssues: ['5']
+    }
+  ];
+  
   return {
-    healthIssues,
-    muscleFlexionData, // Renamed to match context
-    selectedIssue,
-    selectedMuscle,
-    isLoading,
-    isLoaded, // Added isLoaded property
     zoom,
-    setZoom,
-    handleIssueClick,
-    handleMuscleClick,
-    handleTabChange,
-    activeTab,
+    isLoaded,
+    selectedIssue,
+    healthIssues,
+    muscleFlexionData,
+    handleZoomIn,
+    handleZoomOut,
+    handleIssueClick
   };
 };
-
-// Mock data
-const mockHealthIssues: HealthIssue[] = [
-  {
-    id: '1',
-    name: 'Lower Back Pain',
-    description: 'Chronic pain in the lumbar region, possibly related to poor posture.',
-    severity: 'high',
-    location: { x: 48, y: 42 },
-    muscleGroup: 'Lumbar',
-    symptoms: ['Pain when bending', 'Stiffness in the morning', 'Radiating pain'],
-    recommendedActions: ['Core strengthening', 'Posture correction', 'Regular stretching'],
-    isActive: true
-  },
-  {
-    id: '2',
-    name: 'Shoulder Tension',
-    description: 'Tightness and discomfort in the trapezius muscle area.',
-    severity: 'medium',
-    location: { x: 48, y: 25 },
-    muscleGroup: 'Trapezius',
-    symptoms: ['Stiffness', 'Limited range of motion', 'Pain when lifting arms'],
-    recommendedActions: ['Shoulder stretches', 'Massage therapy', 'Heat application'],
-    isActive: true
-  },
-  {
-    id: '3',
-    name: 'Knee Inflammation',
-    description: 'Swelling and pain in the right knee joint, possibly meniscus related.',
-    severity: 'low',
-    location: { x: 44, y: 65 },
-    muscleGroup: 'Knee joint',
-    symptoms: ['Swelling', 'Pain when walking', 'Clicking sound'],
-    recommendedActions: ['Rest', 'Ice application', 'Anti-inflammatory medication'],
-    isActive: true
-  }
-];
-
-const mockMuscleFlexions: MuscleFlexion[] = [
-  {
-    id: 'm1',
-    muscleGroup: 'Quadriceps',
-    muscle: 'Rectus Femoris',
-    flexionPercentage: 65,
-    status: 'normal',  // This should match the updated enum
-    region: 'Upper Leg',
-    relatedIssues: ['3'],
-    lastReading: new Date(Date.now() - 24 * 60 * 60 * 1000)
-  },
-  {
-    id: 'm2',
-    muscleGroup: 'Lower Back',
-    muscle: 'Erector Spinae',
-    flexionPercentage: 40,
-    status: 'limited',  // This should match the updated enum
-    region: 'Back',
-    relatedIssues: ['1'],
-    lastReading: new Date(Date.now() - 12 * 60 * 60 * 1000)
-  },
-  {
-    id: 'm3',
-    muscleGroup: 'Shoulder',
-    muscle: 'Trapezius',
-    flexionPercentage: 80,
-    status: 'excessive',  // This should match the updated enum
-    region: 'Upper Back',
-    relatedIssues: ['2'],
-    lastReading: new Date(Date.now() - 6 * 60 * 60 * 1000)
-  },
-  {
-    id: 'm4',
-    muscleGroup: 'Calf',
-    muscle: 'Gastrocnemius',
-    flexionPercentage: 55,
-    status: 'normal',  // This should match the updated enum
-    region: 'Lower Leg',
-    relatedIssues: [],
-    lastReading: new Date(Date.now() - 36 * 60 * 60 * 1000)
-  },
-  {
-    id: 'm5',
-    muscleGroup: 'Biceps',
-    muscle: 'Biceps Brachii',
-    flexionPercentage: 75,
-    status: 'normal',  // This should match the updated enum
-    region: 'Arm',
-    relatedIssues: [],
-    lastReading: new Date(Date.now() - 48 * 60 * 60 * 1000)
-  }
-];
 
 export default useAnatomicalMap;

@@ -1,30 +1,29 @@
 
-// Health issue interface for anatomical map visualization
 export interface HealthIssue {
   id: string;
   name: string;
-  description: string;
+  location: { x: number; y: number };
   severity: 'low' | 'medium' | 'high';
-  location: {
-    x: number;
-    y: number;
-  };
+  description: string;
   muscleGroup?: string;
   symptoms?: string[];
   recommendedActions?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-  isActive?: boolean;
 }
 
-// Muscle flexion data for visualization
 export interface MuscleFlexion {
-  id: string;
-  muscleGroup: string;
-  muscle: string; // Added muscle property
+  muscle: string;
   flexionPercentage: number;
-  status: 'normal' | 'limited' | 'excessive' | 'weak' | 'overworked' | 'healthy'; // Added missing statuses
-  region: string;
-  relatedIssues: string[];
-  lastReading?: Date; // Added lastReading property
+  status: 'healthy' | 'weak' | 'overworked';
+  lastReading: string;
+  relatedIssues?: string[]; // IDs of related health issues
+}
+
+export interface AnatomicalMapPosition {
+  x: number;
+  y: number;
+}
+
+export interface HotspotInteractionState {
+  isHovered: boolean;
+  isSelected: boolean;
 }

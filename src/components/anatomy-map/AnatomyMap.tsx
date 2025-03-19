@@ -1,130 +1,129 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSymptoms } from '@/contexts/SymptomContext';
-import { AnatomicalMapProps, HotSpot } from './types';
-import { symptomsToHotspots, healthIssuesToHotspots } from './utils';
-import MapControls from './MapControls';
-import HotspotMarker from './HotspotMarker';
-import HotspotDetail from './HotspotDetail';
-import SystemTabs from './SystemTabs';
-import MapVisualization from './MapVisualization';
-import { HealthIssue } from '@/components/patient-dashboard/anatomical-map/types';
+import { MinusIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import BodyRegionMarker from './BodyRegionMarker';
+import SymptomDialog from './SymptomDialog';
+import { BodyRegion, PainSymptom } from './types';
 
-// Update props to include anatomicalHealthIssues
-interface ExtendedAnatomicalMapProps extends AnatomicalMapProps {
-  anatomicalHealthIssues?: HealthIssue[];
+export interface AnatomyMapProps {
+  bodyRegions: BodyRegion[];
+  symptoms: PainSymptom[];
+  onAddSymptom: (symptom: PainSymptom) => void;
+  onUpdateSymptom: (symptom: PainSymptom) => void;
+  onDeleteSymptom: (symptomId: string) => void;
+  loading: boolean;
 }
 
-const AnatomyMap: React.FC<ExtendedAnatomicalMapProps> = ({ 
-  className,
-  symptoms,
+const AnatomyMap: React.FC<AnatomyMapProps> = ({
   bodyRegions,
+  symptoms,
   onAddSymptom,
   onUpdateSymptom,
   onDeleteSymptom,
-  loading,
-  anatomicalHealthIssues = []
+  loading
 }) => {
-  const { symptoms: contextSymptoms } = useSymptoms();
-  const [zoom, setZoom] = useState(1);
-  const [activeHotspot, setActiveHotspot] = useState<HotSpot | null>(null);
-  const [hotspots, setHotspots] = useState<HotSpot[]>([]);
-  const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
+  const [activeRegion, setActiveRegion] = useState<BodyRegion | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [showDialog, setShowDialog] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [activeSystem, setActiveSystem] = useState('muscular');
   
-  const handleZoomIn = () => {
-    if (zoom < 2) setZoom(prev => Math.min(prev + 0.2, 2));
-  };
-  
-  const handleZoomOut = () => {
-    if (zoom > 0.6) setZoom(prev => Math.max(prev - 0.2, 0.6));
-  };
-  
-  const handleHotspotClick = (hotspot: HotSpot) => {
-    setActiveHotspot(hotspot === activeHotspot ? null : hotspot);
-  };
-
-  // Function to handle image load event to ensure markers are positioned correctly
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    setMapDimensions({
-      width: img.clientWidth,
-      height: img.clientHeight
-    });
-    setImageLoaded(true);
-  };
-
-  // Convert symptoms to hotspots whenever symptoms change
+  // Whenever activeRegion changes, show dialog if a region is selected
   useEffect(() => {
-    if (symptoms) {
-      console.log("Symptoms updated in AnatomicalMap:", symptoms);
-      // Convert both regular symptoms and health issues to hotspots
-      const symptomHotspots = symptomsToHotspots(symptoms);
-      const healthIssueHotspots = healthIssuesToHotspots(anatomicalHealthIssues);
-      
-      // Combine both types of hotspots, avoiding duplicates
-      const combinedHotspots = [...symptomHotspots];
-      
-      // Add health issue hotspots if they don't already exist
-      healthIssueHotspots.forEach(healthHotspot => {
-        if (!combinedHotspots.some(h => h.id === healthHotspot.id)) {
-          combinedHotspots.push(healthHotspot);
-        }
-      });
-      
-      setHotspots(combinedHotspots);
-    } else {
-      console.log("No symptoms data available");
-      // Still show health issues even if no symptoms are available
-      if (anatomicalHealthIssues.length > 0) {
-        setHotspots(healthIssuesToHotspots(anatomicalHealthIssues));
-      } else {
-        setHotspots([]);
-      }
+    if (activeRegion) {
+      setShowDialog(true);
     }
-  }, [symptoms, anatomicalHealthIssues, contextSymptoms]);
-
+  }, [activeRegion]);
+  
+  // Handle dialog close
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+    // Use a timeout to allow the dialog closing animation to complete
+    setTimeout(() => setActiveRegion(null), 300);
+  };
+  
+  // Handle zoom in/out
+  const handleZoom = (direction: 'in' | 'out') => {
+    setZoomLevel(prev => {
+      if (direction === 'in') return Math.min(prev + 0.2, 2);
+      return Math.max(prev - 0.2, 0.6);
+    });
+  };
+  
+  // Reset zoom
+  const handleResetZoom = () => setZoomLevel(1);
+  
   return (
-    <Card className={`glass-morphism bg-white dark:bg-gray-800 shadow-sm overflow-visible ${className || ''}`}>
-      <CardHeader className="pb-3 flex flex-col">
-        <div className="flex justify-between items-center flex-wrap gap-2">
-          <div>
-            <CardTitle>Anatomical Map</CardTitle>
-            <CardDescription>Interactive visualization of affected areas</CardDescription>
-          </div>
-          <MapControls 
-            zoom={zoom}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-          />
-        </div>
-        
-        <div className="tabs-container overflow-x-auto mt-2">
-          <SystemTabs 
-            activeSystem={activeSystem}
-            onSystemChange={setActiveSystem}
-          />
-        </div>
-      </CardHeader>
+    <div className="flex flex-col h-full">
+      <div className="flex justify-end space-x-2 mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleZoom('out')}
+          disabled={zoomLevel <= 0.6}
+        >
+          <MinusIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleResetZoom}
+          disabled={zoomLevel === 1}
+        >
+          <RefreshCwIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleZoom('in')}
+          disabled={zoomLevel >= 2}
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Button>
+      </div>
       
-      <CardContent className="p-0 pb-4 px-4 overflow-visible">
-        <MapVisualization
-          activeSystem={activeSystem}
-          zoom={zoom}
-          hotspots={hotspots}
-          activeHotspot={activeHotspot}
-          onImageLoad={handleImageLoad}
-          onHotspotClick={handleHotspotClick}
-          imageLoaded={imageLoaded}
+      <div className="flex-1 overflow-hidden anatomy-position-container">
+        <div 
+          className="anatomy-map-wrapper"
+          style={{ 
+            transform: `scale(${zoomLevel})`, 
+            transformOrigin: 'center center',
+            transition: 'transform 0.3s ease-out'
+          }}
+        >
+          <img
+            src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
+            alt="Human body anatomy"
+            className="anatomy-map-image"
+            onLoad={() => setImageLoaded(true)}
+          />
+          
+          {imageLoaded && bodyRegions.map((region) => (
+            <BodyRegionMarker
+              key={region.id}
+              region={region}
+              active={activeRegion?.id === region.id}
+              symptoms={symptoms}
+              onClick={() => setActiveRegion(region)}
+            />
+          ))}
+        </div>
+      </div>
+      
+      {activeRegion && (
+        <SymptomDialog
+          open={showDialog}
+          onClose={handleCloseDialog}
+          selectedRegion={activeRegion}
+          bodyRegions={bodyRegions}
+          existingSymptoms={symptoms.filter(s => s.bodyRegionId === activeRegion.id)}
+          onAddSymptom={onAddSymptom}
+          onUpdateSymptom={onUpdateSymptom}
+          onDeleteSymptom={onDeleteSymptom}
+          loading={loading}
         />
-        
-        {/* Detail panel for active hotspot */}
-        {activeHotspot && <HotspotDetail hotspot={activeHotspot} />}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

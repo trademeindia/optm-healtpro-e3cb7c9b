@@ -1,28 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from 'next-themes';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
-
-  // Add logging to debug visibility issues
-  useEffect(() => {
-    console.log('Login component mounted, theme:', theme);
-    // Check if container is visible
-    const container = document.querySelector('.min-h-screen');
-    if (container) {
-      console.log('Login container found in DOM');
-    } else {
-      console.warn('Login container not found in DOM');
-    }
-  }, [theme]);
 
   const handleDemoLogin = (role: 'doctor' | 'patient' | 'admin') => {
-    console.log(`Logging in as ${role}`);
     // Simulate login with a demo account
     const demoUser = {
       id: `demo-${role}-${Date.now()}`,
@@ -40,37 +25,36 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative" 
-         style={{border: '1px solid rgba(255,0,0,0.2)'}}>
-      <Card className="max-w-md w-full border shadow">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-foreground">Medical Dashboard Login</CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardTitle className="text-2xl">Medical Dashboard Login</CardTitle>
+          <CardDescription>
             Sign in to access your medical dashboard
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-center text-foreground">Demo Accounts</h3>
+            <h3 className="text-sm font-medium text-center">Demo Accounts</h3>
             <div className="grid gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('doctor')}
-                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
+                className="w-full"
               >
                 Continue as Doctor
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('patient')}
-                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
+                className="w-full"
               >
                 Continue as Patient
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleDemoLogin('admin')}
-                className="w-full bg-white/90 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-foreground dark:text-white"
+                className="w-full"
               >
                 Continue as Admin
               </Button>
@@ -89,7 +73,7 @@ const Login: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Button className="w-full" disabled={false}>
+            <Button disabled className="w-full">
               Email & Password Login (Disabled in Demo)
             </Button>
           </div>
