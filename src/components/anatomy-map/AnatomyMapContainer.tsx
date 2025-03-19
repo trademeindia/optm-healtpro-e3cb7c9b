@@ -1,172 +1,161 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/auth';
-import { supabase } from '@/integrations/supabase/client';
-import { PainSymptom } from './types';
 import AnatomyMap from './AnatomyMap';
-import SymptomHistoryTable from './SymptomHistoryTable';
-import { getBodyRegions } from './data/bodyRegions';
-import { useSymptoms } from '@/contexts/SymptomContext';
+import { v4 as uuidv4 } from 'uuid';
+import { bodyRegions } from './data/bodyRegions';
+import { BodyRegion, PainSymptom } from './types';
 import { toast } from 'sonner';
+import { SymptomHistoryContainer } from './symptom-history';
 
 const AnatomyMapContainer: React.FC = () => {
-  const { user } = useAuth();
-  const { addSymptom: updateGlobalSymptoms, loadPatientSymptoms } = useSymptoms();
   const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('map');
-  const bodyRegions = getBodyRegions();
 
+  // Simulate loading symptoms from an API
   useEffect(() => {
-    // Even without a user, let's initialize with empty symptoms
-    fetchSymptoms();
-  }, [user]);
-
-  const fetchSymptoms = async () => {
-    setLoading(true);
-    try {
-      if (user) {
-        // In a real implementation, this would fetch from Supabase
-        // For now, we'll use local storage as a temporary solution
-        const storedSymptoms = localStorage.getItem(`symptoms_${user?.id}`);
-        if (storedSymptoms) {
-          const parsedSymptoms = JSON.parse(storedSymptoms);
-          setSymptoms(parsedSymptoms);
-          console.log("Fetched symptoms:", parsedSymptoms);
+    const loadSymptoms = async () => {
+      setLoading(true);
+      try {
+        // In a real app, this would be an API call
+        // For now, we'll use localStorage for persistence
+        const savedSymptoms = localStorage.getItem('painSymptoms');
+        if (savedSymptoms) {
+          setSymptoms(JSON.parse(savedSymptoms));
         }
-      } else {
-        console.log("No user found, using demo symptoms");
-        // For demo purposes, we can still allow interaction
-        const storedSymptoms = localStorage.getItem(`symptoms_demo`);
-        if (storedSymptoms) {
-          const parsedSymptoms = JSON.parse(storedSymptoms);
-          setSymptoms(parsedSymptoms);
-        }
+      } catch (error) {
+        console.error('Failed to load symptoms:', error);
+        toast.error('Failed to load your symptom history');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching symptoms:', error);
-      toast.error('Error loading symptoms', {
-        description: 'There was a problem loading your symptom data.'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const saveSymptoms = async (updatedSymptoms: PainSymptom[]) => {
-    try {
-      // Storage key - use user ID if available, otherwise use 'demo'
-      const storageKey = user?.id ? `symptoms_${user.id}` : 'symptoms_demo';
-      
-      // In a real implementation, this would save to Supabase
-      // For now, we'll use local storage as a temporary solution
-      localStorage.setItem(storageKey, JSON.stringify(updatedSymptoms));
-      
-      // Update the context data as well for global access
-      if (user) {
-        updatedSymptoms.forEach(symptom => {
-          const symptomEntry = {
-            id: symptom.id,
-            date: new Date(symptom.createdAt),
-            symptomName: symptom.painType,
-            painLevel: symptom.severity === 'severe' ? 8 : symptom.severity === 'moderate' ? 5 : 2,
-            location: bodyRegions.find(r => r.id === symptom.bodyRegionId)?.name || 'Unknown',
-            notes: symptom.description,
-            patientId: user?.id ? parseInt(user.id.substring(0, 5), 16) % 10 : 1 // Simple hash for demo
-          };
-          updateGlobalSymptoms(symptomEntry);
-        });
-        
-        // Reload patient symptoms to update any dashboard components
-        const patientId = parseInt(user.id.substring(0, 5), 16) % 10;
-        loadPatientSymptoms(patientId);
-      }
-      
-      setSymptoms(updatedSymptoms);
-      toast.success('Symptoms updated', {
-        description: 'Your symptom information has been saved.'
-      });
-    } catch (error) {
-      console.error('Error saving symptoms:', error);
-      toast.error('Error saving symptoms', {
-        description: 'There was a problem saving your symptom data.'
-      });
-    }
-  };
+    loadSymptoms();
+  }, []);
 
-  const handleAddSymptom = (newSymptom: PainSymptom) => {
-    const updatedSymptoms = [...symptoms, newSymptom];
-    saveSymptoms(updatedSymptoms);
+  // Save symptoms to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('painSymptoms', JSON.stringify(symptoms));
+  }, [symptoms]);
+
+  const handleAddSymptom = (symptom: PainSymptom) => {
+    const newSymptom = {
+      ...symptom,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setSymptoms(prev => {
+      // Deactivate any existing active symptoms for this body region
+      const updated = prev.map(s => 
+        s.bodyRegionId === symptom.bodyRegionId && s.isActive 
+          ? { ...s, isActive: false, updatedAt: new Date().toISOString() } 
+          : s
+      );
+      
+      return [newSymptom, ...updated];
+    });
+    
+    toast.success(`Added symptom for ${bodyRegions.find(r => r.id === symptom.bodyRegionId)?.name}`);
   };
 
   const handleUpdateSymptom = (updatedSymptom: PainSymptom) => {
-    const updatedSymptoms = symptoms.map(symptom => 
-      symptom.id === updatedSymptom.id ? updatedSymptom : symptom
-    );
-    saveSymptoms(updatedSymptoms);
+    setSymptoms(prev => prev.map(s => 
+      s.id === updatedSymptom.id 
+        ? { ...updatedSymptom, updatedAt: new Date().toISOString() } 
+        : s
+    ));
+    
+    toast.success(`Updated symptom for ${bodyRegions.find(r => r.id === updatedSymptom.bodyRegionId)?.name}`);
   };
 
   const handleDeleteSymptom = (symptomId: string) => {
-    const updatedSymptoms = symptoms.filter(symptom => symptom.id !== symptomId);
-    saveSymptoms(updatedSymptoms);
+    const symptomToDelete = symptoms.find(s => s.id === symptomId);
+    if (!symptomToDelete) return;
+    
+    setSymptoms(prev => prev.filter(s => s.id !== symptomId));
+    
+    toast.success(`Removed symptom for ${bodyRegions.find(r => r.id === symptomToDelete.bodyRegionId)?.name}`);
   };
 
   const handleToggleActive = (symptomId: string, isActive: boolean) => {
-    const updatedSymptoms = symptoms.map(symptom => 
-      symptom.id === symptomId ? { ...symptom, isActive } : symptom
-    );
-    saveSymptoms(updatedSymptoms);
+    const symptomToToggle = symptoms.find(s => s.id === symptomId);
+    if (!symptomToToggle) return;
+    
+    setSymptoms(prev => {
+      // If we're activating a symptom, deactivate other symptoms for the same region
+      if (isActive) {
+        return prev.map(s => 
+          s.id === symptomId 
+            ? { ...s, isActive, updatedAt: new Date().toISOString() }
+            : (s.bodyRegionId === symptomToToggle.bodyRegionId && s.isActive)
+              ? { ...s, isActive: false, updatedAt: new Date().toISOString() }
+              : s
+        );
+      } 
+      // Simply toggle the requested symptom
+      else {
+        return prev.map(s => 
+          s.id === symptomId 
+            ? { ...s, isActive, updatedAt: new Date().toISOString() } 
+            : s
+        );
+      }
+    });
+    
+    const action = isActive ? 'Activated' : 'Deactivated';
+    toast.success(`${action} symptom for ${bodyRegions.find(r => r.id === symptomToToggle.bodyRegionId)?.name}`);
   };
 
   return (
-    <Card className="w-full shadow-sm border-border overflow-hidden">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="border-b border-border">
-          <div className="px-4">
-            <TabsList className="h-12 bg-transparent p-0 w-full justify-start gap-4">
-              <TabsTrigger 
-                value="map" 
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent h-12 px-4 rounded-none"
-              >
-                Anatomy Map
-              </TabsTrigger>
-              <TabsTrigger 
-                value="history"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent h-12 px-4 rounded-none"
-              >
-                Symptom History
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </div>
+    <div className="w-full space-y-4">
+      <Tabs 
+        defaultValue="map" 
+        value={activeTab} 
+        onValueChange={setActiveTab}
+        className="anatomy-tabs"
+      >
+        <TabsList className="mb-4 w-full grid grid-cols-2 md:w-auto">
+          <TabsTrigger 
+            value="map" 
+            className={`anatomy-tab ${activeTab === 'map' ? 'anatomy-tab-active' : ''}`}
+          >
+            Anatomy Map
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history" 
+            className={`anatomy-tab ${activeTab === 'history' ? 'anatomy-tab-active' : ''}`}
+          >
+            Symptom History
+          </TabsTrigger>
+        </TabsList>
         
-        <CardContent className="p-6">
-          <TabsContent value="map" className="mt-0 pt-0">
-            <AnatomyMap 
-              symptoms={symptoms}
-              bodyRegions={bodyRegions}
-              onAddSymptom={handleAddSymptom}
-              onUpdateSymptom={handleUpdateSymptom}
-              onDeleteSymptom={handleDeleteSymptom}
-              loading={loading}
-            />
-          </TabsContent>
-          
-          <TabsContent value="history" className="mt-0 pt-0">
-            <SymptomHistoryTable 
-              symptoms={symptoms}
-              bodyRegions={bodyRegions}
-              onUpdateSymptom={handleUpdateSymptom}
-              onDeleteSymptom={handleDeleteSymptom}
-              onToggleActive={handleToggleActive}
-              loading={loading}
-            />
-          </TabsContent>
-        </CardContent>
+        <TabsContent value="map" className="mt-0">
+          <AnatomyMap 
+            symptoms={symptoms}
+            bodyRegions={bodyRegions}
+            onAddSymptom={handleAddSymptom}
+            onUpdateSymptom={handleUpdateSymptom}
+            onDeleteSymptom={handleDeleteSymptom}
+            loading={loading}
+          />
+        </TabsContent>
+        
+        <TabsContent value="history" className="mt-0">
+          <SymptomHistoryContainer
+            symptoms={symptoms}
+            bodyRegions={bodyRegions}
+            onUpdateSymptom={handleUpdateSymptom}
+            onDeleteSymptom={handleDeleteSymptom}
+            onToggleActive={handleToggleActive}
+            loading={loading}
+          />
+        </TabsContent>
       </Tabs>
-    </Card>
+    </div>
   );
 };
 

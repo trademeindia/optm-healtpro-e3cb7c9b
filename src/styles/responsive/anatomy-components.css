@@ -27,6 +27,22 @@
   .anatomy-tabs {
     @apply text-sm;
   }
+  
+  .symptom-table-cell {
+    @apply p-2 text-xs;
+  }
+  
+  .symptom-action-button {
+    @apply p-1.5;
+  }
+  
+  .symptom-badge {
+    @apply text-xs px-1.5 py-0.5;
+  }
+  
+  .symptom-table-row {
+    @apply text-sm;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
@@ -40,6 +56,10 @@
   
   .region-marker-lg {
     @apply w-6 h-6;
+  }
+  
+  .symptom-table-cell {
+    @apply p-3;
   }
 }
 
