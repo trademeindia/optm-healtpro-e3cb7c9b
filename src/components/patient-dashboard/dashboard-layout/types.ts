@@ -1,13 +1,37 @@
 
 export interface DashboardMainContentProps {
   healthMetrics: {
-    heartRate: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    bloodPressure: { value: string; unit: string; change: number; source?: string; lastSync?: string };
-    temperature: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
-    oxygen: { value: string | number; unit: string; change: number; source?: string; lastSync?: string };
+    heartRate: {
+      value: number;
+      unit: string;
+      change: number;
+      source?: string;
+      lastSync?: string;
+    };
+    bloodPressure: {
+      value: string;
+      unit: string;
+      change: number;
+      source?: string;
+      lastSync?: string;
+    };
+    temperature: {
+      value: number;
+      unit: string;
+      change: number;
+      source?: string;
+      lastSync?: string;
+    };
+    oxygen: {
+      value: number;
+      unit: string;
+      change: number;
+      source?: string;
+      lastSync?: string;
+    };
   };
   activityData: {
-    data: { day: string; value: number }[];
+    data: any[];
     currentValue: number;
     source?: string;
     lastSync?: string;
@@ -28,9 +52,7 @@ export interface DashboardMainContentProps {
   biologicalAge: number;
   chronologicalAge: number;
   hasConnectedApps: boolean;
-  onSyncData: () => Promise<void>;
-  handleConfirmAppointment?: (id: string) => void;
-  handleRescheduleAppointment?: (id: string) => void;
+  onSyncData: () => void;
+  handleConfirmAppointment: (id: string) => void;
+  handleRescheduleAppointment: (id: string) => void;
 }
-
-export type ColumnProps = DashboardMainContentProps;

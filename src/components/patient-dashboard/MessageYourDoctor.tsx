@@ -1,79 +1,57 @@
 
-import React, { useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { MessageSquare, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-interface MessageYourDoctorProps {
-  className?: string;
-}
-
-const MessageYourDoctor: React.FC<MessageYourDoctorProps> = ({ className }) => {
-  const [message, setMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
-
-  const handleSendMessage = () => {
-    if (!message.trim()) {
-      toast.error("Please enter a message before sending.", {
-        duration: 4000
-      });
-      return;
-    }
-
-    setIsSending(true);
-    
-    // Simulate sending message with a slight delay
-    setTimeout(() => {
-      toast.success("Your message has been sent to your doctor.", {
-        duration: 3000
-      });
-      
-      // Clear the message input after sending
-      setMessage('');
-      setIsSending(false);
-    }, 800);
-  };
-
+const MessageYourDoctor: React.FC = () => {
   return (
-    <div className={`glass-morphism rounded-2xl p-4 md:p-6 ${className}`}>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-primary" />
+    <Card className="border border-border shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-primary" />
           Message Your Doctor
-        </h3>
-        <Button variant="ghost" size="sm" className="text-primary">
-          View History
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2 mb-4">
+          <div className="flex gap-3">
+            <Avatar className="w-8 h-8">
+              <AvatarImage src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png" alt="Dr. Nikolas Pascal" />
+              <AvatarFallback>NP</AvatarFallback>
+            </Avatar>
+            <div className="bg-muted/50 rounded-lg rounded-tl-none p-3 text-sm flex-1">
+              <p className="font-medium text-xs text-primary">Dr. Nikolas Pascal</p>
+              <p>How are you feeling after the last treatment session? Any improvements with your mobility?</p>
+              <p className="text-xs text-muted-foreground mt-1">Yesterday, 2:45 PM</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 justify-end">
+            <div className="bg-primary/10 rounded-lg rounded-tr-none p-3 text-sm max-w-[80%]">
+              <p>Much better! The pain has reduced significantly, and I can move my arm more freely now.</p>
+              <p className="text-xs text-primary/70 mt-1 text-right">Yesterday, 3:20 PM</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-end gap-2">
+          <Textarea 
+            placeholder="Type your message..." 
+            className="min-h-[80px]"
+          />
+          <Button size="icon" className="shrink-0">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <Button variant="link" className="w-full mt-3">
+          View conversation history
         </Button>
-      </div>
-      <div className="space-y-3">
-        <textarea 
-          className="w-full p-3 h-24 rounded-lg border resize-none bg-white/80 dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-primary" 
-          placeholder="Type your message here..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          disabled={isSending}
-          aria-label="Message to your doctor"
-        ></textarea>
-        <Button 
-          className="w-full flex items-center justify-center gap-2"
-          onClick={handleSendMessage}
-          disabled={isSending}
-          aria-busy={isSending}
-        >
-          {isSending ? (
-            <>
-              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Sending...</span>
-            </>
-          ) : (
-            <>
-              <Send className="h-4 w-4" />
-              <span>Send Message</span>
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

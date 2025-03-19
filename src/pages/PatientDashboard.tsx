@@ -34,7 +34,7 @@ const PatientDashboard: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 overflow-container">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 overflow-container bg-gray-50 dark:bg-gray-900">
           <div className="mb-6 pl-10 lg:pl-0">
             <h1 className="text-2xl font-bold">My Health Dashboard</h1>
             <p className="text-sm text-muted-foreground">
