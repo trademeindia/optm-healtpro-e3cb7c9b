@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, FileText, Filter, ArrowUpDown, Download, Trash2, Edit } from 'lucide-react';
+import { Plus, Search, FileText, Filter, ArrowUpDown, Download, Trash2, Edit, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -83,14 +82,12 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     file: null
   });
 
-  // Load data from storage
   useEffect(() => {
     loadData();
   }, [patientId]);
 
   const loadData = () => {
     try {
-      // Load records
       const storedRecords = getFromLocalStorage('patient_records')
         .filter((record: any) => !patientId || record.patientId === patientId)
         .map((record: any) => ({
@@ -105,7 +102,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
           timestamp: record.timestamp || record.createdAt
         }));
 
-      // Load reports
       const storedReports = getFromLocalStorage('patient_reports')
         .filter((report: any) => !patientId || report.patientId === patientId)
         .map((report: any) => ({
@@ -126,12 +122,10 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     }
   };
 
-  // Handle record type filter
   const handleRecordTypeChange = (value: string) => {
     setRecordType(value);
   };
 
-  // Handle sort
   const handleSort = (field: 'date' | 'name') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -141,22 +135,19 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     }
   };
 
-  // Opening add record dialog
   const handleAddRecord = (type: string) => {
     setCurrentRecordType(type);
     setIsAddDialogOpen(true);
     
-    // Reset form
     setRecordForm({
       name: '',
-      date: new Date().toISOString().split('T')[0], // Set today's date as default
+      date: new Date().toISOString().split('T')[0],
       type: '',
       notes: '',
       file: null
     });
   };
 
-  // Form handling
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setRecordForm({
       ...recordForm,
@@ -180,20 +171,15 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     });
   };
 
-  // Submit new record
   const handleRecordSubmit = async () => {
     try {
-      // Generate unique IDs
       const recordId = uuidv4();
       let fileId = null;
       
-      // If there's a file, we'd handle file upload here
       if (recordForm.file) {
         fileId = uuidv4();
-        // In a real implementation, we would upload the file to storage
       }
       
-      // Create record object
       const newRecord: any = {
         id: recordId,
         patientId: patientId || 'default',
@@ -207,35 +193,27 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
         createdAt: new Date().toISOString()
       };
       
-      // Store the record
       const existingRecords = getFromLocalStorage('patient_records');
       storeInLocalStorage('patient_records', [...existingRecords, newRecord], true);
       
-      // Update state
       setRecords(prev => [...prev, newRecord]);
       
-      // Close dialog
       setIsAddDialogOpen(false);
       
-      // Show success message
       toast.success('Record added successfully');
       
-      // Trigger callback if provided
       if (onRecordUpdated) {
         onRecordUpdated();
       }
-      
     } catch (error) {
       console.error('Error adding record:', error);
       toast.error('Failed to add record');
     }
   };
 
-  // Delete record
   const handleDeleteRecord = (id: string, isReport: boolean = false) => {
     try {
       if (isReport) {
-        // Delete report
         const updatedReports = reports.filter(report => report.id !== id);
         const storedReports = getFromLocalStorage('patient_reports')
           .filter((report: any) => report.id !== id);
@@ -243,7 +221,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
         storeInLocalStorage('patient_reports', storedReports, true);
         setReports(updatedReports);
       } else {
-        // Delete record
         const updatedRecords = records.filter(record => record.id !== id);
         const storedRecords = getFromLocalStorage('patient_records')
           .filter((record: any) => record.id !== id);
@@ -254,7 +231,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
       
       toast.success('Record deleted successfully');
       
-      // Trigger callback if provided
       if (onRecordUpdated) {
         onRecordUpdated();
       }
@@ -264,7 +240,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     }
   };
 
-  // Filter and sort data
   const filteredRecords = records.filter(record => {
     const matchesSearch = record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (record.notes || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -276,7 +251,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     return report.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // Sort data
   const sortedRecords = [...filteredRecords].sort((a, b) => {
     if (sortBy === 'date') {
       const dateA = new Date(a.date).getTime();
@@ -301,7 +275,6 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
     }
   });
 
-  // Combined data for the "All" tab
   const combinedData = [
     ...sortedRecords.map(record => ({
       id: record.id,
