@@ -1,4 +1,8 @@
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "./responsive/anatomy.css";
 @import "./responsive/layout.css";
 @import "./responsive/buttons.css";
