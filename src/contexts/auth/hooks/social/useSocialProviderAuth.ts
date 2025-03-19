@@ -36,18 +36,23 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       // Create the OAuth options
       const options = {
         redirectTo,
+        queryParams: {}
       };
       
-      // Use the correct structure for Google OAuth with scopes
+      // Add provider-specific options
+      if (provider === 'google') {
+        options.queryParams = {
+          access_type: 'offline',
+          prompt: 'select_account'
+        };
+      }
+      
+      // Use the correct structure for OAuth
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           ...options,
           scopes: 'email profile',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
         }
       });
 

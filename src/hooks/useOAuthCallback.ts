@@ -45,10 +45,20 @@ export const useOAuthCallback = () => {
         retryCount,
         hasUser: !!user,
         userRole: user?.role || 'none',
-        isLoadingState: isLoading
+        isLoadingState: isLoading,
+        searchParams: Object.fromEntries(searchParams.entries()),
+        timestamp: new Date().toISOString()
       });
       
-      console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}`);
+      console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, timestamp=${new Date().toISOString()}`);
+      
+      // First check if we already have a session
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        console.log('Active session found, redirecting to dashboard');
+        navigate('/patient-dashboard');
+        return;
+      }
       
       // Call the handler with the code from search params
       if (code) {
@@ -56,52 +66,30 @@ export const useOAuthCallback = () => {
         try {
           await handleOAuthCallback(provider, code);
           
-          // Wait a short time for the auth state to update
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          // Give some time for session to be established
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Check again if we have a session after the callback
+          const { data: updatedSession } = await supabase.auth.getSession();
+          
+          if (updatedSession.session) {
+            console.log('Session established after OAuth callback, redirecting');
+            toast.success('Successfully signed in!');
+            navigate('/patient-dashboard');
+            return;
+          }
         } catch (callbackError) {
           console.error('Error in handleOAuthCallback:', callbackError);
-          // Continue with checks below even if callback fails
         }
-      }
-      
-      // Verify Supabase connection and session
-      const { data, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Supabase session error:', sessionError);
-        setError('Unable to verify authentication');
-        setErrorDetails('There was a problem connecting to the authentication service.');
-        toast.error('Authentication verification failed');
+      } else {
+        console.error('No authorization code found in URL');
+        setError('Authentication failed');
+        setErrorDetails('No authorization code received from the provider');
         return;
       }
-
-      console.log('Session check result:', { 
-        session: data.session ? 'exists' : 'null',
-        user: user ? 'exists' : 'null',
-        isLoading
-      });
       
-      // If we have a user or a session, authentication succeeded
-      if (user && !isLoading) {
-        console.log('User authenticated successfully:', user);
-        toast.success('Successfully signed in!');
-        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-        return;
-      } 
-      // If we have a session but no user yet, try to extract the user
-      else if (data.session && !isLoading) {
-        console.log('Session exists but no user object yet');
-        const { user: supabaseUser } = data.session;
-        
-        if (supabaseUser) {
-          console.log('Session user exists:', supabaseUser.id);
-          toast.success('Successfully authenticated!');
-          navigate('/dashboard');
-          return;
-        }
-      }
       // If we're done loading and still don't have a user, there was an error
-      else if (!isLoading && !user && retryCount >= 2) {
+      if (!isLoading && !user && retryCount >= 2) {
         console.error('Authentication failed - no user found after OAuth flow and retries');
         setError('Authentication failed');
         setErrorDetails('The sign-in attempt was not successful. Please try again.');
@@ -113,7 +101,7 @@ export const useOAuthCallback = () => {
         console.log(`Still waiting for authentication, retry ${retryCount + 1}/3...`);
         setRetryCount(prev => prev + 1);
         // Try again after a delay with increasing timeouts
-        setTimeout(() => checkAuthState(), 1500 + (retryCount * 500));
+        setTimeout(() => checkAuthState(), 2000 + (retryCount * 1000));
       }
     } catch (err: any) {
       console.error('OAuth callback processing error:', err);
@@ -127,7 +115,6 @@ export const useOAuthCallback = () => {
   };
 
   useEffect(() => {
-    // Log the component initialization for debugging
     console.log('OAuthCallback component initialized');
     console.log('Search params:', Object.fromEntries(searchParams.entries()));
     console.log('Auth state:', { user, isLoading });
@@ -144,12 +131,10 @@ export const useOAuthCallback = () => {
 
     // Only run the auth check if we don't already have an error
     if (!error) {
-      // Add a small delay to ensure any auth state changes have propagated
-      setTimeout(() => {
-        checkAuthState();
-      }, 500);
+      // Start auth check process
+      checkAuthState();
     }
-  }, [navigate, user, isLoading, searchParams, provider, errorCode, errorDescription, error, handleOAuthCallback, code, retryCount]);
+  }, []);
 
   return {
     error,

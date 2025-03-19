@@ -26,7 +26,17 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
       }
       
       // Check for existing session since OAuth might have already completed
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session check error:", sessionError);
+        toast.error("Authentication error: Unable to verify session", {
+          duration: 5000
+        });
+        navigate('/login');
+        return;
+      }
+      
       console.log("Session check on callback:", sessionData?.session ? "Session exists" : "No session");
       
       if (sessionData?.session) {
@@ -95,9 +105,10 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         return;
       }
       
-      // If we get here, something went wrong with the OAuth flow
-      console.error("OAuth callback failed to authenticate user");
-      toast.error('Authentication failed. Please try again.', {
+      // If we reach here, we don't have a session yet, so we need to process the code
+      // This should already be handled by Supabase's internal handling through URL params
+      console.log("No session found with provided code, returning to login");
+      toast.info('Please try signing in again', {
         duration: 5000
       });
       navigate('/login');
