@@ -90,7 +90,7 @@ const AnatomicalBodyMap: React.FC = memo(() => {
             <div className="text-sm">
               <span className="text-xs font-medium">Recommended:</span>
               <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                {selectedIssue.recommendedActions.map((action, i) => (
+                {selectedIssue.recommendedActions?.map((action, i) => (
                   <li key={i} className="text-xs">{action}</li>
                 ))}
               </ul>

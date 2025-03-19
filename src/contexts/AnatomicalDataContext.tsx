@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { HealthIssue, MuscleFlexion } from '@/components/patient-dashboard/anatomical-map/types';
 import { useAnatomicalMap } from '@/components/patient-dashboard/anatomical-map/hooks/useAnatomicalMap';
@@ -20,11 +21,11 @@ const AnatomicalDataContext = createContext<AnatomicalDataContextType | undefine
 export const AnatomicalDataProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const { 
     healthIssues: initialHealthIssues, 
-    muscleFlexionData,
+    muscleFlexionData, // Correct property name to match hook
     selectedIssue: initialSelectedIssue,
     handleIssueClick: initialHandleIssueClick,
     zoom: initialZoom,
-    isLoaded: initialIsLoaded
+    isLoaded: initialIsLoaded // Correct property name to match hook
   } = useAnatomicalMap();
 
   const { symptoms, addSymptom } = useSymptoms();
@@ -74,7 +75,7 @@ export const AnatomicalDataProvider: React.FC<{children: React.ReactNode}> = ({ 
     <AnatomicalDataContext.Provider 
       value={{
         healthIssues,
-        muscleFlexionData,
+        muscleFlexionData, // Using the correct property name
         selectedIssue,
         setSelectedIssue,
         handleIssueClick,

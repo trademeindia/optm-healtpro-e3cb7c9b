@@ -5,10 +5,11 @@ import { HealthIssue, MuscleFlexion } from '../types';
 // Type for the return value of the hook
 interface UseAnatomicalMapReturn {
   healthIssues: HealthIssue[];
-  muscleFlexions: MuscleFlexion[];
+  muscleFlexionData: MuscleFlexion[]; // Changed from muscleFlexions to muscleFlexionData
   selectedIssue: HealthIssue | null;
   selectedMuscle: MuscleFlexion | null;
   isLoading: boolean;
+  isLoaded: boolean; // Added isLoaded property
   zoom: number;
   setZoom: (zoom: number) => void;
   handleIssueClick: (issue: HealthIssue) => void;
@@ -19,10 +20,11 @@ interface UseAnatomicalMapReturn {
 
 export const useAnatomicalMap = (): UseAnatomicalMapReturn => {
   const [healthIssues, setHealthIssues] = useState<HealthIssue[]>([]);
-  const [muscleFlexions, setMuscleFlexions] = useState<MuscleFlexion[]>([]);
+  const [muscleFlexionData, setMuscleFlexionData] = useState<MuscleFlexion[]>([]); // Renamed to match context
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleFlexion | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false); // Added isLoaded state
   const [zoom, setZoom] = useState(1);
   const [activeTab, setActiveTab] = useState('issues');
 
@@ -34,6 +36,7 @@ export const useAnatomicalMap = (): UseAnatomicalMapReturn => {
         setTimeout(() => {
           setHealthIssues(mockHealthIssues);
           setIsLoading(false);
+          setIsLoaded(true); // Set isLoaded to true after data is fetched
         }, 800);
       } catch (error) {
         console.error('Error fetching health issues:', error);
@@ -50,7 +53,7 @@ export const useAnatomicalMap = (): UseAnatomicalMapReturn => {
       try {
         // Simulating API fetch
         setTimeout(() => {
-          setMuscleFlexions(mockMuscleFlexions);
+          setMuscleFlexionData(mockMuscleFlexions); // Renamed to match context
         }, 1000);
       } catch (error) {
         console.error('Error fetching muscle flexions:', error);
@@ -83,10 +86,11 @@ export const useAnatomicalMap = (): UseAnatomicalMapReturn => {
 
   return {
     healthIssues,
-    muscleFlexions,
+    muscleFlexionData, // Renamed to match context
     selectedIssue,
     selectedMuscle,
     isLoading,
+    isLoaded, // Added isLoaded property
     zoom,
     setZoom,
     handleIssueClick,
