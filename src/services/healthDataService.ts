@@ -217,7 +217,7 @@ export class HealthDataService {
         unit: item.unit,
         timestamp: item.start_time,
         source: item.source,
-        metadata: item.metadata
+        metadata: item.metadata ? item.metadata as Record<string, any> : undefined
       })) as HealthMetric[];
     } catch (error) {
       console.error('Error fetching health metrics:', error);
@@ -260,7 +260,7 @@ export class HealthDataService {
           unit: data[0].unit,
           timestamp: data[0].start_time,
           source: data[0].source,
-          metadata: data[0].metadata
+          metadata: data[0].metadata ? data[0].metadata as Record<string, any> : undefined
         };
         
         // Cache the result
@@ -352,7 +352,7 @@ export class HealthDataService {
                 unit: newData.unit,
                 timestamp: newData.start_time,
                 source: newData.source,
-                metadata: newData.metadata
+                metadata: newData.metadata ? newData.metadata as Record<string, any> : undefined
               };
               
               const cacheKey = `${metric.userId}:${metric.type}`;

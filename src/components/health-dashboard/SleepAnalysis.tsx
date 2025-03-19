@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { HealthMetric, TimeRange } from '@/services/healthDataService';
 import { Moon, Zap } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface SleepAnalysisProps {
@@ -49,6 +49,7 @@ const SleepAnalysis: React.FC<SleepAnalysisProps> = ({
     
     sleepData.forEach(metric => {
       const date = new Date(metric.timestamp).toLocaleDateString();
+      // Convert value to number to ensure it's a numeric type
       const durationMinutes = Number(metric.value);
       const sleepStage = metric.metadata?.sleepStage as number;
       
