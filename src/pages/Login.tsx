@@ -1,136 +1,58 @@
 
-import React from 'react';
-import { useAuth } from '@/contexts/auth'; // Fix the import to match actual context path
-import { motion } from 'framer-motion';
-import { HeartPulse } from 'lucide-react';
-
-// Import new components 
-import UserTypeSelector from '@/components/auth/UserTypeSelector';
-import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginForm from '@/components/auth/LoginForm';
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import SignupDialog from '@/components/auth/SignupDialog';
 import MarketingPanel from '@/components/auth/MarketingPanel';
-import DebugSection from '@/components/auth/DebugSection';
-import { useLoginState } from '@/hooks/useLoginState';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
-  const { 
-    email, setEmail,
-    password, setPassword,
-    isSubmitting, setIsSubmitting,
-    showForgotPassword, setShowForgotPassword,
-    forgotEmail, setForgotEmail,
-    userType, setUserType,
-    showSignupDialog, setShowSignupDialog,
-    signupData, setSignupData,
-    showDebug, setShowDebug,
-    handleSubmit,
-    handleForgotPassword,
-    handleSignup,
-    handleGoogleLogin,
-    handleSocialLogin,
-    handleTabChange,
-    handleSignupInputChange
-  } = useLoginState();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleLoginSuccess = () => {
+    setIsLoading(true);
+    toast.success('Login successful', {
+      description: 'Redirecting to dashboard...'
+    });
+    
+    // Simulate a slight delay before navigation for better UX
+    setTimeout(() => {
+      navigate('/dashboard');
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row">
-      <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
-        <motion.div 
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-              <HeartPulse className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gradient ml-4">OPTM HealPro</h1>
-          </div>
-          
-          {!showForgotPassword ? (
-            <>
-              <UserTypeSelector userType={userType} onTabChange={handleTabChange} />
-              
-              <SocialLoginButtons 
-                onGoogleLogin={handleGoogleLogin}
-                onSocialLogin={handleSocialLogin}
-                isSubmitting={isSubmitting}
-              />
-              
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-background text-muted-foreground">or</span>
-                </div>
-              </div>
-              
-              <LoginForm 
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPassword={setPassword}
-                userType={userType}
-                isSubmitting={isSubmitting}
-                onSubmit={handleSubmit}
-                onForgotPassword={() => setShowForgotPassword(true)}
-              />
-              
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    className="text-primary hover:text-primary/80 font-medium"
-                    onClick={() => setShowSignupDialog(true)}
-                  >
-                    Sign up
-                  </button>
-                </p>
-              </div>
-              
-              <div className="mt-6 text-center">
-                <p className="text-center text-sm text-muted-foreground">
-                  {userType === 'doctor' 
-                    ? 'Demo: doctor@example.com / password123' 
-                    : 'Demo: patient@example.com / password123'}
-                </p>
-              </div>
-              
-              <DebugSection 
-                showDebug={showDebug} 
-                setShowDebug={setShowDebug} 
-              />
-            </>
-          ) : (
-            <ForgotPasswordForm 
-              forgotEmail={forgotEmail}
-              setForgotEmail={setForgotEmail}
-              onSubmit={handleForgotPassword}
-              onBackToLogin={() => setShowForgotPassword(false)}
-              isSubmitting={isSubmitting}
-            />
-          )}
-        </motion.div>
+    <div className="flex min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto">
+        <div className="md:w-1/2 flex items-center justify-center p-6 md:p-12">
+          <Card className="w-full max-w-md border shadow-lg">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold">OPTM HealPro</CardTitle>
+              <CardDescription>
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-1">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                </TabsList>
+                <TabsContent value="login" className="pt-4">
+                  <LoginForm 
+                    onLoginSuccess={handleLoginSuccess} 
+                    isLoading={isLoading}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <MarketingPanel />
       </div>
-      
-      <div className="hidden md:block w-1/2 bg-gradient-to-br from-primary to-accent p-10">
-        <MarketingPanel userType={userType} />
-      </div>
-      
-      <SignupDialog 
-        showSignupDialog={showSignupDialog}
-        setShowSignupDialog={setShowSignupDialog}
-        signupData={signupData}
-        handleSignupInputChange={handleSignupInputChange}
-        handleSignup={handleSignup}
-        isSubmitting={isSubmitting}
-        userType={userType}
-      />
     </div>
   );
 };

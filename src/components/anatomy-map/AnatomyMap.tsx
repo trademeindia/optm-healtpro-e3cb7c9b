@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Female, Male } from 'lucide-react';
+import { User, UserCog } from 'lucide-react';
 import BodyRegionMarker from './BodyRegionMarker';
 import { BodyRegion, PainSymptom } from './types'; 
 import { useSymptomSync } from '@/contexts/SymptomSyncContext';
@@ -54,11 +54,11 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
         <div className="flex justify-between items-center mb-4">
           <TabsList>
             <TabsTrigger value="front" className="flex items-center gap-2">
-              <Male className="h-4 w-4" />
+              <User className="h-4 w-4" />
               Front View
             </TabsTrigger>
             <TabsTrigger value="back" className="flex items-center gap-2">
-              <Female className="h-4 w-4" />
+              <UserCog className="h-4 w-4" />
               Back View
             </TabsTrigger>
           </TabsList>
