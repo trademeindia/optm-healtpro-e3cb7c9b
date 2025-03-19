@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HotspotMarkerProps } from './types';
+import { MapPin, AlertCircle, Activity, CircleDot } from 'lucide-react';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
   // Determine tooltip positioning based on hotspot coordinates
@@ -31,13 +32,24 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
     if (isActive) return 'hotspot-size-lg';
     return hotspot.severity && hotspot.severity > 5 ? 'hotspot-size-md' : 'hotspot-size-sm';
   };
+
+  // Render appropriate icon based on severity
+  const renderIcon = () => {
+    if (!hotspot.severity || hotspot.severity <= 3) {
+      return <CircleDot className="hotspot-icon" size={isActive ? 18 : 14} />;
+    } else if (hotspot.severity <= 6) {
+      return <Activity className="hotspot-icon" size={isActive ? 18 : 14} />;
+    } else {
+      return <AlertCircle className="hotspot-icon" size={isActive ? 18 : 14} />;
+    }
+  };
   
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className={`hotspot-marker ${getSizeClass()} ${getSeverityClass()} rounded-full ${isActive ? 'hotspot-active hotspot-pulse' : ''}`}
+            className={`hotspot-marker ${getSizeClass()} ${getSeverityClass()} ${isActive ? 'hotspot-active hotspot-pulse' : ''}`}
             style={{
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
@@ -45,22 +57,32 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            whileHover={{ scale: 1.2 }}
+            whileHover={{ scale: 1.2, boxShadow: '0 0 12px rgba(255, 255, 255, 0.8)' }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onClick(hotspot)}
           >
-            {isActive && (
-              <span className="text-white text-xs font-bold">{hotspot.id}</span>
+            {renderIcon()}
+            {isActive && hotspot.id && (
+              <span className="hotspot-label text-white text-xs font-bold sr-only">{hotspot.id}</span>
             )}
           </motion.div>
         </TooltipTrigger>
         <TooltipContent 
           side={getTooltipSide()} 
-          className="hotspot-tooltip z-50"
-          sideOffset={10}
+          className="hotspot-tooltip z-50 shadow-lg"
+          sideOffset={12}
         >
-          <div className="p-2 space-y-1">
-            <p className="font-medium text-sm">{hotspot.label}</p>
+          <div className="p-3 space-y-2">
+            <p className="font-semibold text-sm">{hotspot.label}</p>
+            {hotspot.severity && (
+              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                hotspot.severity <= 3 ? 'bg-green-100 text-green-800' : 
+                hotspot.severity <= 6 ? 'bg-amber-100 text-amber-800' : 
+                'bg-red-100 text-red-800'
+              }`}>
+                Pain level: {hotspot.severity}/10
+              </div>
+            )}
             {hotspot.description && (
               <p className="text-xs text-muted-foreground">{hotspot.description}</p>
             )}

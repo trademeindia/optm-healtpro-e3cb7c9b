@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BodyRegion, PainSymptom } from './types';
+import { CircleDot, Activity, AlertCircle, Heart } from 'lucide-react';
 
 interface BodyRegionMarkerProps {
   region: BodyRegion;
@@ -23,7 +24,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
   
   // Determine color based on symptoms
   const getMarkerColor = () => {
-    if (!hasSymptoms) return 'bg-blue-400 dark:bg-blue-600 border-blue-300 dark:border-blue-500';
+    if (!hasSymptoms) return 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300 text-white';
     
     // Find max severity for this region
     const maxSeverity = Math.max(...regionSymptoms.map(s => {
@@ -35,9 +36,9 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
       }
     }));
     
-    if (maxSeverity >= 7) return 'bg-red-500 dark:bg-red-600 border-red-400 dark:border-red-500';
-    if (maxSeverity >= 4) return 'bg-amber-500 dark:bg-amber-600 border-amber-400 dark:border-amber-500';
-    return 'bg-green-500 dark:bg-green-600 border-green-400 dark:border-green-500';
+    if (maxSeverity >= 7) return 'bg-gradient-to-br from-red-400 to-red-600 border-red-300 text-white';
+    if (maxSeverity >= 4) return 'bg-gradient-to-br from-amber-400 to-amber-600 border-amber-300 text-white';
+    return 'bg-gradient-to-br from-green-400 to-green-600 border-green-300 text-white';
   };
   
   // Determine size based on symptoms or active state
@@ -61,6 +62,30 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
     if (region.y < 30) return "bottom";
     return "top";
   };
+
+  // Render appropriate icon based on symptoms
+  const renderIcon = () => {
+    if (!hasSymptoms) {
+      return <CircleDot className="text-white" size={active ? 18 : 14} />;
+    } else {
+      const maxSeverity = Math.max(...regionSymptoms.map(s => {
+        switch (s.severity) {
+          case 'severe': return 8;
+          case 'moderate': return 5;
+          case 'mild': return 3;
+          default: return 1;
+        }
+      }));
+      
+      if (maxSeverity >= 7) {
+        return <AlertCircle className="text-white" size={active ? 18 : 14} />;
+      } else if (maxSeverity >= 4) {
+        return <Activity className="text-white" size={active ? 18 : 14} />;
+      } else {
+        return <Heart className="text-white" size={active ? 18 : 14} />;
+      }
+    }
+  };
   
   return (
     <TooltipProvider>
@@ -83,12 +108,13 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
                 } : {}
               }
             }}
-            whileHover={{ scale: 1.2, boxShadow: '0 0 15px rgba(0, 0, 0, 0.4)' }}
+            whileHover={{ scale: 1.2, boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)' }}
             whileTap={{ scale: 0.9 }}
             onClick={onClick}
           >
+            {renderIcon()}
             {hasSymptoms && (
-              <span className="absolute -top-2 -right-2 bg-white text-gray-800 dark:bg-gray-800 dark:text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold border border-gray-200 dark:border-gray-700">
+              <span className="absolute -top-2 -right-2 bg-white text-gray-800 dark:bg-gray-800 dark:text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold border border-gray-200 dark:border-gray-700 shadow-md">
                 {regionSymptoms.length}
               </span>
             )}
@@ -97,15 +123,36 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
         <TooltipContent 
           side={getTooltipSide()}
           align="center"
-          className="hotspot-tooltip max-w-[200px]"
+          className="hotspot-tooltip max-w-[220px] p-0 overflow-hidden"
           sideOffset={10}
         >
           <div className="p-3 space-y-2">
-            <p className="font-medium">{region.name}</p>
-            <p className="text-xs text-muted-foreground">{region.description}</p>
+            <p className="font-semibold">{region.name}</p>
+            {region.description && (
+              <p className="text-xs text-muted-foreground">{region.description}</p>
+            )}
             {hasSymptoms && (
-              <div className="mt-1 pt-1 border-t border-border/50">
-                <p className="text-xs font-medium">Symptoms: {regionSymptoms.length}</p>
+              <div className="mt-2 pt-2 border-t border-border/50">
+                <p className="text-xs font-medium">
+                  {regionSymptoms.length} {regionSymptoms.length === 1 ? 'symptom' : 'symptoms'} reported
+                </p>
+                <ul className="mt-1 space-y-1">
+                  {regionSymptoms.slice(0, 2).map(symptom => (
+                    <li key={symptom.id} className="text-xs flex items-center">
+                      <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
+                        symptom.severity === 'severe' ? 'bg-red-500' : 
+                        symptom.severity === 'moderate' ? 'bg-amber-500' : 
+                        'bg-green-500'
+                      }`}></span>
+                      {symptom.painType}
+                    </li>
+                  ))}
+                  {regionSymptoms.length > 2 && (
+                    <li className="text-xs text-muted-foreground">
+                      + {regionSymptoms.length - 2} more...
+                    </li>
+                  )}
+                </ul>
               </div>
             )}
           </div>

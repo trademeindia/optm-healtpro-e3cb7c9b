@@ -25,7 +25,7 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
   onHotspotClick
 }) => {
   return (
-    <div className="relative flex justify-center overflow-hidden bg-gray-50 dark:bg-gray-700/20 rounded-lg h-[550px]">
+    <div className="relative flex justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800/30 dark:to-gray-900/30 rounded-lg h-[550px] shadow-inner">
       <motion.div
         className="relative w-full h-full flex justify-center items-center anatomy-model-wrapper"
         style={{
@@ -36,18 +36,19 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
         {/* Anatomical model image */}
         <img
           src={getSystemImage(activeSystem)}
-          alt="Human Anatomy Model"
+          alt={`${activeSystem} Anatomical System`}
           className="model-image max-h-full max-w-full object-contain"
           style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
           onLoad={onImageLoad}
+          draggable={false}
         />
         
         {/* Hotspots - Only render if image is loaded */}
         {imageLoaded && (
-          <AnimatePresence>
-            {hotspots.map((hotspot) => (
+          <AnimatePresence mode="sync">
+            {hotspots.map((hotspot, index) => (
               <HotspotMarker
-                key={hotspot.id}
+                key={hotspot.id || `hotspot-${index}`}
                 hotspot={hotspot}
                 isActive={activeHotspot?.id === hotspot.id}
                 onClick={onHotspotClick}

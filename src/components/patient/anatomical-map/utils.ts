@@ -17,7 +17,7 @@ export const getSystemImage = (system: string): string => {
       return '/lovable-uploads/c259fc72-51f3-49b7-863e-d018adadb9df.png';
     case 'muscular':
     default:
-      return '/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png';
+      return '/lovable-uploads/79c52bff-8e92-4d16-ac74-e5b73ead47d8.png';
   }
 };
 
@@ -56,28 +56,46 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
  * Fine-tune position based on specific body part
  */
 const getAdjustedPosition = (x: number, y: number, location: string) => {
-  // Minor adjustments to better align hotspots with the anatomical regions
+  // Enhanced adjustments to better align hotspots with the anatomical regions
   switch(location) {
     case 'right-shoulder':
     case 'rightShoulder':
-      return { x: x - 2, y: y + 1 };
+      return { x: x - 3, y: y + 1 };
     case 'left-shoulder':
     case 'leftShoulder':
-      return { x: x + 2, y: y + 1 };
+      return { x: x + 3, y: y + 1 };
     case 'right-knee':
     case 'rightKnee':
-      return { x: x - 1, y };
+      return { x: x - 2, y };
     case 'left-knee':
     case 'leftKnee':
-      return { x: x + 1, y };
+      return { x: x + 2, y };
     case 'lower-back':
     case 'lowerBack':
-      return { x, y: y - 1 };
+      return { x, y: y - 2 };
     case 'upper-back':
     case 'upperBack':
-      return { x, y: y - 2 };
+      return { x, y: y - 3 };
     case 'neck':
       return { x, y: y - 1 };
+    case 'chest':
+      return { x, y: y - 1 };
+    case 'abdomen':
+      return { x, y: y + 1 };
+    case 'right-elbow':
+    case 'rightElbow':
+      return { x: x - 3, y };
+    case 'left-elbow':
+    case 'leftElbow':
+      return { x: x + 3, y };
+    case 'right-hand':
+    case 'rightWrist':
+      return { x: x - 2, y: y + 1 };
+    case 'left-hand':
+    case 'leftWrist':
+      return { x: x + 2, y: y + 1 };
+    case 'head':
+      return { x, y: y - 2 };
     default:
       return { x, y };
   }
@@ -117,7 +135,7 @@ const mapSymptomLocationToRegion = (location: string): string => {
  */
 const getHotspotSize = (severity: number): number => {
   // Scale size based on severity (1-10)
-  return Math.max(20, Math.min(40, 20 + (severity * 2)));
+  return Math.max(22, Math.min(40, 22 + (severity * 2)));
 };
 
 /**
