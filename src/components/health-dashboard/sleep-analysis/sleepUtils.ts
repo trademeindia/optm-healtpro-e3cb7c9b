@@ -9,6 +9,7 @@ export interface SleepStage {
 export interface DailySleep {
   date: string;
   durationMinutes: number;
+  sleepMinutes: number;
   qualityScore: number;
 }
 
@@ -18,14 +19,14 @@ export interface ProcessedSleepData {
 }
 
 // Sleep stage names and colors for charts
-export const sleepStageNames = {
+export const sleepStageNames: Record<string | number, string> = {
   'deep': 'Deep Sleep',
   'light': 'Light Sleep',
   'rem': 'REM Sleep',
   'awake': 'Awake'
 };
 
-export const sleepStageColors = {
+export const sleepStageColors: Record<string | number, string> = {
   'deep': '#3b82f6',  // blue
   'light': '#22c55e', // green
   'rem': '#8b5cf6',   // purple
@@ -54,6 +55,7 @@ export const processSleepData = (sleepData: HealthMetric[]): ProcessedSleepData 
     return {
       date: date.toLocaleDateString(),
       durationMinutes: metric.value,
+      sleepMinutes: metric.value, // Add this for compatibility with SleepDurationChart
       qualityScore: metric.metadata?.quality || 0
     };
   });
@@ -124,10 +126,10 @@ export const calculateSleepQuality = (sleepStages: SleepStage[]): number => {
 /**
  * Get descriptive text for sleep quality score
  */
-export const getSleepQualityText = (qualityScore: number): string => {
-  if (qualityScore >= 85) return 'Excellent';
-  if (qualityScore >= 70) return 'Good';
-  if (qualityScore >= 50) return 'Fair';
-  if (qualityScore >= 30) return 'Poor';
-  return 'Very Poor';
+export const getSleepQualityText = (qualityScore: number): { text: string; color: string } => {
+  if (qualityScore >= 85) return { text: 'Excellent', color: 'text-green-500' };
+  if (qualityScore >= 70) return { text: 'Good', color: 'text-blue-500' };
+  if (qualityScore >= 50) return { text: 'Fair', color: 'text-yellow-500' };
+  if (qualityScore >= 30) return { text: 'Poor', color: 'text-orange-500' };
+  return { text: 'Very Poor', color: 'text-red-500' };
 };

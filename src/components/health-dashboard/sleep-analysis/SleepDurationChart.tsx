@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { DailySleep } from './sleepUtils';
 
 interface SleepDurationChartProps {
-  dailySleep: { date: string; sleepMinutes: number }[];
+  dailySleep: DailySleep[];
 }
 
 const SleepDurationChart: React.FC<SleepDurationChartProps> = ({ dailySleep }) => {
