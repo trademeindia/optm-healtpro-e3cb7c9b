@@ -40,19 +40,26 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
     return '';
   };
 
-  const getTooltipSide = (x: number, y: number): "top" | "right" | "bottom" | "left" => {
+  // Get proper tooltip placement based on hotspot position
+  const getTooltipSide = (): "top" | "right" | "bottom" | "left" => {
+    const x = hotspot.x;
+    const y = hotspot.y;
+    
     if (x < 25) return "right";
     if (x > 75) return "left";
     if (y < 30) return "bottom";
     return "top";
   };
 
-  const getTooltipAlign = (x: number, y: number): "start" | "center" | "end" => {
+  const getTooltipAlign = (): "start" | "center" | "end" => {
+    const y = hotspot.y;
+    
     if (y < 25) return "start";
     if (y > 75) return "end";
     return "center";
   };
 
+  // Increase collision padding to avoid tooltip overlap with image edges
   const getCollisionPadding = () => {
     return {
       top: 50,
@@ -72,7 +79,7 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
               getPulseAnimation(hotspot.status),
               hotspot.status === 'critical' ? "w-7 h-7" : "w-6 h-6",
               hotspot.status !== 'normal' ? "ring-2 ring-white ring-opacity-50" : "",
-              activeHotspot === hotspot.id ? "z-10" : "z-0",
+              activeHotspot === hotspot.id ? "z-40" : "z-10",
               editMode && !readOnly ? "hover:ring-2 hover:ring-destructive" : ""
             )}
             style={{
@@ -81,7 +88,8 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
                               '#52C41A',
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
-              borderRadius: '50%'
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)'
             }}
             whileHover={{ scale: 1.3 }}
             whileTap={{ scale: 0.9 }}
@@ -103,12 +111,12 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
           </motion.div>
         </TooltipTrigger>
         <TooltipContent 
-          side={getTooltipSide(hotspot.x, hotspot.y)} 
-          align={getTooltipAlign(hotspot.x, hotspot.y)}
+          side={getTooltipSide()} 
+          align={getTooltipAlign()}
           sideOffset={20}
           avoidCollisions={true}
           collisionPadding={getCollisionPadding()}
-          className="p-0"
+          className="p-0 z-50"
         >
           <div className="w-full max-w-[300px] space-y-2 p-4 overflow-visible">
             <div className="flex items-center gap-2">

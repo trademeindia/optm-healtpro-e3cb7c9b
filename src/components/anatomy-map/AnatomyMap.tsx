@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
-import { BodyRegion, PainSymptom } from './types';
+import React, { useState, useEffect } from 'react';
+import { MinusIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
 import BodyRegionMarker from './BodyRegionMarker';
 import SymptomDialog from './SymptomDialog';
+import { BodyRegion, PainSymptom } from './types';
 
-interface AnatomyMapProps {
-  symptoms: PainSymptom[];
+export interface AnatomyMapProps {
   bodyRegions: BodyRegion[];
+  symptoms: PainSymptom[];
   onAddSymptom: (symptom: PainSymptom) => void;
   onUpdateSymptom: (symptom: PainSymptom) => void;
   onDeleteSymptom: (symptomId: string) => void;
@@ -16,125 +16,109 @@ interface AnatomyMapProps {
 }
 
 const AnatomyMap: React.FC<AnatomyMapProps> = ({
-  symptoms,
   bodyRegions,
+  symptoms,
   onAddSymptom,
   onUpdateSymptom,
   onDeleteSymptom,
   loading
 }) => {
-  const [zoom, setZoom] = useState(1);
-  const [selectedRegion, setSelectedRegion] = useState<BodyRegion | null>(null);
-  const [selectedSymptom, setSelectedSymptom] = useState<PainSymptom | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.1, 1.5));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
-  };
-
-  const handleResetZoom = () => {
-    setZoom(1);
-  };
-
-  const handleRegionClick = (region: BodyRegion) => {
-    setSelectedRegion(region);
-    
-    // Check if there's an active symptom for this region
-    const existingSymptom = symptoms.find(
-      s => s.bodyRegionId === region.id && s.isActive
-    );
-    
-    if (existingSymptom) {
-      setSelectedSymptom(existingSymptom);
-      setIsEditMode(true);
-    } else {
-      setSelectedSymptom(null);
-      setIsEditMode(false);
+  const [activeRegion, setActiveRegion] = useState<BodyRegion | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [showDialog, setShowDialog] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Whenever activeRegion changes, show dialog if a region is selected
+  useEffect(() => {
+    if (activeRegion) {
+      setShowDialog(true);
     }
-    
-    setDialogOpen(true);
+  }, [activeRegion]);
+  
+  // Handle dialog close
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+    // Use a timeout to allow the dialog closing animation to complete
+    setTimeout(() => setActiveRegion(null), 300);
   };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedRegion(null);
-    setSelectedSymptom(null);
+  
+  // Handle zoom in/out
+  const handleZoom = (direction: 'in' | 'out') => {
+    setZoomLevel(prev => {
+      if (direction === 'in') return Math.min(prev + 0.2, 2);
+      return Math.max(prev - 0.2, 0.6);
+    });
   };
-
-  const getActiveSymptomForRegion = (regionId: string): PainSymptom | undefined => {
-    return symptoms.find(symptom => symptom.bodyRegionId === regionId && symptom.isActive);
-  };
-
+  
+  // Reset zoom
+  const handleResetZoom = () => setZoomLevel(1);
+  
   return (
-    <div className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold">Interactive Anatomy Map</h2>
-          <p className="text-sm text-muted-foreground">
-            Click on a body region to add or update your symptoms
-          </p>
-        </div>
-        <div className="flex gap-2 self-end sm:self-auto">
-          <Button variant="outline" size="sm" onClick={handleZoomIn} className="h-9 w-9 p-0">
-            <ZoomIn className="h-4 w-4" />
-            <span className="sr-only">Zoom in</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleZoomOut} className="h-9 w-9 p-0">
-            <ZoomOut className="h-4 w-4" />
-            <span className="sr-only">Zoom out</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleResetZoom} className="h-9 w-9 p-0">
-            <RefreshCw className="h-4 w-4" />
-            <span className="sr-only">Reset zoom</span>
-          </Button>
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex justify-end space-x-2 mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleZoom('out')}
+          disabled={zoomLevel <= 0.6}
+        >
+          <MinusIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleResetZoom}
+          disabled={zoomLevel === 1}
+        >
+          <RefreshCwIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleZoom('in')}
+          disabled={zoomLevel >= 2}
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Button>
       </div>
       
-      <div className="relative w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[600px] bg-muted/20 rounded-lg flex items-center justify-center overflow-hidden border shadow-sm">
+      <div className="flex-1 overflow-hidden anatomy-position-container">
         <div 
-          className="relative flex items-center justify-center"
-          style={{
-            transform: `scale(${zoom})`,
-            transition: 'transform 0.3s ease-out',
-            height: '100%',
-            width: '100%',
-          }}
+          className="anatomy-map-wrapper"
+          style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
         >
-          {/* Anatomy model image */}
-          <img 
-            src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
-            alt="Human anatomy model" 
-            className="max-h-[90%] max-w-[90%] object-contain"
+          <img
+            src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
+            alt="Human body anatomy"
+            className="anatomy-map-image"
+            onLoad={() => setImageLoaded(true)}
           />
           
-          {/* Map region markers */}
-          {bodyRegions.map(region => (
+          {imageLoaded && bodyRegions.map((region) => (
             <BodyRegionMarker
               key={region.id}
               region={region}
-              symptom={getActiveSymptomForRegion(region.id)}
-              onClick={() => handleRegionClick(region)}
+              active={activeRegion?.id === region.id}
+              symptoms={symptoms}
+              onClick={() => setActiveRegion(region)}
             />
           ))}
         </div>
       </div>
       
-      {/* Symptom entry/edit dialog */}
-      <SymptomDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        selectedRegion={selectedRegion}
-        existingSymptom={selectedSymptom}
-        isEditMode={isEditMode}
-        onAdd={onAddSymptom}
-        onUpdate={onUpdateSymptom}
-        onDelete={onDeleteSymptom}
-      />
+      {activeRegion && (
+        <SymptomDialog
+          open={showDialog}
+          onClose={handleCloseDialog}
+          bodyRegion={activeRegion}
+          bodyRegions={bodyRegions}
+          existingSymptoms={symptoms.filter(s => s.bodyRegionId === activeRegion.id)}
+          onAddSymptom={onAddSymptom}
+          onUpdateSymptom={onUpdateSymptom}
+          onDeleteSymptom={onDeleteSymptom}
+          loading={loading}
+        />
+      )}
     </div>
   );
 };

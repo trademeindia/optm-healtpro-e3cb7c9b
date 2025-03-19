@@ -9,28 +9,32 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HotspotMarkerProps } from './types';
-import { getHotspotPosition } from './regions';
 
 const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClick }) => {
-  // Use x and y coordinates directly from the hotspot
-  const position = { x: hotspot.x, y: hotspot.y };
+  // Determine tooltip positioning based on hotspot coordinates
+  const getTooltipSide = (): "top" | "right" | "bottom" | "left" => {
+    if (hotspot.x < 25) return "right";
+    if (hotspot.x > 75) return "left";
+    if (hotspot.y < 30) return "bottom";
+    return "top";
+  };
   
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className="absolute cursor-pointer rounded-full flex items-center justify-center"
+            className="absolute cursor-pointer rounded-full flex items-center justify-center region-marker-transition"
             style={{
-              left: `${position.x}%`,
-              top: `${position.y}%`,
+              left: `${hotspot.x}%`,
+              top: `${hotspot.y}%`,
               width: `${hotspot.size}px`,
               height: `${hotspot.size}px`,
               backgroundColor: isActive ? hotspot.color : 'rgba(255, 255, 255, 0.7)',
               border: `2px solid ${hotspot.color}`,
               boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-              transform: 'translate(-50%, -50%)', // Center the hotspot on its position
-              zIndex: 20 // Ensure hotspots are above the image
+              transform: 'translate(-50%, -50%)', 
+              zIndex: isActive ? 30 : 20
             }}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -46,7 +50,10 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             )}
           </motion.div>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent 
+          side={getTooltipSide()} 
+          className="region-tooltip z-50"
+        >
           <p className="font-medium">{hotspot.label}</p>
         </TooltipContent>
       </Tooltip>

@@ -1,76 +1,95 @@
 
-import React, { useState } from 'react';
-import { BodyRegion, PainSymptom, painSeverityOptions } from './types';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BodyRegion, PainSymptom } from './types';
 
 interface BodyRegionMarkerProps {
   region: BodyRegion;
-  symptom?: PainSymptom;
+  active: boolean;
+  symptoms: PainSymptom[];
   onClick: () => void;
 }
 
-const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, onClick }) => {
-  const [isHovered, setIsHovered] = useState(false);
+const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ 
+  region, 
+  active, 
+  symptoms,
+  onClick 
+}) => {
+  // Check if there are symptoms for this region
+  const regionSymptoms = symptoms.filter(s => s.bodyRegionId === region.id);
+  const hasSymptoms = regionSymptoms.length > 0;
   
-  // Determine marker styling based on symptom severity
-  const getMarkerStyle = () => {
-    if (!symptom) {
-      return 'w-4 h-4 bg-transparent border-2 border-gray-400 hover:border-primary hover:bg-primary/5 dark:border-gray-500 dark:hover:border-primary';
-    }
+  // Determine color based on symptoms
+  const getMarkerColor = () => {
+    if (!hasSymptoms) return 'bg-blue-400 dark:bg-blue-600';
     
-    const severityOption = painSeverityOptions.find(option => option.value === symptom.severity);
-    const sizeClass = symptom.severity === 'severe' ? 'w-6 h-6' : 
-                     symptom.severity === 'moderate' ? 'w-5 h-5' : 'w-4 h-4';
+    // Find max pain level for this region
+    const maxPain = Math.max(...regionSymptoms.map(s => s.painLevel || 0));
     
-    // Use more vibrant colors based on severity
-    const colorClass = symptom.severity === 'severe' ? 'bg-red-500 hover:bg-red-600' : 
-                      symptom.severity === 'moderate' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-yellow-400 hover:bg-yellow-500';
-    
-    return `${sizeClass} ${severityOption?.color || colorClass} border-2 border-white dark:border-gray-200 shadow-md`;
+    if (maxPain >= 7) return 'bg-red-500 dark:bg-red-600';
+    if (maxPain >= 4) return 'bg-amber-500 dark:bg-amber-600';
+    return 'bg-green-500 dark:bg-green-600';
+  };
+  
+  // Determine size based on symptoms or active state
+  const getMarkerSize = () => {
+    if (active) return 'hotspot-size-lg';
+    if (hasSymptoms) return 'hotspot-size-md';
+    return 'hotspot-size-sm';
+  };
+  
+  // Get proper z-index to ensure visibility
+  const getZIndex = () => {
+    if (active) return 'z-30';
+    if (hasSymptoms) return 'z-20';
+    return 'z-10';
   };
   
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div
-            className={`absolute rounded-full cursor-pointer flex items-center justify-center transition-all duration-200 ${getMarkerStyle()} ${
-              isHovered ? 'scale-125 z-10 ring-2 ring-primary ring-opacity-50' : ''
-            }`}
+          <motion.div
+            className={`hotspot-marker ${getMarkerSize()} ${getMarkerColor()} ${getZIndex()}`}
             style={{
               left: `${region.x}%`,
               top: `${region.y}%`,
-              transform: 'translate(-50%, -50%)'
             }}
+            initial={{ scale: 0 }}
+            animate={{ 
+              scale: active ? [1, 1.2, 1] : 1,
+              transition: {
+                scale: active ? {
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  duration: 1
+                } : {}
+              }
+            }}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            data-testid={`region-marker-${region.id}`}
-            aria-label={`${region.name} ${symptom ? '- Has symptoms' : ''}`}
-          />
+          >
+            {hasSymptoms && (
+              <span className="absolute -top-2 -right-2 bg-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold text-gray-800">
+                {regionSymptoms.length}
+              </span>
+            )}
+          </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="right" align="center" className="z-50 max-w-[250px] p-3 bg-card text-card-foreground border border-border shadow-lg">
-          <p className="font-semibold">{region.name}</p>
-          {region.description && (
-            <p className="text-xs text-muted-foreground mt-1">{region.description}</p>
-          )}
-          {symptom ? (
-            <div className="mt-2 space-y-1">
-              <p className="text-sm font-medium">Reported Symptoms:</p>
-              <p className="text-xs"><span className="font-medium">Type:</span> {symptom.painType}</p>
-              <p className="text-xs">
-                <span className="font-medium">Severity:</span> 
-                <span className={`ml-1 ${
-                  symptom.severity === 'severe' ? 'text-red-500 font-semibold' : 
-                  symptom.severity === 'moderate' ? 'text-orange-500' : 'text-yellow-600'
-                }`}>
-                  {symptom.severity}
-                </span>
-              </p>
-              <p className="text-xs mt-1 text-muted-foreground">{symptom.description}</p>
+        <TooltipContent 
+          side="right"
+          align="start"
+          className="hotspot-tooltip max-w-[200px]"
+        >
+          <p className="font-medium">{region.name}</p>
+          <p className="text-xs text-muted-foreground">{region.description}</p>
+          {hasSymptoms && (
+            <div className="mt-1 pt-1 border-t border-border/50">
+              <p className="text-xs font-medium">Symptoms: {regionSymptoms.length}</p>
             </div>
-          ) : (
-            <p className="text-xs mt-1 italic text-muted-foreground">Click to add symptoms</p>
           )}
         </TooltipContent>
       </Tooltip>
