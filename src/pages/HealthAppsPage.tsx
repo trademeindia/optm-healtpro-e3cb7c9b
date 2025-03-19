@@ -76,10 +76,14 @@ const HealthAppsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8">
               <FitnessIntegrations 
-                providers={providers}
-                onConnect={connectProvider}
-                onDisconnect={disconnectProvider}
-                onRefresh={refreshProviderData}
+                // Adapters to ensure the providers match the expected type
+                providers={providers.map(p => ({
+                  ...p,
+                  metrics: p.metrics || ['steps', 'heart_rate'] // Ensure metrics property exists
+                }))}
+                onConnect={(id) => connectProvider(id)}
+                onDisconnect={(id) => disconnectProvider(id)}
+                onRefresh={(id) => refreshProviderData(id)}
               />
             </div>
             

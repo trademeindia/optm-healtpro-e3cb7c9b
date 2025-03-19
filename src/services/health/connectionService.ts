@@ -49,7 +49,7 @@ export class ConnectionService {
             userId: userId,
             provider: 'google_fit',
             isConnected: true,
-            lastSync: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+            lastSync: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // Convert Date to string
           }];
         }
         return [];

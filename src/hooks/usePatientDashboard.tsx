@@ -10,7 +10,7 @@ import { useTreatmentTasks } from './dashboard/useTreatmentTasks';
 export const usePatientDashboard = () => {
   const { 
     providers, 
-    fitnessData, 
+    fitnessData, // This property now exists in the useFitnessIntegration return value
     refreshProviderData 
   } = useFitnessIntegration();
 
