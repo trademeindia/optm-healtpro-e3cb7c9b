@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { BodyRegion, PainSymptom, painSeverityOptions } from './types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface BodyRegionMarkerProps {
   region: BodyRegion;
@@ -38,23 +39,63 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({ region, symptom, on
               top: `${region.y}%`,
               transform: 'translate(-50%, -50%)'
             }}
-            onClick={onClick}
-            onMouseEnter={() => setIsHovered(true)}
+            onClick={() => {
+              // Log interaction for synchronization
+              console.log(`Patient interacted with region: ${region.name}`);
+              onClick();
+            }}
+            onMouseEnter={() => {
+              setIsHovered(true);
+              // Log hover interaction
+              console.log(`Patient hovered over region: ${region.name}`);
+            }}
             onMouseLeave={() => setIsHovered(false)}
             data-testid={`region-marker-${region.id}`}
-          />
+            aria-label={region.name}
+          >
+            {symptom && isHovered && (
+              <span className="absolute -top-6 whitespace-nowrap bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs font-medium shadow-md z-20">
+                {region.name}
+              </span>
+            )}
+          </div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="z-50 max-w-[220px] p-3">
-          <p className="font-semibold">{region.name}</p>
+        <TooltipContent side="right" className="z-50 max-w-[250px] p-3">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="font-semibold">{region.name}</h3>
+            {symptom && (
+              <Badge className={`${
+                symptom.severity === 'severe' ? 'bg-red-500' : 
+                symptom.severity === 'moderate' ? 'bg-orange-500' : 
+                'bg-yellow-500'
+              } text-white`}>
+                {symptom.severity}
+              </Badge>
+            )}
+          </div>
+          
           {region.description && (
             <p className="text-xs text-muted-foreground mt-1">{region.description}</p>
           )}
+          
           {symptom ? (
-            <div className="mt-2">
+            <div className="mt-2 space-y-1">
               <p className="text-sm font-medium">Reported Symptoms:</p>
               <p className="text-xs"><span className="font-medium">Type:</span> {symptom.painType}</p>
-              <p className="text-xs"><span className="font-medium">Severity:</span> {symptom.severity}</p>
+              <p className="text-xs"><span className="font-medium">Last updated:</span> {new Date(symptom.updatedAt).toLocaleString()}</p>
               <p className="text-xs mt-1 text-muted-foreground">{symptom.description}</p>
+              {symptom.triggers && symptom.triggers.length > 0 && (
+                <div className="mt-1">
+                  <p className="text-xs font-medium">Triggers:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {symptom.triggers.map((trigger, idx) => (
+                      <span key={idx} className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                        {trigger}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-xs mt-1 italic">Click to add symptoms</p>

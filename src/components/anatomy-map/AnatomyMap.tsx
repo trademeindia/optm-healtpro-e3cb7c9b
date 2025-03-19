@@ -1,135 +1,131 @@
 
 import React, { useState } from 'react';
-import { BodyRegion, PainSymptom } from './types';
-import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Female, Male } from 'lucide-react';
 import BodyRegionMarker from './BodyRegionMarker';
-import SymptomDialog from './SymptomDialog';
+import { BodyRegion, PainSymptom } from './types'; 
+import { useSymptomSync } from '@/contexts/SymptomSyncContext';
 
 interface AnatomyMapProps {
-  symptoms: PainSymptom[];
   bodyRegions: BodyRegion[];
-  onAddSymptom: (symptom: PainSymptom) => void;
-  onUpdateSymptom: (symptom: PainSymptom) => void;
-  onDeleteSymptom: (symptomId: string) => void;
-  loading: boolean;
+  symptoms: PainSymptom[];
+  onRegionClick: (region: BodyRegion) => void;
+  zoom: number;
 }
 
-const AnatomyMap: React.FC<AnatomyMapProps> = ({
-  symptoms,
-  bodyRegions,
-  onAddSymptom,
-  onUpdateSymptom,
-  onDeleteSymptom,
-  loading
+const AnatomyMap: React.FC<AnatomyMapProps> = ({ 
+  bodyRegions, 
+  symptoms, 
+  onRegionClick,
+  zoom 
 }) => {
-  const [zoom, setZoom] = useState(1);
-  const [selectedRegion, setSelectedRegion] = useState<BodyRegion | null>(null);
-  const [selectedSymptom, setSelectedSymptom] = useState<PainSymptom | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.1, 1.5));
+  const [view, setView] = useState<'front' | 'back'>('front');
+  const { trackRegionView } = useSymptomSync();
+  
+  // Filter regions based on current view
+  const frontRegions = bodyRegions.filter(region => 
+    !region.id.includes('back-') && !region.id.includes('-back')
+  );
+  
+  const backRegions = bodyRegions.filter(region => 
+    region.id.includes('back-') || region.id.includes('-back')
+  );
+  
+  // Function to find symptom for a body region
+  const findSymptomForRegion = (regionId: string) => {
+    return symptoms.find(symptom => symptom.bodyRegionId === regionId);
   };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
-  };
-
-  const handleResetZoom = () => {
-    setZoom(1);
-  };
-
+  
   const handleRegionClick = (region: BodyRegion) => {
-    setSelectedRegion(region);
+    // Track view in real time system
+    trackRegionView(region);
     
-    // Check if there's an active symptom for this region
-    const existingSymptom = symptoms.find(
-      s => s.bodyRegionId === region.id && s.isActive
-    );
-    
-    if (existingSymptom) {
-      setSelectedSymptom(existingSymptom);
-      setIsEditMode(true);
-    } else {
-      setSelectedSymptom(null);
-      setIsEditMode(false);
-    }
-    
-    setDialogOpen(true);
+    // Call parent handler
+    onRegionClick(region);
   };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedRegion(null);
-    setSelectedSymptom(null);
-  };
-
-  const getActiveSymptomForRegion = (regionId: string): PainSymptom | undefined => {
-    return symptoms.find(symptom => symptom.bodyRegionId === regionId && symptom.isActive);
-  };
-
+  
   return (
-    <div className="w-full space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold mb-1">Interactive Anatomy Map</h2>
-          <p className="text-sm text-muted-foreground">
-            Click on a body region to add or update your symptoms
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleZoomIn}>
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleZoomOut}>
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleResetZoom}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      
-      <div className="relative w-full h-[600px] bg-gray-50 dark:bg-gray-800/20 rounded-lg flex items-center justify-center overflow-hidden border">
-        <div 
-          className="relative"
-          style={{
-            transform: `scale(${zoom})`,
-            transition: 'transform 0.3s ease-out',
-          }}
-        >
-          {/* Anatomy model image */}
-          <img 
-            src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
-            alt="Human anatomy model" 
-            className="max-h-[580px] w-auto object-contain"
-          />
+    <div className="w-full">
+      <Tabs 
+        defaultValue="front" 
+        className="w-full" 
+        onValueChange={(value) => setView(value as 'front' | 'back')}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="front" className="flex items-center gap-2">
+              <Male className="h-4 w-4" />
+              Front View
+            </TabsTrigger>
+            <TabsTrigger value="back" className="flex items-center gap-2">
+              <Female className="h-4 w-4" />
+              Back View
+            </TabsTrigger>
+          </TabsList>
           
-          {/* Map region markers */}
-          {bodyRegions.map(region => (
-            <BodyRegionMarker
-              key={region.id}
-              region={region}
-              symptom={getActiveSymptomForRegion(region.id)}
-              onClick={() => handleRegionClick(region)}
-            />
-          ))}
+          <div className="text-sm text-muted-foreground">
+            {symptoms.length} active {symptoms.length === 1 ? 'symptom' : 'symptoms'}
+          </div>
         </div>
-      </div>
-      
-      {/* Symptom entry/edit dialog */}
-      <SymptomDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        selectedRegion={selectedRegion}
-        existingSymptom={selectedSymptom}
-        isEditMode={isEditMode}
-        onAdd={onAddSymptom}
-        onUpdate={onUpdateSymptom}
-        onDelete={onDeleteSymptom}
-      />
+        
+        <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+          <TabsContent value="front" className="mt-0">
+            <div 
+              className="relative h-[600px] w-full flex justify-center"
+              style={{ 
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.3s ease-out'
+              }}
+            >
+              {/* Anatomy front view image */}
+              <img 
+                src="/lovable-uploads/49a33513-51a5-4cbb-b210-a6308cfa91bf.png" 
+                alt="Human anatomy front view" 
+                className="h-full max-h-[600px] w-auto object-contain"
+              />
+              
+              {/* Front view hotspots */}
+              {frontRegions.map(region => (
+                <BodyRegionMarker
+                  key={region.id}
+                  region={region}
+                  symptom={findSymptomForRegion(region.id)}
+                  onClick={() => handleRegionClick(region)}
+                />
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="back" className="mt-0">
+            <div 
+              className="relative h-[600px] w-full flex justify-center"
+              style={{ 
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.3s ease-out'
+              }}
+            >
+              {/* Anatomy back view image */}
+              <img 
+                src="/lovable-uploads/5a2de827-6408-43ae-91c8-4bfd13c1ed17.png" 
+                alt="Human anatomy back view" 
+                className="h-full max-h-[600px] w-auto object-contain"
+              />
+              
+              {/* Back view hotspots */}
+              {backRegions.map(region => (
+                <BodyRegionMarker
+                  key={region.id}
+                  region={region}
+                  symptom={findSymptomForRegion(region.id)}
+                  onClick={() => handleRegionClick(region)}
+                />
+              ))}
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 };
