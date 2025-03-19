@@ -7,7 +7,7 @@
   transition: all 0.2s ease-out;
   border-radius: 50%;
   backdrop-filter: blur(1px);
-  opacity: 0.6; /* More transparent by default */
+  opacity: 0.9; /* More visible by default */
 }
 
 /* Pulsing animation for active hotspots - more subtle */
@@ -52,23 +52,23 @@
   @apply w-7 h-7;
 }
 
-/* Enhanced styling based on severity - using more translucent, unified blue theme */
+/* Enhanced styling based on severity - using more visible colors */
 .hotspot-severity-low {
-  @apply bg-blue-400/40 border border-blue-300/30 text-white;
+  @apply bg-blue-400/80 border border-blue-300 text-white;
 }
 
 .hotspot-severity-medium {
-  @apply bg-blue-500/40 border border-blue-400/30 text-white;
+  @apply bg-blue-500/80 border border-blue-400 text-white;
 }
 
 .hotspot-severity-high {
-  @apply bg-blue-600/40 border border-blue-500/30 text-white;
+  @apply bg-blue-600/80 border border-blue-500 text-white;
 }
 
 .hotspot-active {
-  @apply ring-1 ring-white/30;
+  @apply ring-2 ring-white;
   z-index: 40 !important;
-  opacity: 0.85; /* Slightly more opaque when active */
+  opacity: 1; /* Fully opaque when active */
   box-shadow: 0 0 8px rgba(33, 150, 243, 0.6);
 }
 
@@ -131,7 +131,7 @@
     transform: scale(0.5) translateY(5px);
   }
   100% {
-    opacity: 0.6;
+    opacity: 0.9;
     transform: scale(1) translateY(0);
   }
 }
@@ -142,7 +142,7 @@
 
 /* Hover effect for better interactivity */
 .hotspot-marker:hover {
-  opacity: 0.9;
+  opacity: 1;
   transform: translate(-50%, -50%) scale(1.08);
   box-shadow: 0 0 10px rgba(33, 150, 243, 0.4);
 }

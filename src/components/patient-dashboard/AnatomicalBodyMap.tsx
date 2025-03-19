@@ -17,7 +17,7 @@ const AnatomicalBodyMap: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   
   return (
-    <Card className="h-full">
+    <Card className="h-full overflow-visible">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Anatomical Analysis</CardTitle>
         <HeaderControls 
