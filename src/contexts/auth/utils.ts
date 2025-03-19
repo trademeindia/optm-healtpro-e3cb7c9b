@@ -78,7 +78,7 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
           provider: newProfile.provider as AuthProviderType,
           picture: newProfile.picture,
           // Handle patient_id in a type-safe way
-          patientId: newProfile.patient_id || undefined
+          patientId: newProfile.hasOwnProperty('patient_id') ? newProfile.patient_id : undefined
         };
       }
       
