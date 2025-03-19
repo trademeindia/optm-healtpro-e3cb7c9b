@@ -25,3 +25,12 @@ export const getFlexionProgressColor = (status: 'healthy' | 'weak' | 'overworked
     default: return 'bg-blue-500';
   }
 };
+
+export const getSeverityLabel = (severity: 'low' | 'medium' | 'high') => {
+  switch (severity) {
+    case 'low': return 'Mild';
+    case 'medium': return 'Moderate';
+    case 'high': return 'Severe';
+    default: return 'Unknown';
+  }
+};

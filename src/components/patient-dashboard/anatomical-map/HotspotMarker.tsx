@@ -18,10 +18,10 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className={`absolute w-5 h-5 rounded-full cursor-pointer ${getSeverityColor(issue.severity)} flex items-center justify-center border-2 border-white shadow-md transition-all duration-200 ${
-              isSelected ? 'w-7 h-7 z-10 scale-110' : 
-              isHovered ? 'scale-105' : ''
-            }`}
+            className={`absolute w-5 h-5 rounded-full cursor-pointer ${getSeverityColor(issue.severity)} flex items-center justify-center border-2 ${
+              isSelected ? 'border-white w-7 h-7 z-20 scale-110 shadow-lg' : 
+              isHovered ? 'border-white scale-105 shadow-md' : 'border-white/80 shadow-sm'
+            } transition-all duration-200`}
             style={{
               left: `${issue.location.x}%`,
               top: `${issue.location.y}%`,
@@ -34,12 +34,13 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
             <span className="text-white text-xs font-bold">{issue.id}</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-[200px]">
+        <TooltipContent side="right" className="max-w-[220px] bg-white/95 backdrop-blur-sm z-30">
           <p className="font-semibold">{issue.name}</p>
-          <p className="text-xs">{issue.severity.toUpperCase()} severity</p>
+          <p className="text-xs text-muted-foreground">{issue.severity.toUpperCase()} severity</p>
           {issue.muscleGroup && (
             <p className="text-xs mt-1">Affects: {issue.muscleGroup}</p>
           )}
+          <p className="text-xs mt-1 italic">Click for details</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
