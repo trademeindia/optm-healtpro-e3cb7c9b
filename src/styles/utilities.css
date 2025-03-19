@@ -1,6 +1,4 @@
 
-@tailwind utilities;
-
 @layer utilities {
   .scrollbar-none {
     -ms-overflow-style: none;

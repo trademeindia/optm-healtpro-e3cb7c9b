@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, memo, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AnatomyMap from './AnatomyMap';
@@ -9,43 +9,14 @@ import { PainSymptom } from './types';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
-// Memoize the component to prevent unnecessary re-renders
-const AnatomyMapContainer: React.FC = memo(() => {
+const AnatomyMapContainer: React.FC = () => {
   const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('map');
-  const [initialized, setInitialized] = useState(false);
   
-  // Load saved symptoms from localStorage on component mount
-  useEffect(() => {
-    if (!initialized) {
-      try {
-        const savedSymptoms = localStorage.getItem('pain-symptoms');
-        if (savedSymptoms) {
-          setSymptoms(JSON.parse(savedSymptoms));
-        }
-        setInitialized(true);
-      } catch (error) {
-        console.error('Failed to load symptoms from localStorage:', error);
-      }
-    }
-  }, [initialized]);
-
-  // Save symptoms to localStorage whenever they change
-  useEffect(() => {
-    if (initialized && symptoms.length > 0) {
-      try {
-        localStorage.setItem('pain-symptoms', JSON.stringify(symptoms));
-      } catch (error) {
-        console.error('Failed to save symptoms to localStorage:', error);
-      }
-    }
-  }, [symptoms, initialized]);
-  
-  // Handle adding a new symptom with useCallback to prevent recreation on every render
-  const handleAddSymptom = useCallback((symptom: PainSymptom) => {
+  // Handle adding a new symptom
+  const handleAddSymptom = (symptom: PainSymptom) => {
     setLoading(true);
-    // Use a shorter timeout to improve responsiveness
+    // Simulate API delay
     setTimeout(() => {
       const newSymptom = {
         ...symptom,
@@ -56,45 +27,45 @@ const AnatomyMapContainer: React.FC = memo(() => {
       setSymptoms(prev => [...prev, newSymptom]);
       setLoading(false);
       toast.success('Symptom added successfully');
-    }, 300);
-  }, []);
+    }, 500);
+  };
   
-  // Handle updating an existing symptom with useCallback
-  const handleUpdateSymptom = useCallback((updatedSymptom: PainSymptom) => {
+  // Handle updating an existing symptom
+  const handleUpdateSymptom = (updatedSymptom: PainSymptom) => {
     setLoading(true);
+    // Simulate API delay
     setTimeout(() => {
       setSymptoms(prev => 
         prev.map(s => s.id === updatedSymptom.id ? {...updatedSymptom, updatedAt: new Date().toISOString()} : s)
       );
       setLoading(false);
       toast.success('Symptom updated successfully');
-    }, 300);
-  }, []);
+    }, 500);
+  };
   
-  // Handle deleting a symptom with useCallback
-  const handleDeleteSymptom = useCallback((symptomId: string) => {
+  // Handle deleting a symptom
+  const handleDeleteSymptom = (symptomId: string) => {
     setLoading(true);
+    // Simulate API delay
     setTimeout(() => {
       setSymptoms(prev => prev.filter(s => s.id !== symptomId));
       setLoading(false);
       toast.success('Symptom deleted successfully');
-    }, 300);
-  }, []);
+    }, 500);
+  };
   
-  // Handle toggling a symptom's active state with useCallback
-  const handleToggleActive = useCallback((symptomId: string, isActive: boolean) => {
+  // Handle toggling a symptom's active state
+  const handleToggleActive = (symptomId: string, isActive: boolean) => {
     setLoading(true);
+    // Simulate API delay
     setTimeout(() => {
       setSymptoms(prev => 
         prev.map(s => s.id === symptomId ? {...s, isActive, updatedAt: new Date().toISOString()} : s)
       );
       setLoading(false);
       toast.success(`Symptom ${isActive ? 'activated' : 'deactivated'} successfully`);
-    }, 300);
-  }, []);
-
-  // Memoize the body regions to prevent re-calculation on every render
-  const bodyRegions = React.useMemo(() => getBodyRegions(), []);
+    }, 500);
+  };
   
   return (
     <Card className="col-span-1 lg:col-span-2 h-full">
@@ -102,12 +73,7 @@ const AnatomyMapContainer: React.FC = memo(() => {
         <CardTitle>Anatomical Map</CardTitle>
       </CardHeader>
       <CardContent className="p-0 overflow-hidden">
-        <Tabs 
-          defaultValue="map" 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="h-full flex flex-col"
-        >
+        <Tabs defaultValue="map" className="h-full flex flex-col">
           <TabsList className="grid grid-cols-2 bg-muted/50 mx-4 mt-0 mb-3">
             <TabsTrigger value="map">Anatomy Map</TabsTrigger>
             <TabsTrigger value="history">Symptom History</TabsTrigger>
@@ -116,7 +82,7 @@ const AnatomyMapContainer: React.FC = memo(() => {
             <TabsContent value="map" className="h-full m-0 p-4 pt-0">
               <AnatomyMap
                 symptoms={symptoms}
-                bodyRegions={bodyRegions}
+                bodyRegions={getBodyRegions()}
                 onAddSymptom={handleAddSymptom}
                 onUpdateSymptom={handleUpdateSymptom}
                 onDeleteSymptom={handleDeleteSymptom}
@@ -126,7 +92,7 @@ const AnatomyMapContainer: React.FC = memo(() => {
             <TabsContent value="history" className="h-full m-0 p-4 pt-0">
               <SymptomHistoryContainer 
                 symptoms={symptoms}
-                bodyRegions={bodyRegions}
+                bodyRegions={getBodyRegions()}
                 onUpdateSymptom={handleUpdateSymptom}
                 onDeleteSymptom={handleDeleteSymptom}
                 onToggleActive={handleToggleActive}
@@ -138,9 +104,6 @@ const AnatomyMapContainer: React.FC = memo(() => {
       </CardContent>
     </Card>
   );
-});
-
-// Add display name for better debugging
-AnatomyMapContainer.displayName = 'AnatomyMapContainer';
+};
 
 export default AnatomyMapContainer;
