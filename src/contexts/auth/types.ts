@@ -9,7 +9,7 @@ export interface User {
   metadata?: any;
   patientId?: string;
   provider?: AuthProviderType;
-  picture?: string;
+  picture?: string | null;
 }
 
 export type AuthProviderType = 'email' | 'google' | 'github' | 'apple';

@@ -39,7 +39,7 @@ export const useLoginState = () => {
       // For demo logins, use predefined emails
       let loginEmail = email;
       if (userType === 'receptionist' && email === 'receptionist@example.com') {
-        loginEmail = 'admin@example.com'; // Map to admin email for demo
+        loginEmail = 'receptionist@example.com'; // Keep as is for demo login
       }
       
       const result = await login(loginEmail, password);
@@ -53,7 +53,7 @@ export const useLoginState = () => {
             case 'doctor':
               dashboard = '/dashboard';
               break;
-            case 'admin': // Temporary for receptionist
+            case 'admin': // For receptionist
               dashboard = '/receptionist-dashboard';
               break;
             case 'patient':
@@ -80,7 +80,7 @@ export const useLoginState = () => {
         case 'doctor':
           dashboard = '/dashboard';
           break;
-        case 'admin': // Temporary for receptionist
+        case 'admin': // For receptionist
           dashboard = '/receptionist-dashboard';
           break;
         case 'patient':

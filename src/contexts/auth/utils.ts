@@ -92,7 +92,8 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
       name: data.name || userName || '',
       role: (data.role as UserRole) || 'patient',
       provider: (data.provider as AuthProviderType) || providerInfo,
-      picture: data.picture || userPicture || ''
+      picture: data.picture || userPicture || null,
+      patientId: data.patient_id || undefined
     };
   } catch (error) {
     console.error('Error formatting user:', error);

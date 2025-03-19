@@ -1,33 +1,35 @@
 
 import React from 'react';
-import { Mail } from 'lucide-react';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
 interface EmailInputProps {
   email: string;
   setEmail: (email: string) => void;
-  userType: 'doctor' | 'patient';
+  userType: 'doctor' | 'patient' | 'receptionist';
 }
 
 const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) => {
+  // Set placeholder based on user type
+  const getPlaceholder = () => {
+    if (userType === 'doctor') return 'doctor@example.com';
+    if (userType === 'receptionist') return 'receptionist@example.com';
+    return 'patient@example.com';
+  };
+  
   return (
-    <div className="mb-4">
-      <Label htmlFor="email">Email Address</Label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Mail className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="pl-10"
-          placeholder={userType === 'doctor' ? "doctor@example.com" : "patient@example.com"}
-          required
-        />
-      </div>
+    <div className="space-y-2">
+      <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        Email
+      </label>
+      <Input
+        id="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={getPlaceholder()}
+        autoComplete="email"
+        required
+      />
     </div>
   );
 };
