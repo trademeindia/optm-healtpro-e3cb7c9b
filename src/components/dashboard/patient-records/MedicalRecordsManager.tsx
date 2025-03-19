@@ -402,7 +402,7 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
                             {item.name}
                           </div>
                         </TableCell>
-                        <TableCell>{formatDate(item.date, 'PPP')}</TableCell>
+                        <TableCell>{formatDate(item.date, "MMM d, yyyy")}</TableCell>
                         <TableCell>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                             {item.type}
@@ -489,7 +489,7 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
                             {record.name}
                           </div>
                         </TableCell>
-                        <TableCell>{formatDate(record.date, 'PPP')}</TableCell>
+                        <TableCell>{formatDate(record.date, "MMM d, yyyy")}</TableCell>
                         <TableCell>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                             {record.recordType || record.type}
@@ -576,7 +576,7 @@ export const MedicalRecordsManager: React.FC<MedicalRecordsManagerProps> = ({
                             {report.title}
                           </div>
                         </TableCell>
-                        <TableCell>{formatDate(report.date, 'PPP')}</TableCell>
+                        <TableCell>{formatDate(report.date, "MMM d, yyyy")}</TableCell>
                         <TableCell>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                             {report.fileType}
