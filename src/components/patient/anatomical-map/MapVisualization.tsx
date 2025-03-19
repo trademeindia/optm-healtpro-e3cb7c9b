@@ -33,29 +33,32 @@ const MapVisualization: React.FC<MapVisualizationProps> = ({
           transition: 'scale 0.3s ease-out'
         }}
       >
-        {/* Anatomical model image */}
-        <img
-          src={getSystemImage(activeSystem)}
-          alt={`${activeSystem} Anatomical System`}
-          className="model-image max-h-full max-w-full object-contain"
-          style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
-          onLoad={onImageLoad}
-          draggable={false}
-        />
-        
-        {/* Hotspots - Only render if image is loaded */}
-        {imageLoaded && (
-          <AnimatePresence mode="sync">
-            {hotspots.map((hotspot, index) => (
-              <HotspotMarker
-                key={hotspot.id || `hotspot-${index}`}
-                hotspot={hotspot}
-                isActive={activeHotspot?.id === hotspot.id}
-                onClick={onHotspotClick}
-              />
-            ))}
-          </AnimatePresence>
-        )}
+        {/* Container to ensure hotspots stay within bounds */}
+        <div className="relative w-auto h-auto">
+          {/* Anatomical model image */}
+          <img
+            src={getSystemImage(activeSystem)}
+            alt={`${activeSystem} Anatomical System`}
+            className="model-image max-h-full max-w-full object-contain"
+            style={{ maxHeight: 'calc(100% - 20px)', width: 'auto' }}
+            onLoad={onImageLoad}
+            draggable={false}
+          />
+          
+          {/* Hotspots - Only render if image is loaded */}
+          {imageLoaded && (
+            <AnimatePresence mode="sync">
+              {hotspots.map((hotspot, index) => (
+                <HotspotMarker
+                  key={hotspot.id || `hotspot-${index}`}
+                  hotspot={hotspot}
+                  isActive={activeHotspot?.id === hotspot.id}
+                  onClick={onHotspotClick}
+                />
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
       </motion.div>
     </div>
   );

@@ -3,21 +3,22 @@
 .hotspot-marker {
   @apply absolute flex items-center justify-center cursor-pointer z-10;
   transform: translate(-50%, -50%); /* Center the hotspot on its position */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
   backdrop-filter: blur(2px);
+  opacity: 0.75; /* Make hotspots semi-transparent */
 }
 
 /* Pulsing animation for active hotspots */
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
   }
   70% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
   }
   100% {
     transform: scale(0.95);
@@ -29,69 +30,70 @@
   animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
-/* Enhanced glow effect */
+/* Enhanced glow effect - more subtle and transparent */
 .hotspot-marker::before {
   content: '';
-  @apply absolute inset-0 rounded-full opacity-40;
-  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+  @apply absolute inset-0 rounded-full opacity-25;
+  background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
   z-index: -1;
   transform: scale(1.2);
 }
 
-/* Different size classes for different severity levels */
+/* Different size classes for different severity levels - slightly smaller */
 .hotspot-size-sm {
-  @apply w-8 h-8;
+  @apply w-7 h-7;
 }
 
 .hotspot-size-md {
-  @apply w-10 h-10;
+  @apply w-8 h-8;
 }
 
 .hotspot-size-lg {
-  @apply w-12 h-12;
+  @apply w-9 h-9;
 }
 
-/* Enhanced styling based on severity */
+/* Enhanced styling based on severity - more transparent */
 .hotspot-severity-low {
-  @apply bg-gradient-to-br from-green-400 to-green-600 border-2 border-green-300 text-white;
+  @apply bg-green-400/60 border border-green-300/50 text-white;
 }
 
 .hotspot-severity-medium {
-  @apply bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-amber-300 text-white;
+  @apply bg-amber-400/60 border border-amber-300/50 text-white;
 }
 
 .hotspot-severity-high {
-  @apply bg-gradient-to-br from-red-400 to-red-600 border-2 border-red-300 text-white;
+  @apply bg-red-400/60 border border-red-300/50 text-white;
 }
 
 .hotspot-active {
-  @apply ring-4 ring-white/50;
+  @apply ring-2 ring-white/30;
   z-index: 40 !important;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+  opacity: 0.9; /* Slightly more opaque when active */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
 }
 
 /* Icon styling */
 .hotspot-icon {
-  @apply text-white drop-shadow-md;
+  @apply text-white drop-shadow-sm opacity-90;
 }
 
 /* Label styling */
 .hotspot-label {
-  @apply absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-0.5 rounded whitespace-nowrap;
+  @apply absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/70 px-2 py-0.5 rounded whitespace-nowrap;
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .hotspot-size-sm {
-    @apply w-6 h-6;
+    @apply w-5 h-5;
   }
   
   .hotspot-size-md {
-    @apply w-8 h-8;
+    @apply w-6 h-6;
   }
   
   .hotspot-size-lg {
-    @apply w-10 h-10;
+    @apply w-7 h-7;
   }
 
   .hotspot-icon {
@@ -117,7 +119,7 @@
 
 /* Enhanced tooltip styling */
 .hotspot-tooltip {
-  @apply z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg;
+  @apply z-50 bg-white/90 backdrop-blur-sm shadow-md border border-gray-200 dark:border-gray-700 rounded-lg;
   max-width: 220px !important;
 }
 
@@ -128,21 +130,27 @@
 
 /* Region tooltip styling */
 .region-tooltip {
-  @apply z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700;
+  @apply z-50 bg-white/90 backdrop-blur-sm shadow-md border border-gray-200 dark:border-gray-700;
 }
 
 /* Animation for new hotspots appearing */
 @keyframes hotspot-appear {
   0% {
     opacity: 0;
-    transform: scale(0.5) translateY(10px);
+    transform: scale(0.5) translateY(5px);
   }
   100% {
-    opacity: 1;
+    opacity: 0.75;
     transform: scale(1) translateY(0);
   }
 }
 
 .hotspot-new {
   animation: hotspot-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover effect for better interactivity */
+.hotspot-marker:hover {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
 }

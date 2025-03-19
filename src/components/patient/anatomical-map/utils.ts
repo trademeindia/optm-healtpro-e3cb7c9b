@@ -1,4 +1,3 @@
-
 import { HotSpot } from './types';
 import { SymptomEntry } from '@/contexts/SymptomContext';
 import { anatomicalRegions } from './regions';
@@ -38,11 +37,17 @@ export const symptomsToHotspots = (symptoms: SymptomEntry[]): HotSpot[] => {
     // Ensure proper positioning with fine-tuned adjustments
     const position = getAdjustedPosition(region?.x || 50, region?.y || 50, symptom.location);
     
+    // Constrain position to stay within the image boundaries
+    const constrainedPosition = {
+      x: Math.min(Math.max(position.x, 5), 95), // Keep x between 5% and 95%
+      y: Math.min(Math.max(position.y, 5), 95)  // Keep y between 5% and 95%
+    };
+    
     return {
       id: symptom.id,
       region: regionId,
-      x: position.x, 
-      y: position.y,
+      x: constrainedPosition.x, 
+      y: constrainedPosition.y,
       size: getHotspotSize(symptom.painLevel || 1),
       color: severityColor,
       label: symptom.symptomName,
@@ -60,22 +65,22 @@ const getAdjustedPosition = (x: number, y: number, location: string) => {
   switch(location) {
     case 'right-shoulder':
     case 'rightShoulder':
-      return { x: x - 3, y: y + 1 };
+      return { x: x - 2, y: y + 1 };
     case 'left-shoulder':
     case 'leftShoulder':
-      return { x: x + 3, y: y + 1 };
+      return { x: x + 2, y: y + 1 };
     case 'right-knee':
     case 'rightKnee':
-      return { x: x - 2, y };
+      return { x: x - 1, y };
     case 'left-knee':
     case 'leftKnee':
-      return { x: x + 2, y };
+      return { x: x + 1, y };
     case 'lower-back':
     case 'lowerBack':
-      return { x, y: y - 2 };
+      return { x, y: y - 1 };
     case 'upper-back':
     case 'upperBack':
-      return { x, y: y - 3 };
+      return { x, y: y - 2 };
     case 'neck':
       return { x, y: y - 1 };
     case 'chest':
@@ -84,18 +89,18 @@ const getAdjustedPosition = (x: number, y: number, location: string) => {
       return { x, y: y + 1 };
     case 'right-elbow':
     case 'rightElbow':
-      return { x: x - 3, y };
+      return { x: x - 2, y };
     case 'left-elbow':
     case 'leftElbow':
-      return { x: x + 3, y };
+      return { x: x + 2, y };
     case 'right-hand':
     case 'rightWrist':
-      return { x: x - 2, y: y + 1 };
+      return { x: x - 1, y: y + 1 };
     case 'left-hand':
     case 'leftWrist':
-      return { x: x + 2, y: y + 1 };
+      return { x: x + 1, y: y + 1 };
     case 'head':
-      return { x, y: y - 2 };
+      return { x, y: y - 1 };
     default:
       return { x, y };
   }
@@ -134,8 +139,8 @@ const mapSymptomLocationToRegion = (location: string): string => {
  * Determines hotspot size based on symptom severity
  */
 const getHotspotSize = (severity: number): number => {
-  // Scale size based on severity (1-10)
-  return Math.max(22, Math.min(40, 22 + (severity * 2)));
+  // Scale size based on severity (1-10), but keep sizes smaller overall
+  return Math.max(18, Math.min(30, 18 + (severity * 1.3)));
 };
 
 /**
@@ -143,11 +148,11 @@ const getHotspotSize = (severity: number): number => {
  */
 const getSeverityColor = (severity: number): string => {
   if (severity <= 3) {
-    return 'rgba(52, 211, 153, 0.9)'; // Green for mild
+    return 'rgba(52, 211, 153, 0.6)'; // Green for mild with transparency
   } else if (severity <= 6) {
-    return 'rgba(251, 191, 36, 0.9)'; // Yellow for moderate
+    return 'rgba(251, 191, 36, 0.6)'; // Yellow for moderate with transparency
   } else {
-    return 'rgba(239, 68, 68, 0.9)';  // Red for severe
+    return 'rgba(239, 68, 68, 0.6)';  // Red for severe with transparency
   }
 };
 

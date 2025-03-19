@@ -36,11 +36,11 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
   // Render appropriate icon based on severity
   const renderIcon = () => {
     if (!hotspot.severity || hotspot.severity <= 3) {
-      return <CircleDot className="hotspot-icon" size={isActive ? 18 : 14} />;
+      return <CircleDot className="hotspot-icon" size={isActive ? 16 : 12} />;
     } else if (hotspot.severity <= 6) {
-      return <Activity className="hotspot-icon" size={isActive ? 18 : 14} />;
+      return <Activity className="hotspot-icon" size={isActive ? 16 : 12} />;
     } else {
-      return <AlertCircle className="hotspot-icon" size={isActive ? 18 : 14} />;
+      return <AlertCircle className="hotspot-icon" size={isActive ? 16 : 12} />;
     }
   };
   
@@ -53,11 +53,14 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
             style={{
               left: `${hotspot.x}%`,
               top: `${hotspot.y}%`,
+              backgroundColor: isActive ? 
+                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.6)` :
+                `rgba(${hotspot.severity > 6 ? '239, 68, 68' : hotspot.severity > 3 ? '251, 191, 36' : '52, 211, 153'}, 0.5)`
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ scale: 1, opacity: isActive ? 0.9 : 0.75 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.2, boxShadow: '0 0 12px rgba(255, 255, 255, 0.8)' }}
+            whileHover={{ scale: 1.15, opacity: 1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => onClick(hotspot)}
           >
