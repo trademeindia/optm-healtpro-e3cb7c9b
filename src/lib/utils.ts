@@ -7,13 +7,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDate(date: Date | string, formatString: string): string {
-  // Convert string to Date if necessary
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+export function formatDate(input: Date | string | number, formatString: string): string {
+  // Convert input to Date if necessary
+  let date: Date;
   
-  if (!dateObj || !(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+  if (typeof input === 'string' || typeof input === 'number') {
+    date = new Date(input);
+  } else {
+    date = input;
+  }
+  
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
     return 'Invalid Date';
   }
   
-  return format(dateObj, formatString);
+  return format(date, formatString);
 }
