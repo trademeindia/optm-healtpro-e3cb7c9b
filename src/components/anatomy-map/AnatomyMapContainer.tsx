@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { PainSymptom } from './types';
 import AnatomyMap from './AnatomyMap';
@@ -122,25 +121,29 @@ const AnatomyMapContainer: React.FC = () => {
   };
 
   return (
-    <Card className="w-full shadow-sm border border-gray-200 dark:border-gray-700">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 p-1">
-          <TabsTrigger 
-            value="map" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            Anatomy Map
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            Symptom History
-          </TabsTrigger>
-        </TabsList>
+    <Card className="w-full shadow-sm border-border overflow-hidden">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="border-b border-border">
+          <div className="px-4">
+            <TabsList className="h-12 bg-transparent p-0 w-full justify-start gap-4">
+              <TabsTrigger 
+                value="map" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent h-12 px-4 rounded-none"
+              >
+                Anatomy Map
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent h-12 px-4 rounded-none"
+              >
+                Symptom History
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
         
-        <CardContent className="pt-6">
-          <TabsContent value="map" className="mt-0">
+        <CardContent className="p-6">
+          <TabsContent value="map" className="mt-0 pt-0">
             <AnatomyMap 
               symptoms={symptoms}
               bodyRegions={bodyRegions}
@@ -151,7 +154,7 @@ const AnatomyMapContainer: React.FC = () => {
             />
           </TabsContent>
           
-          <TabsContent value="history" className="mt-0">
+          <TabsContent value="history" className="mt-0 pt-0">
             <SymptomHistoryTable 
               symptoms={symptoms}
               bodyRegions={bodyRegions}

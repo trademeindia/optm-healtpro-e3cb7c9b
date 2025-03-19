@@ -3,32 +3,31 @@ import React from 'react';
 import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
 import { SymptomProvider } from '@/contexts/SymptomContext';
-
-// Create a simple layout component since the imported one isn't available
-const PageLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <div className="min-h-screen bg-background">
-      {children}
-    </div>
-  );
-};
+import Sidebar from '@/components/layout/Sidebar';
 
 const AnatomyMapPage: React.FC = () => {
   return (
-    <PageLayout>
-      <div className="container p-4 mx-auto max-w-7xl">
-        <h1 className="text-2xl font-bold mb-6">Anatomy Map</h1>
-        <p className="text-muted-foreground mb-6">
-          Use this interactive map to track and update your pain symptoms. Select areas where you experience
-          discomfort and provide details to help your healthcare provider understand your condition better.
-        </p>
-        
-        <SymptomProvider>
-          <AnatomyMapContainer />
-          <Toaster position="bottom-right" />
-        </SymptomProvider>
-      </div>
-    </PageLayout>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="container mx-auto px-4 py-6 max-w-7xl">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Anatomy Map</h1>
+              <p className="text-muted-foreground">
+                Use this interactive map to track and update your pain symptoms. Select areas where you experience
+                discomfort and provide details to help your healthcare provider understand your condition better.
+              </p>
+            </div>
+            
+            <SymptomProvider>
+              <AnatomyMapContainer />
+              <Toaster position="bottom-right" />
+            </SymptomProvider>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 };
 

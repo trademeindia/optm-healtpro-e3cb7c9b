@@ -13,6 +13,7 @@
 /* Responsive styles */
 @import './responsive/elements.css';
 @import './responsive/anatomy.css';
+@import './responsive/anatomy-components.css';
 @import './responsive/tabs.css';
 @import './responsive/cards.css';
 @import './responsive/layout.css';

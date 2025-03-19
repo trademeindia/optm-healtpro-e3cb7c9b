@@ -71,40 +71,45 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   };
 
   return (
-    <div className="w-full space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold mb-1">Interactive Anatomy Map</h2>
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold">Interactive Anatomy Map</h2>
           <p className="text-sm text-muted-foreground">
             Click on a body region to add or update your symptoms
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleZoomIn}>
+        <div className="flex gap-2 self-end sm:self-auto">
+          <Button variant="outline" size="sm" onClick={handleZoomIn} className="h-9 w-9 p-0">
             <ZoomIn className="h-4 w-4" />
+            <span className="sr-only">Zoom in</span>
           </Button>
-          <Button variant="outline" size="icon" onClick={handleZoomOut}>
+          <Button variant="outline" size="sm" onClick={handleZoomOut} className="h-9 w-9 p-0">
             <ZoomOut className="h-4 w-4" />
+            <span className="sr-only">Zoom out</span>
           </Button>
-          <Button variant="outline" size="icon" onClick={handleResetZoom}>
+          <Button variant="outline" size="sm" onClick={handleResetZoom} className="h-9 w-9 p-0">
             <RefreshCw className="h-4 w-4" />
+            <span className="sr-only">Reset zoom</span>
           </Button>
         </div>
       </div>
       
-      <div className="relative w-full h-[600px] bg-gray-50 dark:bg-gray-800/20 rounded-lg flex items-center justify-center overflow-hidden border">
+      <div className="relative w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[600px] bg-muted/20 rounded-lg flex items-center justify-center overflow-hidden border shadow-sm">
         <div 
-          className="relative"
+          className="relative flex items-center justify-center"
           style={{
             transform: `scale(${zoom})`,
             transition: 'transform 0.3s ease-out',
+            height: '100%',
+            width: '100%',
           }}
         >
           {/* Anatomy model image */}
           <img 
             src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
             alt="Human anatomy model" 
-            className="max-h-[580px] w-auto object-contain"
+            className="max-h-[90%] max-w-[90%] object-contain"
           />
           
           {/* Map region markers */}
