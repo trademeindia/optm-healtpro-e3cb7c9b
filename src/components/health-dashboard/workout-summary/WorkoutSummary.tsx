@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { HealthMetric, TimeRange } from '@/services/health';
-import WorkoutHeader from './WorkoutHeader';
-import LatestWorkoutDetails from './LatestWorkoutDetails';
-import WorkoutStatistics from './WorkoutStatistics';
-import WorkoutEmptyState from './WorkoutEmptyState';
 import WorkoutLoadingSkeleton from './WorkoutLoadingSkeleton';
+import WorkoutHeader from './WorkoutHeader';
+import WorkoutStatistics from './WorkoutStatistics';
+import LatestWorkoutDetails from './LatestWorkoutDetails';
+import WorkoutEmptyState from './WorkoutEmptyState';
+import { Card } from '@/components/ui/card';
 
 interface WorkoutSummaryProps {
   workoutData: HealthMetric[];
@@ -19,24 +19,22 @@ const WorkoutSummary: React.FC<WorkoutSummaryProps> = ({
   timeRange,
   isLoading
 }) => {
-  // Sort workouts by date, most recent first
-  const latestWorkout = workoutData && workoutData.length > 0 
-    ? workoutData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
-    : null;
-  
   if (isLoading) {
     return <WorkoutLoadingSkeleton />;
   }
+
+  const hasWorkouts = workoutData && workoutData.length > 0;
+  const latestWorkout = hasWorkouts ? workoutData[0] : null;
   
   return (
-    <Card>
+    <Card className="w-full">
       <WorkoutHeader timeRange={timeRange} />
       
-      {workoutData.length > 0 ? (
-        <div className="space-y-4">
-          <LatestWorkoutDetails latestWorkout={latestWorkout} />
+      {hasWorkouts ? (
+        <>
           <WorkoutStatistics workoutData={workoutData} />
-        </div>
+          {latestWorkout && <LatestWorkoutDetails workout={latestWorkout} />}
+        </>
       ) : (
         <WorkoutEmptyState />
       )}

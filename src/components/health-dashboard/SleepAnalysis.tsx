@@ -3,14 +3,18 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { HealthMetric, TimeRange } from '@/services/health';
 import { Moon, Zap } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import SleepStagesChart from './sleep-analysis/SleepStagesChart';
 import SleepDurationChart from './sleep-analysis/SleepDurationChart';
 import SleepMetrics from './sleep-analysis/SleepMetrics';
 import SleepInsights from './sleep-analysis/SleepInsights';
 import NoSleepData from './sleep-analysis/NoSleepData';
-import { processSleepData, calculateAverageSleep, calculateSleepQuality, getSleepQualityText } from './sleep-analysis/sleepUtils';
+import { 
+  processSleepData, 
+  calculateAverageSleep, 
+  calculateSleepQuality, 
+  getSleepQualityText 
+} from './sleep-analysis/sleepUtils';
 
 interface SleepAnalysisProps {
   sleepData: HealthMetric[];

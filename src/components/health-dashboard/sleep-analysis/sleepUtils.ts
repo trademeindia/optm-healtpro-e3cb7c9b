@@ -86,7 +86,7 @@ export const calculateAverageSleep = (dailySleep: DailySleep[]): number => {
   if (dailySleep.length === 0) return 0;
   
   const totalMinutes = dailySleep.reduce((sum, day) => {
-    return sum + (day.value || 0);
+    return sum + (Number(day.value) || 0);
   }, 0);
   
   return Math.round(totalMinutes / dailySleep.length);

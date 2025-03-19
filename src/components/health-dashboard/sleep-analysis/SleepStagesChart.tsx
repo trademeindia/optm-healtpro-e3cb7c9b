@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { sleepStageNames, sleepStageColors } from './sleepUtils';
+import { sleepStageNames, sleepStageColors, SleepStage } from './sleepUtils';
 
 interface SleepStagesChartProps {
-  sleepStages: any[];
+  sleepStages: SleepStage[];
 }
 
 const SleepStagesChart: React.FC<SleepStagesChartProps> = ({ sleepStages }) => {
@@ -28,27 +28,26 @@ const SleepStagesChart: React.FC<SleepStagesChartProps> = ({ sleepStages }) => {
               tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
             />
             <Tooltip 
-              formatter={(value: any, name: any) => {
-                const hours = Math.floor(value / 60);
-                const minutes = value % 60;
-                const stageName = sleepStageNames[parseInt(name)] || name;
+              formatter={(value: any, name: string) => {
+                const hours = Math.floor(Number(value) / 60);
+                const minutes = Number(value) % 60;
+                const stageName = sleepStageNames[name as keyof typeof sleepStageNames] || name;
                 return [`${hours}h ${minutes}m`, stageName];
               }}
               labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
             />
             <Legend 
               formatter={(value) => {
-                const stageNumber = parseInt(value);
-                return sleepStageNames[stageNumber] || value;
+                return sleepStageNames[value as keyof typeof sleepStageNames] || value;
               }}
             />
-            {Object.keys(sleepStageNames).map((stageNumber) => (
+            {Object.keys(sleepStageNames).map((stageKey) => (
               <Bar 
-                key={stageNumber}
-                dataKey={stageNumber}
+                key={stageKey}
+                dataKey={stageKey}
                 stackId="a"
-                fill={sleepStageColors[parseInt(stageNumber)]}
-                name={stageNumber}
+                fill={sleepStageColors[stageKey as keyof typeof sleepStageColors]}
+                name={stageKey}
               />
             ))}
           </BarChart>

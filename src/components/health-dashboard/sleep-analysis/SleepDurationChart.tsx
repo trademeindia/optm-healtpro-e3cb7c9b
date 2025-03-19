@@ -8,12 +8,18 @@ interface SleepDurationChartProps {
 }
 
 const SleepDurationChart: React.FC<SleepDurationChartProps> = ({ dailySleep }) => {
+  // Prepare chart data to use the 'value' field instead of 'sleepMinutes'
+  const chartData = dailySleep.map(sleep => ({
+    ...sleep,
+    sleepMinutes: sleep.value // Map value to sleepMinutes for the chart
+  }));
+
   return (
     <div className="mb-6">
       <h4 className="text-sm font-medium mb-2">Sleep Duration</h4>
       <div className="h-[180px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dailySleep}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis 
               dataKey="date" 
