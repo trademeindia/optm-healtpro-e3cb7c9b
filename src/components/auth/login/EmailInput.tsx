@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 interface EmailInputProps {
   email: string;
   setEmail: (email: string) => void;
-  userType: 'doctor' | 'patient' | 'receptionist';
+  userType: 'doctor' | 'patient' | 'receptionist' | 'admin';
 }
 
 const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) => {
@@ -13,6 +13,7 @@ const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) =>
   const getPlaceholder = () => {
     if (userType === 'doctor') return 'doctor@example.com';
     if (userType === 'receptionist') return 'receptionist@example.com';
+    if (userType === 'admin') return 'admin@example.com';
     return 'patient@example.com';
   };
   

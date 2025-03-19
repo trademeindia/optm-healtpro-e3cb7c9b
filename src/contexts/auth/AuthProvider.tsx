@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -46,18 +45,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     checkSession();
     
-    // Add event listener for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
       
-      // If the user is signed out, make sure we clear the user state
       if (event === 'SIGNED_OUT') {
         setUser(null);
       }
       
-      // If the user is signed in, update the user state
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-        // Import formatUser dynamically to avoid circular dependencies
         const { formatUser } = await import('./utils');
         try {
           const formattedUser = await formatUser(session.user);
@@ -77,74 +72,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [setUser, user]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
-    try {
-      // Handle demo accounts with predefined roles and IDs
-      if (email === 'admin@example.com' && password === 'password123') {
-        const demoUser: User = {
-          id: `demo-admin-${Date.now()}`,
-          email: email,
-          name: 'Admin Demo Account',
-          role: 'admin',
-          provider: 'email',
-          picture: null
-        };
-        
-        setUser(demoUser);
-        toast.success('Admin demo login successful');
-        return demoUser;
-      }
-      else if (email === 'receptionist@example.com' && password === 'password123') {
-        const demoUser: User = {
-          id: `demo-receptionist-${Date.now()}`,
-          email: email,
-          name: 'Receptionist Demo Account',
-          role: 'admin', // Using admin role for receptionist
-          provider: 'email',
-          picture: null
-        };
-        
-        setUser(demoUser);
-        toast.success('Receptionist demo login successful');
-        return demoUser;
-      }
-      else if (email === 'doctor@example.com' && password === 'password123') {
-        const demoUser: User = {
-          id: `demo-doctor-${Date.now()}`,
-          email: email,
-          name: 'Dr. Demo Account',
-          role: 'doctor',
-          provider: 'email',
-          picture: null
-        };
-        
-        setUser(demoUser);
-        toast.success('Demo login successful');
-        return demoUser;
-      }
-      else if (email === 'patient@example.com' && password === 'password123') {
-        const demoUser: User = {
-          id: `demo-patient-${Date.now()}`,
-          email: email,
-          name: 'Patient Demo',
-          role: 'patient',
-          provider: 'email',
-          picture: null,
-          patientId: 'demo-patient-id-123' // Link to patient records
-        };
-        
-        setUser(demoUser);
-        toast.success('Demo login successful');
-        return demoUser;
-      }
+    if (email === 'admin@example.com' && password === 'password123') {
+      const demoUser: User = {
+        id: `demo-admin-${Date.now()}`,
+        email: email,
+        name: 'Admin Demo Account',
+        role: 'admin',
+        provider: 'email',
+        picture: null
+      };
       
-      // Regular login for non-demo users
-      return await loginBase(email, password);
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Login failed. Please check your credentials and try again.');
-      setError(error as Error);
-      return null;
+      setUser(demoUser);
+      toast.success('Admin demo login successful');
+      return demoUser;
     }
+    else if (email === 'receptionist@example.com' && password === 'password123') {
+      const demoUser: User = {
+        id: `demo-receptionist-${Date.now()}`,
+        email: email,
+        name: 'Receptionist Demo Account',
+        role: 'admin',
+        provider: 'email',
+        picture: null
+      };
+      
+      setUser(demoUser);
+      toast.success('Receptionist demo login successful');
+      return demoUser;
+    }
+    else if (email === 'doctor@example.com' && password === 'password123') {
+      const demoUser: User = {
+        id: `demo-doctor-${Date.now()}`,
+        email: email,
+        name: 'Dr. Demo Account',
+        role: 'doctor',
+        provider: 'email',
+        picture: null
+      };
+      
+      setUser(demoUser);
+      toast.success('Demo login successful');
+      return demoUser;
+    }
+    else if (email === 'patient@example.com' && password === 'password123') {
+      const demoUser: User = {
+        id: `demo-patient-${Date.now()}`,
+        email: email,
+        name: 'Patient Demo',
+        role: 'patient',
+        provider: 'email',
+        picture: null,
+        patientId: 'demo-patient-id-123'
+      };
+      
+      setUser(demoUser);
+      toast.success('Demo login successful');
+      return demoUser;
+    }
+    
+    return await loginBase(email, password);
   };
 
   const handleOAuthCallback = async (provider: string, code: string) => {
@@ -160,8 +146,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfile = async (data: Partial<User>): Promise<void> => {
-    // Implementation for update profile
     console.log("Update profile:", data);
+    try {
+      if (!user || !user.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(data)
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      setUser({ ...user, ...data });
+      toast.success('Profile updated successfully');
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      setError(error as Error);
+      toast.error(error.message || 'Failed to update profile');
+      throw error;
+    }
   };
 
   const clearError = () => {

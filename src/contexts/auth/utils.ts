@@ -95,8 +95,8 @@ export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<Use
       role: (data.role as UserRole) || 'patient',
       provider: (data.provider as AuthProviderType) || providerInfo,
       picture: data.picture || userPicture || null,
-      // Handle patient_id in a type-safe way - use optional chaining
-      patientId: data.patient_id || undefined
+      // Handle patient_id in a type-safe way - use optional chaining or hasOwnProperty
+      patientId: data.hasOwnProperty('patient_id') ? data.patient_id : undefined
     };
   } catch (error) {
     console.error('Error formatting user:', error);
