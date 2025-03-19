@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircleAlert, ZoomIn, ZoomOut } from 'lucide-react';
@@ -18,33 +17,32 @@ const AnatomicalBodyMap: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<HealthIssue | null>(null);
   
-  // Updated health issues for muscular system
   const healthIssues: HealthIssue[] = [
     {
       id: '1',
       name: 'Rotator Cuff Tear',
-      location: { x: 53, y: 25 },
+      location: { x: 32, y: 20 },
       severity: 'medium',
       description: 'Partial tear in the right rotator cuff showing inflammation and reduced strength.'
     },
     {
       id: '2',
       name: 'Lower Back Strain',
-      location: { x: 50, y: 53 },
+      location: { x: 50, y: 47 },
       severity: 'high',
       description: 'Muscle strain in the erector spinae muscles, causing restricted movement and acute pain.'
     },
     {
       id: '3',
       name: 'Quadriceps Tendinitis',
-      location: { x: 43, y: 68 },
+      location: { x: 37, y: 65 },
       severity: 'low',
       description: 'Mild inflammation of the quadriceps tendon with some discomfort during extension.'
     },
     {
       id: '4',
       name: 'Biceps Tendonitis',
-      location: { x: 36, y: 38 },
+      location: { x: 30, y: 32 },
       severity: 'medium',
       description: 'Inflammation in the long head of the biceps tendon causing pain during flexion.'
     }
@@ -95,14 +93,12 @@ const AnatomicalBodyMap: React.FC = () => {
           className="relative w-full h-[400px] flex items-center justify-center overflow-hidden"
           style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
         >
-          {/* Updated anatomical model image with the new muscular system image */}
           <img 
             src="/lovable-uploads/6c831c22-d881-442c-88a6-7800492132b4.png" 
             alt="Muscular system anatomical model" 
             className="h-full max-h-[390px] w-auto object-contain"
           />
           
-          {/* Health issue markers */}
           <TooltipProvider>
             {healthIssues.map((issue) => (
               <Tooltip key={issue.id}>
@@ -129,7 +125,6 @@ const AnatomicalBodyMap: React.FC = () => {
           </TooltipProvider>
         </div>
         
-        {/* Selected issue details */}
         {selectedIssue && (
           <div className="absolute bottom-3 left-3 right-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-start">
