@@ -1,29 +1,22 @@
-
 import React from 'react';
 import { Bell, Search, Settings, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 interface HeaderProps {
   className?: string;
 }
-
-const Header: React.FC<HeaderProps> = ({ className }) => {
-  const { user, logout } = useAuth();
-
+const Header: React.FC<HeaderProps> = ({
+  className
+}) => {
+  const {
+    user,
+    logout
+  } = useAuth();
   const handleLogout = async () => {
     // Disable the logout button during logout process
     const button = document.querySelector('[data-logout-button]') as HTMLButtonElement;
     if (button) button.disabled = true;
-    
     try {
       await logout();
     } catch (error) {
@@ -32,18 +25,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       if (button) button.disabled = false;
     }
   };
-
-  return (
-    <header className={cn("w-full h-16 flex items-center justify-between px-4 md:px-6 glass-morphism border-b sticky top-0 z-10", className)}>
+  return <header className={cn("w-full h-16 flex items-center justify-between px-4 md:px-6 glass-morphism border-b sticky top-0 z-10", className)}>
       <div className="flex items-center">
-        <h1 className="text-lg md:text-2xl font-bold text-gradient mr-2 md:mr-4">OPTM HealPro</h1>
+        <h1 className="text-lg md:text-2xl font-bold text-gradient mr-2 md:mr-4">OPTM Health †</h1>
         <div className="hidden md:flex items-center bg-white/50 dark:bg-black/20 rounded-lg px-3 py-1.5 ml-8">
           <Search className="w-4 h-4 text-muted-foreground mr-2" />
-          <input
-            type="text"
-            placeholder="Search patients, treatments, etc."
-            className="bg-transparent border-none outline-none text-sm w-64"
-          />
+          <input type="text" placeholder="Search patients, treatments, etc." className="bg-transparent border-none outline-none text-sm w-64" />
         </div>
       </div>
       
@@ -76,19 +63,13 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={handleLogout} 
-              data-logout-button
-              className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500"
-            >
+            <DropdownMenuItem onClick={handleLogout} data-logout-button className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
