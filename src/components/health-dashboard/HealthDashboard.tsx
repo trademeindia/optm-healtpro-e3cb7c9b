@@ -1,18 +1,15 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import { useAuth } from '@/contexts/auth';
 import { useHealthData } from '@/hooks/useHealthData';
-import { TimeRange } from '@/services/healthDataService';
-import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
+import { TimeRange } from '@/services/health';
 import HealthMetricsOverview from './HealthMetricsOverview';
-import ActivityTimeline from './ActivityTimeline';
-import SleepAnalysis from './SleepAnalysis';
-import WorkoutSummary from './WorkoutSummary';
 import HeartRateMonitor from './HeartRateMonitor';
+import WorkoutSummary from './WorkoutSummary';
+import SleepAnalysis from './SleepAnalysis';
+import ActivityTimeline from './ActivityTimeline';
 import HealthSync from './HealthSync';
-import { RefreshCw, Calendar, History } from 'lucide-react';
 
 interface HealthDashboardProps {
   className?: string;
