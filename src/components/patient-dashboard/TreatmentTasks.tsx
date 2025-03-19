@@ -16,27 +16,33 @@ const TreatmentTasks: React.FC<TreatmentTasksProps> = ({ tasks }) => {
       title: 'Take medication',
       description: 'Ibuprofen 400mg after meals',
       dueDate: new Date().toISOString(),
+      dueTime: '08:00',
       priority: 'high',
       status: 'pending',
-      type: 'medication'
+      type: 'medication',
+      category: 'Pain Management'
     },
     {
       id: '2',
       title: 'Physical therapy exercises',
       description: 'Complete shoulder mobility routine',
       dueDate: new Date().toISOString(),
+      dueTime: '14:00',
       priority: 'medium',
       status: 'pending',
-      type: 'exercise'
+      type: 'exercise',
+      category: 'Rehabilitation'
     },
     {
       id: '3',
       title: 'Blood test follow-up',
       description: 'Review results with Dr. Johnson',
       dueDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+      dueTime: '10:30',
       priority: 'medium',
       status: 'pending',
-      type: 'checkup'
+      type: 'checkup',
+      category: 'Lab Work'
     }
   ];
 
