@@ -22,7 +22,7 @@ interface GoogleFitConnectProps {
 }
 
 // Google icon component
-export const GoogleIcon: React.FC<{ className?: string }> = ({ className }) => (
+const GoogleIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg 
     className={className} 
     xmlns="http://www.w3.org/2000/svg" 
@@ -54,14 +54,14 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
 
     setIsConnecting(true);
     try {
-      // Redirect to our edge function that will handle the OAuth flow
-      const redirectUrl = `${window.location.origin}/api/connect-google-fit`;
+      // Use the edge function directly via Supabase - this is the core fix
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://xjxxuqqyjqzgmvtgrpgv.supabase.co"}/functions/v1/connect-google-fit`;
       
       // Store current URL in localStorage to redirect back after auth
       localStorage.setItem('healthAppRedirectUrl', window.location.href);
       
       // Initiate Google OAuth flow
-      window.location.href = `${redirectUrl}?userId=${user.id}`;
+      window.location.href = `${functionUrl}?userId=${user.id}`;
     } catch (error) {
       console.error('Error connecting to Google Fit:', error);
       toast.error("Failed to connect to Google Fit. Please try again.");
