@@ -10,6 +10,8 @@ import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
+import ComprehensiveHealthDashboard from '@/components/health-dashboard/ComprehensiveHealthDashboard';
+import { useHealthData } from '@/hooks/useHealthData';
 
 const HealthAppsPage: React.FC = () => {
   const { 
@@ -18,6 +20,13 @@ const HealthAppsPage: React.FC = () => {
     disconnectProvider, 
     refreshProviderData 
   } = useFitnessIntegration();
+  
+  const {
+    healthData,
+    isLoading,
+    lastSynced,
+    syncHealthData
+  } = useHealthData();
   
   const location = useLocation();
   
@@ -89,7 +98,16 @@ const HealthAppsPage: React.FC = () => {
             </div>
           </Alert>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 gap-6">
+            <ComprehensiveHealthDashboard 
+              healthData={healthData}
+              isLoading={isLoading}
+              lastSynced={lastSynced}
+              onSyncClick={syncHealthData}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
             <div className="lg:col-span-8">
               <FitnessIntegrations 
                 providers={providers}
