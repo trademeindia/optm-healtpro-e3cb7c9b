@@ -121,7 +121,7 @@ export const useLoginState = () => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
+  const handleSocialLogin = async (provider: 'google') => {
     try {
       setIsSubmitting(true);
       console.log(`Initiating ${provider} OAuth login flow for ${userType} role`);

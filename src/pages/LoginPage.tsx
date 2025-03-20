@@ -86,10 +86,9 @@ const LoginPage: React.FC = () => {
                   />
                 ) : (
                   <>
-                    {/* Social Login Options */}
+                    {/* Social Login Options - Now only Google */}
                     <SocialLoginButtons 
                       onGoogleLogin={() => handleSocialLogin('google')}
-                      onSocialLogin={handleSocialLogin}
                       isSubmitting={isSubmitting}
                     />
                     
