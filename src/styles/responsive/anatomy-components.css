@@ -132,3 +132,13 @@
     @apply text-xs px-1.5 py-0.5;
   }
 }
+
+/* Fix dropdown positioning and visibility */
+.select-content {
+  @apply z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700;
+}
+
+/* Ensure dropdowns are always on top */
+[data-radix-popper-content-wrapper] {
+  @apply z-50 !important;
+}

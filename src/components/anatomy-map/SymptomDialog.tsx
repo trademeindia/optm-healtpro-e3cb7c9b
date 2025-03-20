@@ -168,7 +168,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                           <SelectValue placeholder="Select severity" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md">
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md z-50">
                         {painSeverityOptions.map(option => (
                           <SelectItem 
                             key={option.value} 
@@ -202,7 +202,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                           <SelectValue placeholder="Select pain type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md">
+                      <SelectContent position="popper" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md z-50">
                         {painTypeOptions.map(option => (
                           <SelectItem 
                             key={option.value} 
@@ -281,6 +281,7 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                 <Button 
                   type="submit"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  disabled={loading}
                 >
                   {isEditMode ? 'Update' : 'Save'}
                 </Button>
