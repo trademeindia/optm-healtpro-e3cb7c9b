@@ -65,6 +65,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
           'Sign in'
         )}
       </Button>
+      
+      <p className="text-xs text-center text-muted-foreground mt-2">
+        {userType === 'doctor' || userType === 'receptionist' || userType === 'patient' ? (
+          <>
+            Demo credentials available: <span className="font-medium">{userType}@example.com / password123</span>
+          </>
+        ) : (
+          'Use the login form to sign in with your credentials'
+        )}
+      </p>
     </motion.form>
   );
 };

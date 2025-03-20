@@ -18,16 +18,17 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       // Check if using demo credentials
       const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
       const isDemoPatient = email === 'patient@example.com' && password === 'password123';
+      const isDemoReceptionist = email === 'receptionist@example.com' && password === 'password123';
       
-      if (isDemoDoctor || isDemoPatient) {
+      if (isDemoDoctor || isDemoPatient || isDemoReceptionist) {
         console.log('Using demo account login');
         
         // Create a demo user without actually authenticating
         const demoUser: User = {
-          id: isDemoDoctor ? 'demo-doctor-id' : 'demo-patient-id',
+          id: isDemoDoctor ? 'demo-doctor-id' : isDemoPatient ? 'demo-patient-id' : 'demo-receptionist-id',
           email: email,
-          name: isDemoDoctor ? 'Demo Doctor' : 'Demo Patient',
-          role: isDemoDoctor ? 'doctor' : 'patient',
+          name: isDemoDoctor ? 'Demo Doctor' : isDemoPatient ? 'Demo Patient' : 'Demo Receptionist',
+          role: isDemoDoctor ? 'doctor' : isDemoPatient ? 'patient' : 'receptionist',
           provider: 'email',
           picture: null
         };
@@ -36,7 +37,9 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
         
         // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
         setTimeout(() => {
-          const dashboard = isDemoDoctor ? '/dashboard' : '/patient-dashboard';
+          const dashboard = isDemoDoctor ? '/dashboard/doctor' : 
+                           isDemoPatient ? '/dashboard/patient' : 
+                           '/dashboard/receptionist';
           console.log(`Navigating to ${dashboard}`);
           navigate(dashboard);
         }, 100);
@@ -52,6 +55,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
 
       if (error) {
         console.error('Authentication error:', error);
+        toast.error(error.message || 'Login failed');
         throw error;
       }
 
@@ -65,6 +69,13 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       }
       
       toast.success('Login successful');
+      
+      // Navigate to the appropriate dashboard based on user role
+      const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
+                        formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
+                        '/dashboard/patient';
+      
+      setTimeout(() => navigate(dashboard), 100);
       
       return formattedUser;
     } catch (error: any) {

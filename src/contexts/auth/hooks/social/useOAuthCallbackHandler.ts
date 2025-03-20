@@ -10,118 +10,63 @@ type UseOAuthCallbackHandlerProps = {
 };
 
 export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCallbackHandlerProps) => {
-  const handleOAuthCallback = async (provider: string, code: string, user: User | null = null): Promise<void> => {
+  const handleOAuthCallback = async (provider: string, code: string, currentUser: User | null) => {
     setIsLoading(true);
+    
     try {
-      console.log(`Processing OAuth callback for ${provider}`, user ? "User found" : "No user", "code length:", code.length);
+      console.log(`Processing OAuth callback for ${provider} with code: ${code ? 'provided' : 'missing'}`);
       
-      // Ensure we have a code to exchange
       if (!code) {
-        console.error("No authorization code provided in callback");
-        toast.error("Authentication failed: Missing authorization code", {
-          duration: 5000
-        });
-        navigate('/login');
-        return;
+        console.error('No authorization code provided');
+        toast.error('Authentication failed: No authorization code provided');
+        throw new Error('No authorization code provided');
       }
       
-      // Check for existing session since OAuth might have already completed
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      // Get the session from URL parameters (Supabase handles this automatically)
+      const { data, error } = await supabase.auth.getSession();
       
-      if (sessionError) {
-        console.error("Session check error:", sessionError);
-        toast.error("Authentication error: Unable to verify session", {
-          duration: 5000
-        });
-        navigate('/login');
-        return;
+      if (error) {
+        console.error('Error getting session:', error);
+        toast.error(`Authentication failed: ${error.message}`);
+        throw error;
       }
       
-      console.log("Session check on callback:", sessionData?.session ? "Session exists" : "No session");
+      let user: User | null = null;
       
-      if (sessionData?.session) {
-        // We have a session, try to get the user profile
-        try {
-          const formattedUser = await formatUser(sessionData.session.user);
+      // If we have a session, format the user
+      if (data.session) {
+        console.log('Session found in callback, formatting user');
+        user = await formatUser(data.session.user);
+        
+        if (user) {
+          console.log(`User successfully authenticated: ${user.email} (${user.role})`);
+          toast.success('Successfully signed in!');
           
-          if (formattedUser) {
-            console.log("Successfully retrieved user after OAuth flow:", formattedUser);
-            toast.success(`Successfully signed in with ${provider}!`, {
-              duration: 3000
-            });
-            
-            // Navigate based on user role
-            navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-            return;
-          } else {
-            console.error("Failed to format user from session, creating default profile");
-            
-            // Create default profile if formatUser fails but session exists
-            const defaultRole = 'patient';
-            
-            const { data: newProfile, error: insertError } = await supabase
-              .from('profiles')
-              .insert({
-                id: sessionData.session.user.id,
-                email: sessionData.session.user.email,
-                name: sessionData.session.user.user_metadata?.full_name || 
-                      sessionData.session.user.user_metadata?.name || 
-                      sessionData.session.user.email?.split('@')[0] || 'User',
-                role: defaultRole,
-                provider: provider as any,
-                picture: sessionData.session.user.user_metadata?.avatar_url || ''
-              })
-              .select()
-              .single();
-              
-            if (insertError) {
-              console.error('Error creating user profile:', insertError);
-              toast.error('Failed to create user profile', {
-                duration: 5000
-              });
-              navigate('/login');
-              return;
-            }
-            
-            console.log("Created new profile for OAuth user:", newProfile);
-            toast.success(`Successfully signed in with ${provider}!`, {
-              duration: 3000
-            });
-            
-            navigate('/patient-dashboard');
-            return;
-          }
-        } catch (formatError) {
-          console.error("Error formatting user from session:", formatError);
+          // Navigate to the appropriate dashboard based on user role
+          const dashboard = user.role === 'doctor' ? '/dashboard/doctor' : 
+                            user.role === 'receptionist' ? '/dashboard/receptionist' : 
+                            '/dashboard/patient';
+                            
+          setTimeout(() => navigate(dashboard), 100);
+        } else {
+          console.error('User profile not found after OAuth');
+          toast.error('Authentication failed: User profile not found');
         }
+      } else {
+        console.error('No session found after OAuth callback');
+        toast.error('Authentication failed: No session found');
+        throw new Error('No session found after OAuth callback');
       }
       
-      // If we have a user object passed in, use that
-      if (user) {
-        toast.success(`Successfully signed in with ${provider}!`, {
-          duration: 3000
-        });
-        navigate(user.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-        return;
-      }
-      
-      // If we reach here, we don't have a session yet, so we need to process the code
-      // This should already be handled by Supabase's internal handling through URL params
-      console.log("No session found with provided code, returning to login");
-      toast.info('Please try signing in again', {
-        duration: 5000
-      });
-      navigate('/login');
+      return user;
     } catch (error: any) {
-      console.error(`${provider} OAuth callback error:`, error);
-      toast.error('Authentication failed. Please try again.', {
-        duration: 5000
-      });
-      navigate('/login');
+      console.error(`Error processing OAuth callback: ${error.message}`, error);
+      toast.error(`Authentication failed: ${error.message}`);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return { handleOAuthCallback };
 };

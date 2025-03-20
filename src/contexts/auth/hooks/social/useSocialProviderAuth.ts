@@ -63,27 +63,24 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
 
       if (error) {
         // Enhanced error diagnostics with more specific messages
+        let errorMessage = `${provider} authentication failed: ${error.message}`;
+        
         if (error.message.includes('provider is not enabled')) {
-          toast.error(`${provider} login is not available. Please check Supabase Authentication settings.`, {
-            duration: 5000
-          });
+          errorMessage = `${provider} login is not available. Please check Supabase Authentication settings.`;
           console.error(`Error: ${provider} provider is not enabled in Supabase Authentication > Providers.`);
         } else if (error.message.includes('missing OAuth secret')) {
-          toast.error(`${provider} login configuration is incomplete.`, {
-            duration: 5000
-          });
+          errorMessage = `${provider} login configuration is incomplete.`;
           console.error(`Error: ${provider} provider is missing OAuth Client ID or Client Secret in Supabase Authentication > Providers.`);
         } else if (error.message.includes('requested url is invalid')) {
-          toast.error(`Authentication configuration error. Invalid redirect URL.`, {
-            duration: 5000
-          });
+          errorMessage = `Authentication configuration error. Invalid redirect URL.`;
           console.error(`Error: Your Supabase project needs Site URL and Redirect URLs configured in Authentication > URL Configuration. Check that ${redirectTo} is added as a valid redirect URL.`);
         } else {
-          toast.error(`${provider} authentication failed: ${error.message}`, {
-            duration: 5000
-          });
           console.error(`OAuth error with ${provider}:`, error);
         }
+        
+        toast.error(errorMessage, {
+          duration: 5000
+        });
         throw error;
       }
       
