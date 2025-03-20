@@ -64,7 +64,7 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
     setPatientData(prev => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] || {}),
         [field]: value
       }
     }));
