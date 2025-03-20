@@ -2,17 +2,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
-import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
 import { useHealthMetrics } from './dashboard/useHealthMetrics';
 import { useActivityData } from './dashboard/useActivityData';
 import { useAppointments } from './dashboard/useAppointments';
 import { useTreatmentTasks } from './dashboard/useTreatmentTasks';
-import { HealthMetric } from '@/types/health';
-import { FitnessData } from '@/hooks/useFitnessIntegration';
 import { useAppointmentStatus } from './calendar/useAppointmentStatus';
+import { mockBiomarkers } from '@/data/mockBiomarkerData';
+import { calculateBiologicalAge } from '@/utils/biologicalAgeCalculator';
 
 // Define a default FitnessData object to use as fallback
-const defaultFitnessData: FitnessData = {
+const defaultFitnessData = {
   steps: {
     data: [],
     summary: { total: 0, average: 0 }
@@ -31,6 +30,8 @@ export const usePatientDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dataInitialized, setDataInitialized] = useState(false);
+  const [biologicalAge, setBiologicalAge] = useState(0);
+  const [chronologicalAge, setChronologicalAge] = useState(35); // Default age
 
   // Try-catch around integration to prevent dashboard from crashing
   const { 
@@ -58,6 +59,13 @@ export const usePatientDashboard = () => {
     handleCancelAppointment: cancelAppointment,
     handleConfirmAppointment: confirmAppointment
   } = useAppointmentStatus();
+
+  // Calculate biological age based on biomarkers
+  useEffect(() => {
+    // Calculate biological age using the utility function
+    const calculatedAge = calculateBiologicalAge(chronologicalAge, mockBiomarkers);
+    setBiologicalAge(calculatedAge);
+  }, [chronologicalAge]);
 
   // Initialize data with a more reliable approach
   useEffect(() => {
@@ -164,8 +172,8 @@ export const usePatientDashboard = () => {
     upcomingAppointments,
     healthMetrics,
     hasConnectedApps,
-    biologicalAge: mockBiologicalAge,
-    chronologicalAge: mockChronologicalAge,
+    biologicalAge,
+    chronologicalAge,
     handleConfirmAppointment: (id: string) => handleAppointmentAction(id, 'confirm'),
     handleCancelAppointment: (id: string) => handleAppointmentAction(id, 'cancel'),
     handleRescheduleAppointment: (id: string) => handleAppointmentAction(id, 'reschedule'),

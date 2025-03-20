@@ -10,6 +10,8 @@ import {
   PolarAngleAxis,
   Legend
 } from 'recharts';
+import { getBiologicalAgeAnalysis, getBiomarkerRecommendations } from '@/utils/biologicalAgeCalculator';
+import { mockBiomarkers } from '@/data/mockBiomarkerData';
 
 interface EnhancedBiologicalAgeMeterProps {
   biologicalAge: number;
@@ -22,12 +24,12 @@ const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({
   chronologicalAge,
   className
 }) => {
-  const ageDifference = chronologicalAge - biologicalAge;
-  const yearsYounger = ageDifference > 0;
+  // Get advanced analysis from our utility
+  const analysis = getBiologicalAgeAnalysis(biologicalAge, chronologicalAge);
   
   // Calculate health score from 0-100 based on the difference
   // If biological age is lower than chronological age, that's good
-  const healthScore = Math.min(100, Math.max(0, 50 + (ageDifference * 5)));
+  const healthScore = Math.min(100, Math.max(0, 50 + (analysis.difference * (analysis.isYounger ? 5 : -5))));
   
   // Data for the radial chart
   const data = [
@@ -52,7 +54,10 @@ const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({
   
   const healthStatus = getHealthStatus();
   
-  // Age comparison factors
+  // Get recommendations based on biomarkers
+  const recommendations = getBiomarkerRecommendations(mockBiomarkers);
+  
+  // Age comparison factors based on biomarker categories
   const factors = [
     { name: 'Cardiovascular Health', score: Math.round(healthScore * 0.9) },
     { name: 'Metabolic Efficiency', score: Math.round(healthScore * 1.1) },
@@ -126,15 +131,13 @@ const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({
             
             <p className="mt-3 font-semibold">
               Your body is functioning like {' '}
-              <span className={yearsYounger ? 'text-green-500' : 'text-amber-500'}>
-                {yearsYounger ? 'someone younger' : 'someone older'}
+              <span className={analysis.isYounger ? 'text-green-500' : 'text-amber-500'}>
+                {analysis.isYounger ? 'someone younger' : 'someone older'}
               </span>
             </p>
             
             <p className="text-sm text-muted-foreground">
-              {yearsYounger
-                ? `You're ${Math.abs(ageDifference)} years younger biologically!`
-                : `You're ${Math.abs(ageDifference)} years older biologically.`}
+              {analysis.message}
             </p>
             
             <div className="mt-4">
@@ -151,6 +154,20 @@ const EnhancedBiologicalAgeMeter: React.FC<EnhancedBiologicalAgeMeterProps> = ({
                   </div>
                 ))}
               </div>
+              
+              {recommendations.length > 0 && (
+                <div className="mt-4 text-left">
+                  <p className="text-xs font-medium mb-1">Recommendations:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {recommendations.map((rec, i) => (
+                      <li key={i} className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary mt-1.5 mr-1.5"></span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
