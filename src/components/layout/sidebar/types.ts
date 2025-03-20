@@ -6,6 +6,9 @@ export interface MenuItem {
   label: string;
   path: string;
   description: string;
+  badge?: string;
+  badgeColor?: 'red' | 'green' | 'blue' | string;
+  children?: MenuItem[];
 }
 
 export interface SidebarProps {

@@ -58,7 +58,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
       <div className="flex-1 space-y-1 px-3 overflow-y-auto scrollbar-thin">
         {menuItems.map((item) => (
           <React.Fragment key={item.label}>
-            {item.children ? (
+            {item.children && item.children.length > 0 ? (
               <div className="space-y-1">
                 <button
                   onClick={() => toggleSubMenu(item.label)}

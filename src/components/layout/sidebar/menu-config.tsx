@@ -63,7 +63,9 @@ export const getPatientMenuItems = (): MenuItem[] => [
     icon: Brain, 
     label: 'AI Report Analysis', 
     path: '/ai-analysis',
-    description: 'Get AI-powered analysis of your medical reports'
+    description: 'Get AI-powered analysis of your medical reports',
+    badge: 'New',
+    badgeColor: 'blue'
   },
   { 
     icon: Activity, 
@@ -87,7 +89,9 @@ export const getPatientMenuItems = (): MenuItem[] => [
     icon: Calendar, 
     label: 'Appointments', 
     path: '/appointments',
-    description: 'View and manage your appointments'
+    description: 'View and manage your appointments',
+    badge: '2',
+    badgeColor: 'red'
   },
   { 
     icon: Smartphone, 
@@ -99,7 +103,9 @@ export const getPatientMenuItems = (): MenuItem[] => [
     icon: Dumbbell, 
     label: 'Exercises', 
     path: '/exercises',
-    description: 'View and perform recommended exercises with AI guidance'
+    description: 'View and perform recommended exercises with AI guidance',
+    badge: '3',
+    badgeColor: 'green'
   },
 ];
 
@@ -116,7 +122,9 @@ export const getReceptionistMenuItems = (): MenuItem[] => [
     icon: Calendar, 
     label: 'Appointments', 
     path: '/appointments',
-    description: 'Schedule and manage patient appointments'
+    description: 'Schedule and manage patient appointments',
+    badge: '5',
+    badgeColor: 'blue'
   },
   { 
     icon: DollarSign, 
