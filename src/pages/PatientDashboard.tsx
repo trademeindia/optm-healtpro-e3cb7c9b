@@ -14,7 +14,6 @@ import { FitnessData } from '@/hooks/useFitnessIntegration';
 import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
 import { AppointmentWithProvider } from '@/types/appointments';
 
-// Lazy load components that are not immediately needed
 const PatientProfileCard = React.lazy(() => import('@/components/patient-dashboard/PatientProfileCard'));
 const EnhancedMetricsOverview = React.lazy(() => import('@/components/patient-dashboard/EnhancedMetricsOverview'));
 const EnhancedBiologicalAgeMeter = React.lazy(() => import('@/components/patient-dashboard/EnhancedBiologicalAgeMeter'));
@@ -25,7 +24,6 @@ const AnatomicalBodyMap = React.lazy(() => import('@/components/patient-dashboar
 const RealTimeHealthMetrics = React.lazy(() => import('@/components/patient-dashboard/RealTimeHealthMetrics'));
 const AIHealthInsights = React.lazy(() => import('@/components/patient-dashboard/AIHealthInsights'));
 
-// Define default FitnessData for components that require it
 const defaultFitnessData: FitnessData = {
   steps: {
     data: [],
@@ -41,7 +39,6 @@ const defaultFitnessData: FitnessData = {
   }
 };
 
-// Loading fallback for Suspense
 const ComponentSkeleton = () => (
   <div className="w-full h-32 animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
 );
@@ -67,24 +64,22 @@ const PatientDashboard: React.FC = () => {
     error
   } = usePatientDashboard();
 
-  // Convert upcomingAppointments to AppointmentWithProvider type
   const formattedAppointments: AppointmentWithProvider[] = upcomingAppointments.map(appointment => ({
     id: appointment.id,
     patientId: appointment.patientId || 'patient-1',
     providerId: appointment.providerId || 'doc-1',
     date: appointment.date,
     time: appointment.time,
-    status: appointment.status,
+    status: appointment.status || 'scheduled',
     type: appointment.type,
-    location: appointment.location,
-    provider: {
+    location: appointment.location || 'Main Clinic',
+    provider: appointment.provider || {
       id: appointment.providerId || 'doc-1',
       name: appointment.doctor,
       specialty: 'General Medicine',
     }
   }));
 
-  // Handle errors and retries
   useEffect(() => {
     if (error) {
       console.error("Dashboard error detected:", error);
@@ -93,7 +88,6 @@ const PatientDashboard: React.FC = () => {
   }, [error]);
 
   useEffect(() => {
-    // Force end loading state after timeout
     const timer = setTimeout(() => {
       if (isLoading) {
         console.log("Loading timeout triggered");
@@ -109,7 +103,6 @@ const PatientDashboard: React.FC = () => {
     window.location.reload();
   };
 
-  // Always default to dashboard tab
   const initialTab = 'dashboard';
 
   if (isLoading) {
