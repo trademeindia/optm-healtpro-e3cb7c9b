@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useSidebarResponsive = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -8,10 +8,14 @@ export const useSidebarResponsive = () => {
   // Check if mobile on mount and when window resizes
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth < 1024) {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      
+      // Auto-collapse sidebar on small screens
+      if (mobile) {
         setIsOpen(false);
-      } else {
+      } else if (!localStorage.getItem('sidebar-collapsed')) {
+        // Only auto-expand on desktop if user hasn't manually collapsed it
         setIsOpen(true);
       }
     };
@@ -22,9 +26,20 @@ export const useSidebarResponsive = () => {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  // Toggle sidebar and remember state in localStorage
+  const toggleSidebar = useCallback(() => {
+    setIsOpen(prev => {
+      const newState = !prev;
+      if (!isMobile) {
+        if (newState) {
+          localStorage.removeItem('sidebar-collapsed');
+        } else {
+          localStorage.setItem('sidebar-collapsed', 'true');
+        }
+      }
+      return newState;
+    });
+  }, [isMobile]);
 
   return {
     isOpen,

@@ -4,6 +4,9 @@ import { Bell, Search, Settings, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import { MobileToggle } from './sidebar/MobileToggle';
+import { useSidebarResponsive } from './sidebar/useSidebarResponsive';
 
 interface HeaderProps {
   className?: string;
@@ -12,10 +15,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   className
 }) => {
-  const {
-    user,
-    logout
-  } = useAuth();
+  const { user, logout } = useAuth();
+  const { isOpen, toggleSidebar, isMobile } = useSidebarResponsive();
 
   const handleLogout = async () => {
     // Disable the logout button during logout process
@@ -32,23 +33,54 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className={cn("w-full h-16 flex items-center justify-between px-4 md:px-6 border-b sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm", className)}>
+    <header className={cn(
+      "w-full h-16 flex items-center justify-between px-4 md:px-6 border-b sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm",
+      className
+    )}>
       <div className="flex items-center">
-        <h1 className="text-lg md:text-2xl font-bold text-gradient mr-2 md:mr-4">OPTM Health †</h1>
-        <div className="hidden md:flex items-center bg-white/50 dark:bg-black/20 rounded-lg px-3 py-1.5 ml-8">
-          <Search className="w-4 h-4 text-muted-foreground mr-2" />
-          <input type="text" placeholder="Search patients, treatments, etc." className="bg-transparent border-none outline-none text-sm w-64" />
+        {isMobile && (
+          <MobileToggle isOpen={isOpen} toggleSidebar={toggleSidebar} />
+        )}
+        
+        <h1 className="text-lg md:text-2xl font-bold text-gradient mr-2 md:mr-4 ml-2">OPTM Health †</h1>
+        
+        <div className="hidden md:flex items-center bg-white/50 dark:bg-black/20 rounded-lg px-3 py-1.5 ml-8 min-w-64 max-w-md">
+          <Search className="w-4 h-4 text-muted-foreground mr-2 flex-shrink-0" />
+          <input 
+            type="text" 
+            placeholder="Search patients, treatments, etc." 
+            className="bg-transparent border-none outline-none text-sm w-full"
+          />
         </div>
       </div>
       
       <div className="flex items-center gap-2 md:gap-4">
-        <button className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 hover:bg-white/70 dark:hover:bg-black/30 transition-colors">
-          <Search className="w-4 h-4 md:hidden text-foreground" />
-          <Bell className="w-4 h-4 md:w-5 md:h-5 hidden md:block text-foreground" />
-        </button>
-        <button className="w-8 h-8 md:w-9 md:h-9 hidden md:flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 hover:bg-white/70 dark:hover:bg-black/30 transition-colors">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 hover:bg-white/70 dark:hover:bg-black/30 transition-colors md:hidden"
+        >
+          <Search className="w-4 h-4 text-foreground" />
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 hover:bg-white/70 dark:hover:bg-black/30 transition-colors"
+        >
+          <Bell className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            2
+          </span>
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="w-8 h-8 md:w-9 md:h-9 hidden md:flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 hover:bg-white/70 dark:hover:bg-black/30 transition-colors"
+        >
           <Settings className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
-        </button>
+        </Button>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -63,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-sm">
               <span>Signed in as</span>
-              <span className="ml-2 font-medium">{user?.email || 'doctor@example.com'}</span>
+              <span className="ml-2 font-medium truncate max-w-[180px]">{user?.email || 'doctor@example.com'}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
