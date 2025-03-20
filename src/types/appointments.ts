@@ -14,6 +14,7 @@ export interface Appointment {
     id: string;
     name: string;
     specialty: string;
+    avatarUrl?: string;
   };
 }
 
@@ -31,5 +32,6 @@ export interface AppointmentWithProvider {
     id: string;
     name: string;
     specialty: string;
+    avatarUrl?: string;
   };
 }

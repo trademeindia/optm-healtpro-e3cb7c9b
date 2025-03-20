@@ -21,10 +21,10 @@ export function useDoctors() {
         
         // Use mock data instead of attempting to query a non-existent table
         const mockDoctors: Doctor[] = [
-          { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology' },
-          { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology' },
-          { id: 'doc-3', name: 'Dr. Michael Chen', specialty: 'Orthopedics' },
-          { id: 'doc-4', name: 'Dr. Emily Wilson', specialty: 'Pediatrics' }
+          { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology', avatarUrl: '/lovable-uploads/doctor-smith.png' },
+          { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology', avatarUrl: '/lovable-uploads/doctor-johnson.png' },
+          { id: 'doc-3', name: 'Dr. Michael Chen', specialty: 'Orthopedics', avatarUrl: '/lovable-uploads/doctor-chen.png' },
+          { id: 'doc-4', name: 'Dr. Emily Wilson', specialty: 'Pediatrics', avatarUrl: '/lovable-uploads/doctor-wilson.png' }
         ];
         
         setDoctors(mockDoctors);
@@ -34,10 +34,10 @@ export function useDoctors() {
         
         // Use demo data if there's an error
         setDoctors([
-          { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology' },
-          { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology' },
-          { id: 'doc-3', name: 'Dr. Michael Chen', specialty: 'Orthopedics' },
-          { id: 'doc-4', name: 'Dr. Emily Wilson', specialty: 'Pediatrics' }
+          { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology', avatarUrl: '/lovable-uploads/doctor-smith.png' },
+          { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology', avatarUrl: '/lovable-uploads/doctor-johnson.png' },
+          { id: 'doc-3', name: 'Dr. Michael Chen', specialty: 'Orthopedics', avatarUrl: '/lovable-uploads/doctor-chen.png' },
+          { id: 'doc-4', name: 'Dr. Emily Wilson', specialty: 'Pediatrics', avatarUrl: '/lovable-uploads/doctor-wilson.png' }
         ]);
       } finally {
         setIsLoading(false);

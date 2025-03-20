@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,10 +26,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       status: 'scheduled',
       type: 'Follow-up',
       location: 'North Clinic, Room 305',
+      notes: 'Discuss recent lab results',
       provider: {
         id: 'dr1',
         name: 'Dr. Sarah Johnson',
-        specialty: 'Orthopedics'
+        specialty: 'Orthopedics',
+        avatarUrl: '/lovable-uploads/doctor-johnson.png'
       }
     },
     {
@@ -42,10 +43,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       status: 'scheduled',
       type: 'Physical Therapy',
       location: 'East Wing Rehabilitation Center',
+      notes: 'Follow-up on therapy progress',
       provider: {
         id: 'dr2',
         name: 'Dr. Michael Chen',
-        specialty: 'Physical Therapy'
+        specialty: 'Physical Therapy',
+        avatarUrl: '/lovable-uploads/doctor-chen.png'
       }
     }
   ];

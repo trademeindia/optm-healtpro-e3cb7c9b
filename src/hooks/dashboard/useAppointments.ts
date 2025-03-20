@@ -32,10 +32,12 @@ export function useAppointments() {
           type: 'Follow-up',
           status: 'scheduled',
           location: 'Main Clinic',
+          notes: 'Discuss recent lab results',
           provider: {
             id: 'dr1',
             name: 'Dr. Nikolas Pascal',
-            specialty: 'General Medicine'
+            specialty: 'General Medicine',
+            avatarUrl: '/lovable-uploads/doctor-pascal.png'
           }
         },
         {
@@ -48,10 +50,12 @@ export function useAppointments() {
           type: 'Physical Therapy',
           status: 'scheduled',
           location: 'Rehabilitation Center',
+          notes: 'Bring previous exercise plan',
           provider: {
             id: 'dr2',
             name: 'Dr. Nikolas Pascal',
-            specialty: 'Physical Therapy'
+            specialty: 'Physical Therapy',
+            avatarUrl: '/lovable-uploads/doctor-pascal.png'
           }
         },
         {
@@ -64,10 +68,12 @@ export function useAppointments() {
           type: 'Annual Check-up',
           status: 'completed',
           location: 'Main Clinic',
+          notes: 'Annual physical completed',
           provider: {
             id: 'dr3',
             name: 'Dr. Sarah Johnson',
-            specialty: 'Internal Medicine'
+            specialty: 'Internal Medicine',
+            avatarUrl: '/lovable-uploads/doctor-johnson.png'
           }
         }
       ];
