@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { Heart, Activity, Thermometer, Droplet, Moon, BarChart as BarChartIcon, Clock, Calendar } from 'lucide-react';
+import { Heart, Activity, Thermometer, Droplet, Moon, BarChart as BarChartIcon, Clock, Calendar, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useHealthData, HealthData } from '@/hooks/useHealthData';
+import { HealthData } from '@/hooks/useHealthData';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check } from 'lucide-react';
 
 interface TrendProps {
   value: number;
@@ -467,4 +467,3 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
 };
 
 export default ComprehensiveHealthDashboard;
-

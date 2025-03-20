@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { HealthData, VitalSigns } from '@/hooks/useHealthData';
+import { HealthData, VitalSigns, TrendData } from '@/hooks/useHealthData';
 
 /**
  * Save health data to Supabase
@@ -369,7 +369,7 @@ const fetchVitalSigns = async (userId: string): Promise<VitalSigns> => {
 /**
  * Fetch trend data for a specific time range
  */
-const fetchTrendData = async (userId: string, days: number) => {
+const fetchTrendData = async (userId: string, days: number): Promise<TrendData[]> => {
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);

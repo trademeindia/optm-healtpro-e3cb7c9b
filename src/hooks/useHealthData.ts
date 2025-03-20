@@ -43,6 +43,18 @@ export interface VitalSigns {
   };
 }
 
+export interface TrendData {
+  day?: string;
+  date?: string;
+  month?: string;
+  heartRate: number;
+  steps: number;
+  bloodPressureSystolic: number;
+  bloodPressureDiastolic: number;
+  temperature: number;
+  oxygenSaturation: number;
+}
+
 export interface HealthData {
   vitalSigns: VitalSigns;
   activity: {
@@ -59,9 +71,9 @@ export interface HealthData {
     lightSleep: number;
   };
   trends?: {
-    weekly: any[];
-    monthly: any[];
-    yearly: any[];
+    weekly: TrendData[];
+    monthly: TrendData[];
+    yearly: TrendData[];
   };
 }
 
