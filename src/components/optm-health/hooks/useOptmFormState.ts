@@ -187,6 +187,69 @@ export const useOptmFormState = (initialData?: Partial<OptmPatientData>) => {
     }));
   };
   
+  // Validation logic for each tab
+  const validateTabData = (tab: string): string[] => {
+    const errors: string[] = [];
+    
+    switch (tab) {
+      case 'patient-info':
+        if (!patientData.patientId) errors.push('Patient ID is required');
+        if (!patientData.name) errors.push('Patient name is required');
+        if (!patientData.age) errors.push('Patient age is required');
+        if (!patientData.gender) errors.push('Patient gender is required');
+        if (!patientData.treatmentStage) errors.push('Treatment stage is required');
+        break;
+        
+      case 'biomarkers':
+        // Optional validation for biomarkers
+        if (patientData.biomarkers) {
+          Object.entries(patientData.biomarkers).forEach(([key, value]) => {
+            if (value !== undefined && typeof value !== 'number') {
+              errors.push(`Invalid value for biomarker: ${key}`);
+            }
+          });
+        }
+        break;
+        
+      case 'anatomical':
+        // Validate CTM if provided
+        if (patientData.anatomicalMeasurements?.ctm !== undefined && 
+            typeof patientData.anatomicalMeasurements.ctm !== 'number') {
+          errors.push('CTM must be a valid number');
+        }
+        
+        // Validate circumference measurements
+        ['ccm', 'cap', 'cbp'].forEach(type => {
+          const measurements = patientData.anatomicalMeasurements?.[type as 'ccm' | 'cap' | 'cbp'] || [];
+          measurements.forEach((m, index) => {
+            if (!m.location) errors.push(`Location is required for ${type.toUpperCase()} measurement #${index + 1}`);
+            if (typeof m.value !== 'number') errors.push(`Value must be a number for ${type.toUpperCase()} measurement #${index + 1}`);
+          });
+        });
+        break;
+        
+      case 'mobility':
+        // Validate mobility measurements if provided
+        Object.entries(patientData.mobilityMeasurements || {}).forEach(([key, measurement]) => {
+          if (measurement && typeof measurement.value !== 'number') {
+            errors.push(`Value must be a number for ${key}`);
+          }
+        });
+        break;
+        
+      case 'imaging':
+        // Validate imaging data if provided
+        (patientData.imaging || []).forEach((img, index) => {
+          if (!img.bodyPart) errors.push(`Body part is required for image #${index + 1}`);
+          if (!img.type) errors.push(`Type is required for image #${index + 1}`);
+          if (!img.stage) errors.push(`Stage is required for image #${index + 1}`);
+        });
+        break;
+    }
+    
+    return errors;
+  };
+  
   const prepareDataForSubmission = (): OptmPatientData => {
     return {
       ...patientData,
@@ -208,6 +271,7 @@ export const useOptmFormState = (initialData?: Partial<OptmPatientData>) => {
     addImage,
     removeImage,
     updateImage,
-    prepareDataForSubmission
+    prepareDataForSubmission,
+    validateTabData
   };
 };
