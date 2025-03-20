@@ -50,8 +50,17 @@ serve(async (req) => {
     const userId = state.startsWith('google_fit_') ? state.substring(11) : state;
     console.log(`Extracted userId from state: ${userId}`);
 
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      console.error("Missing Google API credentials");
+      return redirectWithError("Missing Google API credentials");
+    }
+
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (!supabase) {
+      console.error("Failed to initialize Supabase client");
+      return redirectWithError("Server configuration error");
+    }
 
     console.log("Exchanging code for tokens");
     // Exchange code for tokens
@@ -62,8 +71,8 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         code,
-        client_id: GOOGLE_CLIENT_ID!,
-        client_secret: GOOGLE_CLIENT_SECRET!,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
         redirect_uri: REDIRECT_URI,
         grant_type: "authorization_code",
       }),
@@ -99,6 +108,7 @@ serve(async (req) => {
         scope: tokenData.scope,
         expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
         last_sync: new Date().toISOString(),
+        is_connected: true
       });
 
     if (upsertError) {
@@ -113,6 +123,8 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         Location: `${FRONTEND_URL}/health-apps?connected=true`,
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
       },
     });
   } catch (error) {
@@ -120,13 +132,15 @@ serve(async (req) => {
     return redirectWithError(`Server error: ${error.message}`);
   }
 
-  function redirectWithError(errorMessage: string) {
+  function redirectWithError(errorMessage) {
     console.error(`Redirecting with error: ${errorMessage}`);
     return new Response(null, {
       status: 302,
       headers: {
         ...corsHeaders,
         Location: `${FRONTEND_URL}/health-apps?error=${encodeURIComponent(errorMessage)}`,
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
       },
     });
   }

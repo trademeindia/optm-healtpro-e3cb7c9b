@@ -13,6 +13,9 @@ const REDIRECT_URI = Deno.env.get("SUPABASE_URL") ?
   `${Deno.env.get("SUPABASE_URL")}/functions/v1/google-fit-callback` : 
   "http://localhost:54321/functions/v1/google-fit-callback";
 
+// Frontend URL for redirecting on error
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
+
 // Google Fit scopes
 const SCOPES = [
   "https://www.googleapis.com/auth/fitness.activity.read",
@@ -34,6 +37,7 @@ serve(async (req) => {
     const userId = url.searchParams.get("userId");
 
     if (!userId) {
+      console.error("Missing userId parameter");
       return new Response(
         JSON.stringify({ error: "Missing userId parameter" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -44,10 +48,7 @@ serve(async (req) => {
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       console.error("Missing Google API credentials");
-      return new Response(
-        JSON.stringify({ error: "Google API credentials not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return redirectToFrontend("Google API credentials not configured", true);
     }
 
     // Store the state in a format we can identify later
@@ -66,21 +67,42 @@ serve(async (req) => {
     authUrl.searchParams.append("prompt", "consent");
     authUrl.searchParams.append("state", state); // Pass userId in state parameter
 
-    console.log(`Redirecting to Google OAuth: ${authUrl.toString()}`);
+    const authUrlString = authUrl.toString();
+    console.log(`Redirecting to Google OAuth: ${authUrlString}`);
 
     // Redirect to Google OAuth
     return new Response(null, {
       status: 302,
       headers: {
         ...corsHeaders,
-        Location: authUrl.toString(),
+        Location: authUrlString,
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
       },
     });
   } catch (error) {
     console.error("Error in connect-google-fit function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return redirectToFrontend(`Error connecting to Google Fit: ${error.message}`, true);
+  }
+
+  // Helper function to redirect back to frontend with error message
+  function redirectToFrontend(message, isError = false) {
+    const redirectUrl = new URL(`${FRONTEND_URL}/health-apps`);
+    if (isError) {
+      redirectUrl.searchParams.append("error", encodeURIComponent(message));
+    } else {
+      redirectUrl.searchParams.append("message", encodeURIComponent(message));
+    }
+
+    console.log(`Redirecting to frontend with message: ${message}`);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        Location: redirectUrl.toString(),
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"
+      },
+    });
   }
 });

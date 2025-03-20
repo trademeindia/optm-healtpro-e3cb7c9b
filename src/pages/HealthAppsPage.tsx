@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import FitnessIntegrations from '@/components/dashboard/FitnessIntegrations';
@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
 import ComprehensiveHealthDashboard from '@/components/health-dashboard/ComprehensiveHealthDashboard';
 import { useHealthData } from '@/hooks/useHealthData';
+import OAuthDebugInfo from '@/components/integrations/OAuthDebugInfo';
 
 const HealthAppsPage: React.FC = () => {
   const { 
@@ -22,13 +23,29 @@ const HealthAppsPage: React.FC = () => {
   } = useFitnessIntegration();
   
   const {
-    healthData,
+    metrics,
+    metricsHistory,
     isLoading,
-    lastSynced,
-    syncHealthData
+    isSyncing,
+    lastSyncTime,
+    hasGoogleFitConnected,
+    syncData,
+    getMetricHistory,
+    setTimeRange
   } = useHealthData();
   
   const location = useLocation();
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [isCheckingConnection, setIsCheckingConnection] = useState(false);
+  
+  // Check for debug mode
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const debug = params.get('debug');
+    if (debug === 'true') {
+      setShowDebugInfo(true);
+    }
+  }, [location]);
   
   // Handle connection status from URL parameters
   useEffect(() => {
@@ -41,15 +58,34 @@ const HealthAppsPage: React.FC = () => {
         description: 'Your health data will now sync automatically.',
         duration: 5000
       });
+      
+      // Clean URL parameters but preserve debug mode if enabled
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('connected');
+      if (showDebugInfo) {
+        newUrl.searchParams.set('debug', 'true');
+      } else {
+        newUrl.searchParams.delete('debug');
+      }
+      window.history.replaceState({}, document.title, newUrl.toString());
     }
     
     if (error) {
       toast.error('Failed to connect Google Fit', {
-        description: error,
+        description: decodeURIComponent(error),
         duration: 8000
       });
+      
+      // Display debug info automatically if there's an error
+      setShowDebugInfo(true);
+      
+      // Clean URL parameters but preserve debug mode
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('error');
+      newUrl.searchParams.set('debug', 'true');
+      window.history.replaceState({}, document.title, newUrl.toString());
     }
-  }, [location]);
+  }, [location, showDebugInfo]);
 
   // Adapter functions to convert Promise<void> to Promise<boolean>
   const handleConnect = async (providerId: string): Promise<boolean> => {
@@ -65,6 +101,31 @@ const HealthAppsPage: React.FC = () => {
   const handleRefresh = async (providerId: string): Promise<boolean> => {
     await refreshProviderData(providerId);
     return true;
+  };
+  
+  const handleCheckConnection = async () => {
+    setIsCheckingConnection(true);
+    try {
+      await syncData(true);
+      toast.success("Connection check completed", {
+        description: hasGoogleFitConnected 
+          ? "Google Fit connection is working properly." 
+          : "Google Fit is not connected. Please connect it to sync your health data."
+      });
+    } catch (error) {
+      console.error("Error checking connection:", error);
+      toast.error("Connection check failed", {
+        description: "There was an error checking your Google Fit connection."
+      });
+    } finally {
+      setIsCheckingConnection(false);
+    }
+  };
+  
+  // Create a healthData object from metrics and metricsHistory for the dashboard
+  const healthData = {
+    metrics,
+    history: metricsHistory
   };
 
   return (
@@ -82,28 +143,49 @@ const HealthAppsPage: React.FC = () => {
             </p>
           </div>
           
+          {/* Debug info component */}
+          <OAuthDebugInfo 
+            isVisible={showDebugInfo}
+            supabaseUrl={import.meta.env.VITE_SUPABASE_URL}
+            redirectUri={`${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/google-fit-callback`}
+            onRefresh={handleCheckConnection}
+            isLoading={isCheckingConnection}
+          />
+          
           {/* Connection instructions alert */}
           <Alert className="mb-6 border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
             <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <AlertTitle className="text-blue-800 dark:text-blue-300">Connect with Google Fit</AlertTitle>
-            <AlertDescription className="text-blue-700 dark:text-blue-400">
-              Connect your Google Fit account to sync your health data. Your data is securely stored and will be
-              visible only to you and your healthcare providers.
+            <AlertDescription className="flex justify-between items-center flex-col md:flex-row gap-2">
+              <span className="text-blue-700 dark:text-blue-400">
+                Connect your Google Fit account to sync your health data. Your data is securely stored and will be
+                visible only to you and your healthcare providers.
+              </span>
+              <div className="flex gap-2">
+                <GoogleFitConnect 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700" 
+                />
+                {!showDebugInfo && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowDebugInfo(true)}
+                    className="text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
+                  >
+                    Show Debug Info
+                  </Button>
+                )}
+              </div>
             </AlertDescription>
-            <div className="mt-3">
-              <GoogleFitConnect 
-                variant="outline" 
-                className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700" 
-              />
-            </div>
           </Alert>
 
           <div className="grid grid-cols-1 gap-6">
             <ComprehensiveHealthDashboard 
               healthData={healthData}
               isLoading={isLoading}
-              lastSynced={lastSynced}
-              onSyncClick={syncHealthData}
+              lastSynced={lastSyncTime}
+              onSyncClick={() => syncData(true)}
             />
           </div>
 
