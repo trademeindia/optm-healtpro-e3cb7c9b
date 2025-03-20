@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
@@ -149,7 +150,7 @@ const PatientDashboard: React.FC = () => {
             <SymptomProvider>
               <DashboardTabs
                 initialTab={initialTab}
-                upcomingAppointments={upcomingAppointments || []}
+                upcomingAppointments={formattedAppointments}
                 onConfirmAppointment={handleConfirmAppointment}
                 onRescheduleAppointment={handleRescheduleAppointment}
               >
