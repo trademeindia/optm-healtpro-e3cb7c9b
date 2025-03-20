@@ -17,6 +17,7 @@ import { AppointmentWithProvider } from '@/types/appointments';
 import { format, parseISO, isValid } from 'date-fns';
 import { useAppointmentStatus } from '@/hooks/calendar/useAppointmentStatus';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PatientAppointmentsProps {
   appointments: AppointmentWithProvider[];
@@ -30,8 +31,6 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   const [activeTab, setActiveTab] = useState('upcoming');
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithProvider | null>(null);
-  
-  const { handleConfirmAppointment } = useAppointmentStatus();
 
   const formatAppointmentDate = (dateString: string) => {
     try {
@@ -45,11 +44,28 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   };
 
   const confirmAppointment = async (appointmentId: string) => {
-    const success = await handleConfirmAppointment(appointmentId);
-    if (success) {
-      toast.success('Appointment confirmed!', {
-        description: 'Your doctor has been notified of your confirmation.',
-      });
+    try {
+      // Update appointment status to 'confirmed' using RPC function
+      const { data, error } = await supabase.rpc(
+        'update_appointment_status',
+        {
+          appointment_id: appointmentId,
+          new_status: 'confirmed'
+        }
+      );
+      
+      if (error) throw error;
+      
+      if (data) {
+        toast.success('Appointment confirmed!', {
+          description: 'Your doctor has been notified of your confirmation.',
+        });
+      } else {
+        toast.error('Unable to confirm appointment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error confirming appointment:', error);
+      toast.error('Failed to confirm appointment');
     }
   };
 
@@ -58,13 +74,35 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
     setRescheduleDialogOpen(true);
   };
 
-  const handleRescheduleRequest = () => {
-    // In a real app, this would open a calendar for selecting new dates
-    // and then send the request to the backend
-    toast.success('Reschedule request sent', {
-      description: 'Your doctor will be notified and contact you with available times.',
-    });
-    setRescheduleDialogOpen(false);
+  const handleRescheduleRequest = async () => {
+    if (!selectedAppointment) return;
+    
+    try {
+      // For now, we're just changing the status to indicate a reschedule request
+      // In a real app, this would trigger a workflow to find a new time
+      const { data, error } = await supabase.rpc(
+        'update_appointment_status',
+        {
+          appointment_id: selectedAppointment.id,
+          new_status: 'cancelled'
+        }
+      );
+      
+      if (error) throw error;
+      
+      if (data) {
+        toast.success('Reschedule request sent', {
+          description: 'Your doctor will be notified and contact you with available times.',
+        });
+      } else {
+        toast.error('Unable to request reschedule. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error requesting reschedule:', error);
+      toast.error('Failed to request reschedule');
+    } finally {
+      setRescheduleDialogOpen(false);
+    }
   };
 
   const initiateMessageToDoctor = (providerId: string, providerName: string) => {

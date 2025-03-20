@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth';
 
 interface Doctor {
   id: string;
@@ -27,58 +29,104 @@ interface Doctor {
 
 interface Message {
   id: string;
-  senderId: string;
-  recipientId: string;
+  sender_id: string;
+  recipient_id: string;
   content: string;
-  timestamp: Date;
-  isRead: boolean;
-  senderName: string;
+  timestamp?: Date;
+  created_at: string;
+  read: boolean;
+  senderName?: string;
 }
 
 interface SecureMessagingProps {
   doctors: Doctor[];
-  patientId?: string;
 }
 
-const SecureMessaging: React.FC<SecureMessagingProps> = ({ 
-  doctors,
-  patientId = 'p1' // Default value for demo purposes
-}) => {
+const SecureMessaging: React.FC<SecureMessagingProps> = ({ doctors }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [messageContent, setMessageContent] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    // Demo messages - in a real app these would come from an API
-    {
-      id: 'm1',
-      senderId: 'dr1',
-      recipientId: patientId,
-      content: 'Hello! How are you feeling after our last appointment?',
-      timestamp: new Date(Date.now() - 86400000), // 1 day ago
-      isRead: true,
-      senderName: 'Dr. Emily Johnson'
-    },
-    {
-      id: 'm2',
-      senderId: patientId,
-      recipientId: 'dr1',
-      content: 'Much better, thank you! The medication has really helped with the pain.',
-      timestamp: new Date(Date.now() - 76400000), // 21 hours ago
-      isRead: true,
-      senderName: 'You'
-    },
-    {
-      id: 'm3',
-      senderId: 'dr1',
-      recipientId: patientId,
-      content: "That's great to hear! Do you have any questions before your next appointment?",
-      timestamp: new Date(Date.now() - 72400000), // 20 hours ago
-      isRead: false,
-      senderName: 'Dr. Emily Johnson'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch messages from Supabase when a doctor is selected
+  useEffect(() => {
+    if (!user || !selectedDoctor) return;
+    
+    const fetchMessages = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch messages between the current user and selected doctor
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .or(`and(sender_id.eq.${user.id},recipient_id.eq.${selectedDoctor.id}),and(sender_id.eq.${selectedDoctor.id},recipient_id.eq.${user.id})`)
+          .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        setMessages(data || []);
+        
+        // Mark unread messages as read
+        const unreadMessages = data?.filter(
+          m => m.recipient_id === user.id && !m.read
+        ) || [];
+        
+        if (unreadMessages.length > 0) {
+          await Promise.all(
+            unreadMessages.map(message => 
+              supabase
+                .from('messages')
+                .update({ read: true })
+                .eq('id', message.id)
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+        toast.error('Could not load messages');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMessages();
+    
+    // Set up real-time subscription for new messages
+    const messagesSubscription = supabase
+      .channel('messages-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages',
+          filter: `or(and(sender_id=eq.${user.id},recipient_id=eq.${selectedDoctor.id}),and(sender_id=eq.${selectedDoctor.id},recipient_id=eq.${user.id}))`
+        }, 
+        (payload) => {
+          console.log('New message received:', payload);
+          // Add the new message to state
+          const newMessage = payload.new as Message;
+          setMessages(prev => [...prev, newMessage]);
+          
+          // Mark message as read if recipient is current user
+          if (newMessage.recipient_id === user.id) {
+            supabase
+              .from('messages')
+              .update({ read: true })
+              .eq('id', newMessage.id);
+          }
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(messagesSubscription);
+    };
+  }, [user, selectedDoctor]);
 
   // Scroll to bottom of messages when a new message is added
   useEffect(() => {
@@ -98,26 +146,32 @@ const SecureMessaging: React.FC<SecureMessagingProps> = ({
     setActiveTab('conversation');
   };
 
-  const handleSendMessage = () => {
-    if (!messageContent.trim() || !selectedDoctor) return;
+  const handleSendMessage = async () => {
+    if (!messageContent.trim() || !selectedDoctor || !user) return;
     
-    // In a real app, this would send the message to an API
-    const newMessage: Message = {
-      id: `m${Date.now()}`,
-      senderId: patientId,
-      recipientId: selectedDoctor.id,
-      content: messageContent,
-      timestamp: new Date(),
-      isRead: false,
-      senderName: 'You'
-    };
-    
-    setMessages(prev => [...prev, newMessage]);
-    setMessageContent('');
-    
-    toast.success('Message sent', {
-      description: `Your message to Dr. ${selectedDoctor.name} has been sent successfully.`,
-    });
+    try {
+      // Insert message into Supabase
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          recipient_id: selectedDoctor.id,
+          content: messageContent,
+          read: false
+        })
+        .select();
+      
+      if (error) throw error;
+      
+      setMessageContent('');
+      
+      toast.success('Message sent', {
+        description: `Your message to Dr. ${selectedDoctor.name} has been sent.`,
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    }
   };
 
   const goBack = () => {
@@ -128,16 +182,16 @@ const SecureMessaging: React.FC<SecureMessagingProps> = ({
   // Group messages by conversation partner
   const conversations = doctors.map(doctor => {
     const doctorMessages = messages.filter(
-      m => (m.senderId === doctor.id && m.recipientId === patientId) || 
-           (m.senderId === patientId && m.recipientId === doctor.id)
+      m => (m.sender_id === doctor.id && m.recipient_id === user?.id) || 
+           (m.sender_id === user?.id && m.recipient_id === doctor.id)
     );
     
     const lastMessage = doctorMessages.length > 0 
-      ? doctorMessages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]
+      ? doctorMessages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
       : null;
       
     const unreadCount = doctorMessages.filter(
-      m => m.senderId === doctor.id && !m.isRead
+      m => m.sender_id === doctor.id && !m.read
     ).length;
     
     return {
@@ -190,7 +244,7 @@ const SecureMessaging: React.FC<SecureMessagingProps> = ({
                         <div className="flex justify-between items-center">
                           <h4 className="font-medium">Dr. {doctor.name}</h4>
                           <span className="text-xs text-muted-foreground">
-                            {lastMessage ? format(lastMessage.timestamp, 'MMM d, h:mm a') : ''}
+                            {lastMessage ? format(new Date(lastMessage.created_at), 'MMM d, h:mm a') : ''}
                           </span>
                         </div>
                         
@@ -263,39 +317,45 @@ const SecureMessaging: React.FC<SecureMessagingProps> = ({
                 </div>
 
                 <ScrollArea className="border rounded-md h-[300px] p-4">
-                  <div className="space-y-4">
-                    {messages
-                      .filter(m => 
-                        (m.senderId === selectedDoctor.id && m.recipientId === patientId) ||
-                        (m.senderId === patientId && m.recipientId === selectedDoctor.id)
-                      )
-                      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-                      .map(message => (
-                        <div
-                          key={message.id}
-                          className={`flex ${
-                            message.senderId === patientId ? 'justify-end' : 'justify-start'
-                          }`}
-                        >
+                  {loading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <p className="text-muted-foreground">Loading messages...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {messages.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                        </div>
+                      ) : (
+                        messages.map(message => (
                           <div
-                            className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                              message.senderId === patientId
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
+                            key={message.id}
+                            className={`flex ${
+                              message.sender_id === user?.id ? 'justify-end' : 'justify-start'
                             }`}
                           >
-                            <p className="text-sm">{message.content}</p>
-                            <div className="flex items-center mt-1 gap-1">
-                              <Clock className="h-3 w-3 text-current opacity-70" />
-                              <span className="text-xs opacity-70">
-                                {format(message.timestamp, 'MMM d, h:mm a')}
-                              </span>
+                            <div
+                              className={`max-w-[80%] px-4 py-2 rounded-lg ${
+                                message.sender_id === user?.id
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted'
+                              }`}
+                            >
+                              <p className="text-sm">{message.content}</p>
+                              <div className="flex items-center mt-1 gap-1">
+                                <Clock className="h-3 w-3 text-current opacity-70" />
+                                <span className="text-xs opacity-70">
+                                  {format(new Date(message.created_at), 'MMM d, h:mm a')}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    <div ref={messagesEndRef} />
-                  </div>
+                        ))
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  )}
                 </ScrollArea>
 
                 <div className="flex gap-2">
@@ -305,7 +365,11 @@ const SecureMessaging: React.FC<SecureMessagingProps> = ({
                     placeholder="Type your message here..."
                     className="min-h-[80px]"
                   />
-                  <Button className="self-end" onClick={handleSendMessage}>
+                  <Button 
+                    className="self-end" 
+                    onClick={handleSendMessage}
+                    disabled={!messageContent.trim()}
+                  >
                     <Send className="h-4 w-4 mr-2" />
                     Send
                   </Button>
