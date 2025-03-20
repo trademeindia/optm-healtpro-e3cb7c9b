@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
 import ComprehensiveHealthDashboard from '@/components/health-dashboard/ComprehensiveHealthDashboard';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData } from '@/hooks/useHealthData'; // Using the original hook
 import OAuthDebugInfo from '@/components/integrations/OAuthDebugInfo';
 
 const HealthAppsPage: React.FC = () => {
@@ -23,15 +23,11 @@ const HealthAppsPage: React.FC = () => {
   } = useFitnessIntegration();
   
   const {
-    metrics,
-    metricsHistory,
+    healthData,
     isLoading,
-    isSyncing,
-    lastSyncTime,
-    hasGoogleFitConnected,
-    syncData,
-    getMetricHistory,
-    setTimeRange
+    error,
+    lastSynced,
+    syncHealthData
   } = useHealthData();
   
   const location = useLocation();
@@ -106,7 +102,9 @@ const HealthAppsPage: React.FC = () => {
   const handleCheckConnection = async () => {
     setIsCheckingConnection(true);
     try {
-      await syncData(true);
+      await syncHealthData();
+      const hasGoogleFitConnected = healthData?.vitalSigns?.heartRate?.source === 'Google Fit';
+      
       toast.success("Connection check completed", {
         description: hasGoogleFitConnected 
           ? "Google Fit connection is working properly." 
@@ -122,12 +120,9 @@ const HealthAppsPage: React.FC = () => {
     }
   };
   
-  // Create a healthData object from metrics and metricsHistory for the dashboard
-  const healthData = {
-    metrics,
-    history: metricsHistory
-  };
-
+  // Determine if Google Fit is connected based on data source
+  const hasGoogleFitConnected = healthData?.vitalSigns?.heartRate?.source === 'Google Fit';
+  
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -184,8 +179,8 @@ const HealthAppsPage: React.FC = () => {
             <ComprehensiveHealthDashboard 
               healthData={healthData}
               isLoading={isLoading}
-              lastSynced={lastSyncTime}
-              onSyncClick={() => syncData(true)}
+              lastSynced={lastSynced}
+              onSyncClick={syncHealthData}
             />
           </div>
 
