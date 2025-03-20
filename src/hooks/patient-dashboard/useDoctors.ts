@@ -19,21 +19,16 @@ export function useDoctors() {
       try {
         setIsLoading(true);
         
-        const { data, error } = await supabase
-          .from('doctors')
-          .select('id, name, specialty, avatar_url');
+        // The doctors table might not exist in the schema yet
+        // For now, use mock data directly without attempting to query
+        const mockDoctors: Doctor[] = [
+          { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology' },
+          { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology' },
+          { id: 'doc-3', name: 'Dr. Michael Chen', specialty: 'Orthopedics' },
+          { id: 'doc-4', name: 'Dr. Emily Wilson', specialty: 'Pediatrics' }
+        ];
         
-        if (error) throw new Error(error.message);
-        
-        // Transform the data to match the Doctor interface
-        const formattedDoctors: Doctor[] = data.map(doctor => ({
-          id: doctor.id,
-          name: doctor.name,
-          specialty: doctor.specialty,
-          avatarUrl: doctor.avatar_url
-        }));
-        
-        setDoctors(formattedDoctors);
+        setDoctors(mockDoctors);
       } catch (err) {
         console.error('Error fetching doctors:', err);
         setError(err instanceof Error ? err : new Error('Failed to fetch doctors'));

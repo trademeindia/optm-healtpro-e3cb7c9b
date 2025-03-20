@@ -42,8 +42,24 @@ export function useAppointmentStatus() {
     }
   }, []);
 
+  // Create specific methods for each status update
+  const handleConfirmAppointment = useCallback((appointmentId: string) => {
+    return updateAppointmentStatus(appointmentId, 'confirmed');
+  }, [updateAppointmentStatus]);
+
+  const handleCancelAppointment = useCallback((appointmentId: string) => {
+    return updateAppointmentStatus(appointmentId, 'cancelled');
+  }, [updateAppointmentStatus]);
+
+  const handleCompleteAppointment = useCallback((appointmentId: string) => {
+    return updateAppointmentStatus(appointmentId, 'completed');
+  }, [updateAppointmentStatus]);
+
   return {
     isUpdating,
-    updateAppointmentStatus
+    updateAppointmentStatus,
+    handleConfirmAppointment,
+    handleCancelAppointment,
+    handleCompleteAppointment
   };
 }

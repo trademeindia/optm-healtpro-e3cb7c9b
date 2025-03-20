@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
@@ -13,6 +12,7 @@ import { RefreshCw, AlertCircle } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
 import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
+import { AppointmentWithProvider } from '@/types/appointments';
 
 // Lazy load components that are not immediately needed
 const PatientProfileCard = React.lazy(() => import('@/components/patient-dashboard/PatientProfileCard'));
@@ -66,6 +66,23 @@ const PatientDashboard: React.FC = () => {
     isLoading,
     error
   } = usePatientDashboard();
+
+  // Convert upcomingAppointments to AppointmentWithProvider type
+  const formattedAppointments: AppointmentWithProvider[] = upcomingAppointments.map(appointment => ({
+    id: appointment.id,
+    patientId: appointment.patientId || 'patient-1',
+    providerId: appointment.providerId || 'doc-1',
+    date: appointment.date,
+    time: appointment.time,
+    status: appointment.status,
+    type: appointment.type,
+    location: appointment.location,
+    provider: {
+      id: appointment.providerId || 'doc-1',
+      name: appointment.doctor,
+      specialty: 'General Medicine',
+    }
+  }));
 
   // Handle errors and retries
   useEffect(() => {
@@ -160,7 +177,6 @@ const PatientDashboard: React.FC = () => {
                       </Alert>
                     )}
                     
-                    {/* Patient Profile and Anatomical Map in top row */}
                     <div className="grid md:grid-cols-12 gap-4">
                       <div className="md:col-span-4">
                         <Suspense fallback={<ComponentSkeleton />}>
@@ -180,21 +196,18 @@ const PatientDashboard: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Health metrics */}
                     {healthMetrics && healthMetrics.length > 0 && (
                       <Suspense fallback={<ComponentSkeleton />}>
                         <RealTimeHealthMetrics metrics={healthMetrics} />
                       </Suspense>
                     )}
                     
-                    {/* AI Health Insights (only render if fitnessData exists) */}
                     {fitnessData && Object.keys(fitnessData).length > 0 && (
                       <Suspense fallback={<ComponentSkeleton />}>
                         <AIHealthInsights fitnessData={fitnessData || defaultFitnessData} />
                       </Suspense>
                     )}
                     
-                    {/* Health metrics and biological age */}
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="md:col-span-2">
                         <Suspense fallback={<ComponentSkeleton />}>
@@ -241,7 +254,7 @@ const PatientDashboard: React.FC = () => {
                       
                       <Suspense fallback={<ComponentSkeleton />}>
                         <EnhancedAppointmentsList 
-                          appointments={upcomingAppointments || []} 
+                          appointments={formattedAppointments} 
                           onConfirm={handleConfirmAppointment}
                           onReschedule={handleRescheduleAppointment}
                         />

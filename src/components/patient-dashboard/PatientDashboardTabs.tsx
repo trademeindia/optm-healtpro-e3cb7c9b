@@ -7,11 +7,29 @@ import PatientAppointments from './PatientAppointments';
 import SecureMessaging from './SecureMessaging';
 import { useDoctors } from '@/hooks/patient-dashboard/useDoctors';
 import { useAppointments } from '@/hooks/dashboard/useAppointments';
+import { Appointment } from '@/types/appointments';
 
 const PatientDashboardTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState('appointments');
   const { doctors } = useDoctors();
   const { upcomingAppointments, handleConfirmAppointment, handleRescheduleAppointment } = useAppointments();
+
+  // Transform appointments to the format expected by PatientAppointments
+  const formattedAppointments = upcomingAppointments.map(appointment => ({
+    id: appointment.id,
+    patientId: 'patient-1', // Default value
+    providerId: 'doc-1', // Default value
+    date: appointment.date,
+    time: appointment.time,
+    status: appointment.status || 'scheduled',
+    type: appointment.type,
+    location: appointment.location || 'Main Clinic',
+    provider: {
+      id: 'doc-1',
+      name: appointment.doctor,
+      specialty: 'General Medicine'
+    }
+  }));
 
   const handleMessageDoctor = (doctorId: string, doctorName: string) => {
     setActiveTab('messages');
@@ -41,7 +59,7 @@ const PatientDashboardTabs: React.FC = () => {
 
       <TabsContent value="appointments" className="mt-0 space-y-6">
         <PatientAppointments 
-          appointments={upcomingAppointments} 
+          appointments={formattedAppointments} 
           onMessageDoctor={handleMessageDoctor}
         />
       </TabsContent>

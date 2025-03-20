@@ -54,7 +54,8 @@ export const usePatientDashboard = () => {
   
   // Get appointment status management functions
   const { 
-    handleCancelAppointment,
+    updateAppointmentStatus,
+    handleCancelAppointment: cancelAppointment,
     handleConfirmAppointment: confirmAppointment
   } = useAppointmentStatus();
 
@@ -127,7 +128,7 @@ export const usePatientDashboard = () => {
           success = await confirmAppointment(appointmentId);
           break;
         case 'cancel':
-          success = await handleCancelAppointment(appointmentId);
+          success = await cancelAppointment(appointmentId);
           break;
         case 'reschedule':
           // This will be handled by the calendar component
@@ -152,7 +153,7 @@ export const usePatientDashboard = () => {
       });
       return false;
     }
-  }, [confirmAppointment, handleCancelAppointment, handleRescheduleAppointment]);
+  }, [confirmAppointment, cancelAppointment, handleRescheduleAppointment]);
 
   const hasConnectedApps = Array.isArray(providers) && providers.some(p => p.isConnected);
 

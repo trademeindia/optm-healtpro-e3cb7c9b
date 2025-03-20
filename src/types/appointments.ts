@@ -25,4 +25,12 @@ export interface Appointment {
   doctor: string;
   status: string;
   location: string;
+  patientId?: string;
+  providerId?: string;
+  provider?: {
+    id: string;
+    name: string;
+    specialty: string;
+    avatarUrl?: string;
+  };
 }
