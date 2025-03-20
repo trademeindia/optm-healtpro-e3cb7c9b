@@ -5,6 +5,23 @@ import { HealthMetric } from '@/types/health';
 import { mockBiomarkers } from '@/data/mockBiomarkerData';
 
 /**
+ * Maps biomarker status values to HealthMetric status values
+ */
+const mapBiomarkerStatus = (status: 'normal' | 'elevated' | 'low' | 'critical'): 'normal' | 'warning' | 'critical' => {
+  switch (status) {
+    case 'normal':
+      return 'normal';
+    case 'critical':
+      return 'critical';
+    case 'elevated':
+    case 'low':
+      return 'warning';
+    default:
+      return 'normal';
+  }
+};
+
+/**
  * Transforms fitness data and biomarkers into health metrics for dashboard display
  */
 export const useHealthMetrics = (fitnessData?: FitnessData): HealthMetric[] => {
@@ -53,14 +70,14 @@ export const useHealthMetrics = (fitnessData?: FitnessData): HealthMetric[] => {
       }
     ];
     
-    // Add biomarker-based metrics
+    // Add biomarker-based metrics with proper status mapping
     mockBiomarkers.forEach(biomarker => {
       metrics.push({
         id: `metric-${biomarker.id}`,
         name: biomarker.name,
         value: biomarker.value,
         unit: biomarker.unit,
-        status: biomarker.status,
+        status: mapBiomarkerStatus(biomarker.status),
         category: 'Biomarkers',
         change: 0,
         trend: biomarker.trend || 'stable',
