@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -61,13 +60,17 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
   });
   
   const handleInputChange = (section: keyof OptmPatientData, field: string, value: any) => {
-    setPatientData(prev => ({
-      ...prev,
-      [section]: {
-        ...(prev[section] || {}),
-        [field]: value
-      }
-    }));
+    setPatientData(prev => {
+      const sectionData = prev[section] || {};
+      
+      return {
+        ...prev,
+        [section]: {
+          ...sectionData,
+          [field]: value
+        }
+      };
+    });
   };
   
   const handleBiomarkerChange = (marker: keyof MusculoskeletalBiomarkers, value: string) => {
@@ -215,7 +218,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Update timestamp
     const dataToSubmit = {
       ...patientData,
       lastUpdated: new Date().toISOString()
@@ -259,7 +261,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
               </TabsTrigger>
             </TabsList>
             
-            {/* Patient Info Tab */}
             <TabsContent value="patient-info" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -335,7 +336,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
               </div>
             </TabsContent>
             
-            {/* Biomarkers Tab */}
             <TabsContent value="biomarkers" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 mb-2">
@@ -444,7 +444,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
               </div>
             </TabsContent>
             
-            {/* Anatomical Tab */}
             <TabsContent value="anatomical" className="space-y-6">
               <div className="space-y-4">
                 <div>
@@ -715,7 +714,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
               </div>
             </TabsContent>
             
-            {/* Mobility Tab */}
             <TabsContent value="mobility" className="space-y-6">
               <div className="space-y-6">
                 <div>
@@ -926,7 +924,6 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
               </div>
             </TabsContent>
             
-            {/* Imaging Tab */}
             <TabsContent value="imaging" className="space-y-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Imaging Data</h3>
