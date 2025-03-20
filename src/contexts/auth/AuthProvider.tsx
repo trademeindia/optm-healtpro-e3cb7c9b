@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -45,18 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     checkSession();
     
-    // Add event listener for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
       
-      // If the user is signed out, make sure we clear the user state
       if (event === 'SIGNED_OUT') {
         setUser(null);
       }
       
-      // If the user is signed in, update the user state
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-        // Import formatUser dynamically to avoid circular dependencies
         const { formatUser } = await import('./utils');
         try {
           const formattedUser = await formatUser(session.user);
@@ -77,7 +72,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      // Handle demo accounts with predefined roles and IDs
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
           id: `demo-admin-${Date.now()}`,
@@ -114,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: 'patient',
           provider: 'email',
           picture: null,
-          patientId: 'demo-patient-id-123' // Link to patient records
+          patientId: 'demo-patient-id-123'
         };
         
         setUser(demoUser);
@@ -136,7 +130,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return demoUser;
       }
       
-      // Regular login for non-demo users
       return await loginBase(email, password);
     } catch (error) {
       console.error('Login error:', error);
@@ -145,10 +138,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleOAuthCallback = async (provider: string, code: string) => {
+  const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      return await handleOAuthCallbackBase(provider, code, user);
+      await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');

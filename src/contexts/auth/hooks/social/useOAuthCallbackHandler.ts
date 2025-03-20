@@ -10,7 +10,7 @@ type UseOAuthCallbackHandlerProps = {
 };
 
 export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCallbackHandlerProps) => {
-  const handleOAuthCallback = async (provider: string, code: string, currentUser: User | null) => {
+  const handleOAuthCallback = async (provider: string, code: string, currentUser: User | null): Promise<void> => {
     setIsLoading(true);
     
     try {
@@ -31,12 +31,10 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         throw error;
       }
       
-      let user: User | null = null;
-      
       // If we have a session, format the user
       if (data.session) {
         console.log('Session found in callback, formatting user');
-        user = await formatUser(data.session.user);
+        const user = await formatUser(data.session.user);
         
         if (user) {
           console.log(`User successfully authenticated: ${user.email} (${user.role})`);
@@ -57,8 +55,6 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         toast.error('Authentication failed: No session found');
         throw new Error('No session found after OAuth callback');
       }
-      
-      return user;
     } catch (error: any) {
       console.error(`Error processing OAuth callback: ${error.message}`, error);
       toast.error(`Authentication failed: ${error.message}`);
