@@ -15,7 +15,7 @@ export const useOAuthCallback = () => {
   const { user, isLoading, handleOAuthCallback } = useAuth();
   const [searchParams] = useSearchParams();
   
-  const provider = searchParams.get('provider') || 'unknown';
+  const provider = searchParams.get('provider') || 'google'; // Default to google if not specified
   const errorCode = searchParams.get('error') || null;
   const errorDescription = searchParams.get('error_description') || null;
   const code = searchParams.get('code') || '';
@@ -56,7 +56,22 @@ export const useOAuthCallback = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         console.log('Active session found, redirecting to dashboard');
-        navigate('/patient-dashboard');
+        
+        // Get the user's role from the session
+        const { formatUser } = await import('@/contexts/auth/utils');
+        const formattedUser = await formatUser(sessionData.session.user);
+        
+        if (formattedUser) {
+          const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
+                            formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
+                            '/dashboard/patient';
+                            
+          toast.success('Successfully signed in!');
+          navigate(dashboard);
+          return;
+        } else {
+          navigate('/patient-dashboard'); // Default dashboard
+        }
         return;
       }
       
@@ -75,7 +90,20 @@ export const useOAuthCallback = () => {
           if (updatedSession.session) {
             console.log('Session established after OAuth callback, redirecting');
             toast.success('Successfully signed in!');
-            navigate('/patient-dashboard');
+            
+            // Get the user's role from the session
+            const { formatUser } = await import('@/contexts/auth/utils');
+            const formattedUser = await formatUser(updatedSession.session.user);
+            
+            if (formattedUser) {
+              const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
+                                formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
+                                '/dashboard/patient';
+                                
+              navigate(dashboard);
+            } else {
+              navigate('/patient-dashboard'); // Default dashboard
+            }
             return;
           }
         } catch (callbackError) {

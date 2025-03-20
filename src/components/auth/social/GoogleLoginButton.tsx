@@ -9,9 +9,18 @@ interface GoogleLoginButtonProps {
 }
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onLogin, disabled }) => {
+  const handleLogin = async () => {
+    try {
+      await onLogin();
+    } catch (error) {
+      console.error('Google login error:', error);
+      // Error handling is now done in onLogin function
+    }
+  };
+
   return (
     <SocialButton
-      onClick={onLogin}
+      onClick={handleLogin}
       disabled={disabled}
       icon={<FcGoogle className="h-5 w-5" />}
       provider="Google"

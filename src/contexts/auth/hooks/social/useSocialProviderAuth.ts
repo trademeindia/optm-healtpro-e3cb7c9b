@@ -33,27 +33,19 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
         duration: 3000
       });
       
-      // Create the OAuth options
+      // Create the OAuth options with proper scopes and access type for refresh tokens
       const options = {
         redirectTo,
-        queryParams: {}
-      };
-      
-      // Add provider-specific options
-      if (provider === 'google') {
-        options.queryParams = {
+        queryParams: {
           access_type: 'offline',
           prompt: 'select_account'
-        };
-      }
+        }
+      };
       
-      // Use the correct structure for OAuth
+      // Use the correct structure for OAuth with explicit scopes for Google
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          ...options,
-          scopes: 'email profile',
-        }
+        options
       });
 
       console.log("OAuth initiation response:", 
@@ -71,7 +63,7 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
         } else if (error.message.includes('missing OAuth secret')) {
           errorMessage = `${provider} login configuration is incomplete.`;
           console.error(`Error: ${provider} provider is missing OAuth Client ID or Client Secret in Supabase Authentication > Providers.`);
-        } else if (error.message.includes('requested url is invalid')) {
+        } else if (error.message.includes('requested path is invalid')) {
           errorMessage = `Authentication configuration error. Invalid redirect URL.`;
           console.error(`Error: Your Supabase project needs Site URL and Redirect URLs configured in Authentication > URL Configuration. Check that ${redirectTo} is added as a valid redirect URL.`);
         } else {
