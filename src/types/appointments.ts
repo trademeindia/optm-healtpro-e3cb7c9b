@@ -1,24 +1,28 @@
 
-export interface Provider {
-  id: string;
-  name: string;
-  specialty: string;
-  avatarUrl?: string;
-}
-
-export interface Appointment {
+export interface AppointmentWithProvider {
   id: string;
   patientId: string;
   providerId: string;
   date: string;
   time: string;
-  status: 'scheduled' | 'confirmed' | 'cancelled' | 'completed' | 'rescheduled';
+  status: string;
   type: string;
   location: string;
   notes?: string;
-  doctor?: string; // Added for compatibility
+  provider: {
+    id: string;
+    name: string;
+    specialty: string;
+    avatarUrl?: string;
+  };
 }
 
-export interface AppointmentWithProvider extends Appointment {
-  provider: Provider;
+export interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  type: string;
+  doctor: string;
+  status: string;
+  location: string;
 }

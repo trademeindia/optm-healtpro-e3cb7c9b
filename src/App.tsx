@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -176,7 +175,7 @@ function App() {
                       </ProtectedRoute>
                     } />
                     <Route path="/appointments" element={
-                      <ProtectedRoute requiredRole="receptionist">
+                      <ProtectedRoute>
                         <AppointmentsPage />
                       </ProtectedRoute>
                     } />
