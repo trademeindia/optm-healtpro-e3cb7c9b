@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -28,6 +29,7 @@ const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 const HealthAppsPage = lazy(() => import('./pages/HealthAppsPage'));
 const AIAnalysisPage = lazy(() => import('./pages/AIAnalysisPage'));
 const AnatomyMapPage = lazy(() => import('./pages/AnatomyMapPage'));
+const OptmHealthPage = lazy(() => import('./pages/OptmHealthPage'));
 
 // Create a client with better error handling
 const queryClient = new QueryClient({
@@ -133,6 +135,11 @@ function App() {
                     <Route path="/reports" element={
                       <ProtectedRoute requiredRole="doctor">
                         <ReportsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/optm-health" element={
+                      <ProtectedRoute requiredRole="doctor">
+                        <OptmHealthPage />
                       </ProtectedRoute>
                     } />
                     
