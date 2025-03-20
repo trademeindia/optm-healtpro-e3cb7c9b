@@ -16,6 +16,6 @@ export interface UseHealthDataResult {
   hasGoogleFitConnected: boolean;
   connections: FitnessConnection[];
   syncData: (forceRefresh?: boolean) => Promise<boolean>;
-  getMetricHistory: (type: HealthMetricType) => any[];
+  getMetricHistory: (type: HealthMetricType) => Promise<any[]>; // Updated to return Promise
   setTimeRange: (range: TimeRange) => void;
 }
