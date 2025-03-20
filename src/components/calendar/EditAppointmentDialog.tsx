@@ -1,11 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CalendarEvent } from '@/hooks/calendar/types';
 import AppointmentDialogForm from './appointments/AppointmentDialogForm';
 import { useAppointmentDates } from '@/hooks/calendar/useAppointmentDates';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { Spinner } from '@/components/ui/spinner';
+import { ErrorBoundaryWithFallback } from '@/pages/dashboard/components/tabs/overview/ErrorBoundaryWithFallback';
 
 interface EditAppointmentDialogProps {
   open: boolean;
@@ -15,15 +18,19 @@ interface EditAppointmentDialogProps {
   event: CalendarEvent;
 }
 
-const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
+// Memoize the component to prevent unnecessary re-renders
+const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = memo(({
   open,
   onClose,
   onUpdate,
   onDelete,
   event
 }) => {
-  const startDate = event.start instanceof Date ? event.start : new Date(event.start);
-  const endDate = event.end instanceof Date ? event.end : new Date(event.end);
+  // Extract clear initial values from event props
+  const startDate = event?.start instanceof Date ? event.start : new Date(event?.start || Date.now());
+  
+  // Create a reference to the initial event to prevent unnecessary updates
+  const eventRef = React.useRef(event);
   
   const {
     date,
@@ -35,20 +42,24 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     validateTimeRange
   } = useAppointmentDates(startDate);
   
-  const [type, setType] = useState<string>(event.type || "New Appointment");
-  const [patient, setPatient] = useState<string>(event.patientName || "");
-  const [location, setLocation] = useState<string>(event.location || "");
-  const [notes, setNotes] = useState<string>(event.description || "");
+  const [type, setType] = useState<string>(event?.type || "New Appointment");
+  const [patient, setPatient] = useState<string>(event?.patientName || "");
+  const [location, setLocation] = useState<string>(event?.location || "");
+  const [notes, setNotes] = useState<string>(event?.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Update local state when event props change
+  // Reset form when event changes or dialog opens
   useEffect(() => {
-    if (event) {
-      const start = event.start instanceof Date ? event.start : new Date(event.start);
-      const end = event.end instanceof Date ? event.end : new Date(event.end);
+    if (event && open) {
+      const start = event.start instanceof Date ? event.start : new Date(event.start || Date.now());
+      const end = event.end instanceof Date ? event.end : new Date(event.end || Date.now());
       
+      // Update the event reference
+      eventRef.current = event;
+      
+      // Batch state updates to reduce renders
       setDate(start);
       setStartTime(formatDate(start, "h:mm a"));
       setEndTime(formatDate(end, "h:mm a"));
@@ -57,10 +68,12 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
       setLocation(event.location || "");
       setNotes(event.description || "");
       setValidationErrors({});
+      setIsLoading(false);
+      setIsDeleting(false);
     }
-  }, [event, setDate]);
+  }, [event, open, setDate]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const errors: Record<string, string> = {};
     
     if (!patient.trim()) {
@@ -78,14 +91,16 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [patient, type, validateTimeRange]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (isLoading || isDeleting) return;
     
     // Validate form fields
     if (!validateForm()) {
-      // Display validation errors
       Object.values(validationErrors).forEach(error => {
         toast.error(error);
       });
@@ -95,8 +110,13 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     setIsLoading(true);
     
     try {
+      // Ensure we have the current event ID
+      if (!eventRef.current || !eventRef.current.id) {
+        throw new Error("Event ID is missing");
+      }
+      
       const success = await onUpdate({
-        id: event.id,
+        id: eventRef.current.id,
         title: `${type} - ${patient}`,
         start: date,
         end: date,
@@ -109,9 +129,11 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
       if (!success) {
         throw new Error("Update failed");
       }
+      
       toast.success("Appointment updated successfully", {
         description: "Your changes have been synced with Google Calendar."
       });
+      
       onClose();
     } catch (error) {
       console.error("Error updating appointment:", error);
@@ -121,14 +143,22 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, isDeleting, validateForm, validationErrors, onUpdate, date, type, patient, location, notes, onClose]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
+    // Prevent multiple submissions
+    if (isLoading || isDeleting) return;
+    
     if (confirm("Are you sure you want to delete this appointment?")) {
       setIsDeleting(true);
       
       try {
-        const success = await onDelete(event.id);
+        // Ensure we have the current event ID
+        if (!eventRef.current || !eventRef.current.id) {
+          throw new Error("Event ID is missing");
+        }
+        
+        const success = await onDelete(eventRef.current.id);
         if (success) {
           toast.success("Appointment deleted successfully", {
             description: "The appointment has been removed from Google Calendar."
@@ -146,71 +176,99 @@ const EditAppointmentDialog: React.FC<EditAppointmentDialogProps> = ({
         setIsDeleting(false);
       }
     }
-  };
+  }, [isLoading, isDeleting, onDelete, onClose]);
+
+  const handleRetry = useCallback(() => {
+    // Reset state and errors on retry
+    setValidationErrors({});
+    setIsLoading(false);
+    setIsDeleting(false);
+  }, []);
 
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(open) => !open && !isLoading && !isDeleting && onClose()}
+    >
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Edit Appointment</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <AppointmentDialogForm
-            date={date}
-            setDate={setDate}
-            startTime={startTime}
-            setStartTime={setStartTime}
-            endTime={endTime}
-            setEndTime={setEndTime}
-            type={type}
-            setType={setType}
-            patient={patient}
-            setPatient={setPatient}
-            location={location}
-            setLocation={setLocation}
-            notes={notes}
-            setNotes={setNotes}
-            validationErrors={validationErrors}
-          />
-          
-          <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-between">
-            <Button 
-              type="button" 
-              variant="destructive" 
-              onClick={handleDelete}
-              disabled={isLoading || isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete Appointment"}
-            </Button>
+        <ErrorBoundaryWithFallback onRetry={handleRetry}>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <AppointmentDialogForm
+              date={date}
+              setDate={setDate}
+              startTime={startTime}
+              setStartTime={setStartTime}
+              endTime={endTime}
+              setEndTime={setEndTime}
+              type={type}
+              setType={setType}
+              patient={patient}
+              setPatient={setPatient}
+              location={location}
+              setLocation={setLocation}
+              notes={notes}
+              setNotes={setNotes}
+              validationErrors={validationErrors}
+            />
             
-            <div className="flex gap-2 mb-2 sm:mb-0">
+            <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-between">
               <Button 
                 type="button" 
-                variant="outline" 
-                onClick={onClose}
+                variant="destructive" 
+                onClick={handleDelete}
                 disabled={isLoading || isDeleting}
               >
-                Cancel
+                {isDeleting ? (
+                  <>
+                    <Spinner size="sm" className="mr-2" />
+                    Deleting...
+                  </>
+                ) : "Delete Appointment"}
               </Button>
-              <Button 
-                type="submit"
-                disabled={isLoading || isDeleting}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </DialogFooter>
-        </form>
+              
+              <div className="flex gap-2 mb-2 sm:mb-0">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onClose}
+                  disabled={isLoading || isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={isLoading || isDeleting}
+                >
+                  {isLoading ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Saving...
+                    </>
+                  ) : "Save Changes"}
+                </Button>
+              </div>
+            </DialogFooter>
+          </form>
+        </ErrorBoundaryWithFallback>
       </DialogContent>
     </Dialog>
   );
-};
+});
+
+EditAppointmentDialog.displayName = "EditAppointmentDialog";
 
 export default EditAppointmentDialog;
 
 // Helper function to format dates
 const formatDate = (date: Date, formatString: string): string => {
-  const format = require('date-fns/format');
-  return format(date, formatString);
+  try {
+    return format(date, formatString);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
 };
