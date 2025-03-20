@@ -57,7 +57,6 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
       <TabsContent value="patients" className="mt-0">
         <PatientsTab 
-          // We need to update the PatientsTab component to expect these props
           patients={dashboardData.patients}
           selectedPatient={selectedPatient}
           onViewPatient={handleViewPatient}

@@ -8,3 +8,6 @@ export { default as MetricsSection } from './MetricsSection';
 export { default as SummaryTabContent } from './SummaryTabContent';
 export { default as PatientHeader } from './PatientHeader';
 export { default as PlaceholderTabContent } from './PlaceholderTabContent';
+export { default as AnatomicalTabContent } from './AnatomicalTabContent';
+export { default as MobilityTabContent } from './MobilityTabContent';
+export { default as BiomarkersTabContent } from './BiomarkersTabContent';

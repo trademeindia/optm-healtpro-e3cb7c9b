@@ -2,8 +2,6 @@
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import HealthInsightCategory from './HealthInsightCategory';
-import { IconType } from './types';
-import { HealthInsightCategoryData } from './types';
 
 interface InsightTabProps {
   value: string;

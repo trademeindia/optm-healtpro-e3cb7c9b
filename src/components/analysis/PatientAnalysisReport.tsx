@@ -1,9 +1,13 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PatientHeader from './PatientHeader';
 import SummaryTabContent from './SummaryTabContent';
 import PlaceholderTabContent from './PlaceholderTabContent';
+import BiomarkersTabContent from './BiomarkersTabContent';
+import AnatomicalTabContent from './AnatomicalTabContent';
+import MobilityTabContent from './MobilityTabContent';
 
 const PatientAnalysisReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
@@ -80,28 +84,22 @@ const PatientAnalysisReport: React.FC = () => {
             <SummaryTabContent metrics={patientData.metrics} />
           </TabsContent>
           
-          {/* Other tabs content */}
+          {/* Biomarkers Tab */}
           <TabsContent value="biomarkers" className="space-y-4">
-            <PlaceholderTabContent 
-              title="Biomarkers Detail View" 
-              description="Detailed biomarker analysis will be displayed here." 
-            />
+            <BiomarkersTabContent biomarkers={patientData.metrics} />
           </TabsContent>
           
+          {/* Anatomical Tab */}
           <TabsContent value="anatomical" className="space-y-4">
-            <PlaceholderTabContent 
-              title="Anatomical Measurements" 
-              description="Detailed anatomical measurements will be displayed here." 
-            />
+            <AnatomicalTabContent anatomicalMetrics={patientData.metrics.anatomical} />
           </TabsContent>
           
+          {/* Mobility Tab */}
           <TabsContent value="mobility" className="space-y-4">
-            <PlaceholderTabContent 
-              title="Mobility Assessment" 
-              description="Detailed mobility assessment will be displayed here." 
-            />
+            <MobilityTabContent mobilityMetrics={patientData.metrics.mobility} />
           </TabsContent>
           
+          {/* Imaging Tab */}
           <TabsContent value="imaging" className="space-y-4">
             <PlaceholderTabContent 
               title="Imaging Results" 
