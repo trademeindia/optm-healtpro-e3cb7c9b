@@ -129,7 +129,7 @@ const PatientAnalysisReport: React.FC = () => {
                               <ArrowRight className="h-3 w-3 text-gray-400" />
                               <span className="font-semibold">{metric.value} {metric.unit}</span>
                               {metric.change !== 0 && (
-                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                <Badge variant={metric.change > 0 ? "default" : "destructive"} className={`ml-2 text-xs ${metric.change > 0 ? "bg-green-500 hover:bg-green-600" : ""}`}>
                                   {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
                                 </Badge>
                               )}
@@ -159,7 +159,7 @@ const PatientAnalysisReport: React.FC = () => {
                               <ArrowRight className="h-3 w-3 text-gray-400" />
                               <span className="font-semibold">{metric.value} {metric.unit}</span>
                               {metric.change !== 0 && (
-                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                <Badge variant={metric.change > 0 ? "default" : "destructive"} className={`ml-2 text-xs ${metric.change > 0 ? "bg-green-500 hover:bg-green-600" : ""}`}>
                                   {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
                                 </Badge>
                               )}
@@ -195,7 +195,7 @@ const PatientAnalysisReport: React.FC = () => {
                               <ArrowRight className="h-3 w-3 text-gray-400" />
                               <span className="font-semibold">{metric.value} {metric.unit}</span>
                               {metric.change !== 0 && (
-                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                <Badge variant={metric.change > 0 ? "default" : "destructive"} className={`ml-2 text-xs ${metric.change > 0 ? "bg-green-500 hover:bg-green-600" : ""}`}>
                                   {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
                                 </Badge>
                               )}
@@ -285,3 +285,4 @@ const PatientAnalysisReport: React.FC = () => {
 };
 
 export default PatientAnalysisReport;
+
