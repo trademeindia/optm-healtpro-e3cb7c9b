@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -11,18 +11,19 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
-
-// Import components
-import PatientProfileCard from '@/components/patient-dashboard/PatientProfileCard';
-import EnhancedMetricsOverview from '@/components/patient-dashboard/EnhancedMetricsOverview';
-import EnhancedBiologicalAgeMeter from '@/components/patient-dashboard/EnhancedBiologicalAgeMeter';
-import EnhancedTreatmentTasks from '@/components/patient-dashboard/EnhancedTreatmentTasks';
-import EnhancedAppointmentsList from '@/components/patient-dashboard/EnhancedAppointmentsList';
-import FitnessDataCharts from '@/components/dashboard/FitnessDataCharts';
-import AnatomicalBodyMap from '@/components/patient-dashboard/AnatomicalBodyMap';
-import RealTimeHealthMetrics from '@/components/patient-dashboard/RealTimeHealthMetrics';
-import AIHealthInsights from '@/components/patient-dashboard/AIHealthInsights';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
+import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
+
+// Lazy load components that are not immediately needed
+const PatientProfileCard = React.lazy(() => import('@/components/patient-dashboard/PatientProfileCard'));
+const EnhancedMetricsOverview = React.lazy(() => import('@/components/patient-dashboard/EnhancedMetricsOverview'));
+const EnhancedBiologicalAgeMeter = React.lazy(() => import('@/components/patient-dashboard/EnhancedBiologicalAgeMeter'));
+const EnhancedTreatmentTasks = React.lazy(() => import('@/components/patient-dashboard/EnhancedTreatmentTasks'));
+const EnhancedAppointmentsList = React.lazy(() => import('@/components/patient-dashboard/EnhancedAppointmentsList'));
+const FitnessDataCharts = React.lazy(() => import('@/components/dashboard/FitnessDataCharts'));
+const AnatomicalBodyMap = React.lazy(() => import('@/components/patient-dashboard/AnatomicalBodyMap'));
+const RealTimeHealthMetrics = React.lazy(() => import('@/components/patient-dashboard/RealTimeHealthMetrics'));
+const AIHealthInsights = React.lazy(() => import('@/components/patient-dashboard/AIHealthInsights'));
 
 // Define default FitnessData for components that require it
 const defaultFitnessData: FitnessData = {
@@ -40,10 +41,15 @@ const defaultFitnessData: FitnessData = {
   }
 };
 
+// Loading fallback for Suspense
+const ComponentSkeleton = () => (
+  <div className="w-full h-32 animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+);
+
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
   const {
     activityData,
@@ -56,17 +62,35 @@ const PatientDashboard: React.FC = () => {
     hasConnectedApps,
     handleConfirmAppointment,
     handleRescheduleAppointment,
-    handleSyncAllData
+    handleSyncAllData,
+    isLoading,
+    error
   } = usePatientDashboard();
 
-  // Force end loading state after timeout
+  // Handle errors and retries
   useEffect(() => {
+    if (error) {
+      console.error("Dashboard error detected:", error);
+      setHasError(true);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    // Force end loading state after timeout
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      if (isLoading) {
+        console.log("Loading timeout triggered");
+      }
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading]);
+
+  const handleRetry = () => {
+    setHasError(false);
+    setRetryCount(prev => prev + 1);
+    window.location.reload();
+  };
 
   // Always default to dashboard tab
   const initialTab = 'dashboard';
@@ -90,7 +114,7 @@ const PatientDashboard: React.FC = () => {
           <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Something went wrong</h2>
           <p className="text-muted-foreground mb-4">We encountered a problem loading your dashboard</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <Button onClick={handleRetry}>Try Again</Button>
         </div>
       </div>
     );
@@ -111,103 +135,123 @@ const PatientDashboard: React.FC = () => {
             </p>
           </div>
           
-          <SymptomProvider>
-            <DashboardTabs
-              initialTab={initialTab}
-              upcomingAppointments={upcomingAppointments || []}
-              onConfirmAppointment={handleConfirmAppointment}
-              onRescheduleAppointment={handleRescheduleAppointment}
-            >
-              <Tabs defaultValue="dashboard">
-                <TabsContent value="dashboard" className="space-y-6">
-                  {!hasConnectedApps && (
-                    <Alert variant="default" className="bg-primary/5 border border-primary/20">
-                      <AlertCircle className="h-4 w-4 text-primary" />
-                      <AlertTitle>No connected health apps</AlertTitle>
-                      <AlertDescription className="flex justify-between items-center">
-                        <span>
-                          Connect your health apps to see more accurate health data.
-                        </span>
-                        <Button variant="outline" size="sm" asChild>
-                          <a href="/health-apps">Connect Apps</a>
-                        </Button>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  {/* Patient Profile and Anatomical Map in top row */}
-                  <div className="grid md:grid-cols-12 gap-4">
-                    <div className="md:col-span-4">
-                      <PatientProfileCard 
-                        name={user?.name || 'Patient'} 
-                        patientId={user?.id || 'ABC123'}
-                        age={chronologicalAge || 35}
-                      />
-                    </div>
-                    <div className="md:col-span-8">
-                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full overflow-hidden">
-                        <AnatomicalBodyMap />
+          <ErrorBoundary onError={(error) => console.error("Error boundary caught:", error)}>
+            <SymptomProvider>
+              <DashboardTabs
+                initialTab={initialTab}
+                upcomingAppointments={upcomingAppointments || []}
+                onConfirmAppointment={handleConfirmAppointment}
+                onRescheduleAppointment={handleRescheduleAppointment}
+              >
+                <Tabs defaultValue="dashboard">
+                  <TabsContent value="dashboard" className="space-y-6">
+                    {!hasConnectedApps && (
+                      <Alert variant="default" className="bg-primary/5 border border-primary/20">
+                        <AlertCircle className="h-4 w-4 text-primary" />
+                        <AlertTitle>No connected health apps</AlertTitle>
+                        <AlertDescription className="flex justify-between items-center">
+                          <span>
+                            Connect your health apps to see more accurate health data.
+                          </span>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href="/health-apps">Connect Apps</a>
+                          </Button>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {/* Patient Profile and Anatomical Map in top row */}
+                    <div className="grid md:grid-cols-12 gap-4">
+                      <div className="md:col-span-4">
+                        <Suspense fallback={<ComponentSkeleton />}>
+                          <PatientProfileCard 
+                            name={user?.name || 'Patient'} 
+                            patientId={user?.id || 'ABC123'}
+                            age={chronologicalAge || 35}
+                          />
+                        </Suspense>
+                      </div>
+                      <div className="md:col-span-8">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full overflow-hidden">
+                          <Suspense fallback={<ComponentSkeleton />}>
+                            <AnatomicalBodyMap />
+                          </Suspense>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Health metrics */}
-                  {healthMetrics && healthMetrics.length > 0 && (
-                    <RealTimeHealthMetrics metrics={healthMetrics} />
-                  )}
-                  
-                  {/* AI Health Insights (only render if fitnessData exists) */}
-                  {fitnessData && Object.keys(fitnessData).length > 0 && (
-                    <AIHealthInsights fitnessData={fitnessData || defaultFitnessData} />
-                  )}
-                  
-                  {/* Health metrics and biological age */}
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2">
-                      <EnhancedMetricsOverview metrics={healthMetrics || []} />
-                    </div>
-                    <div className="md:col-span-1">
-                      <EnhancedBiologicalAgeMeter 
-                        biologicalAge={biologicalAge} 
-                        chronologicalAge={chronologicalAge} 
-                      />
-                    </div>
-                  </div>
-                  
-                  {hasConnectedApps && (
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">Your Fitness Activity</h3>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleSyncAllData}
-                        className="gap-1.5"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                        <span>Sync Data</span>
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {hasConnectedApps && fitnessData && (
-                    <FitnessDataCharts fitnessData={fitnessData || defaultFitnessData} />
-                  )}
-                  
-                  <div className="grid lg:grid-cols-2 gap-6">
-                    <div className="space-y-6">
-                      <EnhancedTreatmentTasks tasks={treatmentTasks || []} />
+                    
+                    {/* Health metrics */}
+                    {healthMetrics && healthMetrics.length > 0 && (
+                      <Suspense fallback={<ComponentSkeleton />}>
+                        <RealTimeHealthMetrics metrics={healthMetrics} />
+                      </Suspense>
+                    )}
+                    
+                    {/* AI Health Insights (only render if fitnessData exists) */}
+                    {fitnessData && Object.keys(fitnessData).length > 0 && (
+                      <Suspense fallback={<ComponentSkeleton />}>
+                        <AIHealthInsights fitnessData={fitnessData || defaultFitnessData} />
+                      </Suspense>
+                    )}
+                    
+                    {/* Health metrics and biological age */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="md:col-span-2">
+                        <Suspense fallback={<ComponentSkeleton />}>
+                          <EnhancedMetricsOverview metrics={healthMetrics || []} />
+                        </Suspense>
+                      </div>
+                      <div className="md:col-span-1">
+                        <Suspense fallback={<ComponentSkeleton />}>
+                          <EnhancedBiologicalAgeMeter 
+                            biologicalAge={biologicalAge} 
+                            chronologicalAge={chronologicalAge} 
+                          />
+                        </Suspense>
+                      </div>
                     </div>
                     
-                    <EnhancedAppointmentsList 
-                      appointments={upcomingAppointments || []} 
-                      onConfirm={handleConfirmAppointment}
-                      onReschedule={handleRescheduleAppointment}
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </DashboardTabs>
-          </SymptomProvider>
+                    {hasConnectedApps && (
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Your Fitness Activity</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleSyncAllData}
+                          className="gap-1.5"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          <span>Sync Data</span>
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {hasConnectedApps && fitnessData && (
+                      <Suspense fallback={<ComponentSkeleton />}>
+                        <FitnessDataCharts fitnessData={fitnessData || defaultFitnessData} />
+                      </Suspense>
+                    )}
+                    
+                    <div className="grid lg:grid-cols-2 gap-6">
+                      <div className="space-y-6">
+                        <Suspense fallback={<ComponentSkeleton />}>
+                          <EnhancedTreatmentTasks tasks={treatmentTasks || []} />
+                        </Suspense>
+                      </div>
+                      
+                      <Suspense fallback={<ComponentSkeleton />}>
+                        <EnhancedAppointmentsList 
+                          appointments={upcomingAppointments || []} 
+                          onConfirm={handleConfirmAppointment}
+                          onReschedule={handleRescheduleAppointment}
+                        />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </DashboardTabs>
+            </SymptomProvider>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

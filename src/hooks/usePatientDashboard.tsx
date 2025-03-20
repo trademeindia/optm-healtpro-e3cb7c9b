@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import useFitnessIntegration from '@/hooks/useFitnessIntegration';
 import { mockBiologicalAge, mockChronologicalAge } from '@/data/mockBiomarkerData';
@@ -29,6 +29,7 @@ const defaultFitnessData: FitnessData = {
 export const usePatientDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [dataInitialized, setDataInitialized] = useState(false);
 
   // Try-catch around integration to prevent dashboard from crashing
   const { 
@@ -37,9 +38,12 @@ export const usePatientDashboard = () => {
     refreshProviderData = async () => {}
   } = useFitnessIntegration();
 
-  // Set defaults for all data to prevent undefined errors
-  const healthMetrics: HealthMetric[] = useHealthMetrics(fitnessData) || [];
-  const { activityData = {}, fitnessData: transformedFitnessData = defaultFitnessData } = useActivityData(fitnessData);
+  // Memoize data processing to avoid redundant calculations
+  const healthMetrics = useHealthMetrics(fitnessData) || [];
+  const { 
+    activityData = {}, 
+    fitnessData: transformedFitnessData = defaultFitnessData 
+  } = useActivityData(fitnessData);
   const treatmentTasks = useTreatmentTasks() || [];
   const { 
     upcomingAppointments = [], 
@@ -47,16 +51,29 @@ export const usePatientDashboard = () => {
     handleRescheduleAppointment = () => {} 
   } = useAppointments();
 
-  // Set loading to false after a short delay
+  // Initialize data with a more reliable approach
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    const initializeData = async () => {
+      try {
+        // Set a shorter timeout to avoid long loading screens
+        setTimeout(() => {
+          if (!dataInitialized) {
+            setDataInitialized(true);
+            setIsLoading(false);
+          }
+        }, 800);
+      } catch (err) {
+        console.error("Dashboard initialization error:", err);
+        setError(err instanceof Error ? err : new Error('Unknown error during initialization'));
+        setIsLoading(false);
+      }
+    };
 
-  const handleSyncAllData = async () => {
+    initializeData();
+  }, [dataInitialized]);
+
+  // Create a memoized sync function to prevent unnecessary re-renders
+  const handleSyncAllData = useCallback(async () => {
     try {
       const connectedProviders = providers.filter(p => p.isConnected);
       if (connectedProviders.length === 0) {
@@ -72,9 +89,10 @@ export const usePatientDashboard = () => {
         duration: 3000
       });
 
-      for (const provider of connectedProviders) {
-        await refreshProviderData(provider.id);
-      }
+      // Use Promise.all for concurrent requests
+      await Promise.all(
+        connectedProviders.map(provider => refreshProviderData(provider.id))
+      );
 
       toast.success("Sync complete", {
         description: "Your health data has been updated.",
@@ -87,7 +105,7 @@ export const usePatientDashboard = () => {
         duration: 4000
       });
     }
-  };
+  }, [providers, refreshProviderData]);
 
   const hasConnectedApps = Array.isArray(providers) && providers.some(p => p.isConnected);
 
