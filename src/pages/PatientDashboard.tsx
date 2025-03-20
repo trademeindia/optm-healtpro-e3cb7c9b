@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
 import usePatientDashboard from '@/hooks/usePatientDashboard';
 import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
-import { AppointmentWithProvider } from '@/types/appointments';
+import { Appointment, AppointmentWithProvider } from '@/types/appointments';
 import DashboardHeader from '@/components/patient-dashboard/dashboard/DashboardHeader';
 import DashboardContent from '@/components/patient-dashboard/dashboard/DashboardContent';
 import DashboardLoading from '@/components/patient-dashboard/dashboard/DashboardLoading';
@@ -53,15 +53,15 @@ const PatientDashboard: React.FC = () => {
   // Format appointments for the components that need the AppointmentWithProvider type
   const formattedAppointments: AppointmentWithProvider[] = upcomingAppointments.map(appointment => ({
     id: appointment.id,
-    patientId: appointment.patientId || 'patient-1',
-    providerId: appointment.providerId || 'doc-1',
+    patientId: appointment.patientId,
+    providerId: appointment.providerId,
     date: appointment.date,
     time: appointment.time,
     status: appointment.status || 'scheduled',
     type: appointment.type,
-    location: appointment.location || 'Main Clinic',
+    location: appointment.location,
     provider: appointment.provider || {
-      id: appointment.providerId || 'doc-1',
+      id: appointment.providerId,
       name: appointment.doctor,
       specialty: 'General Medicine',
     }

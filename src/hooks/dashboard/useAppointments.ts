@@ -3,16 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
-
-export interface Appointment {
-  id: string;
-  date: string;
-  time: string;
-  doctor: string;
-  type: string;
-  status?: string;
-  location?: string;
-}
+import { Appointment } from '@/types/appointments';
 
 export function useAppointments() {
   const { user } = useAuth();
@@ -36,27 +27,48 @@ export function useAppointments() {
           date: '2023-06-20T10:30:00',
           time: '10:30 AM',
           doctor: 'Dr. Nikolas Pascal',
+          patientId: 'p1',
+          providerId: 'dr1',
           type: 'Follow-up',
           status: 'scheduled',
-          location: 'Main Clinic'
+          location: 'Main Clinic',
+          provider: {
+            id: 'dr1',
+            name: 'Dr. Nikolas Pascal',
+            specialty: 'General Medicine'
+          }
         },
         {
           id: '2',
           date: '2023-07-05T14:00:00',
           time: '02:00 PM',
           doctor: 'Dr. Nikolas Pascal',
+          patientId: 'p1',
+          providerId: 'dr2',
           type: 'Physical Therapy',
           status: 'scheduled',
-          location: 'Rehabilitation Center'
+          location: 'Rehabilitation Center',
+          provider: {
+            id: 'dr2',
+            name: 'Dr. Nikolas Pascal',
+            specialty: 'Physical Therapy'
+          }
         },
         {
           id: '3',
           date: '2023-05-15T09:00:00',
           time: '09:00 AM',
           doctor: 'Dr. Sarah Johnson',
+          patientId: 'p1',
+          providerId: 'dr3',
           type: 'Annual Check-up',
           status: 'completed',
-          location: 'Main Clinic'
+          location: 'Main Clinic',
+          provider: {
+            id: 'dr3',
+            name: 'Dr. Sarah Johnson',
+            specialty: 'Internal Medicine'
+          }
         }
       ];
       

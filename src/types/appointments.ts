@@ -6,10 +6,11 @@ export interface Appointment {
   status?: string;
   type: string;
   doctor: string;
-  patientId?: string;
-  providerId?: string;
-  location?: string;
-  provider?: {
+  patientId: string;
+  providerId: string;
+  location: string;
+  notes?: string;
+  provider: {
     id: string;
     name: string;
     specialty: string;
@@ -25,6 +26,7 @@ export interface AppointmentWithProvider {
   status: string;
   type: string;
   location: string;
+  notes?: string;
   provider: {
     id: string;
     name: string;

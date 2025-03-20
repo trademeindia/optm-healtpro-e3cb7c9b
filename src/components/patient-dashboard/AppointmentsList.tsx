@@ -30,8 +30,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       provider: {
         id: 'dr1',
         name: 'Dr. Sarah Johnson',
-        specialty: 'Orthopedics',
-        avatarUrl: ''
+        specialty: 'Orthopedics'
       }
     },
     {
@@ -46,8 +45,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       provider: {
         id: 'dr2',
         name: 'Dr. Michael Chen',
-        specialty: 'Physical Therapy',
-        avatarUrl: ''
+        specialty: 'Physical Therapy'
       }
     }
   ];
