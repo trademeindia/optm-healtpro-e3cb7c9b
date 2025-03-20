@@ -9,6 +9,7 @@ import { useAppointments } from './dashboard/useAppointments';
 import { useTreatmentTasks } from './dashboard/useTreatmentTasks';
 import { HealthMetric } from '@/types/health';
 import { FitnessData } from '@/hooks/useFitnessIntegration';
+import { useAppointmentStatus } from './calendar/useAppointmentStatus';
 
 // Define a default FitnessData object to use as fallback
 const defaultFitnessData: FitnessData = {
@@ -50,6 +51,12 @@ export const usePatientDashboard = () => {
     handleConfirmAppointment = () => {}, 
     handleRescheduleAppointment = () => {} 
   } = useAppointments();
+  
+  // Get appointment status management functions
+  const { 
+    handleCancelAppointment,
+    handleConfirmAppointment: confirmAppointment
+  } = useAppointmentStatus();
 
   // Initialize data with a more reliable approach
   useEffect(() => {
@@ -107,6 +114,46 @@ export const usePatientDashboard = () => {
     }
   }, [providers, refreshProviderData]);
 
+  // Enhanced appointment management functions that update Google Calendar
+  const handleAppointmentAction = useCallback(async (
+    appointmentId: string,
+    action: 'confirm' | 'cancel' | 'reschedule'
+  ) => {
+    try {
+      let success = false;
+      
+      switch(action) {
+        case 'confirm':
+          success = await confirmAppointment(appointmentId);
+          break;
+        case 'cancel':
+          success = await handleCancelAppointment(appointmentId);
+          break;
+        case 'reschedule':
+          // This will be handled by the calendar component
+          handleRescheduleAppointment(appointmentId);
+          success = true;
+          break;
+      }
+      
+      if (success && action !== 'reschedule') {
+        toast.success(`Appointment ${action}ed`, {
+          description: `Your appointment has been ${action}ed and synced with Google Calendar.`,
+          duration: 3000
+        });
+      }
+      
+      return success;
+    } catch (error) {
+      console.error(`Error ${action}ing appointment:`, error);
+      toast.error(`Failed to ${action} appointment`, {
+        description: "There was a problem updating your appointment.",
+        duration: 4000
+      });
+      return false;
+    }
+  }, [confirmAppointment, handleCancelAppointment, handleRescheduleAppointment]);
+
   const hasConnectedApps = Array.isArray(providers) && providers.some(p => p.isConnected);
 
   return {
@@ -118,8 +165,9 @@ export const usePatientDashboard = () => {
     hasConnectedApps,
     biologicalAge: mockBiologicalAge,
     chronologicalAge: mockChronologicalAge,
-    handleConfirmAppointment,
-    handleRescheduleAppointment,
+    handleConfirmAppointment: (id: string) => handleAppointmentAction(id, 'confirm'),
+    handleCancelAppointment: (id: string) => handleAppointmentAction(id, 'cancel'),
+    handleRescheduleAppointment: (id: string) => handleAppointmentAction(id, 'reschedule'),
     handleSyncAllData,
     isLoading,
     error
