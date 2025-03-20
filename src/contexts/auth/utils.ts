@@ -23,7 +23,7 @@ export const createUserProfile = async (
   id: string,
   email: string,
   name: string,
-  role: 'doctor' | 'patient' | 'receptionist',
+  role: UserRole, // Changed from 'doctor' | 'patient' | 'receptionist' to UserRole
   provider: Provider,
   picture: string
 ): Promise<UserSession | null> => {
