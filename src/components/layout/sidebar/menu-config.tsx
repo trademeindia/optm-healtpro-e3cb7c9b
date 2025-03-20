@@ -15,7 +15,8 @@ import {
   DollarSign,
   PackageCheck,
   PhoneCall,
-  ClipboardList
+  ClipboardList,
+  LineChart
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -66,6 +67,12 @@ export const getPatientMenuItems = (): MenuItem[] => [
     description: 'Get AI-powered analysis of your medical reports',
     badge: 'New',
     badgeColor: 'blue'
+  },
+  { 
+    icon: LineChart, 
+    label: 'Analysis', 
+    path: '/analysis',
+    description: 'View detailed analysis of your treatment progress',
   },
   { 
     icon: Activity, 
