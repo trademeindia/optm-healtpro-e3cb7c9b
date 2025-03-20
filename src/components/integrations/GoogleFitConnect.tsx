@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { Loader2 } from 'lucide-react';
 
 // Google Fit API scopes needed for our application
 const GOOGLE_FIT_SCOPES = [
@@ -44,17 +45,21 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
   size = 'default'
 }) => {
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectStatus, setConnectStatus] = useState<'idle' | 'connecting' | 'retrying'>('idle');
   const { user } = useAuth();
 
   const handleConnectGoogleFit = async () => {
     if (!user) {
-      toast.error("You must be logged in to connect Google Fit");
+      toast.error("You must be logged in to connect Google Fit", {
+        description: "Please log in to connect your Google Fit account."
+      });
       return;
     }
 
     // For demo users, simulate connection
     if (user.id.startsWith('demo-')) {
       setIsConnecting(true);
+      setConnectStatus('connecting');
       
       // Simulate a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -69,23 +74,43 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       }
       
       setIsConnecting(false);
+      setConnectStatus('idle');
       return;
     }
 
     setIsConnecting(true);
+    setConnectStatus('connecting');
     try {
-      // Use the edge function directly via Supabase - this is the core fix
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://xjxxuqqyjqzgmvtgrpgv.supabase.co"}/functions/v1/connect-google-fit`;
-      
       // Store current URL in localStorage to redirect back after auth
       localStorage.setItem('healthAppRedirectUrl', window.location.href);
+      localStorage.setItem('googleFitConnectTime', Date.now().toString());
+      
+      // Use the edge function directly via Supabase
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/connect-google-fit`;
+      
+      // Log for debugging
+      console.log(`Initiating Google Fit connection for user: ${user.id}`);
       
       // Initiate Google OAuth flow
       window.location.href = `${functionUrl}?userId=${user.id}`;
     } catch (error) {
       console.error('Error connecting to Google Fit:', error);
-      toast.error("Failed to connect to Google Fit. Please try again.");
-      setIsConnecting(false);
+      setConnectStatus('retrying');
+      
+      // Wait 2 seconds and retry once automatically
+      setTimeout(async () => {
+        try {
+          const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/connect-google-fit`;
+          window.location.href = `${functionUrl}?userId=${user.id}`;
+        } catch (retryError) {
+          console.error('Error retrying Google Fit connection:', retryError);
+          toast.error("Failed to connect to Google Fit. Please try again.", {
+            description: "There was a problem connecting to Google Fit. Check your network connection and try again."
+          });
+          setIsConnecting(false);
+          setConnectStatus('idle');
+        }
+      }, 2000);
     }
   };
 
@@ -98,7 +123,19 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       size={size}
     >
       {isConnecting ? (
-        <>Connecting...</>
+        <>
+          {connectStatus === 'connecting' ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting to Google Fit...
+            </>
+          ) : (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Retrying connection...
+            </>
+          )}
+        </>
       ) : (
         <>
           <GoogleIcon className="mr-2 h-4 w-4" />
