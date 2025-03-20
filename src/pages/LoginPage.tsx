@@ -5,11 +5,11 @@ import LoginForm from '@/components/auth/LoginForm';
 import UserTypeSelector from '@/components/auth/UserTypeSelector';
 import { useLoginState } from '@/hooks/useLoginState';
 import { toast } from 'sonner';
-import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
-import { SignupDialog } from '@/components/auth/SignupDialog';
-import { MarketingPanel } from '@/components/auth/MarketingPanel';
-import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
-import { DebugSection } from '@/components/auth/DebugSection';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import SignupDialog from '@/components/auth/SignupDialog';
+import MarketingPanel from '@/components/auth/MarketingPanel';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import DebugSection from '@/components/auth/DebugSection';
 
 const LoginPage: React.FC = () => {
   const {
@@ -41,7 +41,9 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Marketing Panel (left side) */}
-      <MarketingPanel />
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-blue-600 to-indigo-700">
+        <MarketingPanel userType={userType === 'receptionist' ? 'doctor' : userType} />
+      </div>
       
       {/* Login Form Area (right side) */}
       <div className="flex-1 flex flex-col justify-center items-center p-4 sm:p-6 md:p-8">
@@ -61,14 +63,21 @@ const LoginPage: React.FC = () => {
             
             {showForgotPassword ? (
               <ForgotPasswordForm 
-                email={forgotEmail} 
-                setEmail={setForgotEmail} 
-                isSubmitting={isSubmitting}
+                forgotEmail={forgotEmail} 
+                setForgotEmail={setForgotEmail} 
                 onSubmit={handleForgotPassword}
-                onCancel={() => setShowForgotPassword(false)}
+                onBackToLogin={() => setShowForgotPassword(false)}
+                isSubmitting={isSubmitting}
               />
             ) : (
               <>
+                {/* Social Login Options */}
+                <SocialLoginButtons 
+                  onGoogleLogin={() => handleSocialLogin('google')}
+                  onSocialLogin={handleSocialLogin}
+                  isSubmitting={isSubmitting}
+                />
+                
                 {/* Login Form */}
                 <LoginForm
                   email={email}
@@ -79,25 +88,6 @@ const LoginPage: React.FC = () => {
                   isSubmitting={isSubmitting}
                   onSubmit={handleSubmit}
                   onForgotPassword={() => setShowForgotPassword(true)}
-                />
-                
-                {/* Social Login Options */}
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-300 dark:border-gray-600" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-                
-                <SocialLoginButtons 
-                  isSubmitting={isSubmitting}
-                  onGoogleLogin={() => handleSocialLogin('google')}
-                  onAppleLogin={() => handleSocialLogin('apple')}
-                  onGithubLogin={() => handleSocialLogin('github')}
                 />
                 
                 {/* Sign Up Option */}
@@ -117,33 +107,30 @@ const LoginPage: React.FC = () => {
             )}
             
             {/* Debug toggle for development */}
-            <button 
-              onClick={toggleDebugMode} 
-              className="text-xs text-muted-foreground hover:text-foreground mt-4"
-            >
-              {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
-            </button>
+            <div className="mt-4 text-center">
+              <button 
+                onClick={toggleDebugMode} 
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
+              </button>
+            </div>
             
             {showDebug && (
-              <DebugSection 
-                email={email} 
-                userType={userType}
-                isSubmitting={isSubmitting}
-              />
+              <DebugSection showDebug={showDebug} setShowDebug={setShowDebug} />
             )}
           </CardContent>
         </Card>
         
         {/* Sign Up Dialog */}
         <SignupDialog
-          isOpen={showSignupDialog}
-          onClose={() => setShowSignupDialog(false)}
-          data={signupData}
-          onChange={handleSignupInputChange}
-          onSubmit={handleSignup}
+          showSignupDialog={showSignupDialog}
+          setShowSignupDialog={setShowSignupDialog}
+          signupData={signupData}
+          handleSignupInputChange={handleSignupInputChange}
+          handleSignup={handleSignup}
           isSubmitting={isSubmitting}
-          userType={userType}
-          onUserTypeChange={handleTabChange}
+          userType={userType === 'receptionist' ? 'patient' : userType}
         />
       </div>
     </div>
