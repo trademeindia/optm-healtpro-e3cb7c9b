@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { TimeRange, SyncOptions } from '@/services/health';
@@ -69,7 +70,7 @@ export const useHealthData = (options: UseHealthDataOptions = {}): UseHealthData
     if (!user || !autoSync || !hasGoogleFitConnected) return;
     
     const interval = setInterval(() => {
-      originalSyncData();
+      originalSyncData({ silent: true });
     }, syncInterval);
     
     return () => clearInterval(interval);

@@ -27,22 +27,33 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Google Fit callback function invoked");
+    
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state"); // Contains userId
     const error = url.searchParams.get("error");
 
+    console.log(`Received: code=${code ? "present" : "missing"}, state=${state || "missing"}, error=${error || "none"}`);
+
     if (error) {
+      console.error(`Google OAuth error: ${error}`);
       return redirectWithError(`Google OAuth error: ${error}`);
     }
 
     if (!code || !state) {
+      console.error("Missing code or state parameter");
       return redirectWithError("Missing code or state parameter");
     }
+
+    // Extract user ID from state (we set it as 'google_fit_{userId}')
+    const userId = state.startsWith('google_fit_') ? state.substring(11) : state;
+    console.log(`Extracted userId from state: ${userId}`);
 
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    console.log("Exchanging code for tokens");
     // Exchange code for tokens
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -58,15 +69,26 @@ serve(async (req) => {
       }),
     });
 
+    const tokenResponseText = await tokenResponse.text();
+    console.log(`Token response status: ${tokenResponse.status}`);
+    
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json();
-      return redirectWithError(`Error exchanging code for tokens: ${JSON.stringify(errorData)}`);
+      console.error(`Error exchanging code for tokens: ${tokenResponseText}`);
+      return redirectWithError(`Error exchanging code for tokens: Status ${tokenResponse.status}`);
     }
 
-    const tokenData = await tokenResponse.json();
+    let tokenData;
+    try {
+      tokenData = JSON.parse(tokenResponseText);
+      console.log("Successfully obtained tokens");
+    } catch (e) {
+      console.error(`Error parsing token response: ${e.message}`);
+      console.error(`Response text: ${tokenResponseText}`);
+      return redirectWithError(`Error parsing token response: ${e.message}`);
+    }
 
     // Store tokens in Supabase
-    const userId = state; // The userId is passed in the state parameter
+    console.log(`Storing tokens for user: ${userId}`);
     const { error: upsertError } = await supabase
       .from("fitness_connections")
       .upsert({
@@ -80,9 +102,11 @@ serve(async (req) => {
       });
 
     if (upsertError) {
+      console.error(`Error storing tokens: ${upsertError.message}`);
       return redirectWithError(`Error storing tokens: ${upsertError.message}`);
     }
 
+    console.log("Google Fit connection successful, redirecting to health apps page");
     // Redirect to health apps page with success message
     return new Response(null, {
       status: 302,
@@ -97,6 +121,7 @@ serve(async (req) => {
   }
 
   function redirectWithError(errorMessage: string) {
+    console.error(`Redirecting with error: ${errorMessage}`);
     return new Response(null, {
       status: 302,
       headers: {

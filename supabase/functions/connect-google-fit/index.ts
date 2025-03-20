@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +19,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/fitness.body.read",
   "https://www.googleapis.com/auth/fitness.heart_rate.read",
   "https://www.googleapis.com/auth/fitness.location.read",
+  "https://www.googleapis.com/auth/fitness.sleep.read",
 ].join(" ");
 
 serve(async (req) => {
@@ -40,12 +40,21 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Processing Google Fit connection for user: ${userId}`);
+
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      console.error("Missing Google API credentials");
       return new Response(
         JSON.stringify({ error: "Google API credentials not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Store the state in a format we can identify later
+    const state = `google_fit_${userId}`;
+    
+    console.log(`Generating OAuth URL with state: ${state}`);
+    console.log(`Redirect URI: ${REDIRECT_URI}`);
 
     // Generate the Google OAuth URL
     const authUrl = new URL("https://accounts.google.com/o/oauth2/auth");
@@ -55,7 +64,9 @@ serve(async (req) => {
     authUrl.searchParams.append("scope", SCOPES);
     authUrl.searchParams.append("access_type", "offline");
     authUrl.searchParams.append("prompt", "consent");
-    authUrl.searchParams.append("state", userId); // Pass userId in state parameter
+    authUrl.searchParams.append("state", state); // Pass userId in state parameter
+
+    console.log(`Redirecting to Google OAuth: ${authUrl.toString()}`);
 
     // Redirect to Google OAuth
     return new Response(null, {
