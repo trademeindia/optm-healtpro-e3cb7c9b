@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Heart, Activity, Thermometer, Droplet, Moon, BarChart as BarChartIcon, Clock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useHealthData } from '@/hooks/useHealthData';
+import { useHealthData, HealthData } from '@/hooks/useHealthData';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Check } from 'lucide-react';
@@ -16,17 +15,21 @@ interface TrendProps {
   isPositive?: boolean;
 }
 
+interface ComprehensiveHealthDashboardProps {
+  healthData: HealthData | null;
+  isLoading: boolean;
+  lastSynced: Date | null;
+  onSyncClick: () => Promise<boolean>;
+}
+
 const TrendIndicator = ({ value, trend, isPositive = true }: TrendProps) => {
   const getColor = () => {
-    // If trend is up and that's positive OR trend is down and that's negative
     if ((trend === 'up' && isPositive) || (trend === 'down' && !isPositive)) {
       return 'text-green-500';
     }
-    // If trend is down and that's positive OR trend is up and that's negative
     else if ((trend === 'down' && isPositive) || (trend === 'up' && !isPositive)) {
       return 'text-red-500';
     }
-    // If stable
     return 'text-gray-500';
   };
 
@@ -43,8 +46,12 @@ const TrendIndicator = ({ value, trend, isPositive = true }: TrendProps) => {
   );
 };
 
-const ComprehensiveHealthDashboard = () => {
-  const { healthData, isLoading, lastSynced, syncHealthData } = useHealthData();
+const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> = ({ 
+  healthData, 
+  isLoading, 
+  lastSynced, 
+  onSyncClick 
+}) => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
 
   if (isLoading) {
@@ -71,7 +78,7 @@ const ComprehensiveHealthDashboard = () => {
         <p className="mb-4 text-muted-foreground">
           Connect with Google Fit or sync your health device to view your health metrics.
         </p>
-        <Button onClick={() => syncHealthData()}>Sync Health Data</Button>
+        <Button onClick={() => onSyncClick()}>Sync Health Data</Button>
       </div>
     );
   }
@@ -84,7 +91,7 @@ const ComprehensiveHealthDashboard = () => {
     const direction = trend === 'up' ? 'increased' : 'decreased';
     const sentiment = (trend === 'up' && isPositive) || (trend === 'down' && !isPositive) 
       ? 'positive' 
-      : (trend === 'stable' ? 'neutral' : 'concerning');
+      : ((trend === 'up' && !isPositive) || (trend === 'down' && isPositive) ? 'concerning' : 'neutral');
     
     return `Your ${metric} has ${direction} by ${Math.abs(change)}%. This is a ${sentiment} trend.`;
   };
@@ -100,7 +107,7 @@ const ComprehensiveHealthDashboard = () => {
           <h2 className="text-2xl font-bold tracking-tight">Health Dashboard</h2>
           <p className="text-muted-foreground">{lastSyncedText}</p>
         </div>
-        <Button onClick={() => syncHealthData()} className="mt-2 sm:mt-0">
+        <Button onClick={() => onSyncClick()} className="mt-2 sm:mt-0">
           Sync Health Data
         </Button>
       </div>
@@ -460,3 +467,4 @@ const ComprehensiveHealthDashboard = () => {
 };
 
 export default ComprehensiveHealthDashboard;
+
