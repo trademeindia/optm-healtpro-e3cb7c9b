@@ -12,8 +12,13 @@ const HotspotDetails: React.FC<HotspotDetailsProps> = ({ hotspot, isEditMode = f
   // Function to determine the best positioning for the details panel
   // to prevent it from being cut off at the edges
   const getPositionStyles = () => {
-    // Default position is bottom-left
-    const position = { bottom: '4rem', left: '4rem' };
+    // Define position with all possible properties that might be used
+    const position: {
+      bottom?: string;
+      left?: string;
+      right?: string;
+      top?: string;
+    } = { bottom: '4rem', left: '4rem' };
     
     // Adjust position based on whether the hotspot is near an edge
     if (hotspot.position) {
