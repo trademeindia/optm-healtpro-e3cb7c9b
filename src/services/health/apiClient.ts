@@ -68,7 +68,7 @@ export const simulateGoogleFitData = () => {
         unit: 'bpm',
         timestamp: new Date().toISOString(),
         source: 'Google Fit',
-        trend: heartRateChange > 0 ? 'up' : heartRateChange < 0 ? 'down' : 'stable',
+        trend: heartRateChange > 0 ? 'up' as const : heartRateChange < 0 ? 'down' as const : 'stable' as const,
         change: heartRateChange
       },
       bloodPressure: {
@@ -77,7 +77,7 @@ export const simulateGoogleFitData = () => {
         unit: 'mmHg',
         timestamp: new Date().toISOString(),
         source: 'Google Fit',
-        trend: bpChange > 0 ? 'up' : bpChange < 0 ? 'down' : 'stable',
+        trend: bpChange > 0 ? 'up' as const : bpChange < 0 ? 'down' as const : 'stable' as const,
         change: bpChange
       },
       bodyTemperature: {
@@ -85,7 +85,7 @@ export const simulateGoogleFitData = () => {
         unit: '°F',
         timestamp: new Date().toISOString(),
         source: 'Google Fit',
-        trend: 'stable',
+        trend: 'stable' as const,
         change: 0
       },
       oxygenSaturation: {
@@ -93,7 +93,7 @@ export const simulateGoogleFitData = () => {
         unit: '%',
         timestamp: new Date().toISOString(),
         source: 'Google Fit',
-        trend: oxygenChange > 0 ? 'up' : oxygenChange < 0 ? 'down' : 'stable',
+        trend: oxygenChange > 0 ? 'up' as const : oxygenChange < 0 ? 'down' as const : 'stable' as const,
         change: oxygenChange
       }
     },
@@ -105,7 +105,7 @@ export const simulateGoogleFitData = () => {
     },
     sleep: {
       duration: parseFloat(sleepHours.toFixed(1)),
-      quality: sleepHours >= 8 ? 'excellent' : sleepHours >= 7 ? 'good' : sleepHours >= 6 ? 'fair' : 'poor',
+      quality: sleepHours >= 8 ? 'excellent' as const : sleepHours >= 7 ? 'good' as const : sleepHours >= 6 ? 'fair' as const : 'poor' as const,
       deepSleep: parseFloat(deepSleep.toFixed(1)),
       remSleep: parseFloat(remSleep.toFixed(1)),
       lightSleep: parseFloat(lightSleep.toFixed(1))

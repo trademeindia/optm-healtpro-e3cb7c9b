@@ -101,7 +101,7 @@ async function processBloodPressureData(supabase: any, userId: string, bloodPres
   const bloodPressure = {
     user_id: userId,
     data_type: 'blood_pressure',
-    value: `${bloodPressureData.systolic}/${bloodPressureData.diastolic}`,
+    value: bloodPressureData.systolic, // Store systolic as numeric value
     source: bloodPressureData.source || 'Google Fit',
     unit: bloodPressureData.unit || 'mmHg',
     start_time: new Date().toISOString(),
@@ -175,7 +175,7 @@ async function processActivityData(supabase: any, userId: string, activityData: 
   const activity = {
     user_id: userId,
     data_type: 'activity',
-    value: activityData.steps,
+    value: activityData.steps, // Store steps as numeric value
     source: 'Google Fit',
     unit: 'steps',
     start_time: new Date().toISOString(),
@@ -196,7 +196,7 @@ async function processSleepData(supabase: any, userId: string, sleepData: any) {
   const sleep = {
     user_id: userId,
     data_type: 'sleep',
-    value: sleepData.duration,
+    value: sleepData.duration, // Store duration as numeric value
     source: 'Google Fit',
     unit: 'hours',
     start_time: new Date().toISOString(),

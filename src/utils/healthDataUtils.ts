@@ -14,9 +14,9 @@ export const saveHealthData = async (userId: string, healthData: HealthData) => 
     const activityData = {
       user_id: userId,
       data_type: 'activity',
-      value: JSON.stringify(healthData.activity),
+      value: healthData.activity.steps, // Store numeric value
       source: 'Google Fit',
-      unit: 'multiple',
+      unit: 'steps',
       start_time: new Date().toISOString(),
       end_time: new Date().toISOString(),
       metadata: healthData.activity
@@ -28,7 +28,7 @@ export const saveHealthData = async (userId: string, healthData: HealthData) => 
     const sleepData = {
       user_id: userId,
       data_type: 'sleep',
-      value: healthData.sleep.duration,
+      value: healthData.sleep.duration, // Store numeric value
       source: 'Google Fit',
       unit: 'hours',
       start_time: new Date().toISOString(),
@@ -54,7 +54,7 @@ const saveVitalSigns = async (userId: string, vitalSigns: VitalSigns) => {
     const heartRateData = {
       user_id: userId,
       data_type: 'heart_rate',
-      value: vitalSigns.heartRate.value,
+      value: vitalSigns.heartRate.value, // Numeric value
       source: vitalSigns.heartRate.source,
       unit: vitalSigns.heartRate.unit,
       start_time: new Date().toISOString(),
@@ -71,7 +71,7 @@ const saveVitalSigns = async (userId: string, vitalSigns: VitalSigns) => {
     const bloodPressureData = {
       user_id: userId,
       data_type: 'blood_pressure',
-      value: `${vitalSigns.bloodPressure.systolic}/${vitalSigns.bloodPressure.diastolic}`,
+      value: vitalSigns.bloodPressure.systolic, // Use systolic as the primary value
       source: vitalSigns.bloodPressure.source,
       unit: vitalSigns.bloodPressure.unit,
       start_time: new Date().toISOString(),
@@ -90,7 +90,7 @@ const saveVitalSigns = async (userId: string, vitalSigns: VitalSigns) => {
     const temperatureData = {
       user_id: userId,
       data_type: 'body_temperature',
-      value: vitalSigns.bodyTemperature.value,
+      value: vitalSigns.bodyTemperature.value, // Numeric value
       source: vitalSigns.bodyTemperature.source,
       unit: vitalSigns.bodyTemperature.unit,
       start_time: new Date().toISOString(),
@@ -107,7 +107,7 @@ const saveVitalSigns = async (userId: string, vitalSigns: VitalSigns) => {
     const oxygenData = {
       user_id: userId,
       data_type: 'oxygen_saturation',
-      value: vitalSigns.oxygenSaturation.value,
+      value: vitalSigns.oxygenSaturation.value, // Numeric value
       source: vitalSigns.oxygenSaturation.source,
       unit: vitalSigns.oxygenSaturation.unit,
       start_time: new Date().toISOString(),
@@ -277,48 +277,51 @@ const fetchVitalSigns = async (userId: string): Promise<VitalSigns> => {
     
     // Update with actual data if available
     if (heartRateData && heartRateData.length > 0) {
+      const metadata = heartRateData[0].metadata as any || {};
       defaultVitalSigns.heartRate = {
-        value: parseFloat(heartRateData[0].value),
+        value: Number(heartRateData[0].value),
         unit: heartRateData[0].unit,
         timestamp: heartRateData[0].start_time,
         source: heartRateData[0].source,
-        trend: heartRateData[0].metadata?.trend || 'stable',
-        change: heartRateData[0].metadata?.change || 0
+        trend: (metadata.trend as 'up' | 'down' | 'stable') || 'stable',
+        change: metadata.change || 0
       };
     }
     
     if (bloodPressureData && bloodPressureData.length > 0) {
-      const [systolic, diastolic] = (bloodPressureData[0].value as string).split('/').map(Number);
+      const metadata = bloodPressureData[0].metadata as any || {};
       defaultVitalSigns.bloodPressure = {
-        systolic,
-        diastolic,
+        systolic: metadata.systolic || 120,
+        diastolic: metadata.diastolic || 80,
         unit: bloodPressureData[0].unit,
         timestamp: bloodPressureData[0].start_time,
         source: bloodPressureData[0].source,
-        trend: bloodPressureData[0].metadata?.trend || 'stable',
-        change: bloodPressureData[0].metadata?.change || 0
+        trend: (metadata.trend as 'up' | 'down' | 'stable') || 'stable',
+        change: metadata.change || 0
       };
     }
     
     if (temperatureData && temperatureData.length > 0) {
+      const metadata = temperatureData[0].metadata as any || {};
       defaultVitalSigns.bodyTemperature = {
-        value: parseFloat(temperatureData[0].value),
+        value: Number(temperatureData[0].value),
         unit: temperatureData[0].unit,
         timestamp: temperatureData[0].start_time,
         source: temperatureData[0].source,
-        trend: temperatureData[0].metadata?.trend || 'stable',
-        change: temperatureData[0].metadata?.change || 0
+        trend: (metadata.trend as 'up' | 'down' | 'stable') || 'stable',
+        change: metadata.change || 0
       };
     }
     
     if (oxygenData && oxygenData.length > 0) {
+      const metadata = oxygenData[0].metadata as any || {};
       defaultVitalSigns.oxygenSaturation = {
-        value: parseFloat(oxygenData[0].value),
+        value: Number(oxygenData[0].value),
         unit: oxygenData[0].unit,
         timestamp: oxygenData[0].start_time,
         source: oxygenData[0].source,
-        trend: oxygenData[0].metadata?.trend || 'stable',
-        change: oxygenData[0].metadata?.change || 0
+        trend: (metadata.trend as 'up' | 'down' | 'stable') || 'stable',
+        change: metadata.change || 0
       };
     }
     
