@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -68,7 +69,7 @@ const PatientAnalysisReport: React.FC = () => {
           
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant={patientData.overallProgress.status === 'minimal-improvement' ? 'warning' : 'success'} className="py-1">
+              <Badge variant={patientData.overallProgress.status === 'minimal-improvement' ? 'secondary' : 'default'} className="py-1">
                 {patientData.overallProgress.status === 'minimal-improvement' ? 'No change/ improvement' : 'Improvement'}
               </Badge>
             </div>
