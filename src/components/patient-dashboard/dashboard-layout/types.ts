@@ -24,6 +24,8 @@ export interface DashboardMainContentProps {
     time: string;
     doctor: string;
     type: string;
+    status?: string;
+    location?: string;
   }[];
   biologicalAge: number;
   chronologicalAge: number;

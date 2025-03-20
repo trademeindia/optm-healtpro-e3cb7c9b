@@ -21,24 +21,49 @@ interface Appointment {
   };
 }
 
+// More flexible type to allow for dashboard-layout components
+type LegacyAppointment = {
+  id: string;
+  date: string;
+  time: string;
+  doctor: string;
+  type: string;
+  status?: string;
+  location?: string;
+};
+
 interface UpcomingAppointmentsCardProps {
-  appointments: Appointment[];
+  appointments?: Appointment[];
+  upcomingAppointments?: LegacyAppointment[];
   onViewAll?: () => void;
   onConfirmAppointment?: (id: string) => void;
   onRescheduleAppointment?: (id: string) => void;
-  // For compatibility with existing components
-  upcomingAppointments?: Appointment[];
 }
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   appointments,
-  upcomingAppointments, // Added for compatibility
+  upcomingAppointments,
   onViewAll,
   onConfirmAppointment,
   onRescheduleAppointment
 }) => {
-  // Use either appointments or upcomingAppointments, preferring appointments if both exist
-  const appointmentsList = appointments || upcomingAppointments || [];
+  // Convert legacy appointments to the Appointment format if needed
+  const normalizedAppointments: Appointment[] = React.useMemo(() => {
+    if (appointments && appointments.length > 0) {
+      return appointments;
+    } else if (upcomingAppointments && upcomingAppointments.length > 0) {
+      return upcomingAppointments.map(appt => ({
+        id: appt.id,
+        type: appt.type,
+        date: appt.date,
+        time: appt.time,
+        doctor: appt.doctor,
+        location: appt.location || 'Main Clinic',
+        status: appt.status || 'scheduled'
+      }));
+    }
+    return [];
+  }, [appointments, upcomingAppointments]);
   
   const formatAppointmentDate = (dateString: string) => {
     try {
@@ -60,13 +85,13 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {appointmentsList.length === 0 ? (
+        {normalizedAppointments.length === 0 ? (
           <div className="text-center py-6">
             <p className="text-muted-foreground">No upcoming appointments</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {appointmentsList.slice(0, 3).map((appointment) => (
+            {normalizedAppointments.slice(0, 3).map((appointment) => (
               <div 
                 key={appointment.id}
                 className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-0 last:pb-0"
@@ -102,14 +127,14 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
             ))}
             
             {/* Action buttons for appointments */}
-            {(onConfirmAppointment || onRescheduleAppointment) && appointmentsList.length > 0 && (
+            {(onConfirmAppointment || onRescheduleAppointment) && normalizedAppointments.length > 0 && (
               <div className="space-y-2 mt-4">
                 {onConfirmAppointment && (
                   <Button 
                     variant="default" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => onConfirmAppointment(appointmentsList[0].id)}
+                    onClick={() => onConfirmAppointment(normalizedAppointments[0].id)}
                   >
                     Confirm Appointment
                   </Button>
@@ -120,7 +145,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => onRescheduleAppointment(appointmentsList[0].id)}
+                    onClick={() => onRescheduleAppointment(normalizedAppointments[0].id)}
                   >
                     Reschedule
                   </Button>
@@ -129,7 +154,7 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
             )}
             
             {/* View All button */}
-            {appointmentsList.length > 3 && (
+            {normalizedAppointments.length > 3 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
