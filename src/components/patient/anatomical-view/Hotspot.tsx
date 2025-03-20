@@ -24,8 +24,25 @@ const Hotspot = (props: HotspotComponentProps | { mapping: AnatomicalMapping; bi
       >
         <sphereGeometry args={[size, 16, 16]} />
         <meshStandardMaterial color={isEditMode ? '#FFB800' : color} />
-        <Html distanceFactor={10} position={[0, size + 0.1, 0]} style={{ pointerEvents: 'none' }}>
-          <div className={`px-2 py-1 rounded text-xs text-center whitespace-nowrap ${isEditMode ? 'bg-amber-100/90 text-amber-800' : 'bg-white/80'}`}>
+        <Html
+          distanceFactor={10}
+          position={[0, size + 0.1, 0]}
+          style={{
+            pointerEvents: 'none',
+            // Ensure content is centered on the hotspot
+            transform: 'translate(-50%, -100%)',
+            // Setting a minimum width prevents super-narrow labels
+            minWidth: '50px'
+          }}
+          // Ensures the label stays visible even when close to edges
+          occlude={false}
+          zIndexRange={[100, 0]}
+        >
+          <div
+            className={`px-2 py-1 rounded text-xs text-center whitespace-nowrap ${
+              isEditMode ? 'bg-amber-100/90 text-amber-800' : 'bg-white/80'
+            }`}
+          >
             {label}
             {isEditMode && <span className="ml-1">✏️</span>}
           </div>
@@ -44,11 +61,12 @@ const Hotspot = (props: HotspotComponentProps | { mapping: AnatomicalMapping; bi
 
     return (
       <div 
-        className={`absolute w-5 h-5 rounded-full ${severityColor} flex items-center justify-center cursor-pointer`}
+        className={`absolute w-5 h-5 rounded-full ${severityColor} flex items-center justify-center cursor-pointer z-10`}
         style={{ 
           left: `${mapping.coordinates.x}%`, 
           top: `${mapping.coordinates.y}%`,
-          transform: 'translate(-50%, -50%)'
+          transform: 'translate(-50%, -50%)',
+          boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
         }}
         title={mapping.bodyPart}
       >

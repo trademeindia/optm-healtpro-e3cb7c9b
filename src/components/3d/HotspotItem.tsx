@@ -52,10 +52,15 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
   };
 
   const getTooltipAlign = (): "start" | "center" | "end" => {
+    const x = hotspot.x;
     const y = hotspot.y;
     
-    if (y < 25) return "start";
-    if (y > 75) return "end";
+    // Improved alignment logic to prevent tooltip cutoff
+    if (x < 25) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (x > 75) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (y < 30) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    if (y > 70) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    
     return "center";
   };
 
@@ -121,7 +126,7 @@ const HotspotItem: React.FC<HotspotItemProps> = ({
           sideOffset={15}
           avoidCollisions={true}
           collisionPadding={getCollisionPadding()}
-          className="hotspot-tooltip p-0 z-50"
+          className="p-0 z-50"
         >
           <div className="w-full max-w-[300px] space-y-2 p-4 overflow-visible">
             <div className="flex items-center gap-2">

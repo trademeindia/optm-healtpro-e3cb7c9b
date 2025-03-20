@@ -40,17 +40,24 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
   
   // Determine tooltip positioning based on issue location
   const getTooltipSide = (): "top" | "right" | "bottom" | "left" => {
-    // Enhanced positioning logic for better tooltip placement
-    if (issue.location.x < 30) return "right";
-    if (issue.location.x > 70) return "left";
+    // Enhanced positioning logic to prevent tooltip cutoff
+    if (issue.location.x < 25) return "right";
+    if (issue.location.x > 75) return "left";
     if (issue.location.y < 30) return "bottom";
     return "top";
   };
   
   // Get tooltip alignment based on position
   const getTooltipAlign = (): "start" | "center" | "end" => {
-    if (issue.location.y < 25) return "start";
-    if (issue.location.y > 75) return "end";
+    const x = issue.location.x;
+    const y = issue.location.y;
+    
+    // Improved alignment logic to prevent tooltip cutoff
+    if (x < 25) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (x > 75) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (y < 30) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    if (y > 70) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    
     return "center";
   };
   
@@ -98,7 +105,7 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ issue, isSelected, onClic
         <TooltipContent 
           side={getTooltipSide()} 
           align={getTooltipAlign()}
-          className="hotspot-tooltip z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg p-3"
+          className="z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg p-3"
           sideOffset={12}
           avoidCollisions={true}
           collisionPadding={{ top: 20, right: 20, bottom: 20, left: 20 }}

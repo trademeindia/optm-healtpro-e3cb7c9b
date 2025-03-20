@@ -19,6 +19,20 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
     return "top";
   };
 
+  // Get tooltip alignment based on position to prevent cut-off
+  const getTooltipAlign = (): "start" | "center" | "end" => {
+    const x = hotspot.x;
+    const y = hotspot.y;
+    
+    // Improved alignment logic
+    if (x < 25) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (x > 75) return y < 30 ? "start" : y > 70 ? "end" : "center";
+    if (y < 30) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    if (y > 70) return x < 40 ? "start" : x > 60 ? "end" : "center";
+    
+    return "center";
+  };
+
   // Get the severity class for styling - using consistent blue theme
   const getSeverityClass = () => {
     if (!hotspot.severity) return 'hotspot-severity-medium';
@@ -71,8 +85,11 @@ const HotspotMarker: React.FC<HotspotMarkerProps> = ({ hotspot, isActive, onClic
         </TooltipTrigger>
         <TooltipContent 
           side={getTooltipSide()} 
-          className="hotspot-tooltip z-50 shadow-lg"
+          align={getTooltipAlign()}
+          className="z-50 shadow-lg"
           sideOffset={10}
+          avoidCollisions={true}
+          collisionPadding={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
           <div className="p-2.5 space-y-1.5">
             <p className="font-medium text-sm">{hotspot.label}</p>
