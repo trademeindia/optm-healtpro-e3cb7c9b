@@ -37,20 +37,56 @@ const queryClient = new QueryClient({
       retry: 1,
       staleTime: 30000,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });
 
-// Loading fallback component with improved visibility
-const PageLoading = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-background z-50 fixed inset-0">
-    <div className="text-center p-8 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md w-full">
-      <div className="w-20 h-20 border-t-4 border-b-4 border-primary rounded-full animate-spin mx-auto mb-6"></div>
-      <p className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">Loading page...</p>
-      <p className="text-sm text-muted-foreground">Please wait while we prepare your content</p>
+// Loading fallback component with improved visibility and timeout
+const PageLoading = () => {
+  // Add a timeout to prevent infinite loading
+  const [showFallback, setShowFallback] = useState(false);
+  const [showRetryOption, setShowRetryOption] = useState(false);
+  
+  useEffect(() => {
+    // Show loader after a short delay
+    const showTimer = setTimeout(() => {
+      setShowFallback(true);
+    }, 300);
+    
+    // Show retry option after 10 seconds
+    const retryTimer = setTimeout(() => {
+      setShowRetryOption(true);
+    }, 10000);
+    
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(retryTimer);
+    };
+  }, []);
+  
+  if (!showFallback) return null;
+  
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-background/90 z-50">
+      <div className="text-center p-8 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md w-full">
+        <div className="w-16 h-16 border-t-4 border-b-4 border-primary rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">Loading page...</p>
+        <p className="text-sm text-muted-foreground mb-4">Please wait while we prepare your content</p>
+        
+        {showRetryOption && (
+          <button 
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+            onClick={() => window.location.reload()}
+          >
+            Loading taking too long? Retry
+          </button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   const [appLoaded, setAppLoaded] = useState(false);
@@ -59,7 +95,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setAppLoaded(true);
-      console.log('App loaded state set to true');
+      console.log('Application rendered successfully');
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -69,11 +105,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthProvider>
-            <div className="app-container min-h-screen bg-background text-foreground visible opacity-100">
+            <div className="app-container min-h-screen bg-background text-foreground">
               {!appLoaded ? (
                 <div className="global-loading-spinner z-[9999] fixed inset-0 flex items-center justify-center bg-white/90">
                   <div className="text-center">
-                    <div className="w-20 h-20 border-t-4 border-b-4 border-primary rounded-full animate-spin"></div>
+                    <div className="w-16 h-16 border-t-4 border-b-4 border-primary rounded-full animate-spin"></div>
                     <p className="mt-4 text-lg font-medium">Loading application...</p>
                   </div>
                 </div>
@@ -140,7 +176,7 @@ function App() {
                       </ProtectedRoute>
                     } />
                     <Route path="/appointments" element={
-                      <ProtectedRoute requiredRole="receptionist" resourceType="APPOINTMENTS" action="VIEW_ALL">
+                      <ProtectedRoute requiredRole="receptionist">
                         <AppointmentsPage />
                       </ProtectedRoute>
                     } />

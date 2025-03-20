@@ -41,8 +41,6 @@ html, body {
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Fix content overflow */
@@ -51,23 +49,17 @@ html, body {
   height: 100%;
   width: 100%;
   -webkit-overflow-scrolling: touch;
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
 }
 
 /* Ensure proper z-index for popups/modals */
 .popup, .modal, [role="dialog"] {
   z-index: 100;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Ensure dropdowns appear above other elements */
 .select-menu, .dropdown-menu {
   z-index: 50 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Dashboard layout grid improvements */
@@ -75,8 +67,6 @@ html, body {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1rem;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Dashboard card layout improvements */
@@ -84,8 +74,6 @@ html, body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 @media (max-width: 768px) {
@@ -97,48 +85,32 @@ html, body {
   .dashboard-container {
     padding: 0.5rem;
   }
-  
-  /* Ensure cards and content are visible */
-  .card, .card-content, [role="tabpanel"] {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
 }
 
 /* Better responsive behavior for patient cards */
 @media (max-width: 768px) {
   .patient-card {
     padding: 0.75rem;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .patient-info {
     flex-direction: column;
     align-items: flex-start;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .patient-avatar {
     margin-bottom: 0.5rem;
     margin-right: 0;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .patient-name {
     font-size: 1rem;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .patient-table-wrapper {
     margin: 0 -1rem;
     width: calc(100% + 2rem);
     padding: 0 1rem;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
 }
 
@@ -146,8 +118,6 @@ html, body {
 .tab-content-container {
   width: 100%;
   transition: opacity 0.2s ease-in-out;
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
 }
 
@@ -157,8 +127,6 @@ html, body {
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 1rem;
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
 }
 
@@ -177,8 +145,6 @@ html, body {
 /* Dashboard section spacing */
 .dashboard-section {
   margin-bottom: 1.5rem;
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
 }
 
@@ -192,33 +158,46 @@ html, body {
 @media (max-width: 640px) {
   .card-content-container {
     padding: 0.75rem;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .card-header {
     padding: 0.75rem 0.75rem 0;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
   
   .card-footer {
     padding: 0 0.75rem 0.75rem;
-    visibility: visible !important;
-    opacity: 1 !important;
   }
 }
 
 /* Ensure chart containers are visible */
 .chart-container, .recharts-wrapper, .recharts-surface {
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
 }
 
-/* Ensure form elements are visible */
-input, select, textarea, button, label {
-  visibility: visible !important;
-  opacity: 1 !important;
+/* Fix z-index for tabs to ensure they're clickable */
+.dashboard-tabs, [role="tablist"], [role="tab"], [role="tabpanel"] {
   position: relative;
+  z-index: 10;
+}
+
+/* Make sure loading spinners have proper z-index */
+.loading-spinner {
+  z-index: 1000;
+}
+
+/* Ensure dropdowns and popovers are on top */
+[data-radix-popper-content-wrapper] {
+  z-index: 100 !important;
+}
+
+/* Fix Radix component positioning */
+[data-radix-scroll-area-viewport] {
+  height: 100% !important;
+}
+
+/* Make sure selection dropdowns aren't hidden behind content */
+.select-content, .select-trigger, .select-viewport, 
+.select-item, .select-group, .select-label, 
+.select-separator, .select-arrow {
+  z-index: 50 !important;
 }
