@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
 import { AnalysisPage } from './pages/analysis';
 
@@ -24,9 +24,9 @@ const PatientReportsPage = React.lazy(() => import('./pages/PatientReportsPage')
 const AppointmentsPage = React.lazy(() => import('./pages/AppointmentsPage'));
 const Settings = React.lazy(() => import('./pages/SettingsPage'));
 const Help = React.lazy(() => import('./pages/HelpPage'));
-const Login = React.lazy(() => import('./pages/Login'));
+const Login = React.lazy(() => import('./pages/LoginPage'));
 const Register = React.lazy(() => import('./pages/LoginPage')); // Using LoginPage for Register
-const ForgotPassword = React.lazy(() => import('./pages/Login')); // Using Login for ForgotPassword
+const ForgotPassword = React.lazy(() => import('./pages/LoginPage')); // Using Login for ForgotPassword
 const UpdateProfile = React.lazy(() => import('./pages/SettingsPage')); // Using Settings for profile updates
 
 function App() {
@@ -64,36 +64,36 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Protected routes */}
-          <Route path="/update-profile" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><UpdateProfile /></React.Suspense></ProtectedRoute>} />
+          <Route path="/update-profile" element={<ProtectedRoute><Suspense fallback={<Loading />}><UpdateProfile /></Suspense></ProtectedRoute>} />
           
           {/* Doctor routes */}
-          <Route path="/dashboard/doctor" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Dashboard /></React.Suspense></ProtectedRoute>} />
-          <Route path="/patients" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Dashboard /></React.Suspense></ProtectedRoute>} />
-          <Route path="/reports" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Dashboard /></React.Suspense></ProtectedRoute>} />
-          <Route path="/analytics" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Dashboard /></React.Suspense></ProtectedRoute>} />
+          <Route path="/dashboard/doctor" element={<ProtectedRoute><Suspense fallback={<Loading />}><Dashboard /></Suspense></ProtectedRoute>} />
+          <Route path="/patients" element={<ProtectedRoute><Suspense fallback={<Loading />}><Dashboard /></Suspense></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute><Suspense fallback={<Loading />}><Dashboard /></Suspense></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><Suspense fallback={<Loading />}><Dashboard /></Suspense></ProtectedRoute>} />
           
           {/* Patient routes */}
-          <Route path="/dashboard/patient" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><PatientDashboard /></React.Suspense></ProtectedRoute>} />
-          <Route path="/ai-analysis" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><AIAnalysisPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/anatomy-map" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><AnatomyMapPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/biomarkers" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><BiomarkersPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/exercises" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><ExercisesPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/health-apps" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><HealthAppsPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/patient-reports" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><PatientReportsPage /></React.Suspense></ProtectedRoute>} />
-          <Route path="/appointments" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><AppointmentsPage /></React.Suspense></ProtectedRoute>} />
+          <Route path="/dashboard/patient" element={<ProtectedRoute><Suspense fallback={<Loading />}><PatientDashboard /></Suspense></ProtectedRoute>} />
+          <Route path="/ai-analysis" element={<ProtectedRoute><Suspense fallback={<Loading />}><AIAnalysisPage /></Suspense></ProtectedRoute>} />
+          <Route path="/anatomy-map" element={<ProtectedRoute><Suspense fallback={<Loading />}><AnatomyMapPage /></Suspense></ProtectedRoute>} />
+          <Route path="/biomarkers" element={<ProtectedRoute><Suspense fallback={<Loading />}><BiomarkersPage /></Suspense></ProtectedRoute>} />
+          <Route path="/exercises" element={<ProtectedRoute><Suspense fallback={<Loading />}><ExercisesPage /></Suspense></ProtectedRoute>} />
+          <Route path="/health-apps" element={<ProtectedRoute><Suspense fallback={<Loading />}><HealthAppsPage /></Suspense></ProtectedRoute>} />
+          <Route path="/patient-reports" element={<ProtectedRoute><Suspense fallback={<Loading />}><PatientReportsPage /></Suspense></ProtectedRoute>} />
+          <Route path="/appointments" element={<ProtectedRoute><Suspense fallback={<Loading />}><AppointmentsPage /></Suspense></ProtectedRoute>} />
 
           {/* Receptionist routes - can add specific components later */}
-          <Route path="/dashboard/receptionist" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Dashboard /></React.Suspense></ProtectedRoute>} />
+          <Route path="/dashboard/receptionist" element={<ProtectedRoute><Suspense fallback={<Loading />}><Dashboard /></Suspense></ProtectedRoute>} />
 
           {/* Common routes */}
-          <Route path="/settings" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Settings /></React.Suspense></ProtectedRoute>} />
-          <Route path="/help" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><Help /></React.Suspense></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Suspense fallback={<Loading />}><Settings /></Suspense></ProtectedRoute>} />
+          <Route path="/help" element={<ProtectedRoute><Suspense fallback={<Loading />}><Help /></Suspense></ProtectedRoute>} />
 
           {/* Redirect to dashboard if logged in, otherwise to login */}
           <Route path="/" element={user ? <Navigate to="/dashboard/doctor" /> : <Navigate to="/login" />} />
 
           {/* Analysis route */}
-          <Route path="/analysis" element={<ProtectedRoute><React.Suspense fallback={<Loading />}><AnalysisPage /></React.Suspense></ProtectedRoute>} />
+          <Route path="/analysis" element={<ProtectedRoute><Suspense fallback={<Loading />}><AnalysisPage /></Suspense></ProtectedRoute>} />
         </Routes>
       </Router>
     </ThemeProvider>

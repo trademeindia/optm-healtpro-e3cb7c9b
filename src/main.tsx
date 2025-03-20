@@ -2,6 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { AuthProvider } from './contexts/auth';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Import CSS in the right order
 // Base styles first
@@ -34,11 +36,20 @@ import './styles/responsive/metric-cards.css';
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
+const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+  console.error('Root level error caught:', error);
+  console.error('Component stack:', errorInfo.componentStack);
+};
+
 try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <ErrorBoundary onError={handleError}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ErrorBoundary>
     </React.StrictMode>,
   );
   console.log('Application rendered successfully');
