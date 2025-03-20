@@ -24,12 +24,22 @@ interface Appointment {
 interface UpcomingAppointmentsCardProps {
   appointments: Appointment[];
   onViewAll?: () => void;
+  onConfirmAppointment?: (id: string) => void;
+  onRescheduleAppointment?: (id: string) => void;
+  // For compatibility with existing components
+  upcomingAppointments?: Appointment[];
 }
 
 const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
   appointments,
-  onViewAll
+  upcomingAppointments, // Added for compatibility
+  onViewAll,
+  onConfirmAppointment,
+  onRescheduleAppointment
 }) => {
+  // Use either appointments or upcomingAppointments, preferring appointments if both exist
+  const appointmentsList = appointments || upcomingAppointments || [];
+  
   const formatAppointmentDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
@@ -50,13 +60,13 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {appointments.length === 0 ? (
+        {appointmentsList.length === 0 ? (
           <div className="text-center py-6">
             <p className="text-muted-foreground">No upcoming appointments</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {appointments.slice(0, 3).map((appointment) => (
+            {appointmentsList.slice(0, 3).map((appointment) => (
               <div 
                 key={appointment.id}
                 className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-0 last:pb-0"
@@ -91,7 +101,35 @@ const UpcomingAppointmentsCard: React.FC<UpcomingAppointmentsCardProps> = ({
               </div>
             ))}
             
-            {appointments.length > 3 && (
+            {/* Action buttons for appointments */}
+            {(onConfirmAppointment || onRescheduleAppointment) && appointmentsList.length > 0 && (
+              <div className="space-y-2 mt-4">
+                {onConfirmAppointment && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => onConfirmAppointment(appointmentsList[0].id)}
+                  >
+                    Confirm Appointment
+                  </Button>
+                )}
+                
+                {onRescheduleAppointment && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => onRescheduleAppointment(appointmentsList[0].id)}
+                  >
+                    Reschedule
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            {/* View All button */}
+            {appointmentsList.length > 3 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
