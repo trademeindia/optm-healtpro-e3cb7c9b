@@ -36,7 +36,7 @@ export const PatientDetails: React.FC<PatientDetailsProps> = ({
         </TabsContent>
         
         <TabsContent value="optm-health">
-          <OptmHealthPatientTab patientId={patient.id} patientName={patient.name} />
+          <OptmHealthPatientTab patientId={patient.id.toString()} patientName={patient.name} />
         </TabsContent>
       </Tabs>
     </div>
