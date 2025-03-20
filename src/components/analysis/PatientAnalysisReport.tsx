@@ -1,11 +1,13 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { AreaChart, Radar } from 'lucide-react';
+import { AreaChart, Radar, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import ProgressRadarChart from './ProgressRadarChart';
 import TreatmentRecommendations from './TreatmentRecommendations';
+import MuscleImprovementChart from './MuscleImprovementChart';
 
 const PatientAnalysisReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
@@ -29,19 +31,19 @@ const PatientAnalysisReport: React.FC = () => {
       }
     },
     metrics: {
-      vcs: { value: 76.8, change: 0, unit: '%' },
-      jht: { value: 27.4, change: -0.2, unit: 's' },
-      rom: { value: 82, change: 5, unit: 'deg' },
-      force: { value: 19.0, change: 2.1, unit: 'kg' },
+      vcs: { value: 76.8, change: 0, unit: '%', previous: 76.8 },
+      jht: { value: 27.4, change: -0.2, unit: 's', previous: 27.6 },
+      rom: { value: 82, change: 5, unit: 'deg', previous: 77 },
+      force: { value: 19.0, change: 2.1, unit: 'kg', previous: 16.9 },
       anatomical: {
-        'Cervical Extension/Flexion (ECF)': { value: 73.5, change: 0.2, unit: '%' },
-        'Cervical Circumference (CC)': { value: 38.1, change: 1.8, unit: 'cm' },
-        'Scapulothoracic Angle (STA)': { value: 34.3, change: 1.1, unit: 'deg' }
+        'Cervical Extension/Flexion (ECF)': { value: 73.5, change: 0.2, unit: '%', previous: 73.3 },
+        'Cervical Circumference (CC)': { value: 38.1, change: 1.8, unit: 'cm', previous: 36.3 },
+        'Scapulothoracic Angle (STA)': { value: 34.3, change: 1.1, unit: 'deg', previous: 33.2 }
       },
       mobility: {
-        'Shoulder Flexion': { value: 165, change: 8, unit: 'deg' },
-        'Knee Extension Range': { value: 140, change: 15, unit: 'deg' },
-        'Active TFL Angle': { value: 38.2, change: 3.2, unit: 'deg' }
+        'Shoulder Flexion': { value: 165, change: 8, unit: 'deg', previous: 157 },
+        'Knee Extension Range': { value: 140, change: 15, unit: 'deg', previous: 125 },
+        'Active TFL Angle': { value: 38.2, change: 3.2, unit: 'deg', previous: 35.0 }
       }
     }
   };
@@ -100,22 +102,46 @@ const PatientAnalysisReport: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-semibold mb-4">Key Metrics Overview</h3>
+                
+                {/* Visualization for before/after comparison */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Before vs After Comparison</h4>
+                  <div className="rounded-lg border p-4 bg-card">
+                    <MuscleImprovementChart metrics={patientData.metrics} />
+                  </div>
+                </div>
+                
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Biomarkers</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {Object.entries({
                         'VCS': patientData.metrics.vcs,
                         'JHT': patientData.metrics.jht,
                         'ROM': patientData.metrics.rom,
                         'Force': patientData.metrics.force
                       }).map(([key, metric]) => (
-                        <li key={key} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${metric.change > 0 ? 'bg-green-500' : metric.change < 0 ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                            <span>{key}</span>
+                        <li key={key} className="bg-background rounded-md p-3 border">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium">{key}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-gray-500 text-sm">{metric.previous} {metric.unit}</span>
+                              <ArrowRight className="h-3 w-3 text-gray-400" />
+                              <span className="font-semibold">{metric.value} {metric.unit}</span>
+                              {metric.change !== 0 && (
+                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                  {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <span className="font-medium">{metric.value} {metric.unit}</span>
+                          <Progress 
+                            value={(metric.value / 100) * 100} 
+                            className="h-2"
+                            // Add a different style based on improvement
+                            indicatorClassName={metric.change > 0 ? "bg-green-500" : 
+                                               metric.change < 0 ? "bg-red-500" : "bg-amber-500"}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -123,14 +149,35 @@ const PatientAnalysisReport: React.FC = () => {
                   
                   <div>
                     <h4 className="font-medium mb-2">Anatomical</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {Object.entries(patientData.metrics.anatomical).map(([key, metric]) => (
-                        <li key={key} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${metric.change > 0 ? 'bg-green-500' : metric.change < 0 ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                            <span className="text-sm">{key}</span>
+                        <li key={key} className="bg-background rounded-md p-3 border">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">{key}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-gray-500 text-sm">{metric.previous} {metric.unit}</span>
+                              <ArrowRight className="h-3 w-3 text-gray-400" />
+                              <span className="font-semibold">{metric.value} {metric.unit}</span>
+                              {metric.change !== 0 && (
+                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                  {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <span className="font-medium">{metric.value} {metric.unit}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${metric.change > 0 ? "bg-green-500" : metric.change < 0 ? "bg-red-500" : "bg-amber-500"}`}
+                                style={{ width: `${Math.min(100, Math.max(0, (metric.value / (metric.value * 1.5)) * 100))}%` }}
+                              ></div>
+                            </div>
+                            {metric.change > 0 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : metric.change < 0 ? (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            ) : null}
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -138,14 +185,35 @@ const PatientAnalysisReport: React.FC = () => {
                   
                   <div>
                     <h4 className="font-medium mb-2">Mobility</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {Object.entries(patientData.metrics.mobility).map(([key, metric]) => (
-                        <li key={key} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${metric.change > 0 ? 'bg-green-500' : metric.change < 0 ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                            <span className="text-sm">{key}</span>
+                        <li key={key} className="bg-background rounded-md p-3 border">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">{key}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-gray-500 text-sm">{metric.previous} {metric.unit}</span>
+                              <ArrowRight className="h-3 w-3 text-gray-400" />
+                              <span className="font-semibold">{metric.value} {metric.unit}</span>
+                              {metric.change !== 0 && (
+                                <Badge variant={metric.change > 0 ? "success" : "destructive"} className="ml-2 text-xs">
+                                  {metric.change > 0 ? '+' : ''}{metric.change} {metric.unit}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <span className="font-medium">{metric.value} {metric.unit}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${metric.change > 0 ? "bg-green-500" : metric.change < 0 ? "bg-red-500" : "bg-amber-500"}`}
+                                style={{ width: `${Math.min(100, Math.max(0, (metric.value / 180) * 100))}%` }}
+                              ></div>
+                            </div>
+                            {metric.change > 0 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : metric.change < 0 ? (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            ) : null}
+                          </div>
                         </li>
                       ))}
                     </ul>
