@@ -2,6 +2,7 @@
 import React from 'react';
 import SocialButton from './SocialButton';
 import { FcGoogle } from 'react-icons/fc';
+import { toast } from 'sonner';
 
 interface GoogleLoginButtonProps {
   onLogin: () => Promise<void>;
@@ -11,10 +12,12 @@ interface GoogleLoginButtonProps {
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onLogin, disabled }) => {
   const handleLogin = async () => {
     try {
+      toast.info("Connecting to Google...");
       await onLogin();
+      // The redirect happens in the onLogin function, so we don't need to do anything else here
     } catch (error) {
       console.error('Google login error:', error);
-      // Error handling is now done in onLogin function
+      toast.error('Failed to connect to Google. Please try again.');
     }
   };
 

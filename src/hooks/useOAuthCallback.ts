@@ -54,8 +54,12 @@ export const useOAuthCallback = () => {
       
       // First check if we already have a session
       const { data: sessionData } = await supabase.auth.getSession();
+      console.log("Checking for existing session:", sessionData?.session ? "Found" : "None");
+      
       if (sessionData?.session) {
         console.log('Active session found, redirecting to dashboard');
+        
+        toast.success('Successfully signed in!');
         
         // Get the user's role from the session
         const { formatUser } = await import('@/contexts/auth/utils');
@@ -66,13 +70,12 @@ export const useOAuthCallback = () => {
                             formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
                             '/dashboard/patient';
                             
-          toast.success('Successfully signed in!');
-          navigate(dashboard);
+          navigate(dashboard, { replace: true });
           return;
         } else {
-          navigate('/patient-dashboard'); // Default dashboard
+          navigate('/patient-dashboard', { replace: true }); // Default dashboard
+          return;
         }
-        return;
       }
       
       // Call the handler with the code from search params
@@ -82,10 +85,12 @@ export const useOAuthCallback = () => {
           await handleOAuthCallback(provider, code);
           
           // Give some time for session to be established
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          console.log("OAuth callback processed, checking for session...");
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Check again if we have a session after the callback
           const { data: updatedSession } = await supabase.auth.getSession();
+          console.log("Session after callback:", updatedSession.session ? "Established" : "Not found");
           
           if (updatedSession.session) {
             console.log('Session established after OAuth callback, redirecting');
@@ -100,43 +105,38 @@ export const useOAuthCallback = () => {
                                 formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
                                 '/dashboard/patient';
                                 
-              navigate(dashboard);
+              navigate(dashboard, { replace: true });
+              return;
             } else {
-              navigate('/patient-dashboard'); // Default dashboard
+              navigate('/patient-dashboard', { replace: true }); // Default dashboard
+              return;
             }
+          } else if (retryCount < 2) {
+            console.log(`No session found after callback, retry ${retryCount + 1}/3...`);
+            setRetryCount(prev => prev + 1);
+            // Try again after a delay
+            setTimeout(() => checkAuthState(), 2000);
             return;
+          } else {
+            console.error("No session established after multiple retries");
+            setError("Authentication could not be completed");
+            setErrorDetails("No session was established. Please try again or contact support.");
           }
-        } catch (callbackError) {
+        } catch (callbackError: any) {
           console.error('Error in handleOAuthCallback:', callbackError);
+          setError('Authentication process failed');
+          setErrorDetails(callbackError.message || 'Unknown error processing the authentication callback');
         }
       } else {
         console.error('No authorization code found in URL');
         setError('Authentication failed');
         setErrorDetails('No authorization code received from the provider');
-        return;
-      }
-      
-      // If we're done loading and still don't have a user, there was an error
-      if (!isLoading && !user && retryCount >= 2) {
-        console.error('Authentication failed - no user found after OAuth flow and retries');
-        setError('Authentication failed');
-        setErrorDetails('The sign-in attempt was not successful. Please try again.');
-        toast.error('Authentication failed');
-        setTimeout(() => navigate('/login'), 3000);
-      }
-      // Try again if we're still loading or no user yet
-      else if ((!user || isLoading) && retryCount < 3) {
-        console.log(`Still waiting for authentication, retry ${retryCount + 1}/3...`);
-        setRetryCount(prev => prev + 1);
-        // Try again after a delay with increasing timeouts
-        setTimeout(() => checkAuthState(), 2000 + (retryCount * 1000));
       }
     } catch (err: any) {
       console.error('OAuth callback processing error:', err);
       setError('Authentication process failed');
       setErrorDetails(err.message || 'An unexpected error occurred');
       toast.error('Authentication failed');
-      setTimeout(() => navigate('/login'), 3000);
     } finally {
       setIsVerifying(false);
     }
@@ -162,7 +162,19 @@ export const useOAuthCallback = () => {
       // Start auth check process
       checkAuthState();
     }
-  }, []);
+    
+    // Fallback redirect in case something goes wrong
+    const fallbackTimer = setTimeout(() => {
+      if (isVerifying && !error && retryCount >= 2) {
+        console.log("Fallback redirect triggered - authentication is taking too long");
+        setError("Authentication timeout");
+        setErrorDetails("The authentication process took too long. Please try again.");
+        toast.error("Authentication took too long to complete");
+      }
+    }, 10000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [retryCount]);
 
   return {
     error,

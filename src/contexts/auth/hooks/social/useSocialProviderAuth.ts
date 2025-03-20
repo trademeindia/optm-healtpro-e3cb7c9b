@@ -18,20 +18,16 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       
       if (connectionError) {
         console.error('Supabase connection error:', connectionError);
-        toast.error('Unable to connect to authentication service. Please try again later.', {
-          duration: 5000
-        });
+        toast.error('Unable to connect to authentication service. Please try again later.');
         setIsLoading(false);
         return;
       }
       
-      // Build the redirect URL - crucial for debugging OAuth redirects
+      // Build the redirect URL - make sure it's absolute and matches what's configured in Supabase
       const redirectTo = `${window.location.origin}/oauth-callback`;
       console.log(`OAuth redirect URL: ${redirectTo}`);
       
-      toast.info(`Signing in with ${provider}...`, {
-        duration: 3000
-      });
+      toast.info(`Signing in with ${provider}...`);
       
       // Create the OAuth options with proper scopes and access type for refresh tokens
       const options = {
@@ -49,7 +45,7 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       });
 
       console.log("OAuth initiation response:", 
-        data ? `Data received, URL: ${data.url ? 'exists' : 'missing'}` : "No data", 
+        data ? `Data received, URL: ${data.url ? data.url : 'missing'}` : "No data", 
         error ? `Error: ${error.message}` : "No error"
       );
 
@@ -70,9 +66,7 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
           console.error(`OAuth error with ${provider}:`, error);
         }
         
-        toast.error(errorMessage, {
-          duration: 5000
-        });
+        toast.error(errorMessage);
         throw error;
       }
       
@@ -84,15 +78,11 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
         window.location.href = data.url;
       } else {
         console.error("OAuth initiation failed: No redirect URL returned");
-        toast.error(`Login with ${provider} failed. No redirect URL received.`, {
-          duration: 5000
-        });
+        toast.error(`Login with ${provider} failed. No redirect URL received.`);
       }
     } catch (error: any) {
       console.error(`Error initiating ${provider} authentication:`, error);
-      toast.error(`Login with ${provider} failed. Please try again.`, {
-        duration: 5000
-      });
+      toast.error(`Login with ${provider} failed. Please try again.`);
     } finally {
       setIsLoading(false);
     }
