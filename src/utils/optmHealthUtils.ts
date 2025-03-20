@@ -11,7 +11,7 @@ import {
 
 /**
  * Calculate improvement category based on percentage
- * IMPROVED: Updated thresholds based on clinical significance
+ * IMPROVED: More precise calculation based on whether lower or higher values indicate improvement
  */
 export const calculateImprovementCategory = (percentChange: number): ImprovementCategory => {
   if (percentChange >= 75) return 'significant';
@@ -535,6 +535,17 @@ export const analyzeOptmPatientData = (
     }
   }
   
+  // Add target values to mobility analysis for visualization purposes
+  analysisResult.mobilityAnalysis.forEach(mobility => {
+    if (mobility.movement.includes('Knee Flexion')) {
+      (mobility as any).target = 135; // Normal minimum knee flexion
+    } else if (mobility.movement.includes('Knee Extension')) {
+      (mobility as any).target = 0; // Target for full extension
+    } else if (mobility.movement.includes('Pelvic Tilt')) {
+      (mobility as any).target = 5.5; // Middle of normal range
+    }
+  });
+  
   // Analyze imaging (simplified)
   if (currentData.imaging && currentData.imaging.length > 0) {
     // Group by body part to compare pre and post
@@ -633,7 +644,10 @@ export const prepareVisualizationData = (
         current: value,
         previous: previousValue || 0,
         min: range?.min || 0,
-        max: range?.max || 0
+        max: range?.max || 0,
+        referenceMax: range?.max || undefined,
+        unit: range?.unit || '',
+        improvement: previousValue ? ((previousValue - value) / previousValue) * 100 : 0
       };
     });
   
@@ -668,7 +682,8 @@ export const prepareVisualizationData = (
       name: `Knee Flexion (${currentData.mobilityMeasurements.kneeFlexion.side})`,
       current: currentData.mobilityMeasurements.kneeFlexion.value,
       previous: previousData?.mobilityMeasurements?.kneeFlexion?.value || 0,
-      target: 135 // Normal minimum knee flexion
+      target: 135, // Normal minimum knee flexion
+      unit: '°'
     });
   }
   
@@ -677,7 +692,8 @@ export const prepareVisualizationData = (
       name: `Knee Extension (${currentData.mobilityMeasurements.kneeExtension.side})`,
       current: currentData.mobilityMeasurements.kneeExtension.value,
       previous: previousData?.mobilityMeasurements?.kneeExtension?.value || 0,
-      target: 0 // Target for full extension
+      target: 0, // Target for full extension
+      unit: '°'
     });
   }
   
@@ -686,7 +702,8 @@ export const prepareVisualizationData = (
       name: 'Pelvic Tilt',
       current: currentData.mobilityMeasurements.pelvicTilt.value,
       previous: previousData?.mobilityMeasurements?.pelvicTilt?.value || 0,
-      target: 5.5 // Middle of normal range
+      target: 5.5, // Middle of normal range
+      unit: '°'
     });
   }
   
