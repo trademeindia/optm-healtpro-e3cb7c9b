@@ -1,28 +1,30 @@
+
 import { User, UserRole } from '@/contexts/auth/types';
 
 // Permission levels in ascending order of access
 export const PERMISSION_LEVELS = {
   'patient': 1,
-  'doctor': 2,
-  'admin': 3
+  'receptionist': 2,
+  'doctor': 3,
+  'admin': 4
 };
 
 // Define permissions for different resources and actions
 export const PERMISSIONS = {
   PATIENTS: {
-    VIEW_ALL: ['admin', 'doctor'],
-    VIEW_OWN: ['admin', 'doctor', 'patient'],
+    VIEW_ALL: ['admin', 'doctor', 'receptionist'],
+    VIEW_OWN: ['admin', 'doctor', 'receptionist', 'patient'],
     EDIT_ALL: ['admin', 'doctor'],
     EDIT_OWN: ['admin', 'doctor', 'patient']
   },
   APPOINTMENTS: {
-    CREATE: ['admin', 'doctor', 'patient'],
-    VIEW_ALL: ['admin', 'doctor'],
-    VIEW_OWN: ['admin', 'doctor', 'patient'],
-    EDIT_ALL: ['admin', 'doctor'],
-    EDIT_OWN: ['admin', 'doctor', 'patient'],
-    DELETE_ALL: ['admin', 'doctor'],
-    DELETE_OWN: ['admin', 'doctor', 'patient']
+    CREATE: ['admin', 'doctor', 'receptionist', 'patient'],
+    VIEW_ALL: ['admin', 'doctor', 'receptionist'],
+    VIEW_OWN: ['admin', 'doctor', 'receptionist', 'patient'],
+    EDIT_ALL: ['admin', 'doctor', 'receptionist'],
+    EDIT_OWN: ['admin', 'doctor', 'receptionist', 'patient'],
+    DELETE_ALL: ['admin', 'doctor', 'receptionist'],
+    DELETE_OWN: ['admin', 'doctor', 'receptionist', 'patient']
   },
   REPORTS: {
     VIEW_ALL: ['admin', 'doctor'],
@@ -30,6 +32,16 @@ export const PERMISSIONS = {
     CREATE: ['admin', 'doctor'],
     EDIT: ['admin', 'doctor'],
     DELETE: ['admin']
+  },
+  BILLING: {
+    VIEW_ALL: ['admin', 'receptionist'],
+    CREATE: ['admin', 'receptionist'],
+    EDIT: ['admin', 'receptionist'],
+    DELETE: ['admin']
+  },
+  INVENTORY: {
+    VIEW: ['admin', 'receptionist'],
+    MANAGE: ['admin', 'receptionist']
   },
   USERS: {
     MANAGE: ['admin']

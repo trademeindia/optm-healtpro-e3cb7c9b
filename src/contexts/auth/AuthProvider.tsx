@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         
         setUser(demoUser);
-        toast.success('Demo login successful');
+        toast.success('Doctor demo login successful');
         return demoUser;
       }
       else if (email === 'patient@example.com' && password === 'password123') {
@@ -118,7 +118,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         
         setUser(demoUser);
-        toast.success('Demo login successful');
+        toast.success('Patient demo login successful');
+        return demoUser;
+      }
+      else if (email === 'receptionist@example.com' && password === 'password123') {
+        const demoUser: User = {
+          id: `demo-receptionist-${Date.now()}`,
+          email: email,
+          name: 'Receptionist Demo',
+          role: 'receptionist',
+          provider: 'email',
+          picture: null
+        };
+        
+        setUser(demoUser);
+        toast.success('Receptionist demo login successful');
         return demoUser;
       }
       

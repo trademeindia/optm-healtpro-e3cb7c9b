@@ -11,7 +11,7 @@ export const useLoginState = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [userType, setUserType] = useState<'doctor' | 'patient'>('doctor');
+  const [userType, setUserType] = useState<'doctor' | 'patient' | 'receptionist'>('patient');
   const [showSignupDialog, setShowSignupDialog] = useState(false);
   const [signupData, setSignupData] = useState({
     name: '',
@@ -27,18 +27,30 @@ export const useLoginState = () => {
     e.preventDefault();
     
     if (!email || !password) {
+      toast.error('Please enter your email and password');
       return;
     }
     
     setIsSubmitting(true);
     try {
+      // For demo purposes, handle different role demo accounts
+      if (email === 'receptionist@example.com' && password === 'password123') {
+        const demoUser = await login(email, password);
+        console.log('Receptionist login successful');
+        setTimeout(() => navigate('/dashboard/receptionist'), 500);
+        return;
+      }
+      
       const result = await login(email, password);
       
       if (result) {
         console.log('Login successful, redirecting to dashboard');
-        // Manually navigate to dashboard based on user role
+        // Navigate based on user role
         setTimeout(() => {
-          const dashboard = result.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+          const dashboard = 
+            result.role === 'doctor' ? '/dashboard/doctor' : 
+            result.role === 'receptionist' ? '/dashboard/receptionist' : 
+            '/dashboard/patient';
           console.log(`Navigating to ${dashboard}`);
           navigate(dashboard);
         }, 500);
@@ -54,7 +66,10 @@ export const useLoginState = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, redirecting to dashboard');
-      const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+      const dashboard = 
+        user.role === 'doctor' ? '/dashboard/doctor' : 
+        user.role === 'receptionist' ? '/dashboard/receptionist' : 
+        '/dashboard/patient';
       navigate(dashboard);
     }
   }, [isAuthenticated, user, navigate]);
@@ -63,6 +78,7 @@ export const useLoginState = () => {
     e.preventDefault();
     
     if (!forgotEmail) {
+      toast.error('Please enter your email address');
       return;
     }
     
@@ -70,8 +86,10 @@ export const useLoginState = () => {
     try {
       await forgotPassword(forgotEmail);
       setShowForgotPassword(false);
+      toast.success('Password reset instructions sent to your email');
     } catch (error) {
       console.error('Password reset failed:', error);
+      toast.error('Failed to send reset instructions. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,6 +99,7 @@ export const useLoginState = () => {
     e.preventDefault();
     
     if (!signupData.name || !signupData.email || !signupData.password) {
+      toast.error('Please fill out all required fields');
       return;
     }
     
@@ -93,22 +112,10 @@ export const useLoginState = () => {
     try {
       await signup(signupData.email, signupData.password, signupData.name, userType);
       setShowSignupDialog(false);
+      toast.success('Account created successfully! Please check your email for verification.');
     } catch (error) {
       console.error('Signup failed:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      setIsSubmitting(true);
-      console.log('Initiating Google OAuth login flow');
-      toast.info('Connecting to Google...', { duration: 3000 });
-      await loginWithSocialProvider('google');
-    } catch (error) {
-      console.error('Error initiating Google login:', error);
-      toast.error('Google login failed. Please try again.');
+      toast.error('Failed to create account. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,8 +124,12 @@ export const useLoginState = () => {
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'github') => {
     try {
       setIsSubmitting(true);
-      console.log(`Initiating ${provider} OAuth login flow`);
+      console.log(`Initiating ${provider} OAuth login flow for ${userType} role`);
       toast.info(`Connecting to ${provider}...`, { duration: 3000 });
+      
+      // In a real app, we'd store the selected role in localStorage or pass it to the OAuth provider
+      localStorage.setItem('selectedRole', userType);
+      
       await loginWithSocialProvider(provider);
     } catch (error) {
       console.error(`${provider} login initiation failed:`, error);
@@ -129,10 +140,19 @@ export const useLoginState = () => {
   };
 
   const handleTabChange = (value: string) => {
-    if (value === 'doctor' || value === 'patient') {
+    if (value === 'doctor' || value === 'patient' || value === 'receptionist') {
       setUserType(value);
-      setEmail('');
-      setPassword('');
+      
+      // Set demo email placeholders based on selected role
+      if (value === 'doctor') {
+        setEmail('doctor@example.com');
+      } else if (value === 'patient') {
+        setEmail('patient@example.com');
+      } else if (value === 'receptionist') {
+        setEmail('receptionist@example.com');
+      }
+      
+      setPassword('password123'); // For demo purposes
     }
   };
 
@@ -154,7 +174,6 @@ export const useLoginState = () => {
     handleSubmit,
     handleForgotPassword,
     handleSignup,
-    handleGoogleLogin,
     handleSocialLogin,
     handleTabChange,
     handleSignupInputChange

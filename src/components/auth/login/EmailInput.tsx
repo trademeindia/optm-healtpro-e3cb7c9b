@@ -7,10 +7,23 @@ import { Input } from '@/components/ui/input';
 interface EmailInputProps {
   email: string;
   setEmail: (email: string) => void;
-  userType: 'doctor' | 'patient';
+  userType: 'doctor' | 'patient' | 'receptionist';
 }
 
 const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) => {
+  const getPlaceholder = () => {
+    switch (userType) {
+      case 'doctor':
+        return 'doctor@example.com';
+      case 'patient':
+        return 'patient@example.com';
+      case 'receptionist':
+        return 'receptionist@example.com';
+      default:
+        return 'email@example.com';
+    }
+  };
+
   return (
     <div className="mb-4">
       <Label htmlFor="email">Email Address</Label>
@@ -24,7 +37,7 @@ const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail, userType }) =>
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="pl-10"
-          placeholder={userType === 'doctor' ? "doctor@example.com" : "patient@example.com"}
+          placeholder={getPlaceholder()}
           required
         />
       </div>

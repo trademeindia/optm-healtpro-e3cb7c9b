@@ -11,21 +11,25 @@ import {
   Dumbbell,
   Calendar,
   Brain,
-  Activity
+  Activity,
+  DollarSign,
+  PackageCheck,
+  PhoneCall,
+  ClipboardList
 } from 'lucide-react';
 import { MenuItem } from './types';
 
 // Common dashboard menu item
-export const getDashboardItem = (isDoctor: boolean): MenuItem => ({ 
+export const getDashboardItem = (role: 'doctor' | 'patient' | 'receptionist'): MenuItem => ({ 
   icon: LayoutDashboard, 
   label: 'Dashboard', 
-  path: isDoctor ? '/dashboard' : '/patient-dashboard',
-  description: 'Overview of patient data and clinical metrics'
+  path: `/dashboard/${role}`,
+  description: 'Overview of dashboard and key metrics'
 });
 
 // Doctor specific menu items
 export const getDoctorMenuItems = (): MenuItem[] => [
-  getDashboardItem(true),
+  getDashboardItem('doctor'),
   { 
     icon: Users, 
     label: 'Patients', 
@@ -44,11 +48,17 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     path: '/analytics',
     description: 'Visualize clinical data and treatment outcomes'
   },
+  { 
+    icon: Calendar, 
+    label: 'Appointments', 
+    path: '/appointments',
+    description: 'View and manage your appointment schedule'
+  },
 ];
 
 // Patient specific menu items
 export const getPatientMenuItems = (): MenuItem[] => [
-  getDashboardItem(false),
+  getDashboardItem('patient'),
   { 
     icon: Brain, 
     label: 'AI Report Analysis', 
@@ -93,7 +103,48 @@ export const getPatientMenuItems = (): MenuItem[] => [
   },
 ];
 
-// Bottom menu items used for both doctor and patient
+// Receptionist specific menu items
+export const getReceptionistMenuItems = (): MenuItem[] => [
+  getDashboardItem('receptionist'),
+  { 
+    icon: Users, 
+    label: 'Patients', 
+    path: '/patients',
+    description: 'Manage patient profiles and contact information'
+  },
+  { 
+    icon: Calendar, 
+    label: 'Appointments', 
+    path: '/appointments',
+    description: 'Schedule and manage patient appointments'
+  },
+  { 
+    icon: DollarSign, 
+    label: 'Billing', 
+    path: '/billing',
+    description: 'Manage invoices and payments'
+  },
+  { 
+    icon: PackageCheck, 
+    label: 'Inventory', 
+    path: '/inventory',
+    description: 'Track and manage clinic supplies and medications'
+  },
+  { 
+    icon: PhoneCall, 
+    label: 'Communications', 
+    path: '/communications',
+    description: 'Manage patient communications and reminders'
+  },
+  { 
+    icon: ClipboardList, 
+    label: 'Forms', 
+    path: '/forms',
+    description: 'Manage patient intake and consent forms'
+  },
+];
+
+// Bottom menu items used for all roles
 export const getBottomMenuItems = (): MenuItem[] => [
   { 
     icon: Settings, 
