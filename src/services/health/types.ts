@@ -25,4 +25,5 @@ export interface SyncOptions {
   forceRefresh?: boolean;
   timeRange?: TimeRange;
   metricTypes?: HealthMetricType[];
+  silent?: boolean;
 }

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,6 +47,69 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectStatus, setConnectStatus] = useState<'idle' | 'connecting' | 'retrying'>('idle');
   const { user } = useAuth();
+  
+  // Check for OAuth callback params
+  useEffect(() => {
+    const checkOAuthResult = async () => {
+      const url = new URL(window.location.href);
+      const state = url.searchParams.get('state');
+      const code = url.searchParams.get('code');
+      
+      // If we have state and code params, this might be an OAuth callback
+      if (state && code && state.includes('google_fit') && user) {
+        setIsConnecting(true);
+        setConnectStatus('connecting');
+        
+        try {
+          console.log('Processing Google Fit OAuth callback');
+          
+          // Call the Edge Function to handle token exchange
+          const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/google-fit-callback`;
+          const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code,
+              state,
+              userId: user.id
+            }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to complete Google Fit connection');
+          }
+          
+          const data = await response.json();
+          console.log('Successfully connected to Google Fit:', data);
+          
+          // Clean URL parameters to avoid processing this callback again
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+          
+          toast.success("Google Fit connected successfully!", {
+            description: "Your health data will now sync automatically."
+          });
+          
+          if (onConnected) {
+            onConnected();
+          }
+        } catch (error) {
+          console.error('Error handling Google Fit callback:', error);
+          toast.error("Failed to complete Google Fit connection", {
+            description: error instanceof Error ? error.message : "Unknown error occurred"
+          });
+        } finally {
+          setIsConnecting(false);
+          setConnectStatus('idle');
+        }
+      }
+    };
+    
+    checkOAuthResult();
+  }, [user, onConnected]);
 
   const handleConnectGoogleFit = async () => {
     if (!user) {
@@ -90,6 +153,7 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       
       // Log for debugging
       console.log(`Initiating Google Fit connection for user: ${user.id}`);
+      console.log(`Redirecting to: ${functionUrl}?userId=${user.id}`);
       
       // Initiate Google OAuth flow
       window.location.href = `${functionUrl}?userId=${user.id}`;
