@@ -904,4 +904,4 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="shoulder-
+                      <Label htmlFor="shoulder-flexion-
