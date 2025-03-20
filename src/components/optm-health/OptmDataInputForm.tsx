@@ -61,7 +61,8 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
   
   const handleInputChange = (section: keyof OptmPatientData, field: string, value: any) => {
     setPatientData(prev => {
-      const sectionData = prev[section] || {};
+      // Use type casting to ensure TypeScript knows this is an object type
+      const sectionData = (prev[section] || {}) as Record<string, any>;
       
       return {
         ...prev,
@@ -76,25 +77,35 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
   const handleBiomarkerChange = (marker: keyof MusculoskeletalBiomarkers, value: string) => {
     const numValue = value === '' ? undefined : parseFloat(value);
     
-    setPatientData(prev => ({
-      ...prev,
-      biomarkers: {
-        ...prev.biomarkers,
-        [marker]: numValue
-      }
-    }));
+    setPatientData(prev => {
+      // Use empty object as fallback
+      const biomarkers = prev.biomarkers || {};
+      
+      return {
+        ...prev,
+        biomarkers: {
+          ...biomarkers,
+          [marker]: numValue
+        }
+      };
+    });
   };
   
   const handleAnatomicalCtmChange = (value: string) => {
     const numValue = value === '' ? undefined : parseFloat(value);
     
-    setPatientData(prev => ({
-      ...prev,
-      anatomicalMeasurements: {
-        ...prev.anatomicalMeasurements,
-        ctm: numValue
-      }
-    }));
+    setPatientData(prev => {
+      // Use empty object as fallback
+      const anatomicalMeasurements = prev.anatomicalMeasurements || {};
+      
+      return {
+        ...prev,
+        anatomicalMeasurements: {
+          ...anatomicalMeasurements,
+          ctm: numValue
+        }
+      };
+    });
   };
   
   const handleCircumferenceChange = (type: 'ccm' | 'cap' | 'cbp', index: number, field: string, value: any) => {
@@ -893,206 +904,4 @@ const OptmDataInputForm: React.FC<OptmDataInputFormProps> = ({
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="shoulder-flexion-side">Side</Label>
-                      <Select
-                        value={patientData.mobilityMeasurements?.shoulderFlexion?.side}
-                        onValueChange={(value: 'left' | 'right' | 'bilateral') => 
-                          handleMobilityChange('shoulderFlexion', 'side', value)
-                        }
-                      >
-                        <SelectTrigger id="shoulder-flexion-side">
-                          <SelectValue placeholder="Select side" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="left">Left</SelectItem>
-                          <SelectItem value="right">Right</SelectItem>
-                          <SelectItem value="bilateral">Bilateral</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="shoulder-flexion-unit">Unit</Label>
-                      <Input 
-                        id="shoulder-flexion-unit"
-                        value="degrees"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="imaging" className="space-y-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Imaging Data</h3>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={addImage}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Image
-                </Button>
-              </div>
-              
-              {(patientData.imaging || []).length === 0 ? (
-                <div className="text-center py-8 border rounded-lg">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">No imaging data added</p>
-                  <p className="text-sm text-muted-foreground">Click "Add Image" to upload diagnostic images</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {(patientData.imaging || []).map((image) => (
-                    <div key={image.id} className="border rounded-lg p-4 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium">{image.type} - {image.bodyPart || 'Untitled'}</h4>
-                        <Button 
-                          type="button" 
-                          variant="destructive" 
-                          size="sm" 
-                          onClick={() => removeImage(image.id)}
-                        >
-                          <Trash className="h-4 w-4 mr-1" />
-                          Remove
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`image-type-${image.id}`}>Image Type</Label>
-                          <Select
-                            value={image.type}
-                            onValueChange={(value: 'x-ray' | 'mri' | 'ct' | 'ultrasound') => 
-                              updateImage(image.id, 'type', value)
-                            }
-                          >
-                            <SelectTrigger id={`image-type-${image.id}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="x-ray">X-Ray</SelectItem>
-                              <SelectItem value="mri">MRI</SelectItem>
-                              <SelectItem value="ct">CT Scan</SelectItem>
-                              <SelectItem value="ultrasound">Ultrasound</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`image-body-part-${image.id}`}>Body Part</Label>
-                          <Input 
-                            id={`image-body-part-${image.id}`}
-                            value={image.bodyPart} 
-                            onChange={(e) => updateImage(image.id, 'bodyPart', e.target.value)}
-                            placeholder="e.g., Knee, Shoulder, Spine"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`image-date-${image.id}`}>Date</Label>
-                          <Input 
-                            id={`image-date-${image.id}`}
-                            type="date"
-                            value={image.date.split('T')[0]} 
-                            onChange={(e) => updateImage(image.id, 'date', e.target.value)}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`image-stage-${image.id}`}>Treatment Stage</Label>
-                          <Select
-                            value={image.stage}
-                            onValueChange={(value: 'pre-treatment' | 'post-treatment' | 'follow-up') => 
-                              updateImage(image.id, 'stage', value)
-                            }
-                          >
-                            <SelectTrigger id={`image-stage-${image.id}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pre-treatment">Pre-Treatment</SelectItem>
-                              <SelectItem value="post-treatment">Post-Treatment</SelectItem>
-                              <SelectItem value="follow-up">Follow-up</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor={`image-url-${image.id}`}>Image URL</Label>
-                          <Input 
-                            id={`image-url-${image.id}`}
-                            value={image.imageUrl} 
-                            onChange={(e) => updateImage(image.id, 'imageUrl', e.target.value)}
-                            placeholder="Enter image URL or upload path"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor={`image-notes-${image.id}`}>Notes</Label>
-                          <Textarea 
-                            id={`image-notes-${image.id}`}
-                            value={image.notes || ''} 
-                            onChange={(e) => updateImage(image.id, 'notes', e.target.value)}
-                            placeholder="Enter notes about imaging findings"
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        
-        <CardFooter className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setActiveTab(prevTab => {
-              const tabs = ['patient-info', 'biomarkers', 'anatomical', 'mobility', 'imaging'];
-              const currentIndex = tabs.indexOf(prevTab);
-              return currentIndex > 0 ? tabs[currentIndex - 1] : prevTab;
-            })}
-          >
-            Previous
-          </Button>
-          
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveTab(prevTab => {
-                const tabs = ['patient-info', 'biomarkers', 'anatomical', 'mobility', 'imaging'];
-                const currentIndex = tabs.indexOf(prevTab);
-                return currentIndex < tabs.length - 1 ? tabs[currentIndex + 1] : prevTab;
-              })}
-            >
-              Next
-            </Button>
-            
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Data
-                </>
-              )}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-    </form>
-  );
-};
-
-export default OptmDataInputForm;
+                      <Label htmlFor="shoulder-
