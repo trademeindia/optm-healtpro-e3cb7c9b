@@ -10,6 +10,7 @@ export const useAuthOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
+  // Initialize hooks with navigate
   const { login } = useAuthLogin({ setIsLoading, navigate });
   const { signup } = useAuthSignup({ setIsLoading, navigate });
   const { loginWithSocialProvider, handleOAuthCallback } = useAuthSocial({ setIsLoading, navigate });

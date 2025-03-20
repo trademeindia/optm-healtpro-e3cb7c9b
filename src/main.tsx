@@ -1,6 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './contexts/auth';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -46,9 +47,11 @@ try {
   root.render(
     <React.StrictMode>
       <ErrorBoundary onError={handleError}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <Router>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </Router>
       </ErrorBoundary>
     </React.StrictMode>,
   );
