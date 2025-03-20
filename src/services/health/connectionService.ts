@@ -17,12 +17,13 @@ export class ConnectionService {
         return userId.includes('patient');
       }
       
+      // Handle this as a custom query without type safety
       const { data, error } = await supabase
         .from('fitness_connections')
         .select('*')
         .eq('user_id', userId)
         .eq('provider', 'google_fit')
-        .limit(1);
+        .limit(1) as any;
         
       if (error) {
         throw error;
@@ -55,16 +56,17 @@ export class ConnectionService {
         return [];
       }
       
+      // Handle this as a custom query without type safety
       const { data, error } = await supabase
         .from('fitness_connections')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
         
       if (error) {
         throw error;
       }
       
-      return (data || []).map(conn => ({
+      return (data || []).map((conn: any) => ({
         id: conn.id,
         userId: conn.user_id,
         provider: conn.provider,

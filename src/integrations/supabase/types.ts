@@ -9,7 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      fitness_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_sync: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_sync?: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_sync?: string | null
+          provider?: string
+          refresh_token?: string
+          scope?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fitness_data: {
+        Row: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          end_time: string
+          id?: string
+          metadata?: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          end_time?: string
+          id?: string
+          metadata?: Json | null
+          source?: string
+          start_time?: string
+          unit?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          email: string
+          id: string
+          name: string | null
+          picture: string | null
+          provider: string
+          role: string
+        }
+        Insert: {
+          email: string
+          id: string
+          name?: string | null
+          picture?: string | null
+          provider?: string
+          role?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string | null
+          picture?: string | null
+          provider?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

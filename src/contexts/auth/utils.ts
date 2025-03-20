@@ -1,101 +1,168 @@
 
-import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { User, UserRole, AuthProviderType } from './types';
+import { Provider, UserSession } from './types';
 
-export const formatUser = async (supabaseUser: SupabaseUser | null): Promise<User | null> => {
-  if (!supabaseUser) return null;
-
+/**
+ * Creates a user profile in the database
+ */
+export const createUserProfile = async (
+  id: string,
+  email: string,
+  name: string,
+  role: 'doctor' | 'patient' | 'receptionist',
+  provider: Provider,
+  picture: string
+): Promise<UserSession | null> => {
   try {
-    console.log("Formatting user:", supabaseUser.id);
+    console.log('Creating user profile', { id, email, name, role, provider, picture });
     
-    // Get provider information from the user metadata
-    // Ensure provider is of type AuthProviderType
-    const providerInfo: AuthProviderType = 
-      (supabaseUser.app_metadata?.provider as AuthProviderType) || 
-      (supabaseUser.identities && supabaseUser.identities.length > 0 ? 
-        supabaseUser.identities[0].provider as AuthProviderType : 'email');
-    
-    // Get name from user metadata or identity data for OAuth users
-    let userName = '';
-    let userPicture = '';
-    
-    if (providerInfo !== 'email') {
-      // For OAuth users, try to get name and picture from identity data
-      if (supabaseUser.user_metadata) {
-        userName = supabaseUser.user_metadata.full_name || 
-                   supabaseUser.user_metadata.name || 
-                   supabaseUser.user_metadata.user_name || 
-                   '';
-                   
-        userPicture = supabaseUser.user_metadata.avatar_url || 
-                      supabaseUser.user_metadata.picture || 
-                      '';
-      }
+    // Check if profile already exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single() as any;
+      
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = not found
+      console.error('Error fetching existing profile:', fetchError);
+      return null;
     }
     
-    // Type-safe query using explicit casting
+    if (existingProfile) {
+      console.log('Profile already exists, returning existing profile');
+      
+      const userSession: UserSession = {
+        id: existingProfile.id,
+        email: existingProfile.email,
+        name: existingProfile.name,
+        role: existingProfile.role,
+        provider: existingProfile.provider,
+        picture: existingProfile.picture
+      };
+      
+      return userSession;
+    }
+    
+    // Create new profile
+    const { data: newProfile, error: insertError } = await supabase
+      .from('profiles')
+      .insert({
+        id,
+        email,
+        name,
+        role,
+        provider,
+        picture
+      })
+      .select()
+      .single() as any;
+      
+    if (insertError) {
+      console.error('Error creating user profile:', insertError);
+      return null;
+    }
+    
+    const userSession: UserSession = {
+      id: newProfile.id,
+      email: newProfile.email,
+      name: newProfile.name,
+      role: newProfile.role,
+      provider: newProfile.provider,
+      picture: newProfile.picture
+    };
+    
+    return userSession;
+  } catch (error) {
+    console.error('Error in createUserProfile:', error);
+    return null;
+  }
+};
+
+/**
+ * Gets a user session from the database
+ */
+export const getUserSession = async (userId: string): Promise<UserSession | null> => {
+  try {
+    // Get profile from database
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', supabaseUser.id)
-      .single();
-
+      .eq('id', userId)
+      .single() as any;
+      
     if (error) {
-      console.error('Error fetching user profile:', error);
-      
-      // If we can't find a profile but we have OAuth data, we could create a default profile
-      if (providerInfo !== 'email' && userName) {
-        console.log("No profile found but have OAuth data - creating default profile");
-        
-        // Default to patient role for OAuth users
-        const defaultRole: UserRole = 'patient';
-        
-        // Insert a new profile for the OAuth user
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: supabaseUser.id,
-            email: supabaseUser.email,
-            name: userName,
-            role: defaultRole,
-            provider: providerInfo,
-            picture: userPicture
-          })
-          .select()
-          .single();
-          
-        if (insertError) {
-          console.error('Error creating user profile:', insertError);
-          return null;
-        }
-        
-        return {
-          id: newProfile.id,
-          email: newProfile.email,
-          name: newProfile.name,
-          role: newProfile.role as UserRole,
-          provider: newProfile.provider as AuthProviderType,
-          picture: newProfile.picture
-        };
-      }
-      
+      console.error('Error getting user profile:', error);
       return null;
     }
-
-    if (!data) return null;
-
-    // Type-safe access to profile data
-    return {
+    
+    // If no profile found
+    if (!data) {
+      console.log('No profile found for user', userId);
+      return null;
+    }
+    
+    // Return user session
+    const userSession: UserSession = {
       id: data.id,
       email: data.email,
-      name: data.name || userName || '',
-      role: (data.role as UserRole) || 'patient',
-      provider: (data.provider as AuthProviderType) || providerInfo,
-      picture: data.picture || userPicture || ''
+      name: data.name,
+      role: data.role,
+      provider: data.provider,
+      picture: data.picture
     };
+    
+    return userSession;
   } catch (error) {
-    console.error('Error formatting user:', error);
+    console.error('Error in getUserSession:', error);
     return null;
+  }
+};
+
+/**
+ * Gets the current authenticated user session 
+ */
+export const getCurrentSession = async (): Promise<UserSession | null> => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error getting current session:', error);
+      return null;
+    }
+    
+    if (!session) {
+      console.log('No active session found');
+      return null;
+    }
+    
+    const userId = session.user.id;
+    return await getUserSession(userId);
+  } catch (error) {
+    console.error('Error in getCurrentSession:', error);
+    return null;
+  }
+};
+
+/**
+ * Checks if the current user has the required role
+ */
+export const hasRole = async (
+  requiredRole: 'doctor' | 'patient' | 'receptionist' | 'any'
+): Promise<boolean> => {
+  try {
+    const userSession = await getCurrentSession();
+    
+    if (!userSession) {
+      return false;
+    }
+    
+    if (requiredRole === 'any') {
+      return true;
+    }
+    
+    return userSession.role === requiredRole;
+  } catch (error) {
+    console.error('Error in hasRole:', error);
+    return false;
   }
 };
