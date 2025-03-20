@@ -18,6 +18,7 @@ interface PatientInfoTabProps {
   gender?: 'male' | 'female' | 'other';
   treatmentStage?: TreatmentStage;
   onPatientInfoChange: (field: string, value: any) => void;
+  errors?: string[]; // Added errors prop
 }
 
 const PatientInfoTab: React.FC<PatientInfoTabProps> = ({
@@ -26,10 +27,21 @@ const PatientInfoTab: React.FC<PatientInfoTabProps> = ({
   age,
   gender,
   treatmentStage,
-  onPatientInfoChange
+  onPatientInfoChange,
+  errors = [] // Default to empty array
 }) => {
   return (
     <div className="space-y-4">
+      {errors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 mb-4">
+          <ul className="list-disc pl-4">
+            {errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="patientId">Patient ID</Label>

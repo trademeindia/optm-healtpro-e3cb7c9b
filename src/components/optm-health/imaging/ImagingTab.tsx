@@ -19,16 +19,28 @@ interface ImagingTabProps {
   onAddImage: () => void;
   onRemoveImage: (id: string) => void;
   onUpdateImage: (id: string, field: keyof ImagingData, value: any) => void;
+  errors?: string[]; // Added errors prop
 }
 
 const ImagingTab: React.FC<ImagingTabProps> = ({
   imaging,
   onAddImage,
   onRemoveImage,
-  onUpdateImage
+  onUpdateImage,
+  errors = [] // Default to empty array
 }) => {
   return (
     <div className="space-y-6">
+      {errors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 mb-4">
+          <ul className="list-disc pl-4">
+            {errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Imaging Data</h3>
         <Button 
