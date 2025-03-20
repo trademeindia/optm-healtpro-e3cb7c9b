@@ -148,6 +148,7 @@ export interface OptmAnalysisResult {
     improvement: ImprovementCategory;
     improvementPercentage: number;
     notes: string;
+    target?: number; // Added target property for ideal/normal range value
   }[];
   imagingAnalysis: {
     type: string;

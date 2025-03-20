@@ -485,7 +485,8 @@ export const analyzeOptmPatientData = (
         previous: previousValue,
         improvement,
         improvementPercentage,
-        notes: generateMobilityNotes(`Knee Flexion (${side})`, improvement, improvementPercentage, currentValue)
+        notes: generateMobilityNotes(`Knee Flexion (${side})`, improvement, improvementPercentage, currentValue),
+        target: 135 // Normal minimum knee flexion
       });
     }
   }
@@ -506,7 +507,8 @@ export const analyzeOptmPatientData = (
         previous: previousValue,
         improvement,
         improvementPercentage,
-        notes: generateMobilityNotes(`Knee Extension (${side})`, improvement, improvementPercentage, currentValue)
+        notes: generateMobilityNotes(`Knee Extension (${side})`, improvement, improvementPercentage, currentValue),
+        target: 0 // Target for full extension
       });
     }
   }
@@ -530,7 +532,8 @@ export const analyzeOptmPatientData = (
         previous: previousValue,
         improvement,
         improvementPercentage,
-        notes: generateMobilityNotes('Pelvic Tilt Angle', improvement, improvementPercentage, currentValue)
+        notes: generateMobilityNotes('Pelvic Tilt Angle', improvement, improvementPercentage, currentValue),
+        target: 5.5 // Middle of normal range
       });
     }
   }
@@ -750,3 +753,4 @@ export const prepareVisualizationData = (
     recommendations: analysisResult?.recommendations
   };
 };
+
