@@ -19,8 +19,7 @@ export function useDoctors() {
       try {
         setIsLoading(true);
         
-        // The doctors table might not exist in the schema yet
-        // For now, use mock data directly without attempting to query
+        // Use mock data instead of attempting to query a non-existent table
         const mockDoctors: Doctor[] = [
           { id: 'doc-1', name: 'Dr. John Smith', specialty: 'Cardiology' },
           { id: 'doc-2', name: 'Dr. Sarah Johnson', specialty: 'Neurology' },

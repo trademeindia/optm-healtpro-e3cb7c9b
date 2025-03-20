@@ -25,7 +25,7 @@ const PatientDashboardTabs: React.FC = () => {
     type: appointment.type,
     location: appointment.location || 'Main Clinic',
     provider: appointment.provider || {
-      id: 'doc-1',
+      id: appointment.providerId || 'doc-1',
       name: appointment.doctor,
       specialty: 'General Medicine'
     }
