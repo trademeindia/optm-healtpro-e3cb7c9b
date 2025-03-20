@@ -8,6 +8,23 @@ import { useActivityData } from './dashboard/useActivityData';
 import { useAppointments } from './dashboard/useAppointments';
 import { useTreatmentTasks } from './dashboard/useTreatmentTasks';
 import { HealthMetric } from '@/types/health';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
+
+// Define a default FitnessData object to use as fallback
+const defaultFitnessData: FitnessData = {
+  steps: {
+    data: [],
+    summary: { total: 0, average: 0 }
+  },
+  heartRate: {
+    data: [],
+    summary: { average: 0, min: 0, max: 0 }
+  },
+  calories: {
+    data: [],
+    summary: { total: 0, average: 0 }
+  }
+};
 
 export const usePatientDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,13 +33,13 @@ export const usePatientDashboard = () => {
   // Try-catch around integration to prevent dashboard from crashing
   const { 
     providers = [], 
-    fitnessData = {},
+    fitnessData = defaultFitnessData,
     refreshProviderData = async () => {}
   } = useFitnessIntegration();
 
   // Set defaults for all data to prevent undefined errors
   const healthMetrics: HealthMetric[] = useHealthMetrics(fitnessData) || [];
-  const { activityData = {}, fitnessData: transformedFitnessData = {} } = useActivityData(fitnessData);
+  const { activityData = {}, fitnessData: transformedFitnessData = defaultFitnessData } = useActivityData(fitnessData);
   const treatmentTasks = useTreatmentTasks() || [];
   const { 
     upcomingAppointments = [], 

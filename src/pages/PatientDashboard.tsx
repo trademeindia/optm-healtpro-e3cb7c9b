@@ -22,6 +22,23 @@ import FitnessDataCharts from '@/components/dashboard/FitnessDataCharts';
 import AnatomicalBodyMap from '@/components/patient-dashboard/AnatomicalBodyMap';
 import RealTimeHealthMetrics from '@/components/patient-dashboard/RealTimeHealthMetrics';
 import AIHealthInsights from '@/components/patient-dashboard/AIHealthInsights';
+import { FitnessData } from '@/hooks/useFitnessIntegration';
+
+// Define default FitnessData for components that require it
+const defaultFitnessData: FitnessData = {
+  steps: {
+    data: [],
+    summary: { total: 0, average: 0 }
+  },
+  heartRate: {
+    data: [],
+    summary: { average: 0, min: 0, max: 0 }
+  },
+  calories: {
+    data: [],
+    summary: { total: 0, average: 0 }
+  }
+};
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -141,7 +158,7 @@ const PatientDashboard: React.FC = () => {
                   
                   {/* AI Health Insights (only render if fitnessData exists) */}
                   {fitnessData && Object.keys(fitnessData).length > 0 && (
-                    <AIHealthInsights fitnessData={fitnessData} />
+                    <AIHealthInsights fitnessData={fitnessData || defaultFitnessData} />
                   )}
                   
                   {/* Health metrics and biological age */}
@@ -173,7 +190,7 @@ const PatientDashboard: React.FC = () => {
                   )}
                   
                   {hasConnectedApps && fitnessData && (
-                    <FitnessDataCharts fitnessData={fitnessData} />
+                    <FitnessDataCharts fitnessData={fitnessData || defaultFitnessData} />
                   )}
                   
                   <div className="grid lg:grid-cols-2 gap-6">
