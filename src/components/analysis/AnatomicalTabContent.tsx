@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MetricsSection } from './MetricsSection';
+import MetricsSection from './MetricsSection';
 
 interface AnatomicalTabContentProps {
   anatomicalMetrics: {
