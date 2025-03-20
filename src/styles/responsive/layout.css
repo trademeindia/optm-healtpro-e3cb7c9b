@@ -201,3 +201,25 @@ html, body {
 .select-separator, .select-arrow {
   z-index: 50 !important;
 }
+
+/* Fix full height and display issues */
+.full-height-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.main-content-area {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}

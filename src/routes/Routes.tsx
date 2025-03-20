@@ -6,6 +6,7 @@ import LoginPage from '@/pages/LoginPage';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import OAuthCallback from '@/pages/OAuthCallback';
+import ReportsPage from '@/pages/ReportsPage';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -54,6 +55,16 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredRole="receptionist">
               <ReceptionistDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Reports Route - Added explicit route */}
+        <Route 
+          path="/reports" 
+          element={
+            <ProtectedRoute requiredRole="doctor">
+              <ReportsPage />
             </ProtectedRoute>
           } 
         />

@@ -27,15 +27,11 @@ html, body, #root {
   padding: 0;
   background-color: #f8f9fa;
   overflow-x: hidden;
-  opacity: 1 !important;
-  visibility: visible !important;
 }
 
 #root {
   display: flex;
   flex-direction: column;
-  opacity: 1 !important;
-  visibility: visible !important;
   position: relative;
   z-index: 1;
 }
@@ -46,8 +42,6 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   position: relative;
-  opacity: 1 !important;
-  visibility: visible !important;
   z-index: 2;
 }
 
@@ -82,7 +76,6 @@ body.overflow-hidden {
   justify-content: center;
   max-width: 500px;
   margin: 0 auto;
-  visibility: visible !important;
 }
 
 /* Prevent nested scrolling issues */
@@ -111,8 +104,6 @@ body.overflow-hidden {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   overflow: hidden;
-  visibility: visible !important;
-  opacity: 1 !important;
   position: relative;
   z-index: 1;
 }
@@ -126,8 +117,6 @@ body.overflow-hidden {
   max-height: 90vh;
   overflow: auto;
   z-index: 50;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Dark mode text contrast improvement */
@@ -175,8 +164,6 @@ body.overflow-hidden {
 header, footer {
   position: relative;
   z-index: 10;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Loading state styles */
@@ -191,16 +178,12 @@ header, footer {
   z-index: 9999;
 }
 
-/* Dashboard specific visibility fixes */
-.dashboard-container, 
-.dashboard-container * {
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Ensure tabs content visibility */
-.tabs-content,
-[role="tabpanel"] {
-  visibility: visible !important;
-  opacity: 1 !important;
+/* Make sure content containers are visible */
+.content-container {
+  position: relative;
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
