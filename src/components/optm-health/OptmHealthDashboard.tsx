@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,7 +17,9 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  ReferenceLine,
+  LabelList
 } from 'recharts';
 import { 
   Activity, 
@@ -32,7 +33,8 @@ import {
   MoveHorizontal, 
   ImageIcon, 
   FileText, 
-  RefreshCw 
+  RefreshCw,
+  Info
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -44,6 +46,7 @@ import {
   BIOMARKER_REFERENCE_RANGES
 } from '@/types/optm-health';
 import { analyzeOptmPatientData, prepareVisualizationData } from '@/utils/optmHealthUtils';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface OptmHealthDashboardProps {
   currentData: OptmPatientData;
@@ -66,14 +69,12 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
   
   const [activeTab, setActiveTab] = useState('summary');
   
-  // If we don't have analysis result and we do have previous data, calculate it
   React.useEffect(() => {
     if (!analysisResult && previousData) {
       setAnalysisResult(analyzeOptmPatientData(currentData, previousData));
     }
   }, [currentData, previousData, analysisResult]);
   
-  // Prepare visualization data
   const visualizationData = React.useMemo(() => 
     prepareVisualizationData(currentData, previousData, analysisResult),
     [currentData, previousData, analysisResult]
@@ -90,7 +91,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
     }
   };
   
-  // Helper function to get color based on improvement category
   const getImprovementColor = (category: ImprovementCategory) => {
     switch (category) {
       case 'significant': return 'text-green-600';
@@ -102,7 +102,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
     }
   };
   
-  // Helper function to get badge variant based on improvement category
   const getImprovementBadgeVariant = (category: ImprovementCategory): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (category) {
       case 'significant': 
@@ -119,7 +118,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
     }
   };
   
-  // Helper function to get icon based on improvement category
   const getImprovementIcon = (category: ImprovementCategory) => {
     switch (category) {
       case 'significant': return <TrendingUp className="h-4 w-4 mr-1" />;
@@ -131,7 +129,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
     }
   };
   
-  // Helper function to render priority badges
   const getPriorityBadge = (priority: 'high' | 'medium' | 'low') => {
     switch (priority) {
       case 'high':
@@ -143,6 +140,85 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
       default:
         return null;
     }
+  };
+  
+  const CustomBarTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border shadow-lg rounded-lg">
+          <p className="font-medium mb-1">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-3">
+              <div className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span>{entry.name}: </span>
+              </div>
+              <span className="font-medium">
+                {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
+                {entry.unit || ''}
+              </span>
+            </div>
+          ))}
+          
+          {payload.length > 1 && payload[0].payload.improvement !== undefined && (
+            <div className="mt-2 pt-2 border-t text-sm">
+              <div className="flex items-center">
+                <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                <span>Improvement: </span>
+                <span className="font-medium ml-1 text-green-500">
+                  {payload[0].payload.improvement.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  const CustomLineTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border shadow-lg rounded-lg">
+          <p className="font-medium mb-1">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-3">
+              <div className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span>{entry.name}: </span>
+              </div>
+              <span className="font-medium">
+                {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
+                {entry.unit || ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  const CustomRadarTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border shadow-lg rounded-lg">
+          <p className="font-medium mb-1">{payload[0].payload.metric}</p>
+          <div className="flex items-center justify-between gap-3">
+            <span>Progress: </span>
+            <span className="font-medium">{payload[0].value.toFixed(1)}%</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
   
   if (!currentData) {
@@ -163,7 +239,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
   
   return (
     <div className="space-y-6">
-      {/* Patient Information and Overall Progress */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
@@ -224,7 +299,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
         </CardContent>
       </Card>
       
-      {/* Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="summary" className="flex items-center gap-2">
@@ -249,9 +323,7 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
           </TabsTrigger>
         </TabsList>
         
-        {/* Summary Tab */}
         <TabsContent value="summary" className="space-y-4">
-          {/* Key Metrics Overview */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Key Metrics Overview</CardTitle>
@@ -259,7 +331,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             <CardContent>
               {analysisResult ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Biomarkers Summary */}
                   <div className="space-y-2">
                     <h3 className="font-medium flex items-center">
                       <Activity className="h-4 w-4 mr-2" />
@@ -277,7 +348,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                     </ul>
                   </div>
                   
-                  {/* Anatomical Summary */}
                   <div className="space-y-2">
                     <h3 className="font-medium flex items-center">
                       <Ruler className="h-4 w-4 mr-2" />
@@ -295,7 +365,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                     </ul>
                   </div>
                   
-                  {/* Mobility Summary */}
                   <div className="space-y-2">
                     <h3 className="font-medium flex items-center">
                       <MoveHorizontal className="h-4 w-4 mr-2" />
@@ -321,7 +390,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             </CardContent>
           </Card>
           
-          {/* Recommendations */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Treatment Recommendations</CardTitle>
@@ -332,7 +400,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             <CardContent>
               {analysisResult?.recommendations && analysisResult.recommendations.length > 0 ? (
                 <div className="space-y-4">
-                  {/* Exercise Recommendations */}
                   <div>
                     <h3 className="font-medium mb-2">Exercise Protocol</h3>
                     <ul className="space-y-2">
@@ -350,7 +417,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                     </ul>
                   </div>
                   
-                  {/* Medication & Lifestyle Recommendations */}
                   <div>
                     <h3 className="font-medium mb-2">Medication & Lifestyle</h3>
                     <ul className="space-y-2">
@@ -368,7 +434,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                     </ul>
                   </div>
                   
-                  {/* Follow-up Recommendations */}
                   <div>
                     <h3 className="font-medium mb-2">Follow-up</h3>
                     <ul className="space-y-2">
@@ -394,22 +459,37 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             </CardContent>
           </Card>
           
-          {/* Radar Chart for Overall Progress */}
           {visualizationData?.radarChartData && visualizationData.radarChartData.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Progress Overview</CardTitle>
-                <CardDescription>
-                  Comparison of progress across all metrics
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Progress Overview</CardTitle>
+                    <CardDescription>
+                      Comparison of progress across all metrics
+                    </CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">This radar chart shows progress across all key areas. Higher values (further from center) indicate better improvement.</p>
+                      </TooltipContent>
+                    </UITooltip>
+                  </TooltipProvider>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={visualizationData.radarChartData}>
-                      <PolarGrid />
-                      <PolarAngleAxis dataKey="metric" />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                      <PolarGrid stroke="#94a3b8" strokeOpacity={0.3} />
+                      <PolarAngleAxis dataKey="metric" tick={{ fill: '#64748b', fontSize: 12 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} axisLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                       <Radar
                         name="Progress"
                         dataKey="value"
@@ -417,46 +497,118 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
-                      <Tooltip />
+                      <Tooltip content={<CustomRadarTooltip />} />
                     </RadarChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center mt-2">
+                  <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-xs">
+                    <span className="mr-1">Poor</span>
+                    <div className="w-24 h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full mx-1"></div>
+                    <span className="ml-1">Excellent</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
         </TabsContent>
         
-        {/* Biomarkers Tab */}
         <TabsContent value="biomarkers" className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle>Biomarker Analysis</CardTitle>
-              <CardDescription>
-                Detailed analysis of key musculoskeletal biomarkers
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Biomarker Analysis</CardTitle>
+                  <CardDescription>
+                    Detailed analysis of key musculoskeletal biomarkers
+                  </CardDescription>
+                </div>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">Changes in biomarkers indicate physiological responses to treatment. Hover over bars for detailed information.</p>
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardHeader>
             <CardContent>
               {analysisResult?.biomarkerAnalysis && analysisResult.biomarkerAnalysis.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Biomarker Chart */}
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart 
                         data={visualizationData?.biomarkerChartData} 
                         margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="current" name="Current" fill="#8884d8" />
-                        <Bar dataKey="previous" name="Previous" fill="#82ca9d" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.2} />
+                        <XAxis 
+                          dataKey="name" 
+                          angle={-45} 
+                          textAnchor="end" 
+                          height={60}
+                          tick={{ fill: '#64748b', fontSize: 12 }}
+                        />
+                        <YAxis 
+                          tick={{ fill: '#64748b', fontSize: 12 }}
+                          tickFormatter={(value) => `${value}${visualizationData?.biomarkerChartData?.[0]?.unit || ''}`}
+                        />
+                        <Tooltip content={<CustomBarTooltip />} />
+                        <Legend wrapperStyle={{ paddingTop: 10 }} />
+                        <Bar 
+                          dataKey="current" 
+                          name="Current" 
+                          fill="#8884d8" 
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          <LabelList dataKey="current" position="top" formatter={(value: number) => value.toFixed(1)} style={{ fontSize: 10, fill: '#64748b' }} />
+                        </Bar>
+                        <Bar 
+                          dataKey="previous" 
+                          name="Previous" 
+                          fill="#82ca9d" 
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        />
+                        {visualizationData?.biomarkerChartData?.some(d => d.referenceMax !== undefined) && 
+                          visualizationData.biomarkerChartData.map((item, index) => 
+                            item.referenceMax !== undefined && (
+                              <ReferenceLine 
+                                key={`ref-max-${index}`}
+                                y={item.referenceMax} 
+                                stroke="#ef4444" 
+                                strokeDasharray="3 3" 
+                                isFront={true}
+                                segment={[{ x: index, y: item.referenceMax }, { x: index + 0.8, y: item.referenceMax }]}
+                              />
+                            )
+                          )
+                        }
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                   
-                  {/* Biomarker Details */}
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-[#8884d8] rounded-full mr-1.5"></div>
+                      <span>Current Value</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-[#82ca9d] rounded-full mr-1.5"></div>
+                      <span>Previous Value</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-0.5 bg-red-500 rounded-full mr-1.5 px-2"></div>
+                      <span>Reference Maximum</span>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-4">
                     <h3 className="font-medium">Detailed Analysis</h3>
                     
@@ -513,7 +665,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
           </Card>
         </TabsContent>
         
-        {/* Anatomical Tab */}
         <TabsContent value="anatomical" className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
@@ -525,7 +676,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             <CardContent>
               {analysisResult?.anatomicalAnalysis && analysisResult.anatomicalAnalysis.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Anatomical Chart */}
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart 
@@ -543,7 +693,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
                     </ResponsiveContainer>
                   </div>
                   
-                  {/* Anatomical Details */}
                   <div className="space-y-4">
                     <h3 className="font-medium">Detailed Analysis</h3>
                     
@@ -583,65 +732,136 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
           </Card>
         </TabsContent>
         
-        {/* Mobility Tab */}
         <TabsContent value="mobility" className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle>Mobility Analysis</CardTitle>
-              <CardDescription>
-                Analysis of range of motion and joint mobility
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Mobility Analysis</CardTitle>
+                  <CardDescription>
+                    Analysis of range of motion and joint mobility
+                  </CardDescription>
+                </div>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">Mobility measurements show joint range of motion improvements. Higher bars indicate better mobility. Target values show optimal ranges.</p>
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </div>
             </CardHeader>
             <CardContent>
               {analysisResult?.mobilityAnalysis && analysisResult.mobilityAnalysis.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Mobility Chart */}
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart 
                         data={visualizationData?.mobilityChartData} 
                         margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="current" name="Current" fill="#8884d8" />
-                        <Bar dataKey="previous" name="Previous" fill="#82ca9d" />
-                        <Bar dataKey="target" name="Target" fill="#ff8042" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.2} />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fill: '#64748b', fontSize: 12 }}
+                        />
+                        <YAxis 
+                          tick={{ fill: '#64748b', fontSize: 12 }}
+                          tickFormatter={(value) => `${value}°`}
+                        />
+                        <Tooltip content={<CustomBarTooltip />} />
+                        <Legend wrapperStyle={{ paddingTop: 10 }} />
+                        <Bar 
+                          dataKey="current" 
+                          name="Current" 
+                          fill="#8884d8" 
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          <LabelList dataKey="current" position="top" formatter={(value: number) => `${value}°`} style={{ fontSize: 10, fill: '#64748b' }} />
+                        </Bar>
+                        <Bar 
+                          dataKey="previous" 
+                          name="Previous" 
+                          fill="#82ca9d" 
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        />
+                        <Bar 
+                          dataKey="target" 
+                          name="Target" 
+                          fill="#ff8042"
+                          opacity={0.6}
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                   
-                  {/* Mobility Details */}
-                  <div className="space-y-4">
-                    <h3 className="font-medium">Detailed Analysis</h3>
-                    
-                    <div className="space-y-4">
-                      {analysisResult.mobilityAnalysis.map((mobility, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium">{mobility.movement}</h4>
-                            <Badge variant={getImprovementBadgeVariant(mobility.improvement)}>
-                              {mobility.improvement}
-                            </Badge>
-                          </div>
-                          
-                          <div className="mb-3">
-                            <div className="flex justify-between mb-1 text-sm">
-                              <span>Previous: {mobility.previous}°</span>
-                              <span>Current: {mobility.current}°</span>
-                            </div>
-                            <Progress value={Math.min(100, Math.max(0, 50 + mobility.improvementPercentage/2))} />
-                          </div>
-                          
-                          <p className="text-sm text-muted-foreground">
-                            {mobility.notes}
-                          </p>
-                        </div>
-                      ))}
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-[#8884d8] rounded-full mr-1.5"></div>
+                      <span>Current Value</span>
                     </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-[#82ca9d] rounded-full mr-1.5"></div>
+                      <span>Previous Value</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-[#ff8042] rounded-full mr-1.5"></div>
+                      <span>Target Range</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {analysisResult.mobilityAnalysis.map((mobility, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{mobility.movement}</h4>
+                          <Badge variant={getImprovementBadgeVariant(mobility.improvement)}>
+                            {mobility.improvement}
+                          </Badge>
+                        </div>
+                        
+                        <div className="mb-3">
+                          <div className="flex justify-between mb-1 text-sm">
+                            <span>Previous: {mobility.previous}°</span>
+                            <span>Current: {mobility.current}°</span>
+                            {mobility.target && <span className="text-muted-foreground">Target: ~{mobility.target}°</span>}
+                          </div>
+                          <div className="relative pt-1">
+                            <div className="flex mb-2 items-center justify-between">
+                              <div>
+                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                  Progress
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-semibold inline-block text-blue-600">
+                                  {Math.min(100, Math.max(0, 50 + mobility.improvementPercentage/2))}%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                              <div 
+                                style={{ width: `${Math.min(100, Math.max(0, 50 + mobility.improvementPercentage/2))}%` }} 
+                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground">
+                          {mobility.notes}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -654,7 +874,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
           </Card>
         </TabsContent>
         
-        {/* Imaging Tab */}
         <TabsContent value="imaging" className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
@@ -666,7 +885,6 @@ const OptmHealthDashboard: React.FC<OptmHealthDashboardProps> = ({
             <CardContent>
               {analysisResult?.imagingAnalysis && analysisResult.imagingAnalysis.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Imaging Comparison Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {currentData.imaging.map((image) => {
                       const matchingAnalysis = analysisResult.imagingAnalysis.find(
