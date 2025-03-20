@@ -5,6 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './contexts/auth';
 import ErrorBoundary from './components/ErrorBoundary';
+import { Toaster } from "./components/ui/sonner";
 
 // Import CSS in the right order
 // Base styles first
@@ -50,6 +51,7 @@ try {
         <Router>
           <AuthProvider>
             <App />
+            <Toaster position="top-right" />
           </AuthProvider>
         </Router>
       </ErrorBoundary>
