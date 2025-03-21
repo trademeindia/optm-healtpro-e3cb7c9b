@@ -12,7 +12,7 @@ interface GoogleFitApiResponse {
   statusText?: string;
 }
 
-// Define a separate type for token refresh status to avoid recursion
+// Define a separate type for token refresh status
 interface TokenRefreshStatus {
   refreshed: boolean;
 }
@@ -69,8 +69,8 @@ export class ProviderSyncService {
         return true;
       } 
       
-      // Handle token refresh case
-      if (result.status === 401 && result.data && result.data.refreshed === true) {
+      // Handle token refresh case - avoiding recursive types by checking status explicitly
+      if (result.status === 401 && result.data && typeof result.data === 'object' && 'refreshed' in result.data && result.data.refreshed === true) {
         console.log("Token refreshed, retrying Google Fit sync");
         
         if (!options.silent) {
@@ -80,7 +80,7 @@ export class ProviderSyncService {
         // Wait a moment to ensure token is updated in the system
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Retry with a new request after token refresh - with no recursive type dependency
+        // Retry with a new request after token refresh
         const retryResult = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
         
         if (!retryResult.success) {
