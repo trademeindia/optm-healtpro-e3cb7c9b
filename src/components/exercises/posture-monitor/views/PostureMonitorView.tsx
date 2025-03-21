@@ -10,7 +10,7 @@ import PoseRenderer from '../PoseRenderer';
 import CameraView from '../CameraView';
 import ControlButtons from '../ControlButtons';
 import BiomechanicalAnalysis from '../BiomechanicalAnalysis';
-import { DEFAULT_POSE_CONFIG } from '../utils';
+import { DEFAULT_POSE_CONFIG } from '../utils/poseDetectionConfig';
 
 interface PostureMonitorViewProps {
   exerciseName: string;

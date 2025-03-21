@@ -185,8 +185,8 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
   };
   
   // Wrapper for toggleCamera to ensure it returns a Promise
-  const handleToggleCamera = useCallback(async () => {
-    await toggleCamera();
+  const handleToggleCamera = useCallback(async (): Promise<void> => {
+    return toggleCamera();
   }, [toggleCamera]);
   
   // Toggle biomechanical analysis view
