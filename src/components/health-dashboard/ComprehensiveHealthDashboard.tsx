@@ -1,13 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { HealthMetric, TimeRange } from '@/types/health';
+import { HealthMetric } from '@/types/health';
+import { TimeRange } from '@/services/health';
 import { Activity, Heart, Footprints, Flame, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import DetailedMetricsTabs from './dashboard/DetailedMetricsTabs';
 
-// Define the props for the component
 interface ComprehensiveHealthDashboardProps {
   healthData: any;
   isLoading: boolean;
@@ -21,11 +21,9 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
   lastSynced,
   onSyncClick
 }) => {
-  // Default tab
   const [activeTab, setActiveTab] = React.useState('overview');
   const [timeRange, setTimeRange] = React.useState<TimeRange>('week');
   
-  // Mock data for the metrics history while we don't have real data
   const metricsHistory = {
     steps: Array.from({ length: 7 }).map((_, i) => ({ 
       date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000), 
@@ -59,7 +57,6 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
     }))
   };
   
-  // Helper function to format last synced date
   const formatLastSynced = (dateString?: string) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
@@ -231,10 +228,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   change,
   status
 }) => {
-  // Calculate percentage of target
   const percentage = target ? Math.min(Math.round((value / target) * 100), 100) : null;
   
-  // Determine color based on status or trend
   const getStatusColor = () => {
     if (status) {
       if (status === 'normal') return 'text-green-500';
