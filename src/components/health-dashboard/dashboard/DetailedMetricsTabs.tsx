@@ -7,13 +7,12 @@ import ActivityTimeline from '../ActivityTimeline';
 import HeartRateMonitor from '../HeartRateMonitor';
 import WorkoutSummary from '../workout-summary';
 import SleepAnalysis from '../SleepAnalysis';
-import { useHealthData } from '@/hooks/health';
 
 interface DetailedMetricsTabsProps {
   activeTab: string;
   setActiveTab: (value: string) => void;
-  selectedTimeRange: TimeRange;
-  metricsHistory: ReturnType<typeof useHealthData>['metricsHistory'];
+  selectedTimeRange: string;
+  metricsHistory: any;
   isLoading: boolean;
 }
 
@@ -26,7 +25,7 @@ const DetailedMetricsTabs: React.FC<DetailedMetricsTabsProps> = ({
 }) => {
   return (
     <Card className="mb-6">
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <CardHeader className="pb-0">
           <TabsList className="grid grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
