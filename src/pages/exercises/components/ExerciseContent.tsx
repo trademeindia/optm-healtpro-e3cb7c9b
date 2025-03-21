@@ -3,7 +3,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ExerciseVideo from '@/components/exercises/ExerciseVideo';
-import MotionTracker from '@/components/exercises/motion-tracker';
+import PostureMonitor from '@/components/exercises/PostureMonitor';
 import CategoryFilter from './CategoryFilter';
 import { Exercise } from '@/types/exercise.types';
 
@@ -41,7 +41,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
             <span>Back to Exercises</span>
           </Button>
           
-          <MotionTracker 
+          <PostureMonitor 
             exerciseId={selectedExercise?.id || null}
             exerciseName={selectedExercise?.title || null}
             onFinish={onFinishExercise}

@@ -61,7 +61,7 @@ const ExercisePage: React.FC = () => {
           <div className="mb-6 pl-4 md:pl-6 lg:pl-0">
             <h1 className="text-2xl font-bold">Exercise Therapy</h1>
             <p className="text-sm text-muted-foreground">
-              Personalized exercises with AI-powered motion tracking
+              Personalized exercises with AI-powered posture monitoring
             </p>
           </div>
           
