@@ -8,7 +8,7 @@ import { usePoseDetection } from './usePoseDetection';
 import { usePermissionMonitor } from './hooks/usePermissionMonitor';
 import { useVideoStatusMonitor } from './hooks/useVideoStatusMonitor';
 import { useAutoStartCamera } from './hooks/useAutoStartCamera';
-import { useOpenSimAnalysis } from './hooks/useOpenSimAnalysis'; // Add OpenSim hook
+import { useOpenSimAnalysis } from './hooks/useOpenSimAnalysis'; 
 import FeedbackDisplay from './FeedbackDisplay';
 import StatsDisplay from './StatsDisplay';
 import TutorialDialog from './TutorialDialog';
@@ -16,7 +16,8 @@ import PoseRenderer from './PoseRenderer';
 import CameraView from './CameraView';
 import ControlButtons from './ControlButtons';
 import ExerciseSelectionView from './ExerciseSelectionView';
-import BiomechanicalAnalysis from './BiomechanicalAnalysis'; // Import the new component
+import BiomechanicalAnalysis from './BiomechanicalAnalysis';
+import { logRoutingState } from '@/utils/debugUtils';
 import type { CustomFeedback } from './hooks/types';
 
 interface PostureMonitorProps {
@@ -30,8 +31,14 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   exerciseName,
   onFinish,
 }) => {
+  // Debug this component's mounting
+  React.useEffect(() => {
+    logRoutingState('PostureMonitor', { exerciseId, exerciseName });
+  }, [exerciseId, exerciseName]);
+
   const [showTutorial, setShowTutorial] = useState(false);
-  const [showBiomechanics, setShowBiomechanics] = useState(false); // Toggle for biomechanical analysis
+  const [showBiomechanics, setShowBiomechanics] = useState(false);
+  const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
   // Initialize camera with enhanced detection
   const { 
@@ -81,8 +88,8 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     pose,
     currentSquatState: analysis.currentSquatState,
     setFeedback: (message, type) => {
-      // Only set feedback when biomechanics view is active
-      if (showBiomechanics) {
+      // Only set feedback when biomechanics view is active or when there's important analysis
+      if (showBiomechanics || type === FeedbackType.WARNING) {
         setCustomFeedback({
           message,
           type
@@ -90,15 +97,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
       }
     },
     modelParams: {
-      height: 175, // Example values - in a real app, these would come from user profile
+      height: 175,
       weight: 70,
       age: 30,
       gender: 'male'
     }
   });
-  
-  // Override feedback (e.g., for camera permission issues)
-  const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
   // Hook for permission monitoring
   usePermissionMonitor({
@@ -113,7 +117,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     setCustomFeedback
   });
   
-  // Hook for auto-starting camera
+  // Hook for auto-starting camera - fixed to prevent infinite update loop
   useAutoStartCamera({
     cameraActive,
     permission,
@@ -145,7 +149,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
         <CardHeader>
           <CardTitle>AI Squat Analyzer: {exerciseName}</CardTitle>
           <CardDescription>
-            AI-powered squat analysis with real-time feedback
+            AI-powered squat analysis with real-time biomechanical feedback
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -184,14 +188,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             />
           )}
           
-          {/* Togglable biomechanical analysis panel */}
-          {showBiomechanics && (
-            <BiomechanicalAnalysis 
-              analysisResult={analysisResult}
-              isAnalyzing={isAnalyzing}
-              error={analysisError}
-            />
-          )}
+          {/* Always show biomechanical analysis panel for enhanced feedback */}
+          <BiomechanicalAnalysis 
+            analysisResult={analysisResult}
+            isAnalyzing={isAnalyzing}
+            error={analysisError}
+          />
           
           {/* Stats display */}
           <StatsDisplay 
@@ -211,7 +213,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
               onFinish={handleFinish}
             />
             
-            {/* Add biomechanics toggle button */}
+            {/* Add biomechanics toggle button - changed to be enabled by default */}
             <button
               onClick={toggleBiomechanics}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
@@ -228,7 +230,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
           <div className="text-xs text-muted-foreground mt-2">
             <p className="flex items-center gap-1">
               <Info className="h-3 w-3" />
-              <span>Your camera feed is processed locally and not stored or sent to any server.</span>
+              <span>Your camera feed is processed locally and biomechanical analysis provided by OpenSim technology.</span>
             </p>
           </div>
         </CardContent>
