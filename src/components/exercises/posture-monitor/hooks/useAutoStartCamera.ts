@@ -6,7 +6,7 @@ import type { CustomFeedback } from './types';
 interface UseAutoStartCameraProps {
   cameraActive: boolean;
   permission: PermissionState | null;
-  toggleCamera: () => void;
+  toggleCamera: () => Promise<void> | void;
   setCustomFeedback: (feedback: CustomFeedback | null) => void;
 }
 
@@ -27,7 +27,18 @@ export const useAutoStartCamera = ({
       
       // Small delay to avoid race conditions
       const timer = setTimeout(() => {
-        toggleCamera();
+        const result = toggleCamera();
+        
+        // Handle both Promise and void returns
+        if (result instanceof Promise) {
+          result.catch(error => {
+            console.error("Error auto-starting camera:", error);
+            setCustomFeedback({
+              message: "Failed to start camera automatically. Please try manually.",
+              type: FeedbackType.ERROR
+            });
+          });
+        }
       }, 500);
       
       return () => clearTimeout(timer);

@@ -38,6 +38,7 @@ export const isValidRoute = (path: string): boolean => {
     '/anatomy-map',
     '/biomarkers',
     '/health-apps',
+    '/health-apps/',
     '/analysis',
     '/ai-analysis',
     '/exercises',
@@ -49,4 +50,14 @@ export const isValidRoute = (path: string): boolean => {
   ];
 
   return validRoutes.includes(path);
+};
+
+// Debug Google Fit connection process
+export const logGoogleFitConnection = (action: string, details: Record<string, any>) => {
+  console.log(`[GOOGLE FIT] ${action}:`, details);
+};
+
+// Debug fitness data syncing
+export const logFitnessSync = (provider: string, status: 'started' | 'completed' | 'failed', details?: any) => {
+  console.log(`[FITNESS SYNC] ${provider} - ${status}`, details || '');
 };

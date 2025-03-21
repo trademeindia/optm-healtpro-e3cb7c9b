@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { logRoutingState } from '@/utils/debugUtils';
 
 export const useOAuthCallback = () => {
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +36,15 @@ export const useOAuthCallback = () => {
     try {
       const callbackURL = window.location.href;
       const originURL = window.location.origin;
+      
+      // Log route state for debugging
+      logRoutingState('OAuthCallback', {
+        callbackURL,
+        hasCode: !!code,
+        provider,
+        state: searchParams.get('state'),
+        error: errorCode
+      });
       
       // Collect debug info
       setDebugInfo({
@@ -80,10 +90,20 @@ export const useOAuthCallback = () => {
       }
       
       // Handle Google Fit connection callback separately
-      // This is for Google Fit OAuth, not user authentication
-      if (searchParams.has('connected') || searchParams.has('error')) {
+      if (searchParams.has('connected') || searchParams.has('message') || (searchParams.has('error') && !searchParams.has('code'))) {
         // This is a connection callback, not an auth callback
         console.log('Detected Google Fit connection callback');
+        
+        // Process connection result
+        if (searchParams.has('connected') && searchParams.get('connected') === 'true') {
+          toast.success('Google Fit connected successfully!', {
+            description: searchParams.get('message') || 'Your health data will now sync automatically.'
+          });
+        } else if (searchParams.has('error')) {
+          toast.error('Failed to connect Google Fit', {
+            description: searchParams.get('error') || 'An unknown error occurred'
+          });
+        }
         
         // Check if we should redirect to a specific page
         const redirectUrl = localStorage.getItem('healthAppRedirectUrl');
@@ -92,18 +112,8 @@ export const useOAuthCallback = () => {
           console.log(`Redirecting to stored URL: ${redirectUrl}`);
           localStorage.removeItem('healthAppRedirectUrl');
           
-          // Add the success or error parameter to the redirect URL
-          const url = new URL(redirectUrl);
-          
-          if (searchParams.has('connected')) {
-            url.searchParams.set('connected', 'true');
-          }
-          
-          if (searchParams.has('error')) {
-            url.searchParams.set('error', searchParams.get('error') || '');
-          }
-          
-          navigate(url.toString(), { replace: true });
+          // Navigate to the stored URL
+          navigate(redirectUrl, { replace: true });
           return;
         }
         
@@ -116,7 +126,7 @@ export const useOAuthCallback = () => {
       if (code) {
         console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
         try {
-          await handleOAuthCallback(provider, code);
+          await handleOAuthCallback(provider, code, user);
           
           // Give some time for session to be established
           console.log("OAuth callback processed, checking for session...");
@@ -161,7 +171,7 @@ export const useOAuthCallback = () => {
           setError('Authentication process failed');
           setErrorDetails(callbackError.message || 'Unknown error processing the authentication callback');
         }
-      } else {
+      } else if (!searchParams.has('connected') && !searchParams.has('error')) {
         console.error('No authorization code found in URL');
         setError('Authentication failed');
         setErrorDetails('No authorization code received from the provider');
@@ -182,7 +192,7 @@ export const useOAuthCallback = () => {
     console.log('Auth state:', { user, isLoading });
 
     // Handle direct error parameters from OAuth provider
-    if (errorCode) {
+    if (errorCode && !searchParams.has('connected')) {
       console.error('OAuth provider error:', errorCode, errorDescription);
       setError(`Authentication error from ${provider}`);
       setErrorDetails(errorDescription || 'Please try again or use another sign-in method');
