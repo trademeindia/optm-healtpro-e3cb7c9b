@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { CardTitle } from '@/components/ui/card';
 
 interface DashboardHeaderProps {
   lastSynced?: string;
