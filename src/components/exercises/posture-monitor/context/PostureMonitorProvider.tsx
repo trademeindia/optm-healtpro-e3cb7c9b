@@ -1,4 +1,3 @@
-
 import React, { useState, createContext, useContext, useCallback } from 'react';
 import { FeedbackType } from '../types';
 import { useCamera } from '../camera';
@@ -84,7 +83,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
   exerciseName,
   onFinish
 }) => {
-  // Debug this component's mounting
   React.useEffect(() => {
     logRoutingState('PostureMonitor', { exerciseId, exerciseName });
   }, [exerciseId, exerciseName]);
@@ -93,7 +91,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
   const [showBiomechanics, setShowBiomechanics] = useState(false);
   const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
-  // Initialize camera with enhanced detection
   const { 
     cameraActive, 
     permission, 
@@ -107,7 +104,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     videoStatus
   } = useCamera({
     onCameraStart: () => {
-      // Set initial feedback when camera starts
       setCustomFeedback({
         message: "Starting pose analysis... Stand in a clear space where your full body is visible.",
         type: FeedbackType.INFO
@@ -115,7 +111,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     }
   });
   
-  // Initialize pose detection
   const {
     model,
     isModelLoading,
@@ -132,7 +127,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     videoReady: videoStatus.isReady
   });
   
-  // Initialize OpenSim analysis
   const {
     analysisResult,
     isAnalyzing,
@@ -141,7 +135,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     pose,
     currentSquatState: analysis.currentSquatState,
     setFeedback: (message, type) => {
-      // Only set feedback when biomechanics view is active or when there's important analysis
       if (showBiomechanics || type === FeedbackType.WARNING) {
         setCustomFeedback({
           message,
@@ -157,20 +150,17 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     }
   });
   
-  // Hook for permission monitoring
   usePermissionMonitor({
     permission,
     setCustomFeedback
   });
   
-  // Hook for video status monitoring
   useVideoStatusMonitor({
     cameraActive,
     videoStatus,
     setCustomFeedback
   });
   
-  // Hook for auto-starting camera - fixed to prevent infinite update loop
   useAutoStartCamera({
     cameraActive,
     permission,
@@ -178,24 +168,26 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     setCustomFeedback
   });
   
-  // Handle finishing the exercise
   const handleFinish = () => {
     stopCamera();
     onFinish();
   };
   
-  // Wrapper for toggleCamera to ensure it returns a Promise
   const handleToggleCamera = useCallback(async (): Promise<void> => {
-    return toggleCamera();
+    const result = toggleCamera();
+    
+    if (result instanceof Promise) {
+      return result;
+    }
+    
+    return Promise.resolve();
   }, [toggleCamera]);
   
-  // Toggle biomechanical analysis view
   const toggleBiomechanics = useCallback(() => {
     setShowBiomechanics(prev => !prev);
   }, []);
 
   const value = {
-    // Camera state
     cameraActive,
     permission,
     videoRef,
@@ -203,7 +195,6 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     cameraError,
     videoStatus,
     
-    // Pose detection state
     model,
     isModelLoading,
     pose,
@@ -212,17 +203,14 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
     feedback,
     detectionStatus,
     
-    // OpenSim analysis state
     analysisResult,
     isAnalyzing,
     analysisError,
     
-    // UI state
     showTutorial,
     showBiomechanics,
     customFeedback: customFeedback || feedback,
     
-    // Actions
     handleToggleCamera,
     stopCamera,
     retryCamera,
