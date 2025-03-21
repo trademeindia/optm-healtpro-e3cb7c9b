@@ -11,7 +11,7 @@ import SleepAnalysis from '../SleepAnalysis';
 interface DetailedMetricsTabsProps {
   activeTab: string;
   setActiveTab: (value: string) => void;
-  selectedTimeRange: string;
+  selectedTimeRange: TimeRange;
   metricsHistory: any;
   isLoading: boolean;
 }
@@ -43,7 +43,7 @@ const DetailedMetricsTabs: React.FC<DetailedMetricsTabsProps> = ({
                 stepsData={metricsHistory.steps}
                 caloriesData={metricsHistory.calories}
                 distanceData={metricsHistory.distance}
-                timeRange={selectedTimeRange}
+                timeRange={selectedTimeRange as TimeRange}
                 isLoading={isLoading}
               />
               <HeartRateMonitor 
@@ -58,7 +58,7 @@ const DetailedMetricsTabs: React.FC<DetailedMetricsTabsProps> = ({
               stepsData={metricsHistory.steps}
               caloriesData={metricsHistory.calories}
               distanceData={metricsHistory.distance}
-              timeRange={selectedTimeRange}
+              timeRange={selectedTimeRange as TimeRange}
               isLoading={isLoading}
               showDetails={true}
             />
@@ -75,7 +75,7 @@ const DetailedMetricsTabs: React.FC<DetailedMetricsTabsProps> = ({
           <TabsContent value="sleep" className="m-0">
             <SleepAnalysis 
               sleepData={metricsHistory.sleep}
-              timeRange={selectedTimeRange}
+              timeRange={selectedTimeRange as TimeRange}
               isLoading={isLoading}
             />
           </TabsContent>
@@ -83,7 +83,7 @@ const DetailedMetricsTabs: React.FC<DetailedMetricsTabsProps> = ({
           <TabsContent value="workouts" className="m-0">
             <WorkoutSummary 
               workoutData={metricsHistory.workout}
-              timeRange={selectedTimeRange}
+              timeRange={selectedTimeRange as TimeRange}
               isLoading={isLoading}
             />
           </TabsContent>

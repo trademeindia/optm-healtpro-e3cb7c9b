@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import GoogleFitConnect from '@/components/integrations/GoogleFitConnect';
 import ComprehensiveHealthDashboard from '@/components/health-dashboard/ComprehensiveHealthDashboard';
-import { useHealthData } from '@/hooks/useHealthData'; // Using the original hook
+import { useHealthData } from '@/hooks/useHealthData';
 import OAuthDebugInfo from '@/components/integrations/OAuthDebugInfo';
 
 const HealthAppsPage: React.FC = () => {
@@ -123,6 +123,11 @@ const HealthAppsPage: React.FC = () => {
   // Determine if Google Fit is connected based on data source
   const hasGoogleFitConnected = healthData?.vitalSigns?.heartRate?.source === 'Google Fit';
   
+  // Format lastSynced as string if it's a Date
+  const formattedLastSynced = lastSynced ? 
+    (typeof lastSynced === 'string' ? lastSynced : lastSynced.toISOString()) : 
+    undefined;
+  
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
@@ -179,7 +184,7 @@ const HealthAppsPage: React.FC = () => {
             <ComprehensiveHealthDashboard 
               healthData={healthData}
               isLoading={isLoading}
-              lastSynced={lastSynced}
+              lastSynced={formattedLastSynced}
               onSyncClick={syncHealthData}
             />
           </div>

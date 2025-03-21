@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { HealthMetric } from '@/types/health';
+import { HealthMetric, TimeRange } from '@/types/health';
 import { Activity, Heart, Footprints, Flame, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -24,7 +23,7 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
 }) => {
   // Default tab
   const [activeTab, setActiveTab] = React.useState('overview');
-  const [timeRange, setTimeRange] = React.useState('7d');
+  const [timeRange, setTimeRange] = React.useState<TimeRange>('week');
   
   // Mock data for the metrics history while we don't have real data
   const metricsHistory = {
