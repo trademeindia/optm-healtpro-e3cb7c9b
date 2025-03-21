@@ -89,7 +89,7 @@ export class HealthSyncService {
       const { data: connections, error } = await supabase
         .from('fitness_connections')
         .select('*')
-        .eq('user_id', userId) as any;
+        .eq('user_id', userId);
         
       if (error) {
         throw error;

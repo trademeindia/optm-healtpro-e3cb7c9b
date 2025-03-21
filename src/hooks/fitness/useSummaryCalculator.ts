@@ -1,42 +1,58 @@
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { FitnessData } from './types';
 
-export const useSummaryCalculator = (fitnessData: FitnessData): FitnessData => {
-  const [processedData, setProcessedData] = useState<FitnessData>(fitnessData);
-
-  // Calculate summary stats when data changes
-  useEffect(() => {
+export const useSummaryCalculator = (rawData: FitnessData): FitnessData => {
+  return useMemo(() => {
+    // If the data already has summary calculations, return it as is
+    if (
+      rawData.steps.summary &&
+      rawData.heartRate.summary &&
+      rawData.calories.summary
+    ) {
+      return rawData;
+    }
+    
     // Calculate steps summary
-    const stepsTotal = fitnessData.steps.data.reduce((sum, item) => sum + item.value, 0);
-    const stepsAverage = stepsTotal / fitnessData.steps.data.length || 0;
+    const totalSteps = rawData.steps.data.reduce((sum, item) => sum + item.value, 0);
+    const avgSteps = Math.round(totalSteps / (rawData.steps.data.length || 1));
     
     // Calculate heart rate summary
-    const heartRates = fitnessData.heartRate.data.map(item => item.value);
-    const heartRateAverage = heartRates.reduce((sum, val) => sum + val, 0) / heartRates.length || 0;
-    const heartRateMin = Math.min(...heartRates);
-    const heartRateMax = Math.max(...heartRates);
+    const heartRateValues = rawData.heartRate.data.map(item => item.value);
+    const avgHeartRate = heartRateValues.length > 0
+      ? Math.round(heartRateValues.reduce((sum, val) => sum + val, 0) / heartRateValues.length)
+      : 0;
+    const minHeartRate = heartRateValues.length > 0 ? Math.min(...heartRateValues) : 0;
+    const maxHeartRate = heartRateValues.length > 0 ? Math.max(...heartRateValues) : 0;
     
     // Calculate calories summary
-    const caloriesTotal = fitnessData.calories.data.reduce((sum, item) => sum + item.value, 0);
-    const caloriesAverage = caloriesTotal / fitnessData.calories.data.length || 0;
+    const totalCalories = rawData.calories.data.reduce((sum, item) => sum + item.value, 0);
+    const avgCalories = Math.round(totalCalories / (rawData.calories.data.length || 1));
     
-    setProcessedData({
-      ...fitnessData,
+    // Return the data with calculated summaries
+    return {
       steps: {
-        ...fitnessData.steps,
-        summary: { total: stepsTotal, average: stepsAverage }
+        data: rawData.steps.data,
+        summary: {
+          total: totalSteps,
+          average: avgSteps
+        }
       },
       heartRate: {
-        ...fitnessData.heartRate,
-        summary: { average: heartRateAverage, min: heartRateMin, max: heartRateMax }
+        data: rawData.heartRate.data,
+        summary: {
+          average: avgHeartRate,
+          min: minHeartRate,
+          max: maxHeartRate
+        }
       },
       calories: {
-        ...fitnessData.calories,
-        summary: { total: caloriesTotal, average: caloriesAverage }
+        data: rawData.calories.data,
+        summary: {
+          total: totalCalories,
+          average: avgCalories
+        }
       }
-    });
-  }, [fitnessData]);
-
-  return processedData;
+    };
+  }, [rawData]);
 };

@@ -5,64 +5,88 @@ export const mockProviders: FitnessProvider[] = [
   {
     id: 'google-fit',
     name: 'Google Fit',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Google_Fit_icon_%282018%29.svg',
+    logo: 'https://www.gstatic.com/images/branding/product/1x/gfit_512dp.png',
     isConnected: false,
-    lastSynced: '',
-    metrics: {
-      steps: 0,
-      calories: 0,
-      heartRate: 0,
-      distance: 0,
-    }
   },
   {
     id: 'apple-health',
     name: 'Apple Health',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Apple_Health_Icon.png',
+    logo: 'https://developer.apple.com/assets/elements/icons/healthkit/healthkit-96x96.png',
     isConnected: false,
-    lastSynced: '',
-    metrics: {
-      steps: 0,
-      calories: 0,
-      heartRate: 0,
-      distance: 0,
-    }
   },
   {
     id: 'fitbit',
     name: 'Fitbit',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Fitbit_logo.svg',
+    logo: 'https://www.fitbit.com/images/open-graph/fitbit-logo.png',
     isConnected: false,
-    lastSynced: '',
-    metrics: {
-      steps: 0,
-      calories: 0,
-      heartRate: 0,
-      distance: 0,
-    }
   }
 ];
 
-export const generateMockFitnessData = (): FitnessData => ({
-  steps: {
-    data: Array.from({ length: 7 }, (_, i) => ({
-      timestamp: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
-      value: Math.floor(Math.random() * 5000) + 3000
-    })),
-    summary: { total: 0, average: 0 }
-  },
-  heartRate: {
-    data: Array.from({ length: 24 }, (_, i) => ({
-      timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
-      value: Math.floor(Math.random() * 20) + 60
-    })),
-    summary: { average: 0, min: 0, max: 0 }
-  },
-  calories: {
-    data: Array.from({ length: 7 }, (_, i) => ({
-      timestamp: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
-      value: Math.floor(Math.random() * 500) + 1500
-    })),
-    summary: { total: 0, average: 0 }
+export const generateMockFitnessData = (): FitnessData => {
+  const now = new Date();
+  const days = 7; // Generate data for last 7 days
+  
+  const stepsData = [];
+  const heartRateData = [];
+  const caloriesData = [];
+  
+  let totalSteps = 0;
+  let totalCalories = 0;
+  let minHeartRate = 999;
+  let maxHeartRate = 0;
+  let totalHeartRate = 0;
+  
+  for (let i = 0; i < days; i++) {
+    const date = new Date();
+    date.setDate(now.getDate() - i);
+    const timestamp = date.toISOString();
+    
+    // Generate random data
+    const steps = Math.floor(Math.random() * 6000) + 3000;
+    const heartRate = Math.floor(Math.random() * 30) + 60;
+    const calories = Math.floor(Math.random() * 500) + 1500;
+    
+    // Update totals and min/max
+    totalSteps += steps;
+    totalCalories += calories;
+    totalHeartRate += heartRate;
+    
+    if (heartRate < minHeartRate) minHeartRate = heartRate;
+    if (heartRate > maxHeartRate) maxHeartRate = heartRate;
+    
+    // Add to data arrays
+    stepsData.push({ timestamp, value: steps });
+    heartRateData.push({ timestamp, value: heartRate });
+    caloriesData.push({ timestamp, value: calories });
   }
-});
+  
+  // Calculate averages
+  const avgSteps = Math.round(totalSteps / days);
+  const avgCalories = Math.round(totalCalories / days);
+  const avgHeartRate = Math.round(totalHeartRate / days);
+  
+  return {
+    steps: {
+      data: stepsData,
+      summary: {
+        total: totalSteps,
+        average: avgSteps
+      }
+    },
+    heartRate: {
+      data: heartRateData,
+      summary: {
+        average: avgHeartRate,
+        min: minHeartRate,
+        max: maxHeartRate
+      }
+    },
+    calories: {
+      data: caloriesData,
+      summary: {
+        total: totalCalories,
+        average: avgCalories
+      }
+    }
+  };
+};
