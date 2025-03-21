@@ -6,37 +6,53 @@ import DashboardSettings from './DashboardSettings';
 import NotificationSettings from './NotificationSettings';
 import IntegrationSettings from './IntegrationSettings';
 import SecuritySettings from './SecuritySettings';
+import { User, Bell, Shield, Smartphone, Palette } from 'lucide-react';
 
 const SettingsContent: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-200 dark:border-gray-700">
+    <div className="max-w-4xl mx-auto">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600">Profile</TabsTrigger>
-          <TabsTrigger value="dashboard" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600">Dashboard</TabsTrigger>
-          <TabsTrigger value="notifications" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600">Notifications</TabsTrigger>
-          <TabsTrigger value="integrations" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600">Integrations</TabsTrigger>
-          <TabsTrigger value="security" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600">Security</TabsTrigger>
+        <TabsList className="mb-6 grid grid-cols-5 lg:w-auto">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Notifications</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Security</span>
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="flex items-center gap-2">
+            <Smartphone className="h-4 w-4" />
+            <span className="hidden sm:inline">Integrations</span>
+          </TabsTrigger>
+          <TabsTrigger value="dashboard" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="profile" className="mt-4">
+        <TabsContent value="profile">
           <ProfileSettings />
         </TabsContent>
         
-        <TabsContent value="dashboard" className="mt-4">
-          <DashboardSettings />
-        </TabsContent>
-        
-        <TabsContent value="notifications" className="mt-4">
+        <TabsContent value="notifications">
           <NotificationSettings />
         </TabsContent>
         
-        <TabsContent value="integrations" className="mt-4">
+        <TabsContent value="security">
+          <SecuritySettings />
+        </TabsContent>
+        
+        <TabsContent value="integrations">
           <IntegrationSettings />
         </TabsContent>
         
-        <TabsContent value="security" className="mt-4">
-          <SecuritySettings />
+        <TabsContent value="dashboard">
+          <DashboardSettings />
         </TabsContent>
       </Tabs>
     </div>
