@@ -1,27 +1,40 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, CameraOff, RefreshCw, HelpCircle, Check } from 'lucide-react';
+import { 
+  Camera, 
+  CameraOff, 
+  Play, 
+  Pause, 
+  RefreshCw, 
+  HelpCircle, 
+  Check 
+} from 'lucide-react';
 
-interface ControlButtonsProps {
+interface SessionControlsProps {
   cameraActive: boolean;
+  sessionActive: boolean;
   isModelLoading: boolean;
-  onToggleCamera: () => void;
-  onReset: () => void;
-  onShowTutorial: () => void;
+  onToggleCamera: () => Promise<void>;
+  onToggleSession: () => void;
+  onResetSession: () => void;
+  onHelp: () => void;
   onFinish: () => void;
 }
 
-const ControlButtons: React.FC<ControlButtonsProps> = ({
+const SessionControls: React.FC<SessionControlsProps> = ({
   cameraActive,
+  sessionActive,
   isModelLoading,
   onToggleCamera,
-  onReset,
-  onShowTutorial,
+  onToggleSession,
+  onResetSession,
+  onHelp,
   onFinish
 }) => {
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="flex flex-wrap gap-2">
+      {/* Camera toggle button */}
       <Button
         variant={cameraActive ? "destructive" : "default"}
         onClick={onToggleCamera}
@@ -41,25 +54,48 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         )}
       </Button>
 
+      {/* Session control button */}
+      <Button
+        variant={sessionActive ? "outline" : "default"}
+        onClick={onToggleSession}
+        disabled={!cameraActive || isModelLoading}
+        className="flex items-center gap-2"
+      >
+        {sessionActive ? (
+          <>
+            <Pause className="h-4 w-4" />
+            <span>Pause</span>
+          </>
+        ) : (
+          <>
+            <Play className="h-4 w-4" />
+            <span>Start Exercise</span>
+          </>
+        )}
+      </Button>
+
+      {/* Reset button */}
       <Button
         variant="outline"
-        onClick={onReset}
-        disabled={isModelLoading || !cameraActive}
+        onClick={onResetSession}
+        disabled={!cameraActive || isModelLoading}
         className="flex items-center gap-2"
       >
         <RefreshCw className="h-4 w-4" />
         <span>Reset</span>
       </Button>
 
+      {/* Help button */}
       <Button
         variant="outline"
-        onClick={onShowTutorial}
+        onClick={onHelp}
         className="flex items-center gap-2"
       >
         <HelpCircle className="h-4 w-4" />
         <span>Help</span>
       </Button>
 
+      {/* Finish button */}
       <Button
         variant="default"
         onClick={onFinish}
@@ -72,4 +108,4 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   );
 };
 
-export default ControlButtons;
+export default SessionControls;
