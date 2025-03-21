@@ -1,23 +1,26 @@
 
 import { useEffect } from 'react';
 import { FeedbackType } from '../types';
+import type { CustomFeedback } from './types';
 
 interface UsePermissionMonitorProps {
-  permission: 'granted' | 'denied' | 'prompt';
-  setCustomFeedback: (feedback: { message: string | null, type: FeedbackType } | null) => void;
+  permission: PermissionState | null;
+  setCustomFeedback: (feedback: CustomFeedback | null) => void;
 }
 
 export const usePermissionMonitor = ({
   permission,
   setCustomFeedback
 }: UsePermissionMonitorProps) => {
-  // Update permission-related feedback
+  // Monitor permission state changes
   useEffect(() => {
     if (permission === 'denied') {
       setCustomFeedback({
-        message: "Camera access denied. Please check your browser permissions.",
+        message: "Camera access denied. Please enable camera permissions in your browser settings.",
         type: FeedbackType.WARNING
       });
+    } else if (permission === 'granted') {
+      setCustomFeedback(null); // Clear any permission-related feedback
     }
   }, [permission, setCustomFeedback]);
 };

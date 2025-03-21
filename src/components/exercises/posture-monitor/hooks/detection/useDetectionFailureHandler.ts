@@ -1,61 +1,53 @@
 
 import { useRef, useCallback } from 'react';
 import { FeedbackType } from '../../types';
-import { DetectionState } from './types';
+
+interface DetectionState {
+  failedDetections: number;
+  consecutiveFailures: number;
+  lastDetectionTime: number;
+}
 
 export const useDetectionFailureHandler = (
-  setFeedback: (message: string | null, type: FeedbackType) => void
+  setFeedback: (message: string, type: FeedbackType) => void
 ) => {
-  // Track detection failures and performance
   const detectionStateRef = useRef<DetectionState>({
-    lastDetectionTime: 0,
-    detectionFailures: 0,
-    frameTimes: [],           // Array to track frame timestamps for FPS calculation
-    cumulativeProcessingTime: 0, // Total time spent processing frames
-    framesProcessed: 0        // Count of frames processed
+    failedDetections: 0,
+    consecutiveFailures: 0,
+    lastDetectionTime: 0
   });
   
-  // Handle detection failures with improved diagnostics
   const handleDetectionFailure = useCallback((error: any) => {
-    console.error('Error estimating pose:', error);
-    detectionStateRef.current.detectionFailures++;
+    detectionStateRef.current.failedDetections++;
+    detectionStateRef.current.consecutiveFailures++;
     
-    // Categorize errors for better feedback
-    let errorMessage = "Error detecting your pose.";
-    
-    if (error instanceof Error) {
-      // Check for common TensorFlow.js errors
-      if (error.message.includes('memory')) {
-        errorMessage = "Detection system ran out of memory. Try refreshing the page.";
-      } else if (error.message.includes('input')) {
-        errorMessage = "Invalid input to pose detection. Please ensure your camera is working properly.";
-      } else if (error.message.includes('model')) {
-        errorMessage = "AI model error. Please refresh the page to reload the model.";
-      }
+    // Log error but don't overwhelm the console
+    if (detectionStateRef.current.consecutiveFailures <= 3 || detectionStateRef.current.consecutiveFailures % 10 === 0) {
+      console.error('Pose detection error:', error);
     }
     
-    // Show error to user after several consecutive failures
-    if (detectionStateRef.current.detectionFailures > 3) {
+    // Only show feedback for persistent failures
+    if (detectionStateRef.current.consecutiveFailures === 5) {
       setFeedback(
-        errorMessage + " Please ensure good lighting and that your camera is working properly.",
+        "Having trouble detecting your pose. Make sure your whole body is visible.",
         FeedbackType.WARNING
       );
-      
-      // Reset failure counter to avoid repeated warnings
-      detectionStateRef.current.detectionFailures = 0;
+    } else if (detectionStateRef.current.consecutiveFailures === 20) {
+      setFeedback(
+        "Detection issues persist. Try adjusting lighting or camera position.",
+        FeedbackType.WARNING
+      );
     }
   }, [setFeedback]);
   
-  // Reset failure counter on successful detection
   const resetFailureCounter = useCallback(() => {
-    detectionStateRef.current.detectionFailures = 0;
+    detectionStateRef.current.consecutiveFailures = 0;
   }, []);
   
-  // Update last detection time
   const updateDetectionTime = useCallback(() => {
     detectionStateRef.current.lastDetectionTime = performance.now();
   }, []);
-
+  
   return {
     detectionStateRef,
     handleDetectionFailure,

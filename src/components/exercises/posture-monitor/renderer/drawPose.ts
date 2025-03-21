@@ -1,155 +1,197 @@
 
 import * as posenet from '@tensorflow-models/posenet';
 import { SquatState } from '../types';
-import { adjacentKeyPoints } from './SkeletonRenderer';
 
 export const drawPose = (
-  ctx: CanvasRenderingContext2D, 
-  pose: posenet.Pose, 
-  canvasSize: { width: number, height: number },
+  ctx: CanvasRenderingContext2D,
+  pose: posenet.Pose,
+  canvasSize: { width: number; height: number },
   kneeAngle: number | null,
   hipAngle: number | null,
   currentSquatState: SquatState,
-  videoWidth: number = 640,
-  videoHeight: number = 480,
-  minPartConfidence: number = 0.5
+  videoWidth: number,
+  videoHeight: number,
+  minPartConfidence: number
 ) => {
-  // Clear the canvas
   ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
   
-  // Calculate scale factors for the canvas
   const scaleX = canvasSize.width / videoWidth;
   const scaleY = canvasSize.height / videoHeight;
   
+  // Draw skeleton lines
+  drawSkeleton(ctx, pose.keypoints, minPartConfidence, scaleX, scaleY);
+  
   // Draw keypoints
-  pose.keypoints.forEach(keypoint => {
-    if (keypoint.score > minPartConfidence) {
-      // Determine color based on keypoint type
-      let color = 'aqua';
-      if (keypoint.part.includes('Shoulder') || keypoint.part.includes('Hip')) {
-        color = 'yellow';
-      } else if (keypoint.part.includes('Knee')) {
-        color = 'lime';
-      } else if (keypoint.part.includes('Ankle')) {
-        color = 'orange'; 
-      }
-      
-      // Draw point
-      ctx.beginPath();
-      ctx.arc(
-        keypoint.position.x * scaleX, 
-        keypoint.position.y * scaleY, 
-        6, 0, 2 * Math.PI
-      );
-      ctx.fillStyle = color;
-      ctx.fill();
-      
-      // Add keypoint label with more contrast for readability
-      ctx.font = '12px Arial';
-      ctx.fillStyle = 'black';
-      ctx.fillText(
-        keypoint.part, 
-        keypoint.position.x * scaleX + 11, 
-        keypoint.position.y * scaleY + 1
-      );
-      ctx.fillStyle = 'white';
-      ctx.fillText(
-        keypoint.part, 
-        keypoint.position.x * scaleX + 10, 
-        keypoint.position.y * scaleY
-      );
-    }
+  drawKeypoints(ctx, pose.keypoints, minPartConfidence, scaleX, scaleY);
+  
+  // Draw angle indicators if available
+  if (kneeAngle !== null) {
+    drawAngleIndicator(ctx, pose, 'knee', kneeAngle, scaleX, scaleY);
+  }
+  
+  if (hipAngle !== null) {
+    drawAngleIndicator(ctx, pose, 'hip', hipAngle, scaleX, scaleY);
+  }
+  
+  // Draw current state indicator
+  drawStateIndicator(ctx, currentSquatState, canvasSize);
+};
+
+// Draw skeleton lines connecting keypoints
+const drawSkeleton = (
+  ctx: CanvasRenderingContext2D,
+  keypoints: posenet.Keypoint[],
+  minConfidence: number,
+  scaleX: number,
+  scaleY: number
+) => {
+  const adjacentKeyPoints = posenet.getAdjacentKeyPoints(
+    keypoints,
+    minConfidence
+  );
+  
+  // Set line style
+  ctx.strokeStyle = '#00ff00';
+  ctx.lineWidth = 3;
+  
+  // Draw lines
+  adjacentKeyPoints.forEach((keypoints) => {
+    ctx.beginPath();
+    ctx.moveTo(keypoints[0].position.x * scaleX, keypoints[0].position.y * scaleY);
+    ctx.lineTo(keypoints[1].position.x * scaleX, keypoints[1].position.y * scaleY);
+    ctx.stroke();
   });
-  
-  // Draw skeleton with gradient colors based on body part
-  adjacentKeyPoints.forEach(([partA, partB]) => {
-    const keyPointA = pose.keypoints.find(kp => kp.part === partA);
-    const keyPointB = pose.keypoints.find(kp => kp.part === partB);
+};
+
+// Draw keypoints
+const drawKeypoints = (
+  ctx: CanvasRenderingContext2D,
+  keypoints: posenet.Keypoint[],
+  minConfidence: number,
+  scaleX: number,
+  scaleY: number
+) => {
+  keypoints.forEach((keypoint) => {
+    if (keypoint.score < minConfidence) return;
     
-    if (keyPointA && keyPointB && 
-        keyPointA.score > minPartConfidence && 
-        keyPointB.score > minPartConfidence) {
-          
-      // Different colors for different body parts
-      let color = 'white';
-      if ((partA.includes('Shoulder') && partB.includes('Hip')) || 
-          (partA.includes('Hip') && partB.includes('Shoulder'))) {
-        // Torso connections
-        color = 'yellow';
-        ctx.lineWidth = 4;
-      } else if (partA.includes('Knee') || partB.includes('Knee')) {
-        // Knee connections - highlight the important parts for squats
-        color = 'lime';
-        ctx.lineWidth = 4;
-      } else {
-        ctx.lineWidth = 3;
-      }
-      
-      ctx.strokeStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(keyPointA.position.x * scaleX, keyPointA.position.y * scaleY);
-      ctx.lineTo(keyPointB.position.x * scaleX, keyPointB.position.y * scaleY);
-      ctx.stroke();
-    }
+    const { x, y } = keypoint.position;
+    
+    // Draw keypoint circle
+    ctx.beginPath();
+    ctx.arc(x * scaleX, y * scaleY, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ff0000';
+    ctx.fill();
+    
+    // Draw keypoint label
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(keypoint.part, x * scaleX + 7, y * scaleY - 7);
   });
+};
+
+// Draw angle indicator
+const drawAngleIndicator = (
+  ctx: CanvasRenderingContext2D,
+  pose: posenet.Pose,
+  angleType: 'knee' | 'hip',
+  angle: number,
+  scaleX: number,
+  scaleY: number
+) => {
+  // Find the position to draw the angle
+  let position;
   
-  // Draw joint angles with better visibility
-  const addAngleDisplay = (
-    angle: number | null, 
-    label: string, 
-    keypoint: string, 
-    offsetX: number = 10, 
-    offsetY: number = 0
-  ) => {
-    if (angle === null) return;
+  if (angleType === 'knee') {
+    const leftKnee = pose.keypoints.find(kp => kp.part === 'leftKnee');
+    const rightKnee = pose.keypoints.find(kp => kp.part === 'rightKnee');
     
-    const kp = pose.keypoints.find(kp => kp.part === keypoint);
-    if (kp && kp.score > minPartConfidence) {
-      // Background for better readability
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(
-        kp.position.x * scaleX + offsetX - 2, 
-        kp.position.y * scaleY + offsetY - 16, 
-        90, 
-        20
-      );
-      
-      // Text
-      ctx.font = 'bold 16px Arial';
-      ctx.fillStyle = 'white';
-      ctx.fillText(
-        `${label}: ${angle}°`, 
-        kp.position.x * scaleX + offsetX, 
-        kp.position.y * scaleY + offsetY
-      );
+    if (leftKnee && leftKnee.score > 0.5) {
+      position = leftKnee.position;
+    } else if (rightKnee && rightKnee.score > 0.5) {
+      position = rightKnee.position;
+    } else {
+      return; // Can't find a good position
     }
-  };
+  } else { // hip
+    const leftHip = pose.keypoints.find(kp => kp.part === 'leftHip');
+    const rightHip = pose.keypoints.find(kp => kp.part === 'rightHip');
+    
+    if (leftHip && leftHip.score > 0.5) {
+      position = leftHip.position;
+    } else if (rightHip && rightHip.score > 0.5) {
+      position = rightHip.position;
+    } else {
+      return; // Can't find a good position
+    }
+  }
   
-  // Add knee and hip angles
-  addAngleDisplay(kneeAngle, 'Knee', 'leftKnee');
-  addAngleDisplay(hipAngle, 'Hip', 'leftHip');
+  // Draw background for text
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(
+    position.x * scaleX + 15, 
+    position.y * scaleY - 10, 
+    75, 
+    20
+  );
   
-  // Draw squat state and confidence indicators
-  const drawStateInfo = () => {
-    // Background for status display
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(10, 10, 200, 70);
-    
-    // Squat state
-    ctx.font = 'bold 18px Arial';
-    ctx.fillStyle = 'white';
-    ctx.fillText(`State: ${currentSquatState}`, 20, 35);
-    
-    // Pose confidence
-    ctx.font = '16px Arial';
-    
-    // Color based on confidence
-    const confidenceColor = pose.score > 0.6 ? 'lime' : 
-                            pose.score > 0.4 ? 'yellow' : 'red';
-    
-    ctx.fillStyle = confidenceColor;
-    ctx.fillText(`Confidence: ${Math.round(pose.score * 100)}%`, 20, 65);
-  };
+  // Draw text
+  ctx.font = '12px Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(
+    `${angleType === 'knee' ? 'Knee' : 'Hip'}: ${angle}°`, 
+    position.x * scaleX + 20, 
+    position.y * scaleY + 5
+  );
+};
+
+// Draw state indicator at the top of the canvas
+const drawStateIndicator = (
+  ctx: CanvasRenderingContext2D,
+  state: SquatState,
+  canvasSize: { width: number; height: number }
+) => {
+  let stateText = '';
+  let stateColor = '';
   
-  drawStateInfo();
+  switch (state) {
+    case SquatState.STANDING:
+      stateText = 'Standing';
+      stateColor = '#3b82f6'; // Blue
+      break;
+    case SquatState.MID_SQUAT:
+      stateText = 'Squatting Down';
+      stateColor = '#f59e0b'; // Yellow/Orange
+      break;
+    case SquatState.BOTTOM_SQUAT:
+      stateText = 'Bottom Position';
+      stateColor = '#22c55e'; // Green
+      break;
+  }
+  
+  // Draw pill-shaped background
+  const textWidth = 120;
+  const textHeight = 24;
+  const padding = 10;
+  
+  ctx.fillStyle = stateColor;
+  ctx.beginPath();
+  ctx.roundRect(
+    canvasSize.width / 2 - textWidth / 2 - padding,
+    10,
+    textWidth + padding * 2,
+    textHeight + padding / 2,
+    8
+  );
+  ctx.fill();
+  
+  // Draw text
+  ctx.font = 'bold 14px Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText(
+    stateText,
+    canvasSize.width / 2,
+    25
+  );
+  ctx.textAlign = 'start'; // Reset text alignment
 };

@@ -1,59 +1,56 @@
-import { useState, useCallback } from 'react';
-import { 
-  UsePoseDetectionProps, 
-  UsePoseDetectionResult
-} from './poseDetectionTypes';
-import { DEFAULT_POSE_CONFIG } from './utils/poseDetectionConfig';
-import { usePoseModel } from './usePoseModel';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import * as posenet from '@tensorflow-models/posenet';
+import * as tf from '@tensorflow/tfjs';
+import { SquatState, FeedbackType } from './types';
+import { DEFAULT_POSE_CONFIG } from './utils';
+import { usePoseHandler } from './hooks/usePoseHandler';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
-import { useFeedbackState } from './hooks/useFeedbackState';
-import { usePoseDetectionLoop } from './hooks/detection';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
-import { usePoseHandler } from './hooks/usePoseHandler';
-import { useDetectionStatusHandler } from './hooks/useDetectionStatusHandler';
-import { useSessionReset } from './hooks/useSessionReset';
-import type { DetectionStatus } from './hooks/detection';
+import { usePoseDetectionLoop } from './hooks/detection';
 
-interface ExtendedUsePoseDetectionProps extends UsePoseDetectionProps {
-  videoReady?: boolean;
+interface UsePoseDetectionProps {
+  cameraActive: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  videoReady: boolean;
 }
 
-export const usePoseDetection = ({ 
-  cameraActive, 
-  videoRef,
-  videoReady = false
-}: ExtendedUsePoseDetectionProps): UsePoseDetectionResult & { detectionStatus: DetectionStatus | null } => {
-  // Configuration
-  const [config] = useState(DEFAULT_POSE_CONFIG);
+export const usePoseDetection = ({ cameraActive, videoRef, videoReady }: UsePoseDetectionProps) => {
+  // Model state
+  const [model, setModel] = useState<posenet.PoseNet | null>(null);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [modelError, setModelError] = useState<string | null>(null);
   
-  // Load the pose model
-  const { model, isModelLoading, error: modelError } = usePoseModel(config);
+  // Pose detection configuration
+  const [config, setConfig] = useState(DEFAULT_POSE_CONFIG);
   
   // Squat state tracking
-  const { 
-    currentSquatState, 
-    prevSquatState, 
-    setCurrentSquatState, 
-    setPrevSquatState 
+  const {
+    currentSquatState,
+    prevSquatState,
+    setCurrentSquatState,
+    setPrevSquatState
   } = useSquatState();
   
   // Performance metrics
-  const { 
-    stats, 
-    updateMetricsForGoodRep, 
-    updateMetricsForBadRep, 
-    resetMetrics 
+  const {
+    stats,
+    updateMetricsForGoodRep,
+    updateMetricsForBadRep,
+    resetMetrics
   } = usePerformanceMetrics();
   
   // Feedback state
-  const { feedback, setFeedback, setFeedbackType } = useFeedbackState(isModelLoading, modelError);
+  const [feedback, setFeedback] = useState<{ message: string | null; type: FeedbackType }>({
+    message: null,
+    type: FeedbackType.INFO
+  });
   
-  // Combined feedback setter function
-  const setFeedbackMessage = useCallback((message: string | null, type: typeof feedback.type) => {
-    setFeedback(message);
-    setFeedbackType(type);
-  }, [setFeedback, setFeedbackType]);
+  // Set feedback handler
+  const setFeedbackWithType = useCallback((message: string, type: FeedbackType) => {
+    setFeedback({ message, type });
+  }, []);
   
   // Pose analysis
   const { analysis, analyzePose } = usePoseAnalysis({
@@ -63,46 +60,97 @@ export const usePoseDetection = ({
     setPrevSquatState,
     updateMetricsForGoodRep,
     updateMetricsForBadRep,
-    setFeedback: setFeedbackMessage
+    setFeedback: setFeedbackWithType
   });
   
-  // Pose detection handler
+  // Pose handler
   const { pose, handlePoseDetected } = usePoseHandler({
     analyzePose
   });
   
-  // Pose detection loop with status updates
-  const { isDetectionRunning, detectionStatus: loopStatus } = usePoseDetectionLoop({
+  // Load PoseNet model
+  useEffect(() => {
+    const loadModel = async () => {
+      if (model) return; // Model already loaded
+      
+      try {
+        setIsModelLoading(true);
+        setModelError(null);
+        setFeedback({
+          message: "Loading AI model...",
+          type: FeedbackType.INFO
+        });
+        
+        console.log('Loading PoseNet model...');
+        
+        // Load the model with configuration
+        const loadedModel = await posenet.load({
+          architecture: 'MobileNetV1',
+          outputStride: 16,
+          inputResolution: { width: 640, height: 480 },
+          multiplier: 0.75 // Lower multiplier for better performance
+        });
+        
+        setModel(loadedModel);
+        setFeedback({
+          message: "AI model loaded. Starting pose detection...",
+          type: FeedbackType.SUCCESS
+        });
+        
+        console.log('PoseNet model loaded successfully');
+      } catch (error) {
+        console.error('Error loading PoseNet model:', error);
+        
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        setModelError(`Failed to load AI model: ${errorMessage}`);
+        setFeedback({
+          message: `Could not load AI model: ${errorMessage}`,
+          type: FeedbackType.WARNING
+        });
+      } finally {
+        setIsModelLoading(false);
+      }
+    };
+    
+    loadModel();
+    
+    // Clean up TF memory on unmount
+    return () => {
+      tf.disposeVariables();
+    };
+  }, []);
+  
+  // Use pose detection loop
+  const { detectionStatus } = usePoseDetectionLoop({
     model,
     cameraActive,
     videoRef,
     config,
     onPoseDetected: handlePoseDetected,
-    setFeedback: setFeedbackMessage,
+    setFeedback: setFeedbackWithType,
     videoReady
   });
   
-  // Detection status management
-  const { detectionStatus } = useDetectionStatusHandler(loopStatus);
+  // Reset session
+  const resetSession = useCallback(() => {
+    setPrevSquatState(SquatState.STANDING);
+    setCurrentSquatState(SquatState.STANDING);
+    resetMetrics();
+    setFeedback({
+      message: "Session reset. Ready for new exercises.",
+      type: FeedbackType.INFO
+    });
+  }, [setPrevSquatState, setCurrentSquatState, resetMetrics]);
   
-  // Session reset functionality
-  const { resetSession } = useSessionReset({
-    resetMetrics,
-    setCurrentSquatState,
-    setPrevSquatState,
-    setFeedbackMessage,
-    feedbackType: feedback.type
-  });
-
   return {
     model,
     isModelLoading,
+    config,
     pose,
     analysis,
     stats,
     feedback,
     resetSession,
-    config,
     detectionStatus
   };
 };

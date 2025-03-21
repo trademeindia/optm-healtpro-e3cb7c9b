@@ -1,37 +1,52 @@
 
-import * as posenet from '@tensorflow-models/posenet';
-
 export enum SquatState {
   STANDING = 'standing',
-  MID_SQUAT = 'midSquat',
-  BOTTOM_SQUAT = 'bottomSquat',
+  MID_SQUAT = 'mid_squat',
+  BOTTOM_SQUAT = 'bottom_squat'
 }
 
 export enum FeedbackType {
-  SUCCESS = 'success',
-  WARNING = 'warning',
   INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning'
 }
 
-export interface PostureMonitorProps {
-  exerciseId: string | null;
-  exerciseName: string | null;
-  onFinish: () => void;
-}
-
-export interface FeedbackProps {
-  feedback: string | null;
-  feedbackType: FeedbackType;
-}
-
-export interface StatsProps {
+export interface SessionStats {
   accuracy: number;
   reps: number;
   incorrectReps: number;
 }
 
-export interface PostureAnalysis {
-  kneeAngle: number | null;
-  hipAngle: number | null;
-  currentSquatState: SquatState;
+export interface CameraState {
+  isActive: boolean;
+  error: string | null;
+  permission: PermissionState | null;
+}
+
+export interface VideoState {
+  isReady: boolean;
+  error: string | null;
+  stream: MediaStream | null;
+}
+
+export interface ModelState {
+  isLoading: boolean;
+  error: string | null;
+  model: any | null;
+}
+
+export interface DetectionConfig {
+  minPoseConfidence: number;
+  minPartConfidence: number;
+  scoreThreshold: number;
+  inputResolution: {
+    width: number;
+    height: number;
+  };
+}
+
+export interface MonitorProps {
+  exerciseId: string | null;
+  exerciseName: string | null;
+  onFinish: () => void;
 }

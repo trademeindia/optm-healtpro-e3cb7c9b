@@ -1,29 +1,27 @@
 
 import { useCallback } from 'react';
 
-export interface UseVideoReadyCheckProps {
+interface UseVideoReadyCheckProps {
   videoRef: React.RefObject<HTMLVideoElement>;
-  videoReady?: boolean;
+  videoReady: boolean;
 }
 
-export const useVideoReadyCheck = ({
-  videoRef,
-  videoReady = false
-}: UseVideoReadyCheckProps) => {
+export const useVideoReadyCheck = ({ videoRef, videoReady }: UseVideoReadyCheckProps) => {
+  // Check if video is ready for pose estimation
   const isVideoReady = useCallback(() => {
-    if (videoReady === false) return false;
-    
-    if (!videoRef.current) return false;
-    
     const video = videoRef.current;
     
+    if (!video) return false;
+    
+    // Ensure video has valid dimensions and is playing
     return (
-      video.readyState >= 2 && 
-      !video.paused && 
-      video.videoWidth > 0 &&
-      video.videoHeight > 0
+      videoReady &&
+      video.readyState >= 2 && // HAVE_CURRENT_DATA or better
+      video.width > 0 &&
+      video.height > 0 &&
+      !video.paused
     );
   }, [videoRef, videoReady]);
-
+  
   return { isVideoReady };
 };

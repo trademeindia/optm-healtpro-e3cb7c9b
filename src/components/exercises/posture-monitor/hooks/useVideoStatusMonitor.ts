@@ -1,14 +1,18 @@
 
 import { useEffect } from 'react';
 import { FeedbackType } from '../types';
+import type { CustomFeedback } from './types';
+
+interface VideoStatus {
+  isReady: boolean;
+  hasStarted: boolean;
+  error: string | null;
+}
 
 interface UseVideoStatusMonitorProps {
   cameraActive: boolean;
-  videoStatus: {
-    isReady: boolean;
-    errorCount: number;
-  };
-  setCustomFeedback: (feedback: { message: string | null, type: FeedbackType } | null) => void;
+  videoStatus: VideoStatus;
+  setCustomFeedback: (feedback: CustomFeedback | null) => void;
 }
 
 export const useVideoStatusMonitor = ({
@@ -16,13 +20,23 @@ export const useVideoStatusMonitor = ({
   videoStatus,
   setCustomFeedback
 }: UseVideoStatusMonitorProps) => {
-  // Monitor video status and provide feedback
+  // Monitor video status changes
   useEffect(() => {
-    if (cameraActive && !videoStatus.isReady && videoStatus.errorCount > 3) {
+    if (!cameraActive) return;
+    
+    if (videoStatus.error) {
       setCustomFeedback({
-        message: "Camera feed issues detected. The video may not be properly initialized.",
+        message: `Camera issue: ${videoStatus.error}`,
         type: FeedbackType.WARNING
       });
+    } else if (videoStatus.hasStarted && !videoStatus.isReady) {
+      setCustomFeedback({
+        message: "Initializing camera feed...",
+        type: FeedbackType.INFO
+      });
+    } else if (videoStatus.isReady) {
+      // Clear any video-related feedback when ready
+      setCustomFeedback(null);
     }
   }, [cameraActive, videoStatus, setCustomFeedback]);
 };

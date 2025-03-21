@@ -1,30 +1,31 @@
 
 import { useCallback } from 'react';
 import { SquatState, FeedbackType } from '../types';
-import { PoseFeedback } from '../poseDetectionTypes';
 
 interface UseSessionResetProps {
   resetMetrics: () => void;
   setCurrentSquatState: (state: SquatState) => void;
   setPrevSquatState: (state: SquatState) => void;
-  setFeedbackMessage: (message: string | null, type: FeedbackType) => void;
-  feedbackType: FeedbackType;
+  setFeedback: (message: string | null, type: FeedbackType) => void;
 }
 
 export const useSessionReset = ({
   resetMetrics,
   setCurrentSquatState,
   setPrevSquatState,
-  setFeedbackMessage,
-  feedbackType
+  setFeedback
 }: UseSessionResetProps) => {
-  // Reset session function to clear stats and state
   const resetSession = useCallback(() => {
+    // Reset metrics
     resetMetrics();
+    
+    // Reset squat state
     setCurrentSquatState(SquatState.STANDING);
     setPrevSquatState(SquatState.STANDING);
-    setFeedbackMessage("Session reset. Ready to start squatting!", feedbackType);
-  }, [resetMetrics, setCurrentSquatState, setPrevSquatState, setFeedbackMessage, feedbackType]);
-
+    
+    // Update feedback
+    setFeedback("Session reset. Ready to start new exercises.", FeedbackType.INFO);
+  }, [resetMetrics, setCurrentSquatState, setPrevSquatState, setFeedback]);
+  
   return { resetSession };
 };

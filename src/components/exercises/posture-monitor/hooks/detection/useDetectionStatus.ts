@@ -1,67 +1,47 @@
 
-import { useRef, useState, useCallback } from 'react';
-import { DetectionState } from './types';
+import { useState, useRef, useCallback } from 'react';
+import type { DetectionStatus } from './useDetectionStatusHandler';
 
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number | null;
-  lastDetectionTime: number;
-  confidence: number | null;
-  detectedKeypoints: number;
-}
+export { type DetectionStatus } from './useDetectionStatusHandler';
 
 export const useDetectionStatus = () => {
-  const lastFpsUpdateTime = useRef<number>(0);
   const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
     isDetecting: false,
     fps: null,
-    lastDetectionTime: 0,
     confidence: null,
-    detectedKeypoints: 0
+    detectedKeypoints: 0,
+    lastDetectionTime: 0
   });
   
-  const updateFpsStats = useCallback((detectionTime: number, detectionStateRef: React.RefObject<DetectionState>) => {
+  // Track frame times for FPS calculation
+  const fpsTracker = useRef({
+    frames: 0,
+    lastFpsUpdate: 0,
+    frameTimes: [] as number[]
+  });
+  
+  // Update FPS calculation
+  const updateFpsStats = useCallback((detectionTime: number, detectionStateRef: any) => {
     const now = performance.now();
     
-    if (!detectionStateRef.current) return;
+    // Add current frame to tracker
+    fpsTracker.current.frames++;
+    fpsTracker.current.frameTimes.push(now);
     
-    if (!detectionStateRef.current.frameTimes.length || 
-        now - detectionStateRef.current.frameTimes[0] > 1000) {
-      detectionStateRef.current.frameTimes = [now];
-      detectionStateRef.current.cumulativeProcessingTime = detectionTime;
-      detectionStateRef.current.framesProcessed = 1;
-    } else {
-      detectionStateRef.current.frameTimes.push(now);
-      detectionStateRef.current.cumulativeProcessingTime += detectionTime;
-      detectionStateRef.current.framesProcessed++;
-      
-      while (detectionStateRef.current.frameTimes.length > 0 && 
-             now - detectionStateRef.current.frameTimes[0] > 1000) {
-        detectionStateRef.current.frameTimes.shift();
-      }
-    }
+    // Remove old frames outside of our 1-second window
+    const oneSecondAgo = now - 1000;
+    fpsTracker.current.frameTimes = fpsTracker.current.frameTimes.filter(time => time > oneSecondAgo);
     
-    if (now - lastFpsUpdateTime.current > 500) {
-      const frameCount = detectionStateRef.current.frameTimes.length;
-      const timeWindow = frameCount > 1 
-        ? (detectionStateRef.current.frameTimes[frameCount - 1] - detectionStateRef.current.frameTimes[0]) / 1000
-        : 1;
+    // Update FPS if it's been more than 500ms since last update
+    if (now - fpsTracker.current.lastFpsUpdate > 500) {
+      const fps = fpsTracker.current.frameTimes.length;
       
-      const fps = frameCount / timeWindow;
-      const avgProcessingTime = detectionStateRef.current.cumulativeProcessingTime / detectionStateRef.current.framesProcessed;
-      
-      setDetectionStatus(prevStatus => ({
-        ...prevStatus,
-        fps,
-        isDetecting: true,
-        lastDetectionTime: now
-      }));
-      
-      lastFpsUpdateTime.current = now;
-      
-      if (now % 3000 < 100) {
-        console.log(`Detection stats: ${fps.toFixed(1)} FPS, avg processing: ${avgProcessingTime.toFixed(1)}ms`);
+      // Only update FPS value if we have meaningful data
+      if (fps > 0) {
+        setDetectionStatus(prev => ({ ...prev, fps }));
       }
+      
+      fpsTracker.current.lastFpsUpdate = now;
     }
   }, []);
   
