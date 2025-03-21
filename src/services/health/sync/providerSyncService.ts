@@ -39,56 +39,42 @@ export class ProviderSyncService {
       // Get the Supabase URL from environment variable or use the default
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
       
-      const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          accessToken,
-          timeRange: options.timeRange || 'week',
-          metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
-        }),
-      });
-
-      // Handle token refresh
-      if (response.status === 401) {
-        const errorData = await response.json();
+      const result = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
+      
+      // Handle token refresh case
+      if (result.status === 401 && result.data?.refreshed) {
+        console.log("Token refreshed, retrying Google Fit sync");
         
-        if (errorData.refreshed) {
-          console.log("Token refreshed, retrying Google Fit sync");
-          
-          if (!options.silent) {
-            toast.info("Google Fit connection refreshed. Syncing data again...");
-          }
-          
-          // Wait a moment to ensure token is updated in the system
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Use a simple retry approach without recursive function call
-          return await this.executeGoogleFitSync(userId, accessToken, options, supabaseUrl);
-        } else {
-          console.error('Google Fit authentication failed:', errorData.error);
-          
-          if (!options.silent) {
-            toast.error("Google Fit authentication expired", {
-              description: "Please reconnect your Google Fit account."
-            });
-          }
-          
-          return false;
+        if (!options.silent) {
+          toast.info("Google Fit connection refreshed. Syncing data again...");
         }
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response from Google Fit API:', errorData);
         
-        throw new Error(`Error fetching Google Fit data: ${errorData.error || response.statusText}`);
+        // Wait a moment to ensure token is updated in the system
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Retry the request with a new fetch call
+        return await this.retryFetchAfterRefresh(userId, accessToken, options, supabaseUrl);
       }
-
-      const data = await response.json();
+      
+      // Handle authentication failure
+      if (result.status === 401) {
+        console.error('Google Fit authentication failed:', result.error);
+        
+        if (!options.silent) {
+          toast.error("Google Fit authentication expired", {
+            description: "Please reconnect your Google Fit account."
+          });
+        }
+        
+        return false;
+      }
+      
+      // Handle other errors
+      if (!result.success) {
+        console.error('Error response from Google Fit API:', result.error);
+        throw new Error(`Error fetching Google Fit data: ${result.error || result.statusText}`);
+      }
+      
       console.log('Successfully fetched Google Fit data');
       
       // Update last sync time in the database
@@ -112,18 +98,24 @@ export class ProviderSyncService {
       return false;
     }
   }
-
+  
   /**
-   * Helper method to execute a Google Fit sync request
-   * This is a standalone function to avoid recursive type instantiation
+   * Make the actual fetch request to Google Fit API
+   * Extracted to separate method to prevent recursive type instantiation
    */
-  private async executeGoogleFitSync(
+  private async fetchGoogleFitData(
     userId: string,
     accessToken: string,
     options: SyncOptions,
     supabaseUrl: string
-  ): Promise<boolean> {
-    const retryResponse = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
+  ): Promise<{
+    status: number;
+    success: boolean;
+    data?: any;
+    error?: string;
+    statusText?: string;
+  }> {
+    const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -136,10 +128,32 @@ export class ProviderSyncService {
       }),
     });
     
-    if (!retryResponse.ok) {
-      const retryErrorData = await retryResponse.json();
-      console.error('Error response from Google Fit API after token refresh:', retryErrorData);
-      throw new Error(`Error fetching Google Fit data after token refresh: ${retryErrorData.error || retryResponse.statusText}`);
+    const data = await response.json().catch(() => ({}));
+    
+    return {
+      status: response.status,
+      success: response.ok,
+      data,
+      error: data.error,
+      statusText: response.statusText
+    };
+  }
+
+  /**
+   * Retry fetch after token refresh
+   * Separate method to avoid recursive type instantiation
+   */
+  private async retryFetchAfterRefresh(
+    userId: string,
+    accessToken: string,
+    options: SyncOptions,
+    supabaseUrl: string
+  ): Promise<boolean> {
+    const result = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
+    
+    if (!result.success) {
+      console.error('Error response from Google Fit API after token refresh:', result.error);
+      throw new Error(`Error fetching Google Fit data after token refresh: ${result.error || result.statusText}`);
     }
     
     return true;
