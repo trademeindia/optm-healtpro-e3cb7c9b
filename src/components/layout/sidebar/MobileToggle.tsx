@@ -21,16 +21,16 @@ export const MobileToggle: React.FC<MobileToggleProps> = ({
       variant="ghost"
       size="icon"
       className={cn(
-        "h-8 w-8 p-0 flex-shrink-0 transition-all",
+        "h-10 w-10 p-0 flex-shrink-0 transition-all lg:hidden",
         isOpen ? "text-primary" : "text-muted-foreground",
         className
       )}
       aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
     >
       {isOpen ? (
-        <X className="h-5 w-5" />
+        <X className="h-6 w-6" />
       ) : (
-        <Menu className="h-5 w-5" />
+        <Menu className="h-6 w-6" />
       )}
     </Button>
   );

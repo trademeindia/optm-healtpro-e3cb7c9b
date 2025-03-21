@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SidebarContent } from './sidebar/SidebarContent';
 import { getDoctorMenuItems, getPatientMenuItems, getReceptionistMenuItems, getBottomMenuItems } from './sidebar/menu-config';
 import { useSidebarResponsive } from './sidebar/useSidebarResponsive';
+import { MobileToggle } from './sidebar/MobileToggle';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -43,10 +44,13 @@ const Sidebar: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const sidebar = document.getElementById('sidebar');
+      const mobileToggle = document.querySelector('[aria-label="Open sidebar"], [aria-label="Close sidebar"]');
       
       if (
         sidebar && 
         !sidebar.contains(event.target as Node) && 
+        mobileToggle &&
+        !mobileToggle.contains(event.target as Node) &&
         isMobile && 
         isOpen
       ) {
@@ -66,10 +70,10 @@ const Sidebar: React.FC = () => {
         id="sidebar"
         className={`
           bg-card border-r border-border
-          flex flex-col h-screen transition-all duration-300 overflow-hidden
-          ${isOpen ? 'w-64' : 'w-16'}
+          flex flex-col h-screen transition-all duration-300 ease-in-out overflow-hidden
+          fixed lg:relative z-40
+          ${isOpen ? 'w-64' : 'w-0 lg:w-16'}
           ${isMobile ? (isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full') : 'translate-x-0'}
-          fixed z-40 lg:relative
         `}
       >
         <div className="flex-1 flex flex-col h-full pt-6 pb-4">
