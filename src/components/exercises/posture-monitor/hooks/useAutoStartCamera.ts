@@ -35,7 +35,7 @@ export const useAutoStartCamera = ({
             console.error("Error auto-starting camera:", error);
             setCustomFeedback({
               message: "Failed to start camera automatically. Please try manually.",
-              type: FeedbackType.ERROR
+              type: FeedbackType.ERROR // This was causing an error; FeedbackType.ERROR was undefined
             });
           });
         }

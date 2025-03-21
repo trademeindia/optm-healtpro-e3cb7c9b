@@ -12,7 +12,7 @@
   }
 
   .glass-morphism {
-    @apply backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-white/20 dark:border-gray-700/50 shadow-lg;
+    @apply backdrop-blur-xl bg-white/95 dark:bg-gray-800/95 border border-white/20 dark:border-gray-700/50 shadow-lg;
     visibility: visible !important;
     opacity: 1 !important;
     position: relative;
@@ -20,7 +20,7 @@
   }
   
   .neo-blur {
-    @apply backdrop-blur-2xl bg-white/10 border border-white/20;
+    @apply backdrop-blur-2xl bg-white/90 dark:bg-gray-800/90 border border-white/20 dark:border-gray-700/50;
     visibility: visible !important;
     opacity: 1 !important;
   }
@@ -118,5 +118,27 @@
     opacity: 1 !important;
     position: relative;
     z-index: 2;
+  }
+  
+  /* Dialog content visibility enhancements */
+  .dialog-content-solid {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 50;
+  }
+  
+  /* Enhanced popup background */
+  .popup-bg-solid {
+    @apply bg-white dark:bg-gray-800;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Ensure dropdown visibility */
+  .dropdown-content-visible {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md z-50;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 }

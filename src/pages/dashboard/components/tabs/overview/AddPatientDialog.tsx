@@ -89,7 +89,7 @@ const AddPatientDialog: React.FC<AddPatientDialogProps> = ({ open, onOpenChange,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
         <DialogHeader>
           <DialogTitle>Add New Patient</DialogTitle>
         </DialogHeader>
@@ -155,7 +155,7 @@ const AddPatientDialog: React.FC<AddPatientDialogProps> = ({ open, onOpenChange,
               <div>
                 <label className="text-sm font-medium">Gender</label>
                 <select 
-                  className="w-full px-3 py-2 border rounded-md" 
+                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700" 
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
                 >

@@ -1,232 +1,138 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { logRoutingState } from '@/utils/debugUtils';
+import { logFitnessSync } from '@/utils/debugUtils';
 
-export const useOAuthCallback = () => {
+interface UseOAuthCallbackResult {
+  isLoading: boolean;
+  error: string | null;
+  code: string | null;
+  state: string | null;
+  provider: string | null;
+  userId: string | null;
+}
+
+export const useOAuthCallback = (): UseOAuthCallbackResult => {
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
-  const [retryCount, setRetryCount] = useState(0);
-  const navigate = useNavigate();
-  const { user, isLoading, handleOAuthCallback } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [code, setCode] = useState<string | null>(null);
+  const [state, setState] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   
-  const provider = searchParams.get('provider') || 'google'; // Default to google if not specified
-  const errorCode = searchParams.get('error') || null;
-  const errorDescription = searchParams.get('error_description') || null;
-  const code = searchParams.get('code') || '';
-
-  const handleRetry = () => {
-    setError(null);
-    setErrorDetails(null);
-    setRetryCount(0);
-    setIsVerifying(true);
-    // Force refresh the authorization
-    window.location.href = '/login';
-  };
-
-  const checkAuthState = async () => {
-    setIsVerifying(true);
-      
-    try {
-      const callbackURL = window.location.href;
-      const originURL = window.location.origin;
-      
-      // Log route state for debugging
-      logRoutingState('OAuthCallback', {
-        callbackURL,
-        hasCode: !!code,
-        provider,
-        state: searchParams.get('state'),
-        error: errorCode
-      });
-      
-      // Collect debug info
-      setDebugInfo({
-        callbackURL,
-        originURL,
-        hasCode: !!code,
-        provider,
-        retryCount,
-        hasUser: !!user,
-        userRole: user?.role || 'none',
-        isLoadingState: isLoading,
-        searchParams: Object.fromEntries(searchParams.entries()),
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      });
-      
-      console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, timestamp=${new Date().toISOString()}`);
-      
-      // First check if we already have a session
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log("Checking for existing session:", sessionData?.session ? "Found" : "None");
-      
-      if (sessionData?.session) {
-        console.log('Active session found, redirecting to dashboard');
-        
-        toast.success('Successfully signed in!');
-        
-        // Get the user's role from the session
-        const { formatUser } = await import('@/contexts/auth/utils');
-        const formattedUser = await formatUser(sessionData.session.user);
-        
-        if (formattedUser) {
-          const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
-                            formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
-                            '/dashboard/patient';
-                            
-          navigate(dashboard, { replace: true });
-          return;
-        } else {
-          navigate('/patient-dashboard', { replace: true }); // Default dashboard
-          return;
-        }
-      }
-      
-      // Handle Google Fit connection callback separately
-      if (searchParams.has('connected') || searchParams.has('message') || (searchParams.has('error') && !searchParams.has('code'))) {
-        // This is a connection callback, not an auth callback
-        console.log('Detected Google Fit connection callback');
-        
-        // Process connection result
-        if (searchParams.has('connected') && searchParams.get('connected') === 'true') {
-          toast.success('Google Fit connected successfully!', {
-            description: searchParams.get('message') || 'Your health data will now sync automatically.'
-          });
-        } else if (searchParams.has('error')) {
-          toast.error('Failed to connect Google Fit', {
-            description: searchParams.get('error') || 'An unknown error occurred'
-          });
-        }
-        
-        // Check if we should redirect to a specific page
-        const redirectUrl = localStorage.getItem('healthAppRedirectUrl');
-        
-        if (redirectUrl) {
-          console.log(`Redirecting to stored URL: ${redirectUrl}`);
-          localStorage.removeItem('healthAppRedirectUrl');
-          
-          // Navigate to the stored URL
-          navigate(redirectUrl, { replace: true });
-          return;
-        }
-        
-        // If no redirect URL, go to health apps page
-        navigate('/health-apps', { replace: true });
-        return;
-      }
-      
-      // Call the handler with the code from search params
-      if (code) {
-        console.log(`Found code parameter, calling handleOAuthCallback with provider: ${provider}`);
-        try {
-          await handleOAuthCallback(provider, code, user);
-          
-          // Give some time for session to be established
-          console.log("OAuth callback processed, checking for session...");
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Check again if we have a session after the callback
-          const { data: updatedSession } = await supabase.auth.getSession();
-          console.log("Session after callback:", updatedSession.session ? "Established" : "Not found");
-          
-          if (updatedSession.session) {
-            console.log('Session established after OAuth callback, redirecting');
-            toast.success('Successfully signed in!');
-            
-            // Get the user's role from the session
-            const { formatUser } = await import('@/contexts/auth/utils');
-            const formattedUser = await formatUser(updatedSession.session.user);
-            
-            if (formattedUser) {
-              const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
-                                formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
-                                '/dashboard/patient';
-                                
-              navigate(dashboard, { replace: true });
-              return;
-            } else {
-              navigate('/patient-dashboard', { replace: true }); // Default dashboard
-              return;
-            }
-          } else if (retryCount < 2) {
-            console.log(`No session found after callback, retry ${retryCount + 1}/3...`);
-            setRetryCount(prev => prev + 1);
-            // Try again after a delay
-            setTimeout(() => checkAuthState(), 2000);
-            return;
-          } else {
-            console.error("No session established after multiple retries");
-            setError("Authentication could not be completed");
-            setErrorDetails("No session was established. Please try again or contact support.");
-          }
-        } catch (callbackError: any) {
-          console.error('Error in handleOAuthCallback:', callbackError);
-          setError('Authentication process failed');
-          setErrorDetails(callbackError.message || 'Unknown error processing the authentication callback');
-        }
-      } else if (!searchParams.has('connected') && !searchParams.has('error')) {
-        console.error('No authorization code found in URL');
-        setError('Authentication failed');
-        setErrorDetails('No authorization code received from the provider');
-      }
-    } catch (err: any) {
-      console.error('OAuth callback processing error:', err);
-      setError('Authentication process failed');
-      setErrorDetails(err.message || 'An unexpected error occurred');
-      toast.error('Authentication failed');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   useEffect(() => {
-    console.log('OAuthCallback component initialized');
-    console.log('Search params:', Object.fromEntries(searchParams.entries()));
-    console.log('Auth state:', { user, isLoading });
-
-    // Handle direct error parameters from OAuth provider
-    if (errorCode && !searchParams.has('connected')) {
-      console.error('OAuth provider error:', errorCode, errorDescription);
-      setError(`Authentication error from ${provider}`);
-      setErrorDetails(errorDescription || 'Please try again or use another sign-in method');
-      toast.error(`${provider} authentication failed`);
-      setIsVerifying(false);
-      return;
-    }
-
-    // Only run the auth check if we don't already have an error
-    if (!error) {
-      // Start auth check process
-      checkAuthState();
-    }
-    
-    // Fallback redirect in case something goes wrong
-    const fallbackTimer = setTimeout(() => {
-      if (isVerifying && !error && retryCount >= 2) {
-        console.log("Fallback redirect triggered - authentication is taking too long");
-        setError("Authentication timeout");
-        setErrorDetails("The authentication process took too long. Please try again.");
-        toast.error("Authentication took too long to complete");
+    const processOAuthCallback = async () => {
+      try {
+        const queryParams = new URLSearchParams(location.search);
+        
+        // Extract all relevant parameters
+        const code = queryParams.get('code');
+        const state = queryParams.get('state');
+        const error = queryParams.get('error');
+        const errorDescription = queryParams.get('error_description');
+        
+        // Log the callback for debugging
+        console.log('OAuth callback received:', { code, state, error, errorDescription });
+        
+        // Handle errors from OAuth provider
+        if (error) {
+          const errorMessage = errorDescription || error;
+          console.error('OAuth error:', errorMessage);
+          setError(errorMessage);
+          toast.error(`Authentication failed: ${errorMessage}`);
+          setTimeout(() => navigate('/health-apps'), 3000);
+          return;
+        }
+        
+        // Handle missing code
+        if (!code) {
+          setError('No authorization code received');
+          toast.error('Authentication failed: No authorization code received');
+          setTimeout(() => navigate('/health-apps'), 3000);
+          return;
+        }
+        
+        setCode(code);
+        
+        // Process the state parameter to extract provider and user ID
+        if (state) {
+          setState(state);
+          
+          // Expected format: google_fit_userId or other_provider_userId
+          const stateParts = state.split('_');
+          
+          if (stateParts.length >= 3) {
+            // For state in format: "google_fit_user123"
+            // provider would be "google_fit"
+            const extractedProvider = `${stateParts[0]}_${stateParts[1]}`;
+            // userId would be "user123"
+            const extractedUserId = stateParts.slice(2).join('_');
+            
+            setProvider(extractedProvider);
+            setUserId(extractedUserId);
+            
+            logFitnessSync(extractedProvider, 'started', { code, userId: extractedUserId });
+            
+            // Handle Google Fit
+            if (extractedProvider === 'google_fit') {
+              // Exchange the code for tokens on the server
+              await exchangeCodeForTokens(code, extractedUserId);
+            }
+          } else {
+            setError('Invalid state parameter format');
+          }
+        } else {
+          setError('No state parameter received');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error during OAuth processing';
+        console.error('Error processing OAuth callback:', err);
+        setError(errorMessage);
+        toast.error(`Authentication error: ${errorMessage}`);
+      } finally {
+        setIsLoading(false);
       }
-    }, 10000);
-
-    return () => clearTimeout(fallbackTimer);
-  }, [retryCount]);
-
-  return {
-    error,
-    errorDetails,
-    isVerifying,
-    debugInfo,
-    retryCount,
-    handleRetry,
-    navigate
+    };
+    
+    processOAuthCallback();
+  }, [location.search, navigate]);
+  
+  // Helper function to exchange authorization code for tokens
+  const exchangeCodeForTokens = async (code: string, userId: string) => {
+    try {
+      toast.info('Processing your Google Fit connection...');
+      
+      const response = await fetch('/api/google-fit-callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, userId }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to connect to Google Fit');
+      }
+      
+      logFitnessSync('google_fit', 'completed', { userId });
+      toast.success('Successfully connected to Google Fit!');
+      
+      // Redirect to health apps page after successful connection
+      setTimeout(() => navigate('/health-apps'), 2000);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error exchanging code for tokens';
+      logFitnessSync('google_fit', 'failed', { error: errorMessage, userId });
+      setError(errorMessage);
+      toast.error(`Failed to connect to Google Fit: ${errorMessage}`);
+      setTimeout(() => navigate('/health-apps'), 3000);
+    }
   };
+  
+  return { isLoading, error, code, state, provider, userId };
 };

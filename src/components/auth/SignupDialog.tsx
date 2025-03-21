@@ -38,7 +38,7 @@ const SignupDialog: React.FC<SignupDialogProps> = ({
 }) => {
   return (
     <Dialog open={showSignupDialog} onOpenChange={setShowSignupDialog}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
         <DialogHeader>
           <DialogTitle>Create your account</DialogTitle>
           <DialogDescription>
