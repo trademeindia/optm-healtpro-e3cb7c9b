@@ -126,7 +126,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/appointments" 
           element={
-            <ProtectedRoute requiredRole="any">
+            <ProtectedRoute>
               <AppointmentsPage />
             </ProtectedRoute>
           } 
