@@ -50,3 +50,19 @@ export interface MonitorProps {
   exerciseName: string | null;
   onFinish: () => void;
 }
+
+export interface PostureAnalysis {
+  feedback: {
+    message: string;
+    type: FeedbackType;
+  };
+  kneeAngle: number | null;
+  hipAngle: number | null;
+  newSquatState: SquatState;
+  repComplete: boolean;
+  evaluation: {
+    isGoodForm: boolean;
+    feedback: string;
+    feedbackType: FeedbackType;
+  } | null;
+}

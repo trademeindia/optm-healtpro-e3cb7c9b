@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import * as tf from '@tensorflow/tfjs';
 import { SquatState, FeedbackType } from './types';
-import { DEFAULT_POSE_CONFIG } from './utils';
+import { DEFAULT_POSE_CONFIG } from './utils/index';
 import { usePoseHandler } from './hooks/usePoseHandler';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';

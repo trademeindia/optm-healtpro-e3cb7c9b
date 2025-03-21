@@ -1,6 +1,5 @@
-
 import * as posenet from '@tensorflow-models/posenet';
-import { SquatState, FeedbackType, PostureAnalysis } from './types';
+import { SquatState, FeedbackType } from './types';
 
 // Calculate angle between three points
 export const calculateAngle = (a: posenet.Keypoint, b: posenet.Keypoint, c: posenet.Keypoint): number => {
