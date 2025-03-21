@@ -8,6 +8,7 @@ import { usePoseDetection } from './usePoseDetection';
 import { usePermissionMonitor } from './hooks/usePermissionMonitor';
 import { useVideoStatusMonitor } from './hooks/useVideoStatusMonitor';
 import { useAutoStartCamera } from './hooks/useAutoStartCamera';
+import { useOpenSimAnalysis } from './hooks/useOpenSimAnalysis'; // Add OpenSim hook
 import FeedbackDisplay from './FeedbackDisplay';
 import StatsDisplay from './StatsDisplay';
 import TutorialDialog from './TutorialDialog';
@@ -15,6 +16,7 @@ import PoseRenderer from './PoseRenderer';
 import CameraView from './CameraView';
 import ControlButtons from './ControlButtons';
 import ExerciseSelectionView from './ExerciseSelectionView';
+import BiomechanicalAnalysis from './BiomechanicalAnalysis'; // Import the new component
 import type { CustomFeedback } from './hooks/types';
 
 interface PostureMonitorProps {
@@ -29,6 +31,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   onFinish,
 }) => {
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showBiomechanics, setShowBiomechanics] = useState(false); // Toggle for biomechanical analysis
   
   // Initialize camera with enhanced detection
   const { 
@@ -69,6 +72,31 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     videoReady: videoStatus.isReady
   });
   
+  // Initialize OpenSim analysis
+  const {
+    analysisResult,
+    isAnalyzing,
+    analysisError
+  } = useOpenSimAnalysis({
+    pose,
+    currentSquatState: analysis.currentSquatState,
+    setFeedback: (message, type) => {
+      // Only set feedback when biomechanics view is active
+      if (showBiomechanics) {
+        setCustomFeedback({
+          message,
+          type
+        });
+      }
+    },
+    modelParams: {
+      height: 175, // Example values - in a real app, these would come from user profile
+      weight: 70,
+      age: 30,
+      gender: 'male'
+    }
+  });
+  
   // Override feedback (e.g., for camera permission issues)
   const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
@@ -97,6 +125,11 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
   const handleFinish = () => {
     stopCamera();
     onFinish();
+  };
+  
+  // Toggle biomechanical analysis view
+  const toggleBiomechanics = () => {
+    setShowBiomechanics(prev => !prev);
   };
   
   // Determine which feedback to show (custom overrides from pose detection)
@@ -151,6 +184,15 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             />
           )}
           
+          {/* Togglable biomechanical analysis panel */}
+          {showBiomechanics && (
+            <BiomechanicalAnalysis 
+              analysisResult={analysisResult}
+              isAnalyzing={isAnalyzing}
+              error={analysisError}
+            />
+          )}
+          
           {/* Stats display */}
           <StatsDisplay 
             accuracy={stats.accuracy}
@@ -159,14 +201,29 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
           />
           
           {/* Controls */}
-          <ControlButtons 
-            cameraActive={cameraActive}
-            isModelLoading={isModelLoading}
-            onToggleCamera={toggleCamera}
-            onReset={resetSession}
-            onShowTutorial={() => setShowTutorial(true)}
-            onFinish={handleFinish}
-          />
+          <div className="flex flex-wrap gap-2">
+            <ControlButtons 
+              cameraActive={cameraActive}
+              isModelLoading={isModelLoading}
+              onToggleCamera={toggleCamera}
+              onReset={resetSession}
+              onShowTutorial={() => setShowTutorial(true)}
+              onFinish={handleFinish}
+            />
+            
+            {/* Add biomechanics toggle button */}
+            <button
+              onClick={toggleBiomechanics}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                showBiomechanics 
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+              disabled={isModelLoading || !cameraActive}
+            >
+              {showBiomechanics ? 'Hide Biomechanics' : 'Show Biomechanics'}
+            </button>
+          </div>
           
           <div className="text-xs text-muted-foreground mt-2">
             <p className="flex items-center gap-1">
