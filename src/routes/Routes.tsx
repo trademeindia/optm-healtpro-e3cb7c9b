@@ -7,6 +7,14 @@ import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import OAuthCallback from '@/pages/OAuthCallback';
 import ReportsPage from '@/pages/ReportsPage';
+import AnalyticsPage from '@/pages/AnalyticsPage';
+import PatientReportsPage from '@/pages/PatientReportsPage';
+import AnatomyMapPage from '@/pages/AnatomyMapPage';
+import BiomarkersPage from '@/pages/BiomarkersPage';
+import HealthAppsPage from '@/pages/HealthAppsPage';
+import AppointmentsPage from '@/pages/AppointmentsPage';
+import { AnalysisPage } from '@/pages/analysis';
+import AIAnalysisPage from '@/pages/AIAnalysisPage';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -39,12 +47,87 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
+        {/* Analytics Route */}
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute requiredRole="doctor">
+              <AnalyticsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
         {/* Patient Routes */}
         <Route 
           path="/dashboard/patient" 
           element={
             <ProtectedRoute requiredRole="patient">
               <PatientDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Patient-specific Routes */}
+        <Route 
+          path="/patient-reports" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <PatientReportsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/anatomy-map" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <AnatomyMapPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/biomarkers" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <BiomarkersPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/health-apps" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <HealthAppsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/analysis" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <AnalysisPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/ai-analysis" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <AIAnalysisPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Shared Routes (accessible by multiple roles) */}
+        <Route 
+          path="/appointments" 
+          element={
+            <ProtectedRoute requiredRole="any">
+              <AppointmentsPage />
             </ProtectedRoute>
           } 
         />
@@ -59,7 +142,7 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Reports Route - Added explicit route */}
+        {/* Reports Route */}
         <Route 
           path="/reports" 
           element={

@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
-import { AnalysisPage } from './pages/analysis';
 import AppRoutes from './routes/Routes';
 
 // Handle loading state
