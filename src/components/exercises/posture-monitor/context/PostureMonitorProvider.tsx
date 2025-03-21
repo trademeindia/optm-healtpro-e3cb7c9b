@@ -174,13 +174,18 @@ export const PostureMonitorProvider: React.FC<PostureMonitorProviderProps> = ({
   };
   
   const handleToggleCamera = useCallback(async (): Promise<void> => {
-    const result = toggleCamera();
-    
-    if (result instanceof Promise) {
-      return result;
+    try {
+      const toggleResult = toggleCamera();
+      
+      if (typeof toggleResult === 'object' && toggleResult !== null && 'then' in toggleResult) {
+        return toggleResult as Promise<void>;
+      }
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error toggling camera:', error);
+      return Promise.reject(error);
     }
-    
-    return Promise.resolve();
   }, [toggleCamera]);
   
   const toggleBiomechanics = useCallback(() => {
