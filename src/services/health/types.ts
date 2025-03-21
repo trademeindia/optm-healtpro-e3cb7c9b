@@ -1,6 +1,8 @@
 
 export type HealthMetricType = 'steps' | 'heart_rate' | 'calories' | 'distance' | 'sleep' | 'workout';
 export type TimeRange = 'day' | 'week' | 'month' | 'year';
+export type HealthProvider = 'google_fit' | 'apple_health' | 'fitbit' | 'garmin';
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'retrying';
 
 export interface HealthMetric {
   id: string;

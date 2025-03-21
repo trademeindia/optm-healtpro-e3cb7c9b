@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/auth';
 
 const SettingsHeader: React.FC = () => {
   const { user } = useAuth();
+  // Safe way to extract username without relying on user_metadata
   const userName = user?.email?.split('@')[0] || 'User';
   
   return (

@@ -1,4 +1,3 @@
-
 import { SyncOptions } from '../types';
 import { SyncRetryService } from './syncRetryService';
 import { ProviderSyncService } from './providerSyncService';
@@ -16,7 +15,10 @@ export class HealthSyncService {
 
   constructor() {
     this.syncRetryService = new SyncRetryService();
-    this.providerSyncService = new ProviderSyncService();
+    // Initialize with required provider option
+    this.providerSyncService = new ProviderSyncService({
+      provider: 'google_fit' // Provide a default provider
+    });
   }
 
   /**
