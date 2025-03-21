@@ -108,6 +108,12 @@ const SidebarMenu: React.FC = () => {
       roleAccess: ['patient', 'doctor', 'receptionist'],
     },
     {
+      name: 'OpenSim',
+      href: '/opensim',
+      icon: <Activity className="h-5 w-5" />,
+      roleAccess: ['patient', 'doctor', 'receptionist', 'admin'],
+    },
+    {
       name: 'Settings',
       href: '/settings',
       icon: <Settings className="h-5 w-5" />,

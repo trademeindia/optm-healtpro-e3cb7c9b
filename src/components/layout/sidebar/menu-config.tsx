@@ -28,6 +28,16 @@ export const getDashboardItem = (role: 'doctor' | 'patient' | 'receptionist'): M
   description: 'Overview of dashboard and key metrics'
 });
 
+// Common OpenSim menu item for all roles
+export const getOpenSimItem = (): MenuItem => ({
+  icon: Activity, 
+  label: 'OpenSim', 
+  path: '/opensim',
+  description: 'Manage OpenSim biomechanical analysis settings',
+  badge: 'New',
+  badgeColor: 'blue'
+});
+
 // Doctor specific menu items
 export const getDoctorMenuItems = (): MenuItem[] => [
   getDashboardItem('doctor'),
@@ -55,14 +65,7 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     path: '/appointments',
     description: 'View and manage your appointment schedule'
   },
-  { 
-    icon: Activity, 
-    label: 'OpenSim', 
-    path: '/opensim',
-    description: 'Manage OpenSim biomechanical analysis settings',
-    badge: 'New',
-    badgeColor: 'blue'
-  },
+  getOpenSimItem(),
 ];
 
 // Patient specific menu items
@@ -122,6 +125,7 @@ export const getPatientMenuItems = (): MenuItem[] => [
     badge: '3',
     badgeColor: 'green'
   },
+  getOpenSimItem(), // Add OpenSim to patient menu
 ];
 
 // Receptionist specific menu items
@@ -165,6 +169,7 @@ export const getReceptionistMenuItems = (): MenuItem[] => [
     path: '/forms',
     description: 'Manage patient intake and consent forms'
   },
+  getOpenSimItem(), // Add OpenSim to receptionist menu
 ];
 
 // Bottom menu items used for all roles

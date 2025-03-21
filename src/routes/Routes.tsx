@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -19,6 +18,7 @@ import PatientsPage from '@/pages/patients';
 import SettingsPage from '@/pages/SettingsPage';
 import HelpPage from '@/pages/HelpPage';
 import ExercisePage from '@/pages/exercises/ExercisePage';
+import OpenSimPage from '@/pages/OpenSimPage';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -47,6 +47,16 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredRole="doctor">
               <DoctorDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* OpenSim Route - accessible by all users now */}
+        <Route 
+          path="/opensim" 
+          element={
+            <ProtectedRoute>
+              <OpenSimPage />
             </ProtectedRoute>
           } 
         />
