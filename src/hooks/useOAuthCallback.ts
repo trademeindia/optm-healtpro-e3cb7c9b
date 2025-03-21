@@ -47,7 +47,8 @@ export const useOAuthCallback = () => {
         userRole: user?.role || 'none',
         isLoadingState: isLoading,
         searchParams: Object.fromEntries(searchParams.entries()),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
       });
       
       console.log(`OAuth callback processing: provider=${provider}, code exists=${!!code}, timestamp=${new Date().toISOString()}`);
@@ -76,6 +77,39 @@ export const useOAuthCallback = () => {
           navigate('/patient-dashboard', { replace: true }); // Default dashboard
           return;
         }
+      }
+      
+      // Handle Google Fit connection callback separately
+      // This is for Google Fit OAuth, not user authentication
+      if (searchParams.has('connected') || searchParams.has('error')) {
+        // This is a connection callback, not an auth callback
+        console.log('Detected Google Fit connection callback');
+        
+        // Check if we should redirect to a specific page
+        const redirectUrl = localStorage.getItem('healthAppRedirectUrl');
+        
+        if (redirectUrl) {
+          console.log(`Redirecting to stored URL: ${redirectUrl}`);
+          localStorage.removeItem('healthAppRedirectUrl');
+          
+          // Add the success or error parameter to the redirect URL
+          const url = new URL(redirectUrl);
+          
+          if (searchParams.has('connected')) {
+            url.searchParams.set('connected', 'true');
+          }
+          
+          if (searchParams.has('error')) {
+            url.searchParams.set('error', searchParams.get('error') || '');
+          }
+          
+          navigate(url.toString(), { replace: true });
+          return;
+        }
+        
+        // If no redirect URL, go to health apps page
+        navigate('/health-apps', { replace: true });
+        return;
       }
       
       // Call the handler with the code from search params

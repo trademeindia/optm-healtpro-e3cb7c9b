@@ -37,6 +37,7 @@ export class HealthSyncService {
         // Simulate a delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         this.lastSyncTime = new Date();
+        console.log('Demo user sync completed successfully');
         return true;
       }
       
@@ -45,21 +46,26 @@ export class HealthSyncService {
       if (success) {
         this.lastSyncTime = new Date();
         this.syncAttempts = 0;
+        console.log('Health data sync completed successfully');
         return true;
       } else if (this.syncAttempts < this.MAX_SYNC_ATTEMPTS) {
         // Retry sync with exponential backoff
+        console.log(`Sync failed, attempt ${this.syncAttempts + 1}/${this.MAX_SYNC_ATTEMPTS}`);
         return await this.retrySync(userId, options);
       }
       
+      console.error('Health data sync failed after maximum attempts');
       return false;
     } catch (error) {
       console.error('Error syncing health data:', error);
       
       // Retry on error if we haven't exceeded max attempts
       if (this.syncAttempts < this.MAX_SYNC_ATTEMPTS) {
+        console.log(`Sync error, retrying (attempt ${this.syncAttempts + 1}/${this.MAX_SYNC_ATTEMPTS})`);
         return await this.retrySync(userId, options);
       }
       
+      console.error('Health data sync failed after maximum attempts due to errors');
       return false;
     } finally {
       this.isSyncing = false;
@@ -85,13 +91,16 @@ export class HealthSyncService {
    */
   private async performSync(userId: string, options: SyncOptions = {}): Promise<boolean> {
     try {
+      console.log(`Starting health data sync for user ${userId}`);
       // Get all connected fitness providers
       const { data: connections, error } = await supabase
         .from('fitness_connections')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('is_connected', true);
         
       if (error) {
+        console.error('Error fetching fitness connections:', error);
         throw error;
       }
       
@@ -100,14 +109,25 @@ export class HealthSyncService {
         return false;
       }
       
+      console.log(`Found ${connections.length} connected fitness providers`);
       let syncSuccessful = false;
       
       // Sync data from each connected provider
       for (const connection of connections) {
         if (connection.provider === 'google_fit') {
           console.log(`Syncing Google Fit data for user ${userId}`);
-          const success = await this.syncGoogleFitData(userId, connection.access_token, options);
+          const success = await this.syncGoogleFitData(
+            userId, 
+            connection.access_token, 
+            options
+          );
           syncSuccessful = syncSuccessful || success;
+          
+          if (success) {
+            console.log('Google Fit data sync successful');
+          } else {
+            console.error('Google Fit data sync failed');
+          }
         }
       }
       
@@ -154,7 +174,11 @@ export class HealthSyncService {
   ): Promise<boolean> {
     try {
       console.log(`Fetching Google Fit data for user ${userId}`);
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/fetch-google-fit-data`, {
+      
+      // Get the Supabase URL from environment variable or use the default
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,22 +191,47 @@ export class HealthSyncService {
         }),
       });
 
+      // Handle token refresh
+      if (response.status === 401) {
+        const errorData = await response.json();
+        
+        if (errorData.refreshed) {
+          console.log("Token refreshed, retrying Google Fit sync");
+          
+          if (!options.silent) {
+            toast.info("Google Fit connection refreshed. Syncing data again...");
+          }
+          
+          // Wait a moment to ensure token is updated in the system
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Retry sync with refreshed token
+          return this.syncAllHealthData(userId, options);
+        } else {
+          console.error('Google Fit authentication failed:', errorData.error);
+          
+          if (!options.silent) {
+            toast.error("Google Fit authentication expired", {
+              description: "Please reconnect your Google Fit account."
+            });
+          }
+          
+          return false;
+        }
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Error response from Google Fit API:', errorData);
-        
-        // Handle token refresh specifically
-        if (response.status === 401 && errorData.refreshed) {
-          toast.info("Google Fit connection refreshed. Syncing data again...");
-          // Retry after token refresh
-          return this.syncAllHealthData(userId, options);
-        }
         
         throw new Error(`Error fetching Google Fit data: ${errorData.error || response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('Successfully fetched Google Fit data:', data);
+      console.log('Successfully fetched Google Fit data');
+      
+      // Store the data in the database or process it as needed
+      // This is placeholder code - in a real app, you would store the data in Supabase
       
       // Update last sync time in the database
       await supabase
@@ -194,6 +243,14 @@ export class HealthSyncService {
       return true;
     } catch (error) {
       console.error('Error syncing Google Fit data:', error);
+      
+      // Show a toast notification if not in silent mode
+      if (!options.silent) {
+        toast.error("Failed to sync Google Fit data", {
+          description: error.message || "Please try again later."
+        });
+      }
+      
       return false;
     }
   }

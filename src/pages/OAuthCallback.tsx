@@ -2,8 +2,10 @@
 import React, { useEffect } from 'react';
 import OAuthErrorDisplay from '@/components/auth/oauth/OAuthErrorDisplay';
 import OAuthLoadingState from '@/components/auth/oauth/OAuthLoadingState';
+import OAuthDebugInfo from '@/components/auth/oauth/OAuthDebugInfo';
 import { useOAuthCallback } from '@/hooks/useOAuthCallback';
 import { Card, CardContent } from '@/components/ui/card';
+import { useSearchParams } from 'react-router-dom';
 
 const OAuthCallback: React.FC = () => {
   const {
@@ -15,6 +17,9 @@ const OAuthCallback: React.FC = () => {
     handleRetry,
     navigate
   } = useOAuthCallback();
+  
+  const [searchParams] = useSearchParams();
+  const isDebugMode = searchParams.get('debug') === 'true';
 
   // Add a backup fallback redirect
   useEffect(() => {
@@ -48,6 +53,9 @@ const OAuthCallback: React.FC = () => {
               retryCount={retryCount} 
             />
           )}
+          
+          {/* Debug info (only shown in debug mode) */}
+          {isDebugMode && <OAuthDebugInfo debugInfo={debugInfo} />}
         </CardContent>
       </Card>
     </div>

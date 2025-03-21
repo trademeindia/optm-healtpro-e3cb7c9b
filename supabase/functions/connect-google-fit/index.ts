@@ -16,7 +16,7 @@ const REDIRECT_URI = Deno.env.get("SUPABASE_URL") ?
 // Frontend URL for redirecting on error
 const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
 
-// Google Fit scopes
+// Google Fit scopes - these are the permissions we're requesting
 const SCOPES = [
   "https://www.googleapis.com/auth/fitness.activity.read",
   "https://www.googleapis.com/auth/fitness.body.read",
@@ -32,6 +32,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Google Fit connection function invoked");
+    
     // Get user ID from query params
     const url = new URL(req.url);
     const userId = url.searchParams.get("userId");

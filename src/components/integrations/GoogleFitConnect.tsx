@@ -113,8 +113,20 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       localStorage.setItem('healthAppRedirectUrl', window.location.href);
       localStorage.setItem('googleFitConnectTime', Date.now().toString());
       
-      // Use the edge function directly via Supabase
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/connect-google-fit`;
+      // Check if the current user has a session
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        toast.error("Authentication session expired", {
+          description: "Please sign in again to connect Google Fit."
+        });
+        setIsConnecting(false);
+        setConnectStatus('idle');
+        return;
+      }
+      
+      // Get the Supabase URL from environment variable or use the default
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
+      const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
       
       console.log(`Initiating Google Fit connection for user: ${user.id}`);
       
@@ -123,14 +135,9 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
         description: "You'll be taken to Google to authorize access to your fitness data."
       });
       
-      // Create a popup window for the OAuth flow (optional, can use full page redirection instead)
-      // window.location.href = `${functionUrl}?userId=${user.id}`;
-      
       // For better UX, directly navigate to the OAuth URL
       window.location.href = `${functionUrl}?userId=${user.id}`;
       
-      // Note: We won't reach the code below if using full page redirection
-      // The component will unmount and remount when the user returns
     } catch (error) {
       console.error('Error connecting to Google Fit:', error);
       setConnectStatus('retrying');
@@ -142,7 +149,8 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       // Wait 2 seconds and retry once automatically
       setTimeout(async () => {
         try {
-          const functionUrl = `${import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co"}/functions/v1/connect-google-fit`;
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
+          const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
           
           toast.info("Retrying connection to Google Fit...");
           window.location.href = `${functionUrl}?userId=${user.id}`;

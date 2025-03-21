@@ -98,18 +98,49 @@ serve(async (req) => {
 
     // Store tokens in Supabase
     console.log(`Storing tokens for user: ${userId}`);
-    const { error: upsertError } = await supabase
+
+    // First, check if the user has an existing connection
+    const { data: existingConnection, error: fetchError } = await supabase
       .from("fitness_connections")
-      .upsert({
-        user_id: userId,
-        provider: "google_fit",
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        scope: tokenData.scope,
-        expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
-        last_sync: new Date().toISOString(),
-        is_connected: true
-      });
+      .select("*")
+      .eq("user_id", userId)
+      .eq("provider", "google_fit")
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 is "not found" error
+      console.error(`Error checking existing connection: ${fetchError.message}`);
+      return redirectWithError(`Database error: ${fetchError.message}`);
+    }
+
+    // Create or update the connection
+    const connectionData = {
+      user_id: userId,
+      provider: "google_fit",
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token || (existingConnection?.refresh_token || null), // Keep existing refresh token if not provided
+      scope: tokenData.scope,
+      expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+      last_sync: new Date().toISOString(),
+      is_connected: true
+    };
+
+    let dbOperation;
+    if (existingConnection) {
+      // Update existing connection
+      console.log(`Updating existing connection for user: ${userId}`);
+      dbOperation = supabase
+        .from("fitness_connections")
+        .update(connectionData)
+        .eq("id", existingConnection.id);
+    } else {
+      // Insert new connection
+      console.log(`Creating new connection for user: ${userId}`);
+      dbOperation = supabase
+        .from("fitness_connections")
+        .insert(connectionData);
+    }
+
+    const { error: upsertError } = await dbOperation;
 
     if (upsertError) {
       console.error(`Error storing tokens: ${upsertError.message}`);
