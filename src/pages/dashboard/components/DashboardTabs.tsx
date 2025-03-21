@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Users, FileText, Bell } from 'lucide-react';
+import { Calendar, Users, FileText, Bell, Activity } from 'lucide-react';
 import PatientsTab from './tabs/PatientsTab';
 import CalendarTab from './tabs/CalendarTab';
 import ReportsTab from './tabs/ReportsTab';
 import RemindersTab from './tabs/RemindersTab';
+import OpenSimSettingsTab from '@/components/dashboard/OpenSimSettingsTab';
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -32,7 +33,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-4 mb-6">
+      <TabsList className="grid grid-cols-5 mb-6">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <FileText className="h-4 w-4" />
           <span className="hidden sm:inline-block">Overview</span>
@@ -48,6 +49,10 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
         <TabsTrigger value="reminders" className="flex items-center gap-2">
           <Bell className="h-4 w-4" />
           <span className="hidden sm:inline-block">Reminders</span>
+        </TabsTrigger>
+        <TabsTrigger value="opensim" className="flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          <span className="hidden sm:inline-block">OpenSim</span>
         </TabsTrigger>
       </TabsList>
 
@@ -71,6 +76,10 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
       <TabsContent value="reminders" className="mt-0">
         <RemindersTab />
+      </TabsContent>
+      
+      <TabsContent value="opensim" className="mt-0">
+        <OpenSimSettingsTab />
       </TabsContent>
     </Tabs>
   );

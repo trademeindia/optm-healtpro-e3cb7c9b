@@ -55,6 +55,14 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     path: '/appointments',
     description: 'View and manage your appointment schedule'
   },
+  { 
+    icon: Activity, 
+    label: 'OpenSim', 
+    path: '/opensim',
+    description: 'Manage OpenSim biomechanical analysis settings',
+    badge: 'New',
+    badgeColor: 'blue'
+  },
 ];
 
 // Patient specific menu items

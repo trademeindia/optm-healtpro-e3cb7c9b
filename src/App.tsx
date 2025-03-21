@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
+import { Routes, Route } from 'react-router-dom';
 import AppRoutes from './routes/Routes';
+import OpenSimPage from './pages/OpenSimPage';
 
 // Handle loading state
 const Loading = () => (
@@ -11,7 +12,7 @@ const Loading = () => (
   </div>
 );
 
-function App() {
+const App = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
 
@@ -34,10 +35,13 @@ function App() {
       disableTransitionOnChange
     >
       <div className="app-container full-height-layout">
-        <AppRoutes />
+        <Routes>
+          <Route path="/" element={<AppRoutes />} />
+          <Route path="/opensim" element={<OpenSimPage />} />
+        </Routes>
       </div>
     </ThemeProvider>
   );
-}
+};
 
 export default App;
