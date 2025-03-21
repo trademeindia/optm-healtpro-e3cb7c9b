@@ -67,7 +67,7 @@ export class ProviderSyncService {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Direct retry with the newly refreshed token - avoid recursive call
-          return await this.performRetryAfterTokenRefresh(userId, accessToken, options, supabaseUrl);
+          return await this.doRetrySync(userId, accessToken, options, supabaseUrl);
         } else {
           console.error('Google Fit authentication failed:', errorData.error);
           
@@ -115,9 +115,9 @@ export class ProviderSyncService {
 
   /**
    * Helper method to retry sync after token refresh
-   * Breaking out this function to avoid recursive call that caused infinite type instantiation
+   * Renamed to avoid type recursion issues
    */
-  private async performRetryAfterTokenRefresh(
+  private async doRetrySync(
     userId: string,
     accessToken: string,
     options: SyncOptions,
