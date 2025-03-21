@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { SyncOptions } from '@/services/health/types';
 import { healthDataService } from '@/services/health/metricsService';
-import { healthSyncService } from '@/services/health/syncService';
+import { healthSyncService } from '@/services/health/sync';
 import { toast } from 'sonner';
 
 export const useSyncData = (userId: string | undefined) => {

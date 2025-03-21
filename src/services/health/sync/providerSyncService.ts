@@ -66,27 +66,8 @@ export class ProviderSyncService {
           // Wait a moment to ensure token is updated in the system
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Direct retry with the newly refreshed token
-          const retryResponse = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId,
-              accessToken,
-              timeRange: options.timeRange || 'week',
-              metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
-            }),
-          });
-          
-          if (!retryResponse.ok) {
-            const retryErrorData = await retryResponse.json();
-            console.error('Error response from Google Fit API after token refresh:', retryErrorData);
-            throw new Error(`Error fetching Google Fit data after token refresh: ${retryErrorData.error || retryResponse.statusText}`);
-          }
-          
-          return true;
+          // Direct retry with the newly refreshed token - avoid recursive call
+          return await this.retryAfterTokenRefresh(userId, accessToken, options, supabaseUrl);
         } else {
           console.error('Google Fit authentication failed:', errorData.error);
           
@@ -130,5 +111,37 @@ export class ProviderSyncService {
       
       return false;
     }
+  }
+
+  /**
+   * Helper method to retry sync after token refresh
+   * Breaking out this function to avoid recursive call that caused infinite type instantiation
+   */
+  private async retryAfterTokenRefresh(
+    userId: string,
+    accessToken: string,
+    options: SyncOptions,
+    supabaseUrl: string
+  ): Promise<boolean> {
+    const retryResponse = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        accessToken,
+        timeRange: options.timeRange || 'week',
+        metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
+      }),
+    });
+    
+    if (!retryResponse.ok) {
+      const retryErrorData = await retryResponse.json();
+      console.error('Error response from Google Fit API after token refresh:', retryErrorData);
+      throw new Error(`Error fetching Google Fit data after token refresh: ${retryErrorData.error || retryResponse.statusText}`);
+    }
+    
+    return true;
   }
 }
