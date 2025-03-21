@@ -15,6 +15,7 @@ import HealthAppsPage from '@/pages/HealthAppsPage';
 import AppointmentsPage from '@/pages/AppointmentsPage';
 import { AnalysisPage } from '@/pages/analysis';
 import AIAnalysisPage from '@/pages/AIAnalysisPage';
+import PatientsPage from '@/pages/patients'; // Import the PatientsPage component
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -53,6 +54,16 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredRole="doctor">
               <AnalyticsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Patients Route */}
+        <Route 
+          path="/patients" 
+          element={
+            <ProtectedRoute requiredRole="doctor,receptionist">
+              <PatientsPage />
             </ProtectedRoute>
           } 
         />
