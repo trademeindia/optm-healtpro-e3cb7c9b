@@ -12,9 +12,10 @@ interface GoogleLoginButtonProps {
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onLogin, disabled }) => {
   const handleLogin = async () => {
     try {
+      console.log("Starting Google login process");
       toast.info("Connecting to Google...");
       await onLogin();
-      // The redirect happens in the onLogin function, so we don't need to do anything else here
+      // The redirect happens in the onLogin function
     } catch (error) {
       console.error('Google login error:', error);
       toast.error('Failed to connect to Google. Please try again.');

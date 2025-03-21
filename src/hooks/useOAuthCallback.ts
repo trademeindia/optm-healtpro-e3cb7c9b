@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logFitnessSync } from '@/utils/debugUtils';
+import { useAuth } from '@/contexts/auth';
 
 interface UseOAuthCallbackResult {
   isLoading: boolean;
@@ -33,6 +34,7 @@ export const useOAuthCallback = (): UseOAuthCallbackResult => {
   
   const navigate = useNavigate();
   const location = useLocation();
+  const { handleOAuthCallback: authHandleOAuthCallback } = useAuth();
   
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
@@ -88,39 +90,60 @@ export const useOAuthCallback = (): UseOAuthCallbackResult => {
       
       setCode(code);
       
+      // Try to determine provider from URL or state parameter
+      let extractedProvider = 'google'; // Default to google if we can't determine
+      
       // Process the state parameter to extract provider and user ID
       if (state) {
         setState(state);
         
-        // Expected format: google_fit_userId or other_provider_userId
+        // Expected format: provider_userId or provider_type_userId
         const stateParts = state.split('_');
         
-        if (stateParts.length >= 3) {
-          // For state in format: "google_fit_user123"
-          // provider would be "google_fit"
-          const extractedProvider = `${stateParts[0]}_${stateParts[1]}`;
-          // userId would be "user123"
-          const extractedUserId = stateParts.slice(2).join('_');
-          
-          setProvider(extractedProvider);
-          setUserId(extractedUserId);
-          
-          logFitnessSync(extractedProvider, 'started', { code, userId: extractedUserId });
-          
-          // Handle Google Fit
-          if (extractedProvider === 'google_fit') {
-            // Exchange the code for tokens on the server
-            await exchangeCodeForTokens(code, extractedUserId);
+        if (stateParts.length >= 2) {
+          // If we have at least 2 parts, assume first part is provider
+          if (stateParts[0] === 'google') {
+            extractedProvider = 'google';
+            
+            // If we have 3+ parts (e.g. "google_fit_user123"),
+            // provider would be "google" for auth purposes
+            const extractedUserId = stateParts.length >= 3 
+              ? stateParts.slice(2).join('_') 
+              : stateParts[1];
+              
+            setUserId(extractedUserId);
+            
+            // For Google Fit, handle differently
+            if (stateParts.length >= 2 && stateParts[1] === 'fit') {
+              setProvider('google_fit');
+              logFitnessSync('google_fit', 'started', { code, userId: extractedUserId });
+              
+              // Exchange the code for tokens on the server for Google Fit
+              await exchangeCodeForTokens(code, extractedUserId);
+              return;
+            }
           }
-        } else {
-          setError('Invalid state parameter format');
-          setErrorDetails('The state parameter format is not as expected');
-          setIsVerifying(false);
         }
-      } else {
-        setError('No state parameter received');
-        setErrorDetails('The OAuth flow did not include a state parameter for verification');
+      }
+      
+      setProvider(extractedProvider);
+      
+      // Handle regular OAuth (not Google Fit)
+      console.log(`Handling OAuth callback for provider: ${extractedProvider}`);
+      try {
+        // Pass to auth context for processing
+        await authHandleOAuthCallback(extractedProvider, code);
         setIsVerifying(false);
+        
+        // Success is handled by auth context which should redirect
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error during OAuth processing';
+        console.error('Error in auth callback handler:', err);
+        setError(errorMessage);
+        setErrorDetails('Error while processing authentication. Please try again.');
+        setIsVerifying(false);
+        toast.error(`Authentication error: ${errorMessage}`);
+        setTimeout(() => navigate('/login'), 3000);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during OAuth processing';
@@ -132,6 +155,7 @@ export const useOAuthCallback = (): UseOAuthCallbackResult => {
       setIsVerifying(false);
       
       toast.error(`Authentication error: ${errorMessage}`);
+      setTimeout(() => navigate('/login'), 3000);
     } finally {
       setIsLoading(false);
     }
