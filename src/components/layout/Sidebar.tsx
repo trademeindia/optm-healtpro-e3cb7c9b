@@ -27,6 +27,7 @@ const Sidebar: React.FC = () => {
   };
 
   const handleNavigate = (path: string) => {
+    console.log(`Sidebar navigating to: ${path}`);
     navigate(path);
     if (isMobile) {
       setIsOpen(false);

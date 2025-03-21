@@ -39,6 +39,7 @@ export const useAuthSession = () => {
               
               setUser(completeUser);
               setIsLoading(false);
+              console.log('Successfully set demo user:', completeUser.email, 'with role:', completeUser.role);
               return;
             }
           } catch (e) {

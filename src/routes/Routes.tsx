@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -19,11 +20,11 @@ import SettingsPage from '@/pages/SettingsPage';
 import HelpPage from '@/pages/HelpPage';
 import ExercisePage from '@/pages/exercises/ExercisePage';
 import OpenSimPage from '@/pages/OpenSimPage';
+import PatientDashboard from '@/pages/PatientDashboard';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
 const ReceptionistDashboard = lazy(() => import('@/pages/dashboard/ReceptionistDashboard'));
-const PatientDashboard = lazy(() => import('@/pages/PatientDashboard'));
 
 // Loading Component
 const Loading = () => (
@@ -33,6 +34,8 @@ const Loading = () => (
 );
 
 const AppRoutes: React.FC = () => {
+  console.log("AppRoutes component rendering");
+  
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
@@ -51,7 +54,17 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* OpenSim Route - accessible by all users now */}
+        {/* Patient Routes */}
+        <Route 
+          path="/dashboard/patient" 
+          element={
+            <ProtectedRoute requiredRole="patient">
+              <PatientDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* OpenSim Route - accessible by all users */}
         <Route 
           path="/opensim" 
           element={
@@ -81,12 +94,12 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Patient Routes */}
+        {/* Receptionist Routes */}
         <Route 
-          path="/dashboard/patient" 
+          path="/dashboard/receptionist" 
           element={
-            <ProtectedRoute requiredRole="patient">
-              <PatientDashboard />
+            <ProtectedRoute requiredRole="receptionist">
+              <ReceptionistDashboard />
             </ProtectedRoute>
           } 
         />
@@ -104,7 +117,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/anatomy-map" 
           element={
-            <ProtectedRoute requiredRole="patient">
+            <ProtectedRoute requiredRole={["patient", "doctor"]}>
               <AnatomyMapPage />
             </ProtectedRoute>
           } 
@@ -113,7 +126,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/biomarkers" 
           element={
-            <ProtectedRoute requiredRole="patient">
+            <ProtectedRoute requiredRole={["patient", "doctor"]}>
               <BiomarkersPage />
             </ProtectedRoute>
           } 
@@ -131,7 +144,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/analysis" 
           element={
-            <ProtectedRoute requiredRole="patient">
+            <ProtectedRoute requiredRole={["patient", "doctor"]}>
               <AnalysisPage />
             </ProtectedRoute>
           } 
@@ -140,7 +153,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/ai-analysis" 
           element={
-            <ProtectedRoute requiredRole="patient">
+            <ProtectedRoute requiredRole={["patient", "doctor"]}>
               <AIAnalysisPage />
             </ProtectedRoute>
           } 
@@ -155,21 +168,12 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* New Settings and Help Routes */}
+        {/* Reports Route */}
         <Route 
-          path="/settings" 
+          path="/reports" 
           element={
-            <ProtectedRoute>
-              <SettingsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/help" 
-          element={
-            <ProtectedRoute>
-              <HelpPage />
+            <ProtectedRoute requiredRole="doctor">
+              <ReportsPage />
             </ProtectedRoute>
           } 
         />
@@ -184,22 +188,21 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Receptionist Routes */}
+        {/* Settings and Help Routes */}
         <Route 
-          path="/dashboard/receptionist" 
+          path="/settings" 
           element={
-            <ProtectedRoute requiredRole="receptionist">
-              <ReceptionistDashboard />
+            <ProtectedRoute>
+              <SettingsPage />
             </ProtectedRoute>
           } 
         />
         
-        {/* Reports Route */}
         <Route 
-          path="/reports" 
+          path="/help" 
           element={
-            <ProtectedRoute requiredRole="doctor">
-              <ReportsPage />
+            <ProtectedRoute>
+              <HelpPage />
             </ProtectedRoute>
           } 
         />

@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AppRoutes from './routes/Routes';
-import OpenSimPage from './pages/OpenSimPage';
+import { Toaster } from "./components/ui/sonner";
 
 // Handle loading state
 const Loading = () => (
@@ -35,10 +36,8 @@ const App = () => {
       disableTransitionOnChange
     >
       <div className="app-container full-height-layout">
-        <Routes>
-          <Route path="/" element={<AppRoutes />} />
-          <Route path="/opensim" element={<OpenSimPage />} />
-        </Routes>
+        <AppRoutes />
+        <Toaster position="top-right" />
       </div>
     </ThemeProvider>
   );
