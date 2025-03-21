@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HelpCircle, MessageCircle, FileText, Mail, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 const HelpPage: React.FC = () => {
   return (
@@ -181,10 +182,10 @@ const HelpPage: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Message</label>
-                        <textarea 
-                          className="w-full min-h-[120px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        <Textarea 
+                          className="min-h-[120px]"
                           placeholder="Describe your issue or question"
-                        ></textarea>
+                        />
                       </div>
                       <Button className="w-full">Submit Support Request</Button>
                     </div>

@@ -12,6 +12,11 @@ interface GoogleFitApiResponse {
   statusText?: string;
 }
 
+// Define a separate type for token refresh status to avoid recursion
+interface TokenRefreshStatus {
+  refreshed: boolean;
+}
+
 /**
  * Service for handling provider-specific sync operations
  */
@@ -62,7 +67,10 @@ export class ProviderSyncService {
           .eq('provider', 'google_fit');
           
         return true;
-      } else if (result.status === 401 && result.data?.refreshed) {
+      } 
+      
+      // Handle token refresh case
+      if (result.status === 401 && result.data && result.data.refreshed === true) {
         console.log("Token refreshed, retrying Google Fit sync");
         
         if (!options.silent) {
@@ -72,7 +80,7 @@ export class ProviderSyncService {
         // Wait a moment to ensure token is updated in the system
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Retry with a new request after token refresh
+        // Retry with a new request after token refresh - with no recursive type dependency
         const retryResult = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
         
         if (!retryResult.success) {
@@ -81,7 +89,10 @@ export class ProviderSyncService {
         }
         
         return true;
-      } else if (result.status === 401) {
+      } 
+      
+      // Handle authentication failure
+      if (result.status === 401) {
         console.error('Google Fit authentication failed:', result.error);
         
         if (!options.silent) {
@@ -91,10 +102,11 @@ export class ProviderSyncService {
         }
         
         return false;
-      } else {
-        console.error('Error response from Google Fit API:', result.error);
-        throw new Error(`Error fetching Google Fit data: ${result.error || result.statusText}`);
-      }
+      } 
+      
+      // Handle other errors
+      console.error('Error response from Google Fit API:', result.error);
+      throw new Error(`Error fetching Google Fit data: ${result.error || result.statusText}`);
     } catch (error) {
       console.error('Error syncing Google Fit data:', error);
       
