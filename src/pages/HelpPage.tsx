@@ -114,7 +114,7 @@ const HelpPage: React.FC = () => {
                     <div className="border-b pb-3">
                       <h3 className="font-medium mb-1">Can I export my health data?</h3>
                       <p className="text-sm text-muted-foreground">
-                        Yes, you can export your data in the Settings > Privacy section.
+                        Yes, you can export your data in the Settings &gt; Privacy section.
                       </p>
                     </div>
                   </CardContent>
