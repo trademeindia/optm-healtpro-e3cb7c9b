@@ -131,6 +131,11 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     onFinish();
   };
   
+  // Wrapper for toggleCamera to ensure it returns a Promise
+  const handleToggleCamera = async () => {
+    await toggleCamera();
+  };
+  
   // Toggle biomechanical analysis view
   const toggleBiomechanics = () => {
     setShowBiomechanics(prev => !prev);
@@ -207,7 +212,7 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             <ControlButtons 
               cameraActive={cameraActive}
               isModelLoading={isModelLoading}
-              onToggleCamera={toggleCamera}
+              onToggleCamera={handleToggleCamera}
               onReset={resetSession}
               onShowTutorial={() => setShowTutorial(true)}
               onFinish={handleFinish}
