@@ -1,12 +1,12 @@
 
 import { useEffect } from 'react';
 import { FeedbackType } from '../types';
-import { CustomFeedback } from './types';
+import type { CustomFeedback } from './types';
 
 interface UseAutoStartCameraProps {
   cameraActive: boolean;
-  permission: 'granted' | 'denied' | 'prompt';
-  toggleCamera: () => Promise<void>;
+  permission: PermissionState | null;
+  toggleCamera: () => void;
   setCustomFeedback: (feedback: CustomFeedback | null) => void;
 }
 
@@ -16,30 +16,21 @@ export const useAutoStartCamera = ({
   toggleCamera,
   setCustomFeedback
 }: UseAutoStartCameraProps) => {
-  // Auto-start camera when component mounts if permission is granted
+  // Auto-start camera if permission is already granted
   useEffect(() => {
-    let mounted = true;
-    
-    const startCameraIfPermitted = async () => {
-      if (!cameraActive && permission === 'granted' && mounted) {
-        try {
-          await toggleCamera();
-        } catch (error) {
-          console.error('Failed to auto-start camera:', error);
-          if (mounted) {
-            setCustomFeedback({
-              message: "Could not start camera automatically. Please try the camera button.",
-              type: FeedbackType.WARNING
-            });
-          }
-        }
-      }
-    };
-    
-    startCameraIfPermitted();
-    
-    return () => {
-      mounted = false;
-    };
-  }, [permission]); // Only depend on permission, not cameraActive which changes during the effect
+    // Only auto-start if we have explicit permission
+    if (permission === 'granted' && !cameraActive) {
+      setCustomFeedback({
+        message: "Starting camera automatically...",
+        type: FeedbackType.INFO
+      });
+      
+      // Small delay to avoid race conditions
+      const timer = setTimeout(() => {
+        toggleCamera();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [permission, cameraActive, toggleCamera, setCustomFeedback]);
 };

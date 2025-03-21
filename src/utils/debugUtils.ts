@@ -50,18 +50,3 @@ export const isValidRoute = (path: string): boolean => {
 
   return validRoutes.includes(path);
 };
-
-// Debug OpenSim analysis
-export const logOpenSimAnalysis = (exerciseType: string, state: string, result: any) => {
-  console.log(`[OPENSIM] Analysis for ${exerciseType} in state ${state}:`, result);
-};
-
-// Track exercise performance
-export const logExercisePerformance = (exerciseName: string, metrics: Record<string, any>) => {
-  console.log(`[EXERCISE] ${exerciseName} performance:`, metrics);
-};
-
-// Debug pose detection issues
-export const logPoseDetectionIssue = (issue: string, details?: any) => {
-  console.error(`[POSE DETECTION] ${issue}`, details ? details : '');
-};
