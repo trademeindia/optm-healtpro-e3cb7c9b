@@ -62,7 +62,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/patients" 
           element={
-            <ProtectedRoute requiredRole="doctor,receptionist">
+            <ProtectedRoute requiredRole={["doctor", "receptionist"]}>
               <PatientsPage />
             </ProtectedRoute>
           } 

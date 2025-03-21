@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: UserRole;
+  requiredRole?: UserRole | UserRole[];
   resourceType?: string;
   action?: string;
   resourceId?: string;
@@ -84,15 +84,37 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check for role-based access if required
-  if (requiredRole && user && !hasMinimumRoleLevel(user.role, requiredRole)) {
-    return (
-      <AccessDenied 
-        title="Insufficient Permissions"
-        description={`You need ${requiredRole} privileges to access this page.`}
-        redirectPath="/"
-        redirectLabel="Back to Home"
-      />
-    );
+  if (requiredRole && user) {
+    // Handle array of roles
+    if (Array.isArray(requiredRole)) {
+      // Check if user has any of the required roles
+      const hasRequiredRole = requiredRole.some(role => 
+        hasMinimumRoleLevel(user.role, role)
+      );
+      
+      if (!hasRequiredRole) {
+        return (
+          <AccessDenied 
+            title="Insufficient Permissions"
+            description={`You need ${requiredRole.join(' or ')} privileges to access this page.`}
+            redirectPath="/"
+            redirectLabel="Back to Home"
+          />
+        );
+      }
+    } else {
+      // Single role check (original behavior)
+      if (!hasMinimumRoleLevel(user.role, requiredRole)) {
+        return (
+          <AccessDenied 
+            title="Insufficient Permissions"
+            description={`You need ${requiredRole} privileges to access this page.`}
+            redirectPath="/"
+            redirectLabel="Back to Home"
+          />
+        );
+      }
+    }
   }
 
   // Check for specific permissions on resources if required

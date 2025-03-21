@@ -116,6 +116,7 @@ export class HealthSyncService {
       for (const connection of connections) {
         if (connection.provider === 'google_fit') {
           console.log(`Syncing Google Fit data for user ${userId}`);
+          // Fixed: Removed recursive call by not passing the syncAllHealthData method
           const success = await this.syncGoogleFitData(
             userId, 
             connection.access_token, 
@@ -205,8 +206,28 @@ export class HealthSyncService {
           // Wait a moment to ensure token is updated in the system
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Retry sync with refreshed token
-          return this.syncAllHealthData(userId, options);
+          // Fixed: Use a direct retry instead of a recursive call
+          // This will retry the sync once after a token refresh
+          const retryResponse = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId,
+              accessToken,
+              timeRange: options.timeRange || 'week',
+              metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
+            }),
+          });
+          
+          if (!retryResponse.ok) {
+            const retryErrorData = await retryResponse.json();
+            console.error('Error response from Google Fit API after token refresh:', retryErrorData);
+            throw new Error(`Error fetching Google Fit data after token refresh: ${retryErrorData.error || retryResponse.statusText}`);
+          }
+          
+          return true;
         } else {
           console.error('Google Fit authentication failed:', errorData.error);
           
@@ -229,9 +250,6 @@ export class HealthSyncService {
 
       const data = await response.json();
       console.log('Successfully fetched Google Fit data');
-      
-      // Store the data in the database or process it as needed
-      // This is placeholder code - in a real app, you would store the data in Supabase
       
       // Update last sync time in the database
       await supabase
