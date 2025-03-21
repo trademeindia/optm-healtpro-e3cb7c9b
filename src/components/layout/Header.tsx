@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={cn(
-      "w-full h-16 flex items-center justify-between px-4 md:px-6 border-b sticky top-0 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm",
+      "w-full h-16 flex items-center justify-between px-4 md:px-6 border-b sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm",
       className
     )}>
       <div className="flex items-center gap-2">

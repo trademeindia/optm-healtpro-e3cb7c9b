@@ -71,9 +71,9 @@ const Sidebar: React.FC = () => {
         className={`
           bg-card border-r border-border
           flex flex-col h-screen transition-all duration-300 ease-in-out overflow-hidden
-          fixed lg:relative z-40
+          fixed lg:relative z-50
           ${isOpen ? 'w-64' : 'w-0 lg:w-16'}
-          ${isMobile ? (isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full') : 'translate-x-0'}
+          ${isMobile ? (isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0') : 'translate-x-0'}
         `}
       >
         <div className="flex-1 flex flex-col h-full pt-6 pb-4">
@@ -108,7 +108,7 @@ const Sidebar: React.FC = () => {
       {/* Overlay for mobile */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />

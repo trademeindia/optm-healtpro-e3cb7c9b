@@ -25,6 +25,8 @@ export const useSidebarResponsive = () => {
   const toggleSidebar = useCallback(() => {
     setIsOpen(prev => {
       const newState = !prev;
+      
+      // Only save state to localStorage on desktop
       if (!isMobile) {
         if (newState) {
           localStorage.removeItem('sidebar-collapsed');
@@ -32,6 +34,8 @@ export const useSidebarResponsive = () => {
           localStorage.setItem('sidebar-collapsed', 'true');
         }
       }
+      
+      console.log(`Toggling sidebar: ${prev} → ${newState}, isMobile: ${isMobile}`);
       return newState;
     });
   }, [isMobile]);
