@@ -3,6 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SyncOptions } from '../types';
 
+// Define the response type for Google Fit API calls
+interface GoogleFitApiResponse {
+  status: number;
+  success: boolean;
+  data?: any;
+  error?: string;
+  statusText?: string;
+}
+
 /**
  * Service for handling provider-specific sync operations
  */
@@ -40,7 +49,7 @@ export class ProviderSyncService {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
       
       // First attempt to fetch data
-      const result = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
+      const result = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
       
       if (result.success) {
         console.log('Successfully fetched Google Fit data');
@@ -63,8 +72,8 @@ export class ProviderSyncService {
         // Wait a moment to ensure token is updated in the system
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Retry with a new request (but don't get into a potential infinite loop)
-        const retryResult = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
+        // Retry with a new request after token refresh
+        const retryResult = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
         
         if (!retryResult.success) {
           console.error('Error response from Google Fit API after token refresh:', retryResult.error);
@@ -104,18 +113,12 @@ export class ProviderSyncService {
    * Execute the fetch request to Google Fit API
    * This method handles the actual API call
    */
-  private async fetchGoogleFitData(
+  private async executeGoogleFitApiCall(
     userId: string,
     accessToken: string,
     options: SyncOptions,
     supabaseUrl: string
-  ): Promise<{
-    status: number;
-    success: boolean;
-    data?: any;
-    error?: string;
-    statusText?: string;
-  }> {
+  ): Promise<GoogleFitApiResponse> {
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
         method: 'POST',
