@@ -21,7 +21,7 @@ export const MobileToggle: React.FC<MobileToggleProps> = ({
       variant="ghost"
       size="icon"
       className={cn(
-        "h-10 w-10 p-0 flex-shrink-0 transition-all lg:hidden",
+        "h-10 w-10 p-0 flex-shrink-0 transition-all md:flex lg:hidden",
         isOpen ? "text-primary" : "text-muted-foreground",
         className
       )}

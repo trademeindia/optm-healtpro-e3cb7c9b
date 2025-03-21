@@ -38,9 +38,7 @@ const Header: React.FC<HeaderProps> = ({
       className
     )}>
       <div className="flex items-center gap-2">
-        {isMobile && (
-          <MobileToggle isOpen={isOpen} toggleSidebar={toggleSidebar} className="mr-2" />
-        )}
+        <MobileToggle isOpen={isOpen} toggleSidebar={toggleSidebar} className="mr-2" />
         
         <h1 className="text-lg md:text-xl font-bold text-gradient">OPTM Health †</h1>
         
@@ -86,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
           <DropdownMenuTrigger asChild>
             <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/20 flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors">
               <span className="text-xs md:text-sm font-medium text-primary">
-                {user?.name?.split(' ').map(n => n[0]).join('') || 'DR'}
+                {user?.name?.split(' ').map(n => n[0]).join('') || 'PT'}
               </span>
             </div>
           </DropdownMenuTrigger>
@@ -95,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-sm">
               <span>Signed in as</span>
-              <span className="ml-2 font-medium truncate max-w-[180px]">{user?.email || 'doctor@example.com'}</span>
+              <span className="ml-2 font-medium truncate max-w-[180px]">{user?.email || 'patient@example.com'}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
