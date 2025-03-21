@@ -40,9 +40,9 @@ export class ProviderSyncService {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
       
       // First attempt to fetch data
-      let success = await this.makeGoogleFitRequest(userId, accessToken, options, supabaseUrl);
+      const result = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
       
-      if (success) {
+      if (result.success) {
         console.log('Successfully fetched Google Fit data');
         
         // Update last sync time in the database
@@ -51,9 +51,41 @@ export class ProviderSyncService {
           .update({ last_sync: new Date().toISOString() })
           .eq('user_id', userId)
           .eq('provider', 'google_fit');
+          
+        return true;
+      } else if (result.status === 401 && result.data?.refreshed) {
+        console.log("Token refreshed, retrying Google Fit sync");
+        
+        if (!options.silent) {
+          toast.info("Google Fit connection refreshed. Syncing data again...");
+        }
+        
+        // Wait a moment to ensure token is updated in the system
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Retry with a new request (but don't get into a potential infinite loop)
+        const retryResult = await this.fetchGoogleFitData(userId, accessToken, options, supabaseUrl);
+        
+        if (!retryResult.success) {
+          console.error('Error response from Google Fit API after token refresh:', retryResult.error);
+          throw new Error(`Error fetching Google Fit data after token refresh: ${retryResult.error || retryResult.statusText}`);
+        }
+        
+        return true;
+      } else if (result.status === 401) {
+        console.error('Google Fit authentication failed:', result.error);
+        
+        if (!options.silent) {
+          toast.error("Google Fit authentication expired", {
+            description: "Please reconnect your Google Fit account."
+          });
+        }
+        
+        return false;
+      } else {
+        console.error('Error response from Google Fit API:', result.error);
+        throw new Error(`Error fetching Google Fit data: ${result.error || result.statusText}`);
       }
-      
-      return success;
     } catch (error) {
       console.error('Error syncing Google Fit data:', error);
       
@@ -69,67 +101,10 @@ export class ProviderSyncService {
   }
   
   /**
-   * Make a request to the Google Fit API
-   * This method handles token refresh logic
+   * Execute the fetch request to Google Fit API
+   * This method handles the actual API call
    */
-  private async makeGoogleFitRequest(
-    userId: string,
-    accessToken: string,
-    options: SyncOptions,
-    supabaseUrl: string
-  ): Promise<boolean> {
-    // Make the initial request
-    const initialResult = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
-    
-    // Handle token refresh case
-    if (initialResult.status === 401 && initialResult.data?.refreshed) {
-      console.log("Token refreshed, retrying Google Fit sync");
-      
-      if (!options.silent) {
-        toast.info("Google Fit connection refreshed. Syncing data again...");
-      }
-      
-      // Wait a moment to ensure token is updated in the system
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Retry with a new request
-      const retryResult = await this.executeGoogleFitApiCall(userId, accessToken, options, supabaseUrl);
-      
-      if (!retryResult.success) {
-        console.error('Error response from Google Fit API after token refresh:', retryResult.error);
-        throw new Error(`Error fetching Google Fit data after token refresh: ${retryResult.error || retryResult.statusText}`);
-      }
-      
-      return true;
-    }
-    
-    // Handle authentication failure
-    if (initialResult.status === 401) {
-      console.error('Google Fit authentication failed:', initialResult.error);
-      
-      if (!options.silent) {
-        toast.error("Google Fit authentication expired", {
-          description: "Please reconnect your Google Fit account."
-        });
-      }
-      
-      return false;
-    }
-    
-    // Handle other errors
-    if (!initialResult.success) {
-      console.error('Error response from Google Fit API:', initialResult.error);
-      throw new Error(`Error fetching Google Fit data: ${initialResult.error || initialResult.statusText}`);
-    }
-    
-    return true;
-  }
-  
-  /**
-   * Execute the actual fetch request to Google Fit API
-   * This is a low-level method that doesn't handle retries or token refresh logic
-   */
-  private async executeGoogleFitApiCall(
+  private async fetchGoogleFitData(
     userId: string,
     accessToken: string,
     options: SyncOptions,
@@ -141,27 +116,36 @@ export class ProviderSyncService {
     error?: string;
     statusText?: string;
   }> {
-    const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        accessToken,
-        timeRange: options.timeRange || 'week',
-        metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
-      }),
-    });
-    
-    const data = await response.json().catch(() => ({}));
-    
-    return {
-      status: response.status,
-      success: response.ok,
-      data,
-      error: data.error,
-      statusText: response.statusText
-    };
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/fetch-google-fit-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          accessToken,
+          timeRange: options.timeRange || 'week',
+          metricTypes: options.metricTypes || ['steps', 'heart_rate', 'calories', 'distance', 'sleep', 'workout']
+        }),
+      });
+      
+      const data = await response.json().catch(() => ({}));
+      
+      return {
+        status: response.status,
+        success: response.ok,
+        data,
+        error: data.error,
+        statusText: response.statusText
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        success: false,
+        error: error.message,
+        statusText: 'Network Error'
+      };
+    }
   }
 }
