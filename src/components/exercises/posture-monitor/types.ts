@@ -38,6 +38,37 @@ export interface RepEvaluation {
   score: number;
 }
 
+// OpenSim Analysis Result interface
+export interface OpenSimAnalysisResult {
+  jointForces: {
+    knee: number | null;
+    hip: number | null;
+    ankle: number | null;
+  };
+  muscleTension: {
+    quadriceps: number | null;
+    hamstrings: number | null;
+    calves: number | null;
+  };
+  recommendations: string[];
+  safetyScore: number;
+}
+
+// Custom feedback interface
+export interface CustomFeedback {
+  message: string;
+  type: FeedbackType;
+}
+
+// Video Status interface
+export interface VideoStatus {
+  isReady: boolean;
+  hasStream: boolean;
+  resolution: { width: number; height: number } | null;
+  lastCheckTime: number;
+  errorCount: number;
+}
+
 // Renderer props
 export interface RendererProps {
   pose: any;

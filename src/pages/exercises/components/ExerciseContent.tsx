@@ -6,6 +6,7 @@ import ExerciseVideo from '@/components/exercises/ExerciseVideo';
 import PostureMonitor from '@/components/exercises/PostureMonitor';
 import CategoryFilter from './CategoryFilter';
 import { Exercise } from '@/types/exercise.types';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface ExerciseContentProps {
   showMonitor: boolean;
@@ -29,7 +30,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   setShowMonitor
 }) => {
   return (
-    <>
+    <ErrorBoundary>
       {showMonitor ? (
         <div className="space-y-4">
           <Button 
@@ -67,8 +68,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
                 videoUrl={exercise.videoUrl}
                 muscleGroups={exercise.muscleGroups}
                 onStart={() => onStartExercise(exercise.id)}
-                // Fix for: Type 'string' is not assignable to type 'number'
-                status={exercise.completionStatus ? exercise.completionStatus : 'not-started'}
+                status={exercise.completionStatus || 'not-started'}
               />
             ))}
             {filteredExercises.length === 0 && (
@@ -79,7 +79,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
           </div>
         </>
       )}
-    </>
+    </ErrorBoundary>
   );
 };
 
