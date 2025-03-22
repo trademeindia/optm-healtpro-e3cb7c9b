@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Play, Pause, RotateCcw, XCircle } from 'lucide-react';
+import { Info, Play, Pause, RotateCcw, XCircle, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { MotionTrackerProps, FeedbackType, ExerciseType } from './types';
@@ -40,6 +40,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
 
   // Custom hooks
   const handleFeedbackChange = (message: string | null, type: FeedbackType) => {
+    console.log(`Feedback changed: ${message} (${type})`);
     setFeedback({ message, type });
   };
 
@@ -51,8 +52,18 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
   const { cameraActive, toggleCamera, stopCamera } = useCamera({
     videoRef,
     onFeedbackChange: handleFeedbackChange,
-    onCameraStart: () => console.log("Camera started"),
-    onCameraStop: () => console.log("Camera stopped")
+    onCameraStart: () => {
+      console.log("Camera started");
+      toast.success("Camera activated", {
+        description: "Your camera is now active and ready for motion tracking"
+      });
+    },
+    onCameraStop: () => {
+      console.log("Camera stopped");
+      toast.info("Camera stopped", {
+        description: "Camera has been turned off"
+      });
+    }
   });
   
   const { 
@@ -63,7 +74,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     startDetection, 
     stopDetection 
   } = useHumanDetection({
-    cameraActive: cameraActive,
+    cameraActive, // Pass cameraActive state to detection hook
     videoRef,
     canvasRef,
     onFeedbackChange: handleFeedbackChange
@@ -71,8 +82,17 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
 
   // Handle camera state changes
   useEffect(() => {
+    console.log("Camera active changed:", cameraActive);
     if (cameraActive) {
-      startDetection();
+      // Give the video element a moment to initialize before starting detection
+      const timer = setTimeout(() => {
+        console.log("Starting detection after delay");
+        startDetection();
+        toast.success("Motion detection active", {
+          description: "AI will now track your movements and provide feedback"
+        });
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
       stopDetection();
     }
@@ -101,12 +121,12 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
   useEffect(() => {
     console.log("Motion tracker state:", {
       cameraActive,
-      detectionStatus,
+      detectionActive: detectionStatus.isActive,
       modelLoaded: !!humanRef.current,
       hasVideo: !!videoRef.current,
       hasCanvas: !!canvasRef.current
     });
-  }, [cameraActive, detectionStatus]);
+  }, [cameraActive, detectionStatus, humanRef]);
 
   // Display exercise selection if no exercise selected
   if (!exerciseId || !exerciseName) {
@@ -119,7 +139,13 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No exercise selected.</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Camera className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">No exercise selected.</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please go back and select an exercise from the list.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );

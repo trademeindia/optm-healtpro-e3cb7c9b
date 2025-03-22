@@ -41,6 +41,7 @@ export const useHumanDetection = ({
       if (!humanRef.current) {
         setIsModelLoading(true);
         onFeedbackChange("Loading motion detection model...", FeedbackType.INFO);
+        console.log("Initializing Human.js model...");
 
         try {
           const config: Human.Config = {
@@ -51,7 +52,7 @@ export const useHumanDetection = ({
             hand: { enabled: false },
             object: { enabled: false },
             gesture: { enabled: true },
-            debug: false,
+            debug: true, // Enable debug for troubleshooting
             // Required fields
             backend: 'webgl',
             wasmPath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
@@ -70,6 +71,7 @@ export const useHumanDetection = ({
 
           humanRef.current = new Human.Human(config);
           await humanRef.current.load();
+          console.log("Human.js model loaded successfully");
           
           onFeedbackChange("Motion detection model loaded. Start camera to begin tracking.", FeedbackType.SUCCESS);
         } catch (error) {
@@ -86,12 +88,14 @@ export const useHumanDetection = ({
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
     };
   }, [onFeedbackChange]);
 
   // Auto-start detection when camera becomes active
   useEffect(() => {
+    console.log("Camera active state changed:", cameraActive);
     if (cameraActive && humanRef.current && videoRef.current) {
       console.log("Camera active, starting detection");
       startDetection();
@@ -123,8 +127,17 @@ export const useHumanDetection = ({
     }
 
     // Setup canvas
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    // Always update canvas dimensions to match video
+    if (video.videoWidth && video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      console.log(`Canvas size set to ${canvas.width}x${canvas.height}`);
+    } else {
+      // Fallback dimensions if video dimensions are not yet available
+      canvas.width = 640;
+      canvas.height = 480;
+      console.log("Using fallback canvas dimensions: 640x480");
+    }
 
     let lastTime = performance.now();
     let frameCount = 0;
@@ -142,12 +155,34 @@ export const useHumanDetection = ({
       }
 
       try {
+        // Make sure video is playing
+        if (video.paused || video.ended) {
+          console.log("Video not playing, attempting to play...");
+          try {
+            await video.play();
+          } catch (e) {
+            console.error("Could not play video:", e);
+          }
+        }
+
+        // Check if video has dimensions
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          console.log("Video dimensions not available yet");
+        } else if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          // Update canvas size if video dimensions changed
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          console.log(`Updated canvas size to ${canvas.width}x${canvas.height}`);
+        }
+
         // Perform detection
         const result = await human.detect(video);
         console.log("Detection result:", {
           bodyCount: result.body.length,
-          confidence: result.body[0]?.score
+          confidence: result.body[0]?.score,
+          keypoints: result.body[0]?.keypoints.length || 0
         });
+        
         setLastDetection(result);
         
         // Calculate FPS
@@ -166,14 +201,22 @@ export const useHumanDetection = ({
           lastTime = now;
         }
 
-        // Draw video frame and detection results
+        // Clear the canvas first
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw video frame
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         // Draw detected body keypoints
-        human.draw.all(canvas, result);
-        
-        // Update tracking status
-        if (result.body.length === 0) {
+        if (result.body.length > 0) {
+          human.draw.all(canvas, result);
+          
+          // Draw joint angles if available
+          const body = result.body[0];
+          if (body && body.keypoints.length > 0) {
+            drawJointAngles(ctx, body);
+          }
+        } else {
           onFeedbackChange("No person detected. Please make sure you're visible in the camera.", FeedbackType.WARNING);
         }
       } catch (error) {
@@ -189,6 +232,55 @@ export const useHumanDetection = ({
     // Start detection loop
     animationRef.current = requestAnimationFrame(detect);
     setDetectionStatus(prev => ({ ...prev, isActive: true }));
+  };
+
+  const drawJointAngles = (ctx: CanvasRenderingContext2D, body: Human.BodyResult) => {
+    const keypoints = body.keypoints;
+    
+    // Find specific keypoints for angle calculations
+    const leftHip = keypoints.find(kp => kp.part === 'leftHip');
+    const leftKnee = keypoints.find(kp => kp.part === 'leftKnee');
+    const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle');
+    
+    const rightHip = keypoints.find(kp => kp.part === 'rightHip');
+    const rightKnee = keypoints.find(kp => kp.part === 'rightKnee');
+    const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
+    
+    // Calculate and draw left knee angle
+    if (leftHip && leftKnee && leftAnkle) {
+      const leftKneeAngle = calculateAngle(
+        [leftHip.position[0], leftHip.position[1]],
+        [leftKnee.position[0], leftKnee.position[1]],
+        [leftAnkle.position[0], leftAnkle.position[1]]
+      );
+      
+      // Draw angle on canvas
+      ctx.font = '16px Arial';
+      ctx.fillStyle = 'yellow';
+      ctx.fillText(`${Math.round(leftKneeAngle)}°`, leftKnee.position[0] + 10, leftKnee.position[1]);
+    }
+    
+    // Calculate and draw right knee angle
+    if (rightHip && rightKnee && rightAnkle) {
+      const rightKneeAngle = calculateAngle(
+        [rightHip.position[0], rightHip.position[1]],
+        [rightKnee.position[0], rightKnee.position[1]],
+        [rightAnkle.position[0], rightAnkle.position[1]]
+      );
+      
+      // Draw angle on canvas
+      ctx.font = '16px Arial';
+      ctx.fillStyle = 'yellow';
+      ctx.fillText(`${Math.round(rightKneeAngle)}°`, rightKnee.position[0] - 40, rightKnee.position[1]);
+    }
+  };
+  
+  const calculateAngle = (pointA: number[], pointB: number[], pointC: number[]): number => {
+    const AB = Math.sqrt(Math.pow(pointB[0] - pointA[0], 2) + Math.pow(pointB[1] - pointA[1], 2));
+    const BC = Math.sqrt(Math.pow(pointB[0] - pointC[0], 2) + Math.pow(pointB[1] - pointC[1], 2));
+    const AC = Math.sqrt(Math.pow(pointC[0] - pointA[0], 2) + Math.pow(pointC[1] - pointA[1], 2));
+    
+    return Math.acos((BC * BC + AB * AB - AC * AC) / (2 * BC * AB)) * (180 / Math.PI);
   };
 
   const stopDetection = () => {
