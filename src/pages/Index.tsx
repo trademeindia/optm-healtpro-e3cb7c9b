@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -10,10 +10,18 @@ const IndexContent = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [redirectAttempts, setRedirectAttempts] = useState(0);
+
+  const handleRedirect = useCallback((path: string) => {
+    console.log(`Navigating to ${path}`);
+    setHasRedirected(true);
+    navigate(path);
+  }, [navigate]);
 
   useEffect(() => {
-    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user, hasRedirected });
+    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user, hasRedirected, redirectAttempts });
     
+    // Only try to redirect if we haven't already and we're not loading
     if (!isLoading && !hasRedirected) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
@@ -22,16 +30,28 @@ const IndexContent = () => {
           user.role === 'doctor' ? '/dashboard/doctor' : 
           user.role === 'receptionist' ? '/dashboard/receptionist' : 
           '/dashboard/patient';
-        console.log(`Navigating to ${dashboard}`);
-        setHasRedirected(true);
-        navigate(dashboard);
+        
+        handleRedirect(dashboard);
       } else {
         console.log('Index page: User not authenticated, redirecting to login');
-        setHasRedirected(true);
-        navigate('/login');
+        handleRedirect('/login');
       }
     }
-  }, [isAuthenticated, isLoading, navigate, user, hasRedirected]);
+    
+    // Safety timeout - if we're still loading for too long, force redirect to login
+    if (isLoading && !hasRedirected && redirectAttempts === 0) {
+      const timer = setTimeout(() => {
+        setRedirectAttempts(prev => prev + 1);
+        if (!hasRedirected) {
+          console.log('Index page: Auth loading timeout, redirecting to login');
+          handleRedirect('/login');
+          toast.info('Taking you to login page');
+        }
+      }, 5000); // 5 second timeout
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isLoading, navigate, user, hasRedirected, handleRedirect, redirectAttempts]);
 
   if (isLoading) {
     return (
@@ -64,9 +84,16 @@ const IndexContent = () => {
 
 // Wrap the content with an error boundary to catch any rendering errors
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  
   const handleError = (error: Error) => {
     console.error("Error in Index page:", error);
     toast.error("Something went wrong while loading the application");
+    
+    // If there's an error on the index page, redirect to login as a fallback
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
   };
 
   return (

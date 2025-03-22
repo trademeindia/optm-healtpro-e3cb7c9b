@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
 import AppRoutes from './routes/Routes';
-import { Toaster } from "./components/ui/sonner";
+import { Toaster } from "sonner";
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Handle loading state
 const Loading = () => (
@@ -31,22 +32,28 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [authLoading]);
 
+  const handleAppError = (error: Error) => {
+    console.error("Root level error caught:", error);
+  };
+
   if (loading && authLoading) {
     return <Loading />;
   }
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-      disableTransitionOnChange
-    >
-      <div className="app-container full-height-layout">
-        <AppRoutes />
-        <Toaster position="top-right" />
-      </div>
-    </ThemeProvider>
+    <ErrorBoundary onError={handleAppError}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
+        <div className="app-container full-height-layout">
+          <AppRoutes />
+          <Toaster position="top-right" richColors />
+        </div>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

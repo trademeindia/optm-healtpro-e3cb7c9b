@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading: sessionLoading, setUser } = useAuthSession();
+  const { user, isLoading: sessionLoading, setUser, error: sessionError } = useAuthSession();
   const {
     isLoading: operationsLoading,
     login: loginBase,
@@ -27,9 +27,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user: user ? `${user.email} (${user.role})` : 'null', 
       sessionLoading, 
       operationsLoading,
-      initialCheckComplete
+      initialCheckComplete,
+      sessionError: sessionError ? sessionError.message : null
     });
-  }, [user, sessionLoading, operationsLoading, initialCheckComplete]);
+    
+    // Show error toast if session initialization failed
+    if (sessionError && !initialCheckComplete) {
+      toast.error('Authentication Error', {
+        description: 'There was a problem with the authentication system. Some features may be limited.',
+        duration: 5000
+      });
+      console.error('Session initialization error:', sessionError);
+    }
+  }, [user, sessionLoading, operationsLoading, initialCheckComplete, sessionError]);
 
   useEffect(() => {
     let mounted = true;
@@ -75,6 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error('Error formatting user after auth state change:', error);
+          toast.error('Error loading profile', {
+            description: 'There was a problem loading your user profile'
+          });
         }
       }
     });

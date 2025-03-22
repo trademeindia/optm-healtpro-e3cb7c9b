@@ -7,6 +7,7 @@ import { User } from '../types';
 export const useAuthSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [initError, setInitError] = useState<Error | null>(null);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -53,19 +54,26 @@ export const useAuthSession = () => {
         
         if (error) {
           console.error('Error getting session:', error);
+          setInitError(error);
           setIsLoading(false);
           return;
         }
         
         if (data.session) {
           console.log('Supabase session found, loading user profile');
-          const formattedUser = await formatUser(data.session.user);
-          setUser(formattedUser);
+          try {
+            const formattedUser = await formatUser(data.session.user);
+            setUser(formattedUser);
+          } catch (profileError) {
+            console.error('Error loading user profile:', profileError);
+            setInitError(profileError instanceof Error ? profileError : new Error('Failed to load user profile'));
+          }
         } else {
           console.log('No active session found');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        setInitError(error instanceof Error ? error : new Error('Authentication initialization failed'));
       } finally {
         setIsLoading(false);
       }
@@ -79,20 +87,25 @@ export const useAuthSession = () => {
         console.log('Auth state changed:', event);
         setIsLoading(true);
         
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          if (session) {
-            const formattedUser = await formatUser(session.user);
-            setUser(formattedUser);
+        try {
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+            if (session) {
+              const formattedUser = await formatUser(session.user);
+              setUser(formattedUser);
+            }
           }
+          
+          if (event === 'SIGNED_OUT') {
+            setUser(null);
+            // Also clear any demo user
+            localStorage.removeItem('demoUser');
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          setInitError(error instanceof Error ? error : new Error('Failed to process authentication update'));
+        } finally {
+          setIsLoading(false);
         }
-        
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          // Also clear any demo user
-          localStorage.removeItem('demoUser');
-        }
-        
-        setIsLoading(false);
       }
     );
 
@@ -106,7 +119,7 @@ export const useAuthSession = () => {
     setUser(newUser);
     
     // If this is a demo user, store in localStorage
-    if (newUser && ['admin@example.com', 'doctor@example.com', 'patient@example.com'].includes(newUser.email)) {
+    if (newUser && ['admin@example.com', 'doctor@example.com', 'patient@example.com', 'receptionist@example.com'].includes(newUser.email)) {
       localStorage.setItem('demoUser', JSON.stringify(newUser));
       console.log('Stored demo user in localStorage:', newUser.email);
     } else if (newUser === null) {
@@ -117,6 +130,7 @@ export const useAuthSession = () => {
   return {
     user,
     setUser: setUserWithStorage,
-    isLoading
+    isLoading,
+    error: initError
   };
 };

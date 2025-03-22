@@ -9,22 +9,36 @@ export const useLoginState = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<string[]>([]);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    // Clear any error when user types
+    setLoginErrors([]);
   }, []);
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    // Clear any error when user types
+    setLoginErrors([]);
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error('Please enter both email and password');
+    // Reset errors
+    setLoginErrors([]);
+    
+    // Validate inputs
+    const errors: string[] = [];
+    if (!email) errors.push('Email is required');
+    if (!password) errors.push('Password is required');
+    
+    if (errors.length > 0) {
+      setLoginErrors(errors);
+      errors.forEach(error => toast.error(error));
       return;
     }
 
@@ -44,9 +58,12 @@ export const useLoginState = () => {
         } else {
           navigate('/dashboard');
         }
+      } else {
+        throw new Error('Login failed. Please check your credentials.');
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      setLoginErrors([error.message || 'Failed to login. Please check your credentials.']);
       toast.error(error.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -74,9 +91,12 @@ export const useLoginState = () => {
         if (user) {
           const dashboardRoute = `/dashboard/${role}`;
           navigate(dashboardRoute);
+        } else {
+          throw new Error('Demo login failed. Please try again.');
         }
       } catch (error: any) {
         console.error('Demo login error:', error);
+        setLoginErrors([error.message || 'Failed to login with demo account.']);
         toast.error(error.message || 'Failed to login with demo account.');
       } finally {
         setIsLoading(false);
@@ -88,6 +108,7 @@ export const useLoginState = () => {
     email,
     password,
     isLoading,
+    errors: loginErrors,
     handleEmailChange,
     handlePasswordChange,
     handleSubmit,

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginForm from '@/components/auth/LoginForm';
 import UserTypeSelector from '@/components/auth/UserTypeSelector';
@@ -11,12 +11,17 @@ import MarketingPanel from '@/components/auth/MarketingPanel';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import DebugSection from '@/components/auth/DebugSection';
 import { motion } from 'framer-motion';
-import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth';
 
 const LoginPage: React.FC = () => {
   const loginState = useLoginState();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
   
-  // Set up additional state variables that don't exist in useLoginState
+  // Set up additional state variables
   const [userType, setUserType] = useState<'doctor' | 'patient' | 'receptionist'>('doctor');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -29,19 +34,65 @@ const LoginPage: React.FC = () => {
   });
   const [showDebug, setShowDebug] = useState(false);
   
-  // Helper functions that aren't in the useLoginState hook - all now return Promise<void>
+  // Check if user is already authenticated
+  useEffect(() => {
+    // Redirect authenticated users
+    if (isAuthenticated && !isLoading) {
+      console.log('User already authenticated, redirecting to dashboard');
+      const from = location.state?.from?.pathname || '/';
+      navigate(from);
+      toast.info('You are already logged in');
+    }
+  }, [isAuthenticated, isLoading, navigate, location]);
+  
+  // Handle user type selection (doctor/patient/receptionist)
+  const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist'): void => {
+    setUserType(value);
+    // Auto-fill the email field with the demo account for the selected user type
+    loginState.handleEmailChange({ target: { value: `${value}@example.com` } } as any);
+  };
+  
+  // Helper functions
   const handleForgotPassword = async (): Promise<void> => {
     console.log('Handling forgot password for:', forgotEmail);
-    toast.success('Password reset email sent!');
-    setShowForgotPassword(false);
+    if (!forgotEmail) {
+      toast.error('Please enter your email address');
+      return Promise.resolve();
+    }
+    
+    try {
+      toast.success('Password reset email sent!');
+      setShowForgotPassword(false);
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      toast.error('Failed to send password reset email');
+    }
     return Promise.resolve();
   };
   
   const handleSignup = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     console.log('Signing up with:', signupData);
-    toast.success('Account created successfully!');
-    setShowSignupDialog(false);
+    
+    if (!signupData.email || !signupData.password || !signupData.name) {
+      toast.error('Please fill in all required fields');
+      return Promise.resolve();
+    }
+    
+    if (signupData.password !== signupData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return Promise.resolve();
+    }
+    
+    try {
+      toast.success('Account created successfully!');
+      setShowSignupDialog(false);
+      // Prefill login form with the new account credentials
+      loginState.handleEmailChange({ target: { value: signupData.email } } as any);
+    } catch (error) {
+      console.error('Error creating account:', error);
+      toast.error('Failed to create account');
+    }
     return Promise.resolve();
   };
   
@@ -49,10 +100,6 @@ const LoginPage: React.FC = () => {
     console.log(`Logging in with ${provider}`);
     toast.info(`Redirecting to ${provider} login...`);
     return Promise.resolve();
-  };
-  
-  const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist'): void => {
-    setUserType(value);
   };
   
   const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
