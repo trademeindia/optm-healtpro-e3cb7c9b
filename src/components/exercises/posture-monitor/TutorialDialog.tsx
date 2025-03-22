@@ -10,17 +10,17 @@ interface TutorialDialogProps {
 const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>How to Use AI Squat Analyzer</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+        <DialogHeader className="border-b pb-3 mb-2">
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">How to Use AI Squat Analyzer</DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-300">
             Follow these steps to get accurate squat form analysis
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-2 text-sm">
+        <div className="space-y-4 py-3 text-sm text-gray-700 dark:text-gray-200">
           <div>
-            <h3 className="font-semibold text-base mb-1">Setting Up</h3>
+            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Setting Up</h3>
             <ol className="list-decimal list-inside space-y-1 pl-2">
               <li>Position your device so your full body is visible</li>
               <li>Ensure good lighting in the room</li>
@@ -30,7 +30,7 @@ const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) =
           </div>
           
           <div>
-            <h3 className="font-semibold text-base mb-1">Performing Squats</h3>
+            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Performing Squats</h3>
             <ol className="list-decimal list-inside space-y-1 pl-2">
               <li>Stand facing the camera with feet shoulder-width apart</li>
               <li>Keep your back straight throughout the movement</li>
@@ -41,7 +41,7 @@ const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) =
           </div>
           
           <div>
-            <h3 className="font-semibold text-base mb-1">Understanding Feedback</h3>
+            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Understanding Feedback</h3>
             <ul className="list-disc list-inside space-y-1 pl-2">
               <li>Green feedback indicates good form</li>
               <li>Yellow feedback suggests minor adjustments</li>
@@ -51,7 +51,7 @@ const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) =
           </div>
           
           <div>
-            <h3 className="font-semibold text-base mb-1">Biomechanical Analysis</h3>
+            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Biomechanical Analysis</h3>
             <ul className="list-disc list-inside space-y-1 pl-2">
               <li>Click "Show Biomechanics" to see detailed analysis</li>
               <li>Joint angles show the position of your knees, hips, and ankles</li>
@@ -62,7 +62,7 @@ const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) =
           </div>
           
           <div>
-            <h3 className="font-semibold text-base mb-1">Tips for Best Results</h3>
+            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Tips for Best Results</h3>
             <ul className="list-disc list-inside space-y-1 pl-2">
               <li>Move slowly and with control</li>
               <li>Keep your movements smooth and deliberate</li>
