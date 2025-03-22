@@ -1,7 +1,13 @@
 
 import { Provider } from '@supabase/supabase-js';
 
-export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
+export enum UserRole {
+  ADMIN = 'admin',
+  DOCTOR = 'doctor',
+  PATIENT = 'patient',
+  RECEPTIONIST = 'receptionist'
+}
+
 export type AuthProviderType = Provider | 'email';
 
 export type User = {
