@@ -1,10 +1,9 @@
-
 import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info, Play, Pause, RotateCcw, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { MotionTrackerProps, FeedbackType } from './types';
+import { MotionTrackerProps, FeedbackType, ExerciseType } from './types';
 import FeedbackDisplay from './FeedbackDisplay';
 import StatsDisplay from './StatsDisplay';
 import TutorialDialog from './TutorialDialog';
@@ -29,13 +28,23 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     type: FeedbackType.INFO
   });
 
+  // Determine exercise type from exerciseName
+  const getExerciseType = (): ExerciseType => {
+    if (!exerciseName) return 'squat';
+    
+    const name = exerciseName.toLowerCase();
+    if (name.includes('lunge')) return 'lunge';
+    return 'squat'; // Default exercise type
+  };
+
   // Custom hooks
   const handleFeedbackChange = (message: string | null, type: FeedbackType) => {
     setFeedback({ message, type });
   };
 
   const { stats, resetStats, analyzeMovement } = useMotionAnalysis({
-    onFeedbackChange: handleFeedbackChange
+    onFeedbackChange: handleFeedbackChange,
+    exerciseType: getExerciseType()
   });
 
   const { 

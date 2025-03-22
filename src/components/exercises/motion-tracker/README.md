@@ -58,6 +58,13 @@ The motion tracker uses three specialized hooks that separate concerns:
    - Provides real-time feedback
 5. Statistics are updated as the user performs exercises
 
+## Supported Exercise Types
+
+The motion tracker currently supports the following exercise types:
+
+1. **Squats**: Detection of up and down movements with knee bending
+2. **Lunges**: Detection of lunge position with one leg forward and both knees bent
+
 ## How to Extend with New Exercise Types
 
 The motion tracker can be extended to support additional exercise types by modifying the `useMotionAnalysis.ts` hook:

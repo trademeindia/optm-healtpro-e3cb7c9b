@@ -32,6 +32,8 @@ export enum FeedbackType {
   ERROR = 'error'
 }
 
+export type ExerciseType = 'squat' | 'lunge' | string;
+
 export interface HumanDetectionStatus {
   isActive: boolean;
   fps: number | null;

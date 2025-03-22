@@ -63,7 +63,9 @@ export const useHumanDetection = ({
             skipAllowed: false,
             deallocate: false,
             flags: {},
-            softwareKernels: true
+            softwareKernels: true,
+            validateModels: false,
+            segmentation: { enabled: false }
           };
 
           humanRef.current = new Human.Human(config);
