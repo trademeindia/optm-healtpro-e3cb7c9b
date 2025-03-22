@@ -43,14 +43,14 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
         }
       }
       
-      // Load PoseNet model
+      // Load PoseNet model with default values if config properties are missing
       console.log("Loading PoseNet model with config:", config);
       const loadedModel = await posenet.load({
-        architecture: config.architecture,
-        outputStride: config.outputStride,
+        architecture: config.architecture || 'MobileNetV1',
+        outputStride: config.outputStride || 16,
         inputResolution: config.inputResolution,
-        multiplier: config.multiplier,
-        quantBytes: config.quantBytes
+        multiplier: config.multiplier || 0.75,
+        quantBytes: config.quantBytes || 2
       });
       
       console.log("PoseNet model loaded successfully");

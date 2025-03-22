@@ -9,6 +9,11 @@ export interface PoseDetectionConfig {
     height: number;
   };
   scoreThreshold: number;
+  // Add missing properties for PoseNet configuration
+  architecture?: 'MobileNetV1' | 'ResNet50';
+  outputStride?: 8 | 16 | 32;
+  multiplier?: 0.5 | 0.75 | 1.0 | 1.01;
+  quantBytes?: 1 | 2 | 4;
 }
 
 export interface SquatEvaluation {
