@@ -51,7 +51,7 @@ const CameraView: React.FC<CameraViewProps> = ({
           className="absolute inset-0 w-full h-full object-cover"
           style={{ 
             transform: 'scaleX(-1)', // Mirror the video for more intuitive feedback
-            display: cameraActive ? 'block' : 'none' 
+            display: 'block' // Always display the video element but it will be hidden when not active
           }} 
           playsInline 
           muted
@@ -63,7 +63,7 @@ const CameraView: React.FC<CameraViewProps> = ({
           className="absolute inset-0 w-full h-full object-cover z-10"
           style={{ 
             transform: 'scaleX(-1)', // Mirror the canvas to match the video
-            display: cameraActive ? 'block' : 'none' 
+            display: 'block' // Always display the canvas element
           }} 
         />
       </div>

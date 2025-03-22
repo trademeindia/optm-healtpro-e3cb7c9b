@@ -9,7 +9,6 @@ interface PostureMonitorProps {
   onFinish: () => void;
 }
 
-// Enhanced version with proper initialization
 const PostureMonitor: React.FC<PostureMonitorProps> = (props) => {
   const { exerciseId, exerciseName } = props;
 

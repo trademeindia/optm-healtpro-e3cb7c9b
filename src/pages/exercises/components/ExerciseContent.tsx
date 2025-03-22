@@ -54,10 +54,28 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
             onCategoryFilter={onCategoryFilter}
           />
           
-          <ExerciseList 
-            exercises={filteredExercises}
-            onStartExercise={onStartExercise}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
+            {filteredExercises.map((exercise) => (
+              <ExerciseVideo
+                key={exercise.id}
+                id={exercise.id}
+                title={exercise.title}
+                description={exercise.description}
+                duration={exercise.duration}
+                difficulty={exercise.difficulty}
+                thumbnailUrl={exercise.thumbnailUrl}
+                videoUrl={exercise.videoUrl}
+                muscleGroups={exercise.muscleGroups}
+                onStart={() => onStartExercise(exercise.id)}
+                status={exercise.completionStatus}
+              />
+            ))}
+            {filteredExercises.length === 0 && (
+              <div className="col-span-full p-8 text-center bg-muted rounded-lg">
+                <p className="text-muted-foreground">No exercises found for this category.</p>
+              </div>
+            )}
+          </div>
         </>
       )}
     </>
@@ -65,30 +83,3 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
 };
 
 export default ExerciseContent;
-
-// Extracted ExerciseList component
-interface ExerciseListProps {
-  exercises: Exercise[];
-  onStartExercise: (exerciseId: string) => void;
-}
-
-const ExerciseList: React.FC<ExerciseListProps> = ({ exercises, onStartExercise }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
-      {exercises.map((exercise) => (
-        <ExerciseVideo
-          key={exercise.id}
-          id={exercise.id}
-          title={exercise.title}
-          description={exercise.description}
-          videoUrl={exercise.videoUrl}
-          thumbnailUrl={exercise.thumbnailUrl}
-          duration={exercise.duration}
-          difficulty={exercise.difficulty}
-          muscleGroups={exercise.muscleGroups}
-          onStartExercise={onStartExercise}
-        />
-      ))}
-    </div>
-  );
-};
