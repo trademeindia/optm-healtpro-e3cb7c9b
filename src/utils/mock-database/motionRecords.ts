@@ -6,7 +6,6 @@ const mockMotionRecords: MotionAnalysisSession[] = [
   {
     id: '1',
     patientId: '1',
-    doctorId: 'doc-123',
     type: 'Knee Flexion',
     measurementDate: new Date().toISOString(),
     duration: 30,
@@ -17,14 +16,11 @@ const mockMotionRecords: MotionAnalysisSession[] = [
       { joint: 'rightKnee', angle: 85.7, timestamp: Date.now() - 3000 },
       { joint: 'rightKnee', angle: 95.1, timestamp: Date.now() - 2000 },
       { joint: 'rightKnee', angle: 105.3, timestamp: Date.now() - 1000 }
-    ],
-    status: 'completed',
-    targetJoints: ['rightKnee']
+    ]
   },
   {
     id: '2',
     patientId: '1',
-    doctorId: 'doc-123',
     type: 'Shoulder Rotation',
     measurementDate: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     duration: 45,
@@ -34,9 +30,7 @@ const mockMotionRecords: MotionAnalysisSession[] = [
       { joint: 'rightShoulder', angle: 35.4, timestamp: Date.now() - 104000 },
       { joint: 'rightShoulder', angle: 55.9, timestamp: Date.now() - 103000 },
       { joint: 'rightShoulder', angle: 72.3, timestamp: Date.now() - 102000 }
-    ],
-    status: 'completed',
-    targetJoints: ['rightShoulder']
+    ]
   }
 ];
 
