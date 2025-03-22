@@ -1,70 +1,126 @@
 
 import { BodyKeypoint } from '@vladmandic/human';
 import { JointAngle } from '../types';
-import { calculateLeftElbowAngle, calculateRightElbowAngle } from './elbowAngles';
-import { calculateLeftKneeAngle, calculateRightKneeAngle } from './kneeAngles';
-import { calculateLeftHipAngle, calculateRightHipAngle } from './hipAngles';
+import { calculateAngle, getPoint } from './geometryUtils';
 
-// Calculate all important joint angles from keypoints
+/**
+ * Calculate joint angles from detected body keypoints
+ */
 export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] => {
-  // Helper function to find keypoint by name
-  const findKeypoint = (name: string): BodyKeypoint | undefined => 
-    keypoints.find(kp => kp.part === name);
-    
   const angles: JointAngle[] = [];
   
-  // Left elbow angle
-  const leftShoulder = findKeypoint('leftShoulder');
-  const leftElbow = findKeypoint('leftElbow');
-  const leftWrist = findKeypoint('leftWrist');
+  // Create a map of keypoints by name for easier access
+  const keypointMap = new Map<string, BodyKeypoint>();
+  keypoints.forEach(keypoint => {
+    keypointMap.set(keypoint.part, keypoint);
+  });
   
-  if (leftShoulder && leftElbow && leftWrist) {
-    angles.push(calculateLeftElbowAngle(leftShoulder, leftElbow, leftWrist));
+  // Calculate left elbow angle (shoulder - elbow - wrist)
+  if (keypointMap.has('leftShoulder') && keypointMap.has('leftElbow') && keypointMap.has('leftWrist')) {
+    const shoulder = keypointMap.get('leftShoulder')!;
+    const elbow = keypointMap.get('leftElbow')!;
+    const wrist = keypointMap.get('leftWrist')!;
+    
+    const angle = calculateAngle(
+      getPoint(shoulder),
+      getPoint(elbow),
+      getPoint(wrist)
+    );
+    
+    angles.push({
+      joint: 'Left Elbow',
+      angle: angle
+    });
   }
   
-  // Right elbow angle
-  const rightShoulder = findKeypoint('rightShoulder');
-  const rightElbow = findKeypoint('rightElbow');
-  const rightWrist = findKeypoint('rightWrist');
-  
-  if (rightShoulder && rightElbow && rightWrist) {
-    angles.push(calculateRightElbowAngle(rightShoulder, rightElbow, rightWrist));
+  // Calculate right elbow angle (shoulder - elbow - wrist)
+  if (keypointMap.has('rightShoulder') && keypointMap.has('rightElbow') && keypointMap.has('rightWrist')) {
+    const shoulder = keypointMap.get('rightShoulder')!;
+    const elbow = keypointMap.get('rightElbow')!;
+    const wrist = keypointMap.get('rightWrist')!;
+    
+    const angle = calculateAngle(
+      getPoint(shoulder),
+      getPoint(elbow),
+      getPoint(wrist)
+    );
+    
+    angles.push({
+      joint: 'Right Elbow',
+      angle: angle
+    });
   }
   
-  // Left knee angle
-  const leftHip = findKeypoint('leftHip');
-  const leftKnee = findKeypoint('leftKnee');
-  const leftAnkle = findKeypoint('leftAnkle');
-  
-  if (leftHip && leftKnee && leftAnkle) {
-    angles.push(calculateLeftKneeAngle(leftHip, leftKnee, leftAnkle));
+  // Calculate left knee angle (hip - knee - ankle)
+  if (keypointMap.has('leftHip') && keypointMap.has('leftKnee') && keypointMap.has('leftAnkle')) {
+    const hip = keypointMap.get('leftHip')!;
+    const knee = keypointMap.get('leftKnee')!;
+    const ankle = keypointMap.get('leftAnkle')!;
+    
+    const angle = calculateAngle(
+      getPoint(hip),
+      getPoint(knee),
+      getPoint(ankle)
+    );
+    
+    angles.push({
+      joint: 'Left Knee',
+      angle: angle
+    });
   }
   
-  // Right knee angle
-  const rightHip = findKeypoint('rightHip');
-  const rightKnee = findKeypoint('rightKnee');
-  const rightAnkle = findKeypoint('rightAnkle');
-  
-  if (rightHip && rightKnee && rightAnkle) {
-    angles.push(calculateRightKneeAngle(rightHip, rightKnee, rightAnkle));
+  // Calculate right knee angle (hip - knee - ankle)
+  if (keypointMap.has('rightHip') && keypointMap.has('rightKnee') && keypointMap.has('rightAnkle')) {
+    const hip = keypointMap.get('rightHip')!;
+    const knee = keypointMap.get('rightKnee')!;
+    const ankle = keypointMap.get('rightAnkle')!;
+    
+    const angle = calculateAngle(
+      getPoint(hip),
+      getPoint(knee),
+      getPoint(ankle)
+    );
+    
+    angles.push({
+      joint: 'Right Knee',
+      angle: angle
+    });
   }
   
-  // Hip angles
-  const leftShoulder2 = findKeypoint('leftShoulder');
-  const leftHip2 = findKeypoint('leftHip');
-  const leftKnee2 = findKeypoint('leftKnee');
-  
-  if (leftShoulder2 && leftHip2 && leftKnee2) {
-    angles.push(calculateLeftHipAngle(leftShoulder2, leftHip2, leftKnee2));
+  // Calculate left hip angle (shoulder - hip - knee)
+  if (keypointMap.has('leftShoulder') && keypointMap.has('leftHip') && keypointMap.has('leftKnee')) {
+    const shoulder = keypointMap.get('leftShoulder')!;
+    const hip = keypointMap.get('leftHip')!;
+    const knee = keypointMap.get('leftKnee')!;
+    
+    const angle = calculateAngle(
+      getPoint(shoulder),
+      getPoint(hip),
+      getPoint(knee)
+    );
+    
+    angles.push({
+      joint: 'Left Hip',
+      angle: angle
+    });
   }
   
-  // Right hip angle
-  const rightShoulder2 = findKeypoint('rightShoulder');
-  const rightHip2 = findKeypoint('rightHip');
-  const rightKnee2 = findKeypoint('rightKnee');
-  
-  if (rightShoulder2 && rightHip2 && rightKnee2) {
-    angles.push(calculateRightHipAngle(rightShoulder2, rightHip2, rightKnee2));
+  // Calculate right hip angle (shoulder - hip - knee)
+  if (keypointMap.has('rightShoulder') && keypointMap.has('rightHip') && keypointMap.has('rightKnee')) {
+    const shoulder = keypointMap.get('rightShoulder')!;
+    const hip = keypointMap.get('rightHip')!;
+    const knee = keypointMap.get('rightKnee')!;
+    
+    const angle = calculateAngle(
+      getPoint(shoulder),
+      getPoint(hip),
+      getPoint(knee)
+    );
+    
+    angles.push({
+      joint: 'Right Hip',
+      angle: angle
+    });
   }
   
   return angles;
