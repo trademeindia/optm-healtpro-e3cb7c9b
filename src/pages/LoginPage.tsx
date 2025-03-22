@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
   });
   const [showDebug, setShowDebug] = useState(false);
   
-  // Helper functions that aren't in the useLoginState hook
+  // Helper functions that aren't in the useLoginState hook - all now return Promise<void>
   const handleForgotPassword = async (): Promise<void> => {
     console.log('Handling forgot password for:', forgotEmail);
     toast.success('Password reset email sent!');
@@ -45,7 +45,6 @@ const LoginPage: React.FC = () => {
     return Promise.resolve();
   };
   
-  // Updated to return Promise<void>
   const handleSocialLogin = async (provider: string): Promise<void> => {
     console.log(`Logging in with ${provider}`);
     toast.info(`Redirecting to ${provider} login...`);
@@ -70,7 +69,6 @@ const LoginPage: React.FC = () => {
     return Promise.resolve();
   };
   
-  // Add this function to handle the back to login action with Promise<void> return type
   const handleBackToLogin = async (): Promise<void> => {
     setShowForgotPassword(false);
     return Promise.resolve();
@@ -151,7 +149,7 @@ const LoginPage: React.FC = () => {
                         Don't have an account?{' '}
                         <button
                           type="button"
-                          onClick={toggleSignUpDialog}
+                          onClick={() => toggleSignUpDialog()}
                           className="text-primary hover:underline font-medium transition-colors"
                         >
                           Sign up
