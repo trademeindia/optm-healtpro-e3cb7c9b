@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MotionAnalysisSession } from '@/types/motion-analysis';
 import { Video, StopCircle, Loader2, Save } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface MotionAnalysisRecorderProps {
   patientId: string;
@@ -28,12 +28,11 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
   const [notes, setNotes] = useState('');
   const [duration, setDuration] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
   
   const startRecording = () => {
     setIsRecording(true);
     setDuration(0);
-    toast.info('Recording started');
+    toast({ title: 'Recording started' });
     
     // In a real application, this would start capturing motion data
     // For this demo, we'll just increment the duration counter
@@ -51,12 +50,16 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
     }
     
     setIsRecording(false);
-    toast.info('Recording stopped');
+    toast({ title: 'Recording stopped' });
   };
   
   const saveSession = async () => {
     if (duration === 0) {
-      toast.error('No data recorded. Please record a session first.');
+      toast({ 
+        title: 'No data recorded', 
+        description: 'Please record a session first.', 
+        variant: 'destructive' 
+      });
       return;
     }
     
@@ -73,17 +76,21 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
         duration,
         notes,
         jointAngles: generateMockJointAngles(),
-        status: 'completed'
+        status: 'completed',
+        targetJoints: ['knee', 'hip', 'ankle'] // Adding targetJoints
       };
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Session saved successfully');
+      toast({ title: 'Session saved successfully' });
       onSessionCreated();
     } catch (error) {
       console.error('Error saving session:', error);
-      toast.error('Failed to save session');
+      toast({ 
+        title: 'Failed to save session', 
+        variant: 'destructive' 
+      });
     } finally {
       setIsSaving(false);
     }

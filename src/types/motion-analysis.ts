@@ -15,6 +15,7 @@ export interface MotionAnalysisSession {
   notes: string;
   jointAngles: JointAngle[];
   status: 'pending' | 'completed' | 'failed';
+  targetJoints?: string[]; // Adding targetJoints as optional property
 }
 
 export interface MotionAnalysisReport {
