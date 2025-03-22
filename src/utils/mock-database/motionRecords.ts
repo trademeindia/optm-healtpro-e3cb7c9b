@@ -31,6 +31,20 @@ const mockMotionRecords: MotionAnalysisSession[] = [
       { joint: 'rightShoulder', angle: 55.9, timestamp: Date.now() - 103000 },
       { joint: 'rightShoulder', angle: 72.3, timestamp: Date.now() - 102000 }
     ]
+  },
+  {
+    id: '3',
+    patientId: '2',
+    type: 'Hip Mobility',
+    measurementDate: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    duration: 40,
+    notes: 'Initial evaluation of hip range of motion',
+    jointAngles: [
+      { joint: 'leftHip', angle: 30.2, timestamp: Date.now() - 205000 },
+      { joint: 'leftHip', angle: 45.7, timestamp: Date.now() - 204000 },
+      { joint: 'leftHip', angle: 60.3, timestamp: Date.now() - 203000 },
+      { joint: 'leftHip', angle: 75.8, timestamp: Date.now() - 202000 }
+    ]
   }
 ];
 

@@ -95,31 +95,24 @@ export const useHumanPoseDetection = (videoRef: React.RefObject<HTMLVideoElement
     };
     
     // Extract joint positions
-    body.keypoints.forEach(keypoint => {
+    body.keypoints.forEach((keypoint: any) => {
       const name = keypoint.part as string;
       if (keypointMap[name]) {
-        // Fix: The position in Human library has x and y directly on the keypoint object
-        // Ensure we're accessing the correct properties based on the library's structure
-        if (typeof keypoint.position === 'object' && keypoint.position !== null) {
+        // Handle different possible structures of keypoint data
+        let x = 0;
+        let y = 0;
+        
+        if (keypoint.position && typeof keypoint.position === 'object') {
           // If position is an object with x and y properties
-          if ('x' in keypoint.position && 'y' in keypoint.position) {
-            detectedJoints[keypointMap[name]] = [
-              (keypoint.position as any).x, 
-              (keypoint.position as any).y
-            ];
-          } else {
-            // Fallback in case structure is different
-            console.warn('Unexpected keypoint position structure:', keypoint);
-          }
-        } else {
-          // If x and y are directly on the keypoint (alternative structure)
-          if ('x' in keypoint && 'y' in keypoint) {
-            detectedJoints[keypointMap[name]] = [
-              (keypoint as any).x, 
-              (keypoint as any).y
-            ];
-          }
+          x = (keypoint.position as any).x ?? 0;
+          y = (keypoint.position as any).y ?? 0;
+        } else if ('x' in keypoint && 'y' in keypoint) {
+          // If x and y are directly on the keypoint
+          x = (keypoint as any).x;
+          y = (keypoint as any).y;
         }
+        
+        detectedJoints[keypointMap[name]] = [x, y];
       }
     });
     

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Camera, Play, Square, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveMotionRecord } from '@/utils/mock-database/motionRecords';
-import { v4 as uuidv4 } from 'uuid';
+import { JointAngle, MotionAnalysisSession } from '@/types/motion-analysis';
+import { useHumanPoseDetection } from '@/hooks/useHumanPoseDetection';
 
 interface MotionAnalysisRecorderProps {
   patientId: string;
@@ -27,11 +28,39 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
   const [recordingTime, setRecordingTime] = useState(0);
   const [sessionType, setSessionType] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
-  const [recordedAngles, setRecordedAngles] = useState<any[]>([]);
+  const [recordedAngles, setRecordedAngles] = useState<JointAngle[]>([]);
   const [timerInterval, setTimerInterval] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Use human pose detection
+  const {
+    startDetection,
+    stopDetection,
+    isDetecting,
+    jointAngles,
+    fps
+  } = useHumanPoseDetection(videoRef);
+  
+  // Collect joint angles during recording
+  useEffect(() => {
+    if (isRecording && jointAngles.length > 0) {
+      setRecordedAngles(prev => [...prev, ...jointAngles]);
+    }
+  }, [isRecording, jointAngles]);
   
   const startCamera = async () => {
     try {
+      if (cameraStreamRef.current) {
+        if (videoRef.current) {
+          videoRef.current.srcObject = cameraStreamRef.current;
+        }
+        toast({
+          title: "Camera Resumed",
+          description: "Camera stream has been resumed",
+        });
+        return;
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: true, 
         audio: false 
@@ -43,12 +72,18 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
       
       cameraStreamRef.current = stream;
       
+      // Clear any previous errors
+      setError(null);
+      
       toast({
         title: "Camera Started",
         description: "You can now begin recording a motion analysis session",
       });
     } catch (error) {
       console.error('Error accessing camera:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Camera access error: ${errorMessage}`);
+      
       toast({
         title: "Camera Error",
         description: "Unable to access camera. Please check permissions.",
@@ -58,6 +93,8 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
   };
   
   const stopCamera = () => {
+    stopDetection();
+    
     if (cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach(track => track.stop());
       cameraStreamRef.current = null;
@@ -68,9 +105,9 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
     }
   };
   
-  const startRecording = () => {
+  const startRecording = async () => {
     if (!cameraStreamRef.current) {
-      startCamera();
+      await startCamera();
       return;
     }
     
@@ -88,22 +125,11 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
       const mediaRecorder = new MediaRecorder(cameraStreamRef.current);
       mediaRecorderRef.current = mediaRecorder;
       
-      // Start recording motion data
-      // In a real app, this would use pose detection to calculate joint angles
-      // For demo purposes, we'll simulate recording random angle data
-      const simulateMotionDetection = () => {
-        setRecordedAngles(prev => [
-          ...prev,
-          {
-            joint: ["leftKnee", "rightKnee", "leftElbow", "rightElbow"][Math.floor(Math.random() * 4)],
-            angle: Math.floor(Math.random() * 180),
-            timestamp: Date.now()
-          }
-        ]);
-      };
+      // Clear any previously recorded angles
+      setRecordedAngles([]);
       
-      // Record sample data every second
-      const motionInterval = window.setInterval(simulateMotionDetection, 1000);
+      // Start pose detection
+      startDetection();
       
       // Start timer
       const interval = window.setInterval(() => {
@@ -120,15 +146,19 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
       
       // Clean up when recording stops
       mediaRecorder.onstop = () => {
-        clearInterval(motionInterval);
-        clearInterval(interval);
-        setTimerInterval(null);
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          setTimerInterval(null);
+        }
         setIsRecording(false);
       };
       
       mediaRecorder.start();
     } catch (error) {
       console.error('Error starting recording:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Recording error: ${errorMessage}`);
+      
       toast({
         title: "Recording Error",
         description: "Unable to start recording",
@@ -138,6 +168,8 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
   };
   
   const stopRecording = () => {
+    stopDetection();
+    
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
       
@@ -166,8 +198,7 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
     }
     
     try {
-      const session = {
-        id: uuidv4(),
+      const session: Omit<MotionAnalysisSession, 'id'> = {
         patientId,
         type: sessionType,
         measurementDate: new Date().toISOString(),
@@ -195,13 +226,25 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
       stopCamera();
     } catch (error) {
       console.error('Error saving session:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
       toast({
         title: "Save Error",
-        description: "There was an error saving the session",
+        description: `There was an error saving the session: ${errorMessage}`,
         variant: "destructive",
       });
     }
   };
+  
+  // Clean up when component unmounts
+  useEffect(() => {
+    return () => {
+      stopCamera();
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [timerInterval]);
   
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -245,6 +288,9 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
               <Button onClick={startCamera}>
                 Start Camera
               </Button>
+              {error && (
+                <p className="mt-2 text-sm text-destructive">{error}</p>
+              )}
             </div>
           )}
           
@@ -252,6 +298,12 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
             <div className="absolute top-2 right-2 bg-destructive text-white px-2 py-1 rounded-md flex items-center">
               <span className="animate-pulse mr-2 h-2 w-2 rounded-full bg-white"></span>
               {formatTime(recordingTime)}
+            </div>
+          )}
+          
+          {isDetecting && (
+            <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-md flex items-center text-xs">
+              Detection active ({fps} FPS)
             </div>
           )}
         </div>

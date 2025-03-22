@@ -1,133 +1,174 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileSymlink, FileText, Calendar, Clock } from 'lucide-react';
+import { getMotionRecords } from '@/utils/mock-database/motionRecords';
 import { MotionAnalysisSession } from '@/types/motion-analysis';
-import { Calendar, Clock, ChevronRight } from 'lucide-react';
-
-// Mock data for demonstration
-const MOCK_SESSIONS: MotionAnalysisSession[] = [
-  {
-    id: '1',
-    patientId: '1',
-    type: 'Gait Analysis',
-    measurementDate: new Date().toISOString(),
-    duration: 45,
-    jointAngles: [
-      { joint: 'leftKnee', angle: 120, timestamp: Date.now() - 30000 },
-      { joint: 'rightKnee', angle: 115, timestamp: Date.now() - 25000 },
-      { joint: 'leftElbow', angle: 95, timestamp: Date.now() - 20000 },
-      { joint: 'rightElbow', angle: 90, timestamp: Date.now() - 15000 },
-    ],
-    notes: 'Patient showed improved range of motion'
-  },
-  {
-    id: '2',
-    patientId: '1',
-    type: 'Shoulder Assessment',
-    measurementDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    duration: 30,
-    jointAngles: [
-      { joint: 'leftShoulder', angle: 85, timestamp: Date.now() - 86400000 - 30000 },
-      { joint: 'rightShoulder', angle: 80, timestamp: Date.now() - 86400000 - 25000 },
-    ],
-    notes: 'Limited mobility in right shoulder'
-  }
-];
 
 interface MotionAnalysisHistoryProps {
   patientId: string;
   onSelectSession: (session: MotionAnalysisSession) => void;
 }
 
-const MotionAnalysisHistory: React.FC<MotionAnalysisHistoryProps> = ({ 
-  patientId, 
-  onSelectSession 
+const MotionAnalysisHistory: React.FC<MotionAnalysisHistoryProps> = ({
+  patientId,
+  onSelectSession
 }) => {
   const [sessions, setSessions] = useState<MotionAnalysisSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, fetch sessions from an API
-    // For now, we'll simulate a short delay and use mock data
-    const loadData = async () => {
-      setIsLoading(true);
+    const fetchSessions = async () => {
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Filter sessions by patient ID
-        const patientSessions = MOCK_SESSIONS.filter(
-          session => session.patientId === patientId
-        );
-        
-        setSessions(patientSessions);
-      } catch (error) {
-        console.error('Error loading sessions:', error);
+        setLoading(true);
+        const data = await getMotionRecords(patientId);
+        setSessions(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching motion analysis sessions:', err);
+        setError('Failed to load sessions. Please try again.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    
-    loadData();
+
+    fetchSessions();
   }, [patientId]);
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Session History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-6">
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+            <span className="ml-2">Loading sessions...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Session History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-destructive/10 p-4 rounded-md text-destructive">
+            {error}
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+          >
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Motion Analysis History</CardTitle>
+        <CardTitle>Session History</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="py-8 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        {sessions.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
+            <p>No motion analysis sessions found for this patient.</p>
+            <p className="text-sm mt-1">Record a new session to see it here.</p>
           </div>
-        ) : sessions.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Measurements</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sessions.map((session) => (
-                <TableRow key={session.id}>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                      {new Date(session.measurementDate).toLocaleDateString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>{session.type}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                      {session.duration} seconds
-                    </div>
-                  </TableCell>
-                  <TableCell>{session.jointAngles.length}</TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => onSelectSession(session)}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         ) : (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground">No motion analysis sessions found for this patient</p>
-          </div>
+          <Tabs defaultValue="all">
+            <TabsList className="mb-4">
+              <TabsTrigger value="all">All Sessions</TabsTrigger>
+              <TabsTrigger value="recent">Recent</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all" className="space-y-4">
+              {sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="border rounded-lg p-4 hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                  onClick={() => onSelectSession(session)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">{session.type}</h3>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {formatDate(session.measurementDate)}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {session.duration} seconds
+                      <span className="mx-2">•</span>
+                      {session.jointAngles.length} measurements
+                    </div>
+                    
+                    <Button size="sm" variant="ghost" className="h-7 px-2">
+                      <FileSymlink className="h-3 w-3 mr-1" />
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="recent">
+              {sessions.slice(0, 3).map((session) => (
+                <div
+                  key={session.id}
+                  className="border rounded-lg p-4 hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer mb-3"
+                  onClick={() => onSelectSession(session)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">{session.type}</h3>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {formatDate(session.measurementDate)}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {session.duration} seconds
+                      <span className="mx-2">•</span>
+                      {session.jointAngles.length} measurements
+                    </div>
+                    
+                    <Button size="sm" variant="ghost" className="h-7 px-2">
+                      <FileSymlink className="h-3 w-3 mr-1" />
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
         )}
       </CardContent>
     </Card>
