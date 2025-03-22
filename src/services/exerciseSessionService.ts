@@ -4,9 +4,16 @@ import { ExerciseSession, JointAngle } from '@/components/exercises/body-tracker
 
 export const saveExerciseSession = async (sessionData: ExerciseSession) => {
   try {
+    // Ensure sessionData matches the expected database schema
     const { data, error } = await supabase
       .from('exercise_sessions')
-      .insert([sessionData]);
+      .insert({
+        patient_id: sessionData.patient_id,
+        exercise_type: sessionData.exercise_type,
+        timestamp: sessionData.timestamp,
+        angles: sessionData.angles, // This will be automatically converted to JSON
+        notes: sessionData.notes
+      });
       
     if (error) {
       console.error('Error saving to Supabase:', error);

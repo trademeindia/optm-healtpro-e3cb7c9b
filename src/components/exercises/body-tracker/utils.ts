@@ -33,7 +33,8 @@ export const calculateAngle = (
 
 // Calculate all important joint angles from keypoints
 export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] => {
-  const findKeypoint = (name: string) => keypoints.find(kp => kp.name === name);
+  // Helper function to find keypoint by label (not name)
+  const findKeypoint = (label: string) => keypoints.find(kp => kp.label === label);
   const angles: JointAngle[] = [];
   
   // Left elbow angle
@@ -43,9 +44,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (leftShoulder && leftElbow && leftWrist) {
     const angle = calculateAngle(
-      leftShoulder, 
-      leftElbow, 
-      leftWrist
+      { x: leftShoulder.x, y: leftShoulder.y }, 
+      { x: leftElbow.x, y: leftElbow.y }, 
+      { x: leftWrist.x, y: leftWrist.y }
     );
     
     angles.push({
@@ -61,9 +62,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (rightShoulder && rightElbow && rightWrist) {
     const angle = calculateAngle(
-      rightShoulder, 
-      rightElbow, 
-      rightWrist
+      { x: rightShoulder.x, y: rightShoulder.y }, 
+      { x: rightElbow.x, y: rightElbow.y }, 
+      { x: rightWrist.x, y: rightWrist.y }
     );
     
     angles.push({
@@ -79,9 +80,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (leftHip && leftKnee && leftAnkle) {
     const angle = calculateAngle(
-      leftHip, 
-      leftKnee, 
-      leftAnkle
+      { x: leftHip.x, y: leftHip.y }, 
+      { x: leftKnee.x, y: leftKnee.y }, 
+      { x: leftAnkle.x, y: leftAnkle.y }
     );
     
     angles.push({
@@ -97,9 +98,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (rightHip && rightKnee && rightAnkle) {
     const angle = calculateAngle(
-      rightHip, 
-      rightKnee, 
-      rightAnkle
+      { x: rightHip.x, y: rightHip.y }, 
+      { x: rightKnee.x, y: rightKnee.y }, 
+      { x: rightAnkle.x, y: rightAnkle.y }
     );
     
     angles.push({
@@ -115,9 +116,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (leftShoulder2 && leftHip2 && leftKnee2) {
     const angle = calculateAngle(
-      leftShoulder2, 
-      leftHip2, 
-      leftKnee2
+      { x: leftShoulder2.x, y: leftShoulder2.y }, 
+      { x: leftHip2.x, y: leftHip2.y }, 
+      { x: leftKnee2.x, y: leftKnee2.y }
     );
     
     angles.push({
@@ -133,9 +134,9 @@ export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] =>
   
   if (rightShoulder2 && rightHip2 && rightKnee2) {
     const angle = calculateAngle(
-      rightShoulder2, 
-      rightHip2, 
-      rightKnee2
+      { x: rightShoulder2.x, y: rightShoulder2.y }, 
+      { x: rightHip2.x, y: rightHip2.y }, 
+      { x: rightKnee2.x, y: rightKnee2.y }
     );
     
     angles.push({

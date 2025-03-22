@@ -29,7 +29,8 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
     const initHuman = async () => {
       try {
         console.log('Initializing Human.js...');
-        const humanConfig: Human.Config = {
+        // Create a config that includes all required properties
+        const humanConfig: Partial<Human.Config> = {
           // Use a CDN path for the models
           modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
           filter: { enabled: true, equalization: false },
@@ -43,6 +44,11 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
           hand: { enabled: false },
           object: { enabled: false },
           gesture: { enabled: true },
+          // Add missing required properties
+          backend: 'webgl',
+          wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
+          debug: false,
+          async: true,
         };
 
         const humanInstance = new Human.Human(humanConfig);
@@ -181,6 +187,41 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const startTracking = () => {
+    setIsTracking(true);
+    requestRef.current = requestAnimationFrame(detect);
+  };
+
+  const stopTracking = () => {
+    setIsTracking(false);
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+  };
+
+  const toggleCamera = () => {
+    if (cameraActive) {
+      setCameraActive(false);
+      stopTracking();
+    } else {
+      setCameraActive(true);
+    }
+  };
+
+  const saveToSupabase = () => {
+    if (!angles.length) return;
+    
+    // Prepare data for saving
+    const sessionData = {
+      timestamp: new Date().toISOString(),
+      angles: angles,
+    };
+    
+    if (onSaveData) {
+      onSaveData(sessionData);
+    }
+  };
 
   return (
     <Card className="relative overflow-hidden">
