@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
 import { PoseDetectionConfig } from './poseDetectionTypes';
-import { toast } from '@/hooks/use-toast';
 
 interface UsePoseModelResult {
   model: posenet.PoseNet | null;
@@ -32,67 +31,50 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       // Force garbage collection to free up memory before loading
       if (tf.env().get('IS_BROWSER')) {
         try {
-          // @ts-ignore - accessing internals but it's useful for memory management
-          tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
+          // Memory cleanup for WebGL backend
+          const backend = tf.getBackend();
+          if (backend === 'webgl') {
+            // @ts-ignore - accessing internals but it's useful for memory management
+            const gl = tf.backend().getGPGPUContext().gl;
+            gl.finish();
+          }
         } catch (e) {
-          console.warn("Failed to cleanup memory:", e);
+          console.warn("Error during WebGL cleanup:", e);
         }
       }
       
       // Load PoseNet model
-      console.log("Loading PoseNet model...");
+      console.log("Loading PoseNet model with config:", config);
       const loadedModel = await posenet.load({
-        architecture: 'MobileNetV1',
-        outputStride: 16,
+        architecture: config.architecture,
+        outputStride: config.outputStride,
         inputResolution: config.inputResolution,
-        multiplier: 0.75,
-        quantBytes: 2
+        multiplier: config.multiplier,
+        quantBytes: config.quantBytes
       });
       
       console.log("PoseNet model loaded successfully");
       setModel(loadedModel);
-      
-      toast({
-        title: "Model Loaded",
-        description: "Pose detection model loaded successfully. You can start exercising now.",
-      });
-    } catch (error) {
-      console.error('Error loading PoseNet model:', error);
-      setError("Failed to load pose detection model");
-      
-      toast({
-        title: "Model Loading Failed",
-        description: "Failed to load pose detection model. Please try refreshing the page.",
-        variant: "destructive"
-      });
+    } catch (err) {
+      console.error("Error loading PoseNet model:", err);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsModelLoading(false);
     }
-  }, [model, config]);
+  }, [config, model]);
   
   // Load model on component mount
   useEffect(() => {
     loadModel();
     
-    // Cleanup on unmount
     return () => {
-      // Close model and free up memory
+      // Clean up tf.js resources when component unmounts
       if (model) {
         try {
-          // @ts-ignore - accessing internals but it's useful for memory management
-          model.dispose?.();
-          
-          // Force garbage collection
-          if (tf.env().get('IS_BROWSER')) {
-            try {
-              // @ts-ignore - accessing internals but it's useful for memory management
-              tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
-            } catch (e) {
-              console.warn("Failed to cleanup memory:", e);
-            }
-          }
+          // Dispose of tensors to prevent memory leaks
+          tf.disposeVariables();
         } catch (e) {
-          console.warn("Error disposing model:", e);
+          console.warn("Error during TensorFlow cleanup:", e);
         }
       }
     };

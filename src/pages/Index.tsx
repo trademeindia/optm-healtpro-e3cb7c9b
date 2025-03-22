@@ -5,6 +5,18 @@ import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { Loader2 } from 'lucide-react';
+
+// Loading component for index page
+const IndexLoader = () => (
+  <div className="flex items-center justify-center min-h-screen w-full bg-background">
+    <div className="text-foreground p-6 text-center border border-gray-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">
+      <Loader2 className="w-12 h-12 mb-4 mx-auto text-primary animate-spin" />
+      <h2 className="text-xl font-medium">Loading...</h2>
+      <p className="mt-2 text-muted-foreground">Initializing application</p>
+    </div>
+  </div>
+);
 
 const IndexContent = () => {
   const navigate = useNavigate();
@@ -13,9 +25,16 @@ const IndexContent = () => {
   const [redirectAttempts, setRedirectAttempts] = useState(0);
 
   const handleRedirect = useCallback((path: string) => {
-    console.log(`Navigating to ${path}`);
-    setHasRedirected(true);
-    navigate(path);
+    try {
+      console.log(`Navigating to ${path}`);
+      setHasRedirected(true);
+      navigate(path);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast.error("Navigation failed", { 
+        description: "There was a problem redirecting you. Please try refreshing the page." 
+      });
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -54,15 +73,7 @@ const IndexContent = () => {
   }, [isAuthenticated, isLoading, navigate, user, hasRedirected, handleRedirect, redirectAttempts]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen w-full bg-background">
-        <div className="text-foreground p-6 text-center border border-gray-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">
-          <div className="w-12 h-12 mb-4 mx-auto rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
-          <h2 className="text-xl font-medium">Loading...</h2>
-          <p className="mt-2 text-muted-foreground">Please wait while we prepare your experience</p>
-        </div>
-      </div>
-    );
+    return <IndexLoader />;
   }
 
   // Fallback UI for any unexpected state

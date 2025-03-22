@@ -1,64 +1,80 @@
 
-import React, { ErrorInfo } from 'react';
-import { AlertCircle } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+interface Props {
+  children: ReactNode;
+  onError?: (error: Error) => void;
+  fallback?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = {
+      hasError: false,
+      error: null
+    };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Update state so the next render will show the fallback UI
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): State {
+    return {
+      hasError: true,
+      error
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error to console
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     
-    // Call the onError callback if provided
+    // Call the optional onError handler
     if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+      this.props.onError(error);
     }
+    
+    // Show a toast notification
+    toast.error('An error occurred', {
+      description: error.message || 'The application encountered an unexpected problem'
+    });
   }
 
-  render(): React.ReactNode {
+  handleReset = (): void => {
+    this.setState({
+      hasError: false,
+      error: null
+    });
+  };
+
+  render(): ReactNode {
     if (this.state.hasError) {
+      // Use the custom fallback if provided
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      const errorMessage = this.state.error?.message || 'An unexpected error occurred';
-
+      // Default error UI
       return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-          <div className="max-w-md w-full bg-card border border-border shadow-lg rounded-lg p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-            <p className="text-muted-foreground mb-4">{errorMessage}</p>
-            <Button 
-              onClick={() => {
-                console.log('Attempting to recover from error');
-                this.setState({ hasError: false, error: null });
-                window.location.href = '/';
-              }}
-            >
-              Return to Home
-            </Button>
-          </div>
+        <div className="flex flex-col items-center justify-center p-6 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800/30 max-w-md mx-auto my-8 text-center">
+          <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
+          <h2 className="text-xl font-medium text-red-800 dark:text-red-300 mb-2">Something went wrong</h2>
+          <p className="text-red-600 dark:text-red-400 mb-4">
+            {this.state.error?.message || "The application encountered an unexpected problem"}
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={this.handleReset}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
         </div>
       );
     }
