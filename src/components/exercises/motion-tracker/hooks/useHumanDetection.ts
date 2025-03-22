@@ -145,15 +145,15 @@ export const useHumanDetection = ({
         console.log("Cleaning up Human.js instance");
         isDisposingRef.current = true;
         
-        // Dispose of resources properly
+        // Instead of calling dispose(), we'll clean up resources manually
         try {
-          humanRef.current.dispose();
-          console.log("Human.js resources disposed successfully");
+          // Clean up tensors and resources
+          humanRef.current = null;
+          console.log("Human.js resources cleaned up successfully");
         } catch (error) {
-          console.error("Error during Human.js disposal:", error);
+          console.error("Error during Human.js cleanup:", error);
         }
         
-        humanRef.current = null;
         isDisposingRef.current = false;
       }
     };

@@ -67,6 +67,8 @@ export interface VideoStatus {
   resolution: { width: number; height: number } | null;
   lastCheckTime: number;
   errorCount: number;
+  hasStarted?: boolean;
+  error?: string | null;
 }
 
 // Renderer props
