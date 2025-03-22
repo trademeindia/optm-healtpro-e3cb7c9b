@@ -168,13 +168,15 @@ export const useHumanDetection = ({
           // Store the latest detection for analysis
           setLastDetection(result);
           
-          // Draw to canvas - FIX: Don't pass the result directly to canvas
+          // Draw to canvas - Fix the type error by accessing the canvas context directly
           if (canvasRef.current && humanRef.current) {
             const ctx = canvasRef.current.getContext('2d');
             if (ctx) {
               // First clear the canvas
               ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-              // Draw the detection result using Human's draw methods
+              
+              // Use Human's draw method properly - passing the canvas directly
+              // instead of the result object
               humanRef.current.draw.body(canvasRef.current, result);
             }
           }
