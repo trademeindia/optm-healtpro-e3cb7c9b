@@ -14,11 +14,11 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, feedbackTyp
   const getFeedbackColor = () => {
     switch (feedbackType) {
       case FeedbackType.SUCCESS: 
-        return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border border-green-200 dark:border-green-800';
       case FeedbackType.WARNING: 
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800';
       default: 
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
     }
   };
   
@@ -31,9 +31,9 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, feedbackTyp
   };
 
   return (
-    <div className={`p-3 rounded-lg flex items-start gap-2 shadow-sm ${getFeedbackColor()}`}>
+    <div className={`p-3 rounded-lg flex items-start gap-2 shadow-md ${getFeedbackColor()}`}>
       <div className="mt-0.5">{getFeedbackIcon()}</div>
-      <span className="text-sm">{feedback}</span>
+      <span className="text-sm font-medium">{feedback}</span>
     </div>
   );
 };

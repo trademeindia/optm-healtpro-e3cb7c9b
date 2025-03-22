@@ -10,7 +10,7 @@ interface TutorialDialogProps {
 const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+      <DialogContent className="max-w-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 dialog-content-solid">
         <DialogHeader className="border-b pb-3 mb-2">
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">How to Use AI Squat Analyzer</DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-300">
