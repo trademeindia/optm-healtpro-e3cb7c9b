@@ -1,100 +1,106 @@
 
 import React from 'react';
-import { Play, Clock } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlayCircle, Dumbbell, Clock } from 'lucide-react';
 
 interface ExerciseVideoProps {
   id: string;
   title: string;
   description: string;
+  duration: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
   thumbnailUrl: string;
   videoUrl: string;
-  duration: number;
-  difficulty: string;
   muscleGroups: string[];
-  status?: 'completed' | 'in-progress' | null;
   onStart: () => void;
+  status: 'completed' | 'in-progress' | 'not-started';
 }
 
 const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
   id,
   title,
   description,
-  thumbnailUrl,
-  videoUrl,
   duration,
   difficulty,
+  thumbnailUrl,
+  videoUrl,
   muscleGroups,
-  status,
-  onStart
+  onStart,
+  status
 }) => {
-  // Format duration in minutes and seconds
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  // Get badge color based on difficulty
+  const getDifficultyColor = () => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-blue-100 text-blue-800';
+      case 'advanced':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
-  
+
+  // Get status indicator
+  const getStatusIndicator = () => {
+    switch (status) {
+      case 'completed':
+        return <div className="w-2 h-2 rounded-full bg-green-500"></div>;
+      case 'in-progress':
+        return <div className="w-2 h-2 rounded-full bg-amber-500"></div>;
+      default:
+        return <div className="w-2 h-2 rounded-full bg-gray-300"></div>;
+    }
+  };
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden flex flex-col h-full">
       <div className="relative">
-        <div className="aspect-video relative overflow-hidden bg-muted">
-          <img 
-            src={thumbnailUrl} 
-            alt={title}
-            className="object-cover w-full h-full"
-          />
-          
-          {status === 'completed' && (
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-green-500 text-white">
-                Completed
-              </Badge>
-            </div>
-          )}
-          
-          {status === 'in-progress' && (
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-blue-500 text-white">
-                In Progress
-              </Badge>
-            </div>
-          )}
+        <img 
+          src={thumbnailUrl} 
+          alt={title} 
+          className="h-48 w-full object-cover"
+        />
+        <div className="absolute top-2 right-2 flex gap-2">
+          <Badge variant="secondary" className={getDifficultyColor()}>
+            {difficulty}
+          </Badge>
         </div>
       </div>
       
-      <CardHeader className="p-4 pb-0">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-medium">{title}</CardTitle>
-          <Badge variant="outline">{difficulty}</Badge>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg">{title}</CardTitle>
+          {getStatusIndicator()}
         </div>
-        <CardDescription className="flex items-center gap-1 text-xs">
-          <Clock className="h-3 w-3" />
-          <span>{formatDuration(duration)}</span>
+        <CardDescription className="line-clamp-2">
+          {description}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="p-4 pb-0">
-        <p className="text-sm text-muted-foreground">{description}</p>
-        
-        <div className="flex flex-wrap gap-1 mt-2">
-          {muscleGroups.map((muscle, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {muscle}
-            </Badge>
-          ))}
+      <CardContent className="pb-2 grow">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span>{duration}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Dumbbell className="h-4 w-4" />
+            <span>{muscleGroups.join(', ')}</span>
+          </div>
         </div>
       </CardContent>
       
-      <CardFooter className="p-4">
+      <CardFooter className="pt-0">
         <Button 
           onClick={onStart} 
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full flex items-center gap-2"
         >
-          <Play className="h-4 w-4" />
-          <span>Start Exercise</span>
+          <PlayCircle className="h-4 w-4" />
+          Start Exercise
         </Button>
       </CardFooter>
     </Card>

@@ -1,67 +1,59 @@
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FeedbackType } from '../types';
 
-type UseCameraProps = {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  onFeedbackChange: (message: string | null, type: FeedbackType) => void;
+interface UseCameraProps {
+  videoRef?: React.RefObject<HTMLVideoElement>;
+  onFeedbackChange?: (message: string | null, type: FeedbackType) => void;
   onCameraStart?: () => void;
   onCameraStop?: () => void;
-};
-
-type UseCameraReturn = {
-  cameraActive: boolean;
-  toggleCamera: () => Promise<void>;
-  stopCamera: () => void;
-  cameraPermission: 'granted' | 'denied' | 'prompt';
-};
+}
 
 export const useCamera = ({
   videoRef,
   onFeedbackChange,
   onCameraStart,
   onCameraStop
-}: UseCameraProps): UseCameraReturn => {
+}: UseCameraProps) => {
+  // State
   const [cameraActive, setCameraActive] = useState(false);
-  const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [permission, setPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [videoStatus, setVideoStatus] = useState({
+    isReady: false,
+    hasStream: false,
+    resolution: null as { width: number; height: number } | null,
+    lastCheckTime: 0,
+    errorCount: 0
+  });
+
+  // Refs
   const streamRef = useRef<MediaStream | null>(null);
-  
-  // Stop camera and clean up resources
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      // Stop all tracks in the stream
-      streamRef.current.getTracks().forEach(track => {
-        track.stop();
-      });
-      streamRef.current = null;
-    }
-    
-    // Clear the video source
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject = null;
-    }
-    
-    setCameraActive(false);
-    onFeedbackChange(null, FeedbackType.INFO);
-    
-    if (onCameraStop) {
-      onCameraStop();
-    }
-    
-    console.log("Camera stopped");
-  }, [videoRef, onFeedbackChange, onCameraStop]);
-  
-  // Toggle camera on/off
-  const toggleCamera = useCallback(async () => {
-    if (cameraActive) {
-      stopCamera();
-      return;
-    }
-    
+  const internalVideoRef = useRef<HTMLVideoElement | null>(null);
+  const currentVideoRef = videoRef || internalVideoRef;
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Start camera
+  const startCamera = useCallback(async () => {
     try {
-      onFeedbackChange("Requesting camera access...", FeedbackType.INFO);
+      setCameraError(null);
       
-      // Request camera with ideal settings
+      if (onFeedbackChange) {
+        onFeedbackChange("Requesting camera access...", FeedbackType.INFO);
+      }
+      
+      console.log("Requesting camera permission");
+      
+      // Check if permission was already denied
+      if (permission === 'denied') {
+        setCameraError("Camera permission was denied. Please grant access in your browser settings.");
+        if (onFeedbackChange) {
+          onFeedbackChange("Camera permission denied. Please enable camera access in your browser settings.", FeedbackType.ERROR);
+        }
+        return;
+      }
+      
+      // Request camera with specific constraints for better detection
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640 },
@@ -72,45 +64,117 @@ export const useCamera = ({
         audio: false
       });
       
-      // Store stream for later cleanup
+      // Update permission status
+      setPermission('granted');
+      
+      // Store stream reference
       streamRef.current = stream;
       
-      // Connect stream to video element
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Needed for iOS Safari
-        videoRef.current.setAttribute('playsinline', 'true');
-        await videoRef.current.play();
+      // Attach stream to video element
+      if (currentVideoRef.current) {
+        currentVideoRef.current.srcObject = stream;
+        currentVideoRef.current.onloadedmetadata = () => {
+          if (currentVideoRef.current) {
+            currentVideoRef.current.play()
+              .then(() => {
+                setCameraActive(true);
+                setVideoStatus({
+                  isReady: true,
+                  hasStream: true,
+                  resolution: {
+                    width: currentVideoRef.current?.videoWidth || 0,
+                    height: currentVideoRef.current?.videoHeight || 0
+                  },
+                  lastCheckTime: Date.now(),
+                  errorCount: 0
+                });
+                
+                if (onFeedbackChange) {
+                  onFeedbackChange("Camera started successfully.", FeedbackType.SUCCESS);
+                }
+                
+                if (onCameraStart) {
+                  onCameraStart();
+                }
+              })
+              .catch(error => {
+                console.error("Error playing video:", error);
+                setCameraError(`Failed to start video: ${error.message}`);
+                if (onFeedbackChange) {
+                  onFeedbackChange(`Error starting camera: ${error.message}`, FeedbackType.ERROR);
+                }
+              });
+          }
+        };
       }
-      
-      setCameraActive(true);
-      setCameraPermission('granted');
-      onFeedbackChange("Camera active. Stand where your full body is visible.", FeedbackType.SUCCESS);
-      
-      if (onCameraStart) {
-        onCameraStart();
-      }
-      
-      console.log("Camera started");
     } catch (error) {
-      console.error("Camera access error:", error);
+      console.error("Error accessing camera:", error);
       
-      let errorMessage = "Failed to access camera";
-      
-      if (error instanceof DOMException) {
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          errorMessage = "Camera access denied. Please allow camera access in your browser settings.";
-          setCameraPermission('denied');
-        } else if (error.name === 'NotFoundError') {
-          errorMessage = "No camera found. Please connect a camera and try again.";
-        } else if (error.name === 'NotReadableError') {
-          errorMessage = "Camera is being used by another application. Please close other camera apps.";
+      // Handle specific permission errors
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
+        setPermission('denied');
+        setCameraError("Camera access denied. Please grant permission.");
+        if (onFeedbackChange) {
+          onFeedbackChange("Camera permission denied. Please enable camera access.", FeedbackType.ERROR);
+        }
+      } else {
+        setCameraError(`Failed to access camera: ${(error as Error).message}`);
+        if (onFeedbackChange) {
+          onFeedbackChange(`Error accessing camera: ${(error as Error).message}`, FeedbackType.ERROR);
         }
       }
-      
-      onFeedbackChange(errorMessage, FeedbackType.ERROR);
     }
-  }, [cameraActive, videoRef, stopCamera, onFeedbackChange, onCameraStart]);
+  }, [permission, currentVideoRef, onFeedbackChange, onCameraStart]);
+  
+  // Stop camera
+  const stopCamera = useCallback(() => {
+    // Stop all tracks in the stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    // Clear video source
+    if (currentVideoRef.current) {
+      currentVideoRef.current.srcObject = null;
+    }
+    
+    // Update state
+    setCameraActive(false);
+    setVideoStatus(prev => ({
+      ...prev,
+      isReady: false,
+      hasStream: false
+    }));
+    
+    if (onFeedbackChange) {
+      onFeedbackChange("Camera stopped.", FeedbackType.INFO);
+    }
+    
+    if (onCameraStop) {
+      onCameraStop();
+    }
+    
+    console.log("Camera stopped");
+  }, [currentVideoRef, onFeedbackChange, onCameraStop]);
+  
+  // Toggle camera
+  const toggleCamera = useCallback(() => {
+    if (cameraActive) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  }, [cameraActive, startCamera, stopCamera]);
+  
+  // Retry camera after error
+  const retryCamera = useCallback(() => {
+    if (streamRef.current) {
+      stopCamera();
+    }
+    setCameraError(null);
+    startCamera();
+  }, [startCamera, stopCamera]);
   
   // Clean up on unmount
   useEffect(() => {
@@ -121,10 +185,64 @@ export const useCamera = ({
     };
   }, []);
   
+  // Check video status periodically
+  useEffect(() => {
+    if (!cameraActive) return;
+    
+    const checkVideoStatus = () => {
+      if (!currentVideoRef.current) return;
+      
+      const video = currentVideoRef.current;
+      const now = Date.now();
+      
+      // Only check every second
+      if (now - videoStatus.lastCheckTime < 1000) {
+        return;
+      }
+      
+      // Check if video is still playing correctly
+      if (video.readyState < 2 || video.paused || !video.srcObject) {
+        setVideoStatus(prev => ({
+          ...prev,
+          errorCount: prev.errorCount + 1,
+          lastCheckTime: now
+        }));
+        
+        // After several errors, try to restart
+        if (videoStatus.errorCount > 5) {
+          console.warn("Video stream appears to be stalled, attempting to restart");
+          retryCamera();
+        }
+      } else {
+        // Reset error count if video is playing fine
+        setVideoStatus({
+          isReady: true,
+          hasStream: true,
+          resolution: {
+            width: video.videoWidth,
+            height: video.videoHeight
+          },
+          lastCheckTime: now,
+          errorCount: 0
+        });
+      }
+    };
+    
+    const intervalId = setInterval(checkVideoStatus, 1000);
+    return () => clearInterval(intervalId);
+  }, [cameraActive, videoStatus, currentVideoRef, retryCamera]);
+  
   return {
     cameraActive,
+    permission,
+    videoRef: currentVideoRef,
+    canvasRef,
+    streamRef,
     toggleCamera,
+    startCamera,
     stopCamera,
-    cameraPermission
+    cameraError,
+    retryCamera,
+    videoStatus
   };
 };

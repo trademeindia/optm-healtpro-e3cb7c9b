@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import * as Human from '@vladmandic/human';
 import { FeedbackType } from '../types';
@@ -167,9 +168,15 @@ export const useHumanDetection = ({
           // Store the latest detection for analysis
           setLastDetection(result);
           
-          // Draw to canvas
-          if (canvasRef.current) {
-            await humanRef.current.draw.canvas(canvasRef.current, result);
+          // Draw to canvas - FIX: Don't pass the result directly to canvas
+          if (canvasRef.current && humanRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              // First clear the canvas
+              ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+              // Draw the detection result using Human's draw methods
+              humanRef.current.draw.body(canvasRef.current, result);
+            }
           }
         }
         

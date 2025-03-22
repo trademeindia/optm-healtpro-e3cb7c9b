@@ -67,7 +67,8 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
                 videoUrl={exercise.videoUrl}
                 muscleGroups={exercise.muscleGroups}
                 onStart={() => onStartExercise(exercise.id)}
-                status={exercise.completionStatus}
+                // Fix for: Type 'string' is not assignable to type 'number'
+                status={exercise.completionStatus ? exercise.completionStatus : 'not-started'}
               />
             ))}
             {filteredExercises.length === 0 && (

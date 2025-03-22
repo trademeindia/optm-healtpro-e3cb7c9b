@@ -2,8 +2,8 @@
 // Exercise analysis state
 export enum SquatState {
   STANDING = 'standing',
-  DESCENDING = 'descending',
-  BOTTOM = 'bottom',
+  MID_SQUAT = 'descending',  // Previously 'descending'
+  BOTTOM_SQUAT = 'bottom',   // Previously 'bottom'
   ASCENDING = 'ascending',
   UNKNOWN = 'unknown'
 }
@@ -21,6 +21,21 @@ export interface HumanDetectionStatus {
   isActive: boolean;
   fps: number | null;
   confidence: number | null;
+}
+
+// Add missing TrackingStats interface
+export interface TrackingStats {
+  reps: number;
+  incorrectReps: number;
+  accuracy: number;
+}
+
+// Add missing RepEvaluation interface
+export interface RepEvaluation {
+  isGoodForm: boolean;
+  feedback: string;
+  feedbackType: FeedbackType;
+  score: number;
 }
 
 // Renderer props

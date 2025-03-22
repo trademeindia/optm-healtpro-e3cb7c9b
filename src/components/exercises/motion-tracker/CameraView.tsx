@@ -1,6 +1,8 @@
 
-import React, { useEffect } from 'react';
-import { Loader, Camera } from 'lucide-react';
+import React from 'react';
+import { AlertCircle, Loader2, Play } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { HumanDetectionStatus } from './types';
 
 interface CameraViewProps {
@@ -8,6 +10,8 @@ interface CameraViewProps {
   isModelLoading: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
+  cameraError?: string | null;
+  onRetryCamera?: () => void;
   detectionStatus: HumanDetectionStatus;
 }
 
@@ -16,66 +20,78 @@ const CameraView: React.FC<CameraViewProps> = ({
   isModelLoading,
   videoRef,
   canvasRef,
+  cameraError,
+  onRetryCamera,
   detectionStatus
 }) => {
-  // Log when component mounts and updates
-  useEffect(() => {
-    console.log("CameraView rendered:", {
-      cameraActive,
-      isModelLoading,
-      hasVideoRef: !!videoRef.current,
-      hasCanvasRef: !!canvasRef.current,
-      detectionActive: detectionStatus.isActive
-    });
-  }, [cameraActive, isModelLoading, videoRef, canvasRef, detectionStatus]);
-
   return (
-    <div className="relative w-full">
-      <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-        {isModelLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-20">
-            <Loader className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-white text-sm">Loading motion detection model...</p>
-          </div>
-        )}
-        
-        {!cameraActive && !isModelLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10 z-20">
-            <Camera className="h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">Click "Start Camera" to begin motion tracking</p>
-          </div>
-        )}
-        
-        <video 
-          ref={videoRef} 
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ 
-            transform: 'scaleX(-1)', // Mirror the video for more intuitive feedback
-            display: 'block' // Always display the video element but it will be hidden when not active
-          }} 
-          playsInline 
-          muted
-          autoPlay
-        />
-        
-        <canvas 
-          ref={canvasRef} 
-          className="absolute inset-0 w-full h-full object-cover z-10"
-          style={{ 
-            transform: 'scaleX(-1)', // Mirror the canvas to match the video
-            display: 'block' // Always display the canvas element
-          }} 
-        />
-      </div>
+    <div className="relative overflow-hidden rounded-lg bg-muted">
+      {/* Camera not active placeholder */}
+      {!cameraActive && !cameraError && (
+        <div className="flex flex-col items-center justify-center h-[320px] text-muted-foreground">
+          <Play className="h-16 w-16 mb-4 opacity-20" />
+          <p className="text-sm">Start the camera to begin motion tracking</p>
+          {isModelLoading && (
+            <div className="mt-4 flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-xs">Loading AI model...</span>
+            </div>
+          )}
+        </div>
+      )}
       
+      {/* Camera error message */}
+      {cameraError && (
+        <div className="flex flex-col items-center justify-center h-[320px] px-4">
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{cameraError}</AlertDescription>
+          </Alert>
+          
+          {onRetryCamera && (
+            <Button onClick={onRetryCamera}>
+              Retry Camera
+            </Button>
+          )}
+        </div>
+      )}
+      
+      {/* Video feed */}
+      <video
+        ref={videoRef}
+        className={`w-full h-full object-cover ${!cameraActive ? 'hidden' : ''}`}
+        playsInline
+        muted
+        autoPlay
+      />
+      
+      {/* Canvas overlay for drawing pose detection */}
+      <canvas
+        ref={canvasRef}
+        className={`absolute top-0 left-0 w-full h-full ${!cameraActive ? 'hidden' : ''}`}
+        width={640}
+        height={480}
+      />
+      
+      {/* Detection stats */}
       {cameraActive && detectionStatus.isActive && (
-        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs p-1 rounded z-20">
-          {detectionStatus.fps !== null && (
+        <div className="absolute bottom-2 left-2 text-xs bg-black/50 text-white px-2 py-1 rounded">
+          {detectionStatus.fps && (
             <span className="mr-2">FPS: {detectionStatus.fps}</span>
           )}
-          {detectionStatus.confidence !== null && (
+          {detectionStatus.confidence && (
             <span>Confidence: {Math.round(detectionStatus.confidence * 100)}%</span>
           )}
+        </div>
+      )}
+      
+      {/* Loading overlay */}
+      {cameraActive && isModelLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="bg-background p-4 rounded-lg shadow-lg flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span>Loading AI model...</span>
+          </div>
         </div>
       )}
     </div>

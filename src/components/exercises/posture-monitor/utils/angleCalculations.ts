@@ -1,115 +1,75 @@
+
 import * as posenet from '@tensorflow-models/posenet';
 
-type Point = posenet.Keypoint | number[] | { x: number, y: number };
-
-// Calculate angle between three points (in degrees)
+// Calculate angle between three keypoints
 export const calculateAngle = (
-  pointA: Point, 
-  pointB: Point, 
-  pointC: Point
+  a: posenet.Keypoint | undefined, 
+  b: posenet.Keypoint | undefined, 
+  c: posenet.Keypoint | undefined
 ): number => {
-  // Extract positions based on input type
-  const getPosition = (point: Point): [number, number] => {
-    if (Array.isArray(point)) {
-      return [point[0], point[1]];
-    } else if ('position' in point) {
-      return [point.position.x, point.position.y];
-    } else if ('x' in point && 'y' in point) {
-      return [point.x, point.y];
-    }
-    throw new Error('Invalid point format');
+  if (!a || !b || !c || !a.position || !b.position || !c.position) {
+    return 0;
+  }
+
+  const vectorBA = {
+    x: a.position.x - b.position.x,
+    y: a.position.y - b.position.y
   };
-
-  const posA = getPosition(pointA);
-  const posB = getPosition(pointB);
-  const posC = getPosition(pointC);
-
-  // Calculate vectors AB and BC
-  const AB = [posB[0] - posA[0], posB[1] - posA[1]];
-  const BC = [posC[0] - posB[0], posC[1] - posB[1]];
   
-  // Calculate dot product and magnitudes
-  const dotProduct = AB[0] * BC[0] + AB[1] * BC[1];
-  const magAB = Math.sqrt(AB[0] * AB[0] + AB[1] * AB[1]);
-  const magBC = Math.sqrt(BC[0] * BC[0] + BC[1] * BC[1]);
+  const vectorBC = {
+    x: c.position.x - b.position.x,
+    y: c.position.y - b.position.y
+  };
   
-  // Calculate angle in radians and convert to degrees
-  // Make sure to handle edge cases to avoid NaN
-  if (magAB === 0 || magBC === 0) return 0;
+  const dotProduct = vectorBA.x * vectorBC.x + vectorBA.y * vectorBC.y;
+  const magnitudeBA = Math.sqrt(vectorBA.x * vectorBA.x + vectorBA.y * vectorBA.y);
+  const magnitudeBC = Math.sqrt(vectorBC.x * vectorBC.x + vectorBC.y * vectorBC.y);
+  
+  if (magnitudeBA === 0 || magnitudeBC === 0) {
+    return 0;
+  }
   
   // Ensure value is in valid range for acos
-  const cosTheta = Math.max(-1, Math.min(1, dotProduct / (magAB * magBC)));
-  return Math.acos(cosTheta) * (180 / Math.PI);
+  let cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
+  cosTheta = Math.max(-1, Math.min(1, cosTheta));
+  
+  let angle = Math.acos(cosTheta) * (180 / Math.PI);
+  
+  // Ensure angle is in the range 0-180
+  if (angle > 180) {
+    angle = 360 - angle;
+  }
+  
+  return angle;
 };
 
-// Calculate the average of multiple angles
-export const calculateAverageAngle = (angles: number[]): number => {
-  if (angles.length === 0) return 0;
-  const sum = angles.reduce((acc, angle) => acc + angle, 0);
-  return sum / angles.length;
-};
-
-// Extract specific keypoints that are commonly used together
-export const extractJointKeypoints = (pose: posenet.Pose) => {
+// Calculate joint angles based on pose keypoints
+export const calculateJointAngles = (pose: posenet.Pose) => {
   const keypoints = pose.keypoints;
   
+  // Find the required keypoints
+  const leftShoulder = keypoints.find(kp => kp.part === 'leftShoulder');
+  const rightShoulder = keypoints.find(kp => kp.part === 'rightShoulder');
+  const leftElbow = keypoints.find(kp => kp.part === 'leftElbow');
+  const rightElbow = keypoints.find(kp => kp.part === 'rightElbow');
+  const leftWrist = keypoints.find(kp => kp.part === 'leftWrist');
+  const rightWrist = keypoints.find(kp => kp.part === 'rightWrist');
+  const leftHip = keypoints.find(kp => kp.part === 'leftHip');
+  const rightHip = keypoints.find(kp => kp.part === 'rightHip');
+  const leftKnee = keypoints.find(kp => kp.part === 'leftKnee');
+  const rightKnee = keypoints.find(kp => kp.part === 'rightKnee');
+  const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle');
+  const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
+  
+  // Calculate angles
   return {
-    leftShoulder: keypoints.find(kp => kp.part === 'leftShoulder'),
-    rightShoulder: keypoints.find(kp => kp.part === 'rightShoulder'),
-    leftElbow: keypoints.find(kp => kp.part === 'leftElbow'),
-    rightElbow: keypoints.find(kp => kp.part === 'rightElbow'),
-    leftWrist: keypoints.find(kp => kp.part === 'leftWrist'),
-    rightWrist: keypoints.find(kp => kp.part === 'rightWrist'),
-    leftHip: keypoints.find(kp => kp.part === 'leftHip'),
-    rightHip: keypoints.find(kp => kp.part === 'rightHip'),
-    leftKnee: keypoints.find(kp => kp.part === 'leftKnee'),
-    rightKnee: keypoints.find(kp => kp.part === 'rightKnee'),
-    leftAnkle: keypoints.find(kp => kp.part === 'leftAnkle'),
-    rightAnkle: keypoints.find(kp => kp.part === 'rightAnkle'),
-    nose: keypoints.find(kp => kp.part === 'nose')
+    leftElbow: calculateAngle(leftShoulder, leftElbow, leftWrist),
+    rightElbow: calculateAngle(rightShoulder, rightElbow, rightWrist),
+    leftShoulder: calculateAngle(leftElbow, leftShoulder, leftHip),
+    rightShoulder: calculateAngle(rightElbow, rightShoulder, rightHip),
+    leftHip: calculateAngle(leftShoulder, leftHip, leftKnee),
+    rightHip: calculateAngle(rightShoulder, rightHip, rightKnee),
+    leftKnee: calculateAngle(leftHip, leftKnee, leftAnkle),
+    rightKnee: calculateAngle(rightHip, rightKnee, rightAnkle)
   };
-};
-
-// Calculate key joint angles from a pose
-export const calculateJointAngles = (pose: posenet.Pose) => {
-  const joints = extractJointKeypoints(pose);
-  
-  // Only calculate if we have all necessary keypoints
-  const angles: { [key: string]: number | null } = {
-    leftKnee: null,
-    rightKnee: null,
-    leftHip: null,
-    rightHip: null,
-    leftElbow: null,
-    rightElbow: null
-  };
-  
-  // Calculate knee angles
-  if (joints.leftHip && joints.leftKnee && joints.leftAnkle) {
-    angles.leftKnee = calculateAngle(joints.leftHip, joints.leftKnee, joints.leftAnkle);
-  }
-  
-  if (joints.rightHip && joints.rightKnee && joints.rightAnkle) {
-    angles.rightKnee = calculateAngle(joints.rightHip, joints.rightKnee, joints.rightAnkle);
-  }
-  
-  // Calculate hip angles
-  if (joints.leftShoulder && joints.leftHip && joints.leftKnee) {
-    angles.leftHip = calculateAngle(joints.leftShoulder, joints.leftHip, joints.leftKnee);
-  }
-  
-  if (joints.rightShoulder && joints.rightHip && joints.rightKnee) {
-    angles.rightHip = calculateAngle(joints.rightShoulder, joints.rightHip, joints.rightKnee);
-  }
-  
-  // Calculate elbow angles
-  if (joints.leftShoulder && joints.leftElbow && joints.leftWrist) {
-    angles.leftElbow = calculateAngle(joints.leftShoulder, joints.leftElbow, joints.leftWrist);
-  }
-  
-  if (joints.rightShoulder && joints.rightElbow && joints.rightWrist) {
-    angles.rightElbow = calculateAngle(joints.rightShoulder, joints.rightElbow, joints.rightWrist);
-  }
-  
-  return angles;
 };
