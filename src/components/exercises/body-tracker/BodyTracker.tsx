@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Info } from 'lucide-react';
 import { JointAngle } from './types';
 import AngleDisplay from './AngleDisplay';
+import Webcam from 'react-webcam';
 import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import { useHumanDetection } from './hooks/useHumanDetection';
@@ -16,7 +17,7 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
   onSaveData,
   isActive = false
 }) => {
-  const webcamRef = useRef<HTMLVideoElement>(null);
+  const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [cameraActive, setCameraActive] = useState<boolean>(false);
@@ -95,6 +96,7 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
           isTracking={isTracking}
           detectionFps={detectionFps}
           canvasRef={canvasRef}
+          webcamRef={webcamRef}
           onToggleCamera={handleToggleCamera}
         />
         

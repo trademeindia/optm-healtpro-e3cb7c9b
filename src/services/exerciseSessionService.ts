@@ -1,74 +1,58 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { ExerciseSession, JointAngle } from '@/components/exercises/body-tracker/types';
+import { ExerciseSession } from '@/components/exercises/body-tracker/types';
 
-export const saveExerciseSession = async (sessionData: ExerciseSession) => {
+/**
+ * Save exercise session data
+ * @param session The exercise session to save
+ */
+export const saveExerciseSession = async (session: ExerciseSession): Promise<void> => {
+  // For now, we'll just simulate saving to localStorage
   try {
-    // Convert angles to a plain object that can be stored as JSON
-    const plainAngles = sessionData.angles.map(angle => ({
-      joint: angle.joint,
-      angle: angle.angle
-    }));
-
-    // Ensure sessionData matches the expected database schema
-    const { data, error } = await supabase
-      .from('exercise_sessions')
-      .insert({
-        patient_id: sessionData.patient_id,
-        exercise_type: sessionData.exercise_type,
-        timestamp: sessionData.timestamp,
-        angles: plainAngles, // Now properly formatted for JSON storage
-        notes: sessionData.notes
-      });
-      
-    if (error) {
-      console.error('Error saving to Supabase:', error);
-      throw error;
-    }
+    // Get existing sessions from localStorage
+    const existingSessions = JSON.parse(localStorage.getItem('exercise_sessions') || '[]');
     
-    return data;
+    // Add the new session
+    const updatedSessions = [session, ...existingSessions];
+    
+    // Save back to localStorage
+    localStorage.setItem('exercise_sessions', JSON.stringify(updatedSessions));
+    
+    console.log('Session saved successfully', session);
+    return Promise.resolve();
   } catch (error) {
-    console.error('Failed to save exercise session:', error);
-    throw error;
+    console.error('Error saving exercise session:', error);
+    return Promise.reject(error);
   }
 };
 
-export const getPatientSessions = async (patientId: string) => {
+/**
+ * Get all saved exercise sessions
+ */
+export const getExerciseSessions = async (): Promise<ExerciseSession[]> => {
   try {
-    const { data, error } = await supabase
-      .from('exercise_sessions')
-      .select('*')
-      .eq('patient_id', patientId)
-      .order('timestamp', { ascending: false });
-      
-    if (error) {
-      console.error('Error fetching from Supabase:', error);
-      throw error;
-    }
-    
-    return data;
+    const sessions = JSON.parse(localStorage.getItem('exercise_sessions') || '[]');
+    return Promise.resolve(sessions);
   } catch (error) {
-    console.error('Failed to get patient sessions:', error);
-    throw error;
+    console.error('Error getting exercise sessions:', error);
+    return Promise.reject(error);
   }
 };
 
-export const getRecentSessions = async (limit: number = 10) => {
+/**
+ * Delete an exercise session
+ * @param sessionId ID of the session to delete
+ */
+export const deleteExerciseSession = async (sessionId: string): Promise<void> => {
   try {
-    const { data, error } = await supabase
-      .from('exercise_sessions')
-      .select('*')
-      .order('timestamp', { ascending: false })
-      .limit(limit);
-      
-    if (error) {
-      console.error('Error fetching from Supabase:', error);
-      throw error;
-    }
+    const existingSessions = JSON.parse(localStorage.getItem('exercise_sessions') || '[]');
+    const updatedSessions = existingSessions.filter((session: ExerciseSession) => 
+      session.timestamp !== sessionId
+    );
     
-    return data;
+    localStorage.setItem('exercise_sessions', JSON.stringify(updatedSessions));
+    return Promise.resolve();
   } catch (error) {
-    console.error('Failed to get recent sessions:', error);
-    throw error;
+    console.error('Error deleting exercise session:', error);
+    return Promise.reject(error);
   }
 };

@@ -9,6 +9,7 @@ interface CameraViewProps {
   isTracking: boolean;
   detectionFps: number;
   canvasRef: React.RefObject<HTMLCanvasElement>;
+  webcamRef?: React.RefObject<Webcam>;
   onToggleCamera: () => void;
 }
 
@@ -17,9 +18,11 @@ const CameraView: React.FC<CameraViewProps> = ({
   isTracking,
   detectionFps,
   canvasRef,
+  webcamRef: externalWebcamRef,
   onToggleCamera
 }) => {
-  const webcamRef = useRef<Webcam>(null);
+  const internalWebcamRef = useRef<Webcam>(null);
+  const webcamRef = externalWebcamRef || internalWebcamRef;
 
   // Handle resize
   useEffect(() => {
@@ -33,9 +36,12 @@ const CameraView: React.FC<CameraViewProps> = ({
       }
     };
 
+    // Initial resize
+    setTimeout(handleResize, 100);
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [canvasRef]);
+  }, [canvasRef, webcamRef]);
 
   return (
     <div className="relative aspect-video bg-muted rounded-md overflow-hidden">

@@ -2,7 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Human from '@vladmandic/human';
 import { JointAngle } from '../types';
-import { calculateJointAngles } from '../utils';
+import { calculateJointAngles } from '../utils/angleCalculator';
+import Webcam from 'react-webcam';
 
 export interface HumanDetectionOptions {
   performanceMode?: 'high' | 'balanced' | 'low';
@@ -10,7 +11,7 @@ export interface HumanDetectionOptions {
 }
 
 export const useHumanDetection = (
-  webcamRef: React.RefObject<HTMLVideoElement>,
+  webcamRef: React.RefObject<Webcam>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
   isTracking: boolean,
   onAnglesDetected?: (angles: JointAngle[]) => void,
@@ -100,8 +101,8 @@ export const useHumanDetection = (
       return;
     }
     
-    const video = webcamRef.current;
-    if (video.readyState !== 4) {
+    const video = webcamRef.current.video;
+    if (!video || video.readyState !== 4) {
       requestRef.current = requestAnimationFrame(detect);
       return;
     }

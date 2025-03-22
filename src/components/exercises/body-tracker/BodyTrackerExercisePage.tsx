@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import BodyTracker from './BodyTracker';
 import { JointAngle } from './types';
+import { toast } from 'sonner';
 
 const BodyTrackerExercisePage: React.FC = () => {
   const [latestAngles, setLatestAngles] = useState<JointAngle[]>([]);
@@ -20,6 +21,10 @@ const BodyTrackerExercisePage: React.FC = () => {
     };
     
     setSavedSessions(prev => [newSession, ...prev]);
+    
+    toast.success('Exercise session saved', {
+      description: 'Your joint angle data has been saved successfully.'
+    });
   };
   
   return (
