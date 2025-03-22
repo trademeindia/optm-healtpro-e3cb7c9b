@@ -8,6 +8,8 @@ import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import { useHumanDetection } from './hooks/useHumanDetection';
 import { BodyTrackerProps } from './types';
+import DetectionQualityIndicator from './components/DetectionQualityIndicator';
+import PerformanceModeSelector from './components/PerformanceModeSelector';
 
 const BodyTracker: React.FC<BodyTrackerProps> = ({ 
   onAnglesDetected,
@@ -18,17 +20,24 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [cameraActive, setCameraActive] = useState<boolean>(false);
+  const [performanceMode, setPerformanceMode] = useState<'high' | 'balanced' | 'low'>('balanced');
 
-  // Use our Human detection hook
+  // Use our Human detection hook with performance options
   const { 
     angles, 
     detectionFps,
-    startTracking
+    detectionQuality,
+    startTracking,
+    resetDetection
   } = useHumanDetection(
     webcamRef, 
     canvasRef, 
     isTracking, 
-    onAnglesDetected
+    onAnglesDetected,
+    {
+      performanceMode,
+      skipFrames: performanceMode === 'low' ? 2 : performanceMode === 'balanced' ? 1 : 0
+    }
   );
 
   // Effect to handle camera activation based on isActive prop
@@ -71,9 +80,11 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
   };
 
   const handleResetAngles = () => {
-    if (onAnglesDetected) {
-      onAnglesDetected([]);
-    }
+    resetDetection();
+  };
+
+  const handlePerformanceModeChange = (mode: 'high' | 'balanced' | 'low') => {
+    setPerformanceMode(mode);
   };
 
   return (
@@ -86,6 +97,22 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
           canvasRef={canvasRef}
           onToggleCamera={handleToggleCamera}
         />
+        
+        {/* Performance mode selector */}
+        {cameraActive && (
+          <div className="mt-2">
+            <PerformanceModeSelector 
+              currentMode={performanceMode}
+              onChange={handlePerformanceModeChange}
+              disabled={isTracking}
+            />
+          </div>
+        )}
+        
+        {/* Detection quality indicator */}
+        {isTracking && (
+          <DetectionQualityIndicator quality={detectionQuality} />
+        )}
         
         <ControlPanel
           cameraActive={cameraActive}

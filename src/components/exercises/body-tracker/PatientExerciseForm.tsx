@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { saveExerciseSession } from '@/services/exerciseSessionService';
 import { JointAngle, ExerciseSession } from './types';
 import { toast } from 'sonner';
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface PatientExerciseFormProps {
   onSuccess?: () => void;
@@ -20,22 +22,25 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
   const [exerciseType, setExerciseType] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
   
   const handleSaveSession = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     
     if (!patientId) {
-      toast.error('Please enter a patient ID');
+      setError('Please enter a patient ID');
       return;
     }
     
     if (!exerciseType) {
-      toast.error('Please select an exercise type');
+      setError('Please select an exercise type');
       return;
     }
     
     if (angles.length === 0) {
-      toast.error('No joint angles detected. Please ensure tracking is active.');
+      setError('No joint angles detected. Please ensure tracking is active.');
       return;
     }
     
@@ -53,18 +58,23 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
       await saveExerciseSession(sessionData);
       
       toast.success('Exercise session saved successfully');
+      setSuccess(true);
       
-      // Clear form
-      setPatientId('');
-      setExerciseType('');
-      setNotes('');
-      
-      // Call success callback if provided
-      if (onSuccess) {
-        onSuccess();
-      }
+      // Clear form after a short delay
+      setTimeout(() => {
+        setPatientId('');
+        setExerciseType('');
+        setNotes('');
+        setSuccess(false);
+        
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 1500);
     } catch (error) {
       console.error('Failed to save session:', error);
+      setError('Failed to save exercise session. Please try again.');
       toast.error('Failed to save exercise session');
     } finally {
       setIsSaving(false);
@@ -77,6 +87,20 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
         <CardTitle className="text-lg">Session Details</CardTitle>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        {success && (
+          <Alert className="mb-4 border-green-500 text-green-500">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>Session saved successfully!</AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSaveSession} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="patient-id">Patient ID</Label>
@@ -85,6 +109,7 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
               placeholder="Enter patient ID"
+              disabled={isSaving || success}
             />
           </div>
           
@@ -93,6 +118,7 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
             <Select 
               value={exerciseType} 
               onValueChange={setExerciseType}
+              disabled={isSaving || success}
             >
               <SelectTrigger id="exercise-type">
                 <SelectValue placeholder="Select exercise type" />
@@ -117,16 +143,35 @@ const PatientExerciseForm: React.FC<PatientExerciseFormProps> = ({ onSuccess, an
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add session notes"
               rows={3}
+              disabled={isSaving || success}
             />
           </div>
           
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isSaving || !angles.length}
-          >
-            {isSaving ? 'Saving...' : 'Save Exercise Session'}
-          </Button>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {angles.length} joint angles detected
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-1/2" 
+              disabled={isSaving || success || !angles.length}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : success ? (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Saved!
+                </>
+              ) : (
+                'Save Exercise Session'
+              )}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

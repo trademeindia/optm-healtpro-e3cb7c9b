@@ -23,3 +23,13 @@ export interface ExerciseSession {
   exercise_type: string;
   notes?: string;
 }
+
+export interface DetectionQualityIndicatorProps {
+  quality: number; // 0-100
+}
+
+export interface PerformanceModeSelectorProps {
+  currentMode: 'high' | 'balanced' | 'low';
+  onChange: (mode: 'high' | 'balanced' | 'low') => void;
+  disabled?: boolean;
+}
