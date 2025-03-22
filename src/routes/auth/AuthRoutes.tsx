@@ -1,13 +1,14 @@
 
 import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
-import SessionExpired from '@/pages/auth/SessionExpired';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
+import SessionExpired from '@/components/SessionExpired';
 
 // Lazy-loaded auth components
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const PasswordResetPage = lazy(() => import('@/pages/auth/PasswordResetPage'));
 const PasswordRecoveryPage = lazy(() => import('@/pages/auth/PasswordRecoveryPage'));
-const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const Index = lazy(() => import('@/pages/Index'));
 
 export const AuthRoutes: React.FC = () => {

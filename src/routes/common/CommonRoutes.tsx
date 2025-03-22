@@ -3,27 +3,20 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 // Lazy-loaded common components for settings, help, and shared routes
-const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
-const AppointmentsPage = lazy(() => import('@/pages/appointments/AppointmentsPage'));
-const OpenSimPage = lazy(() => import('@/pages/opensim/OpenSimPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
-
-// Patient-related pages accessible by doctors and receptionists
-const PatientDetailsPage = lazy(() => import('@/pages/patients/PatientDetailsPage'));
-const PatientsListPage = lazy(() => import('@/pages/patients/PatientsListPage'));
 
 export const CommonRoutes: React.FC = () => {
   return (
     <>
-      {/* Common Routes with Role-specific Access */}
       <Route
         path="/patients"
         element={
           <ProtectedRoute requiredRole={[UserRole.DOCTOR, UserRole.RECEPTIONIST]}>
-            <PatientsListPage />
+            <PlaceholderPage title="Patients List Page" />
           </ProtectedRoute>
         }
       />
@@ -32,7 +25,7 @@ export const CommonRoutes: React.FC = () => {
         path="/patients/:id"
         element={
           <ProtectedRoute requiredRole={[UserRole.DOCTOR, UserRole.RECEPTIONIST]}>
-            <PatientDetailsPage />
+            <PlaceholderPage title="Patient Details Page" />
           </ProtectedRoute>
         }
       />
@@ -41,7 +34,7 @@ export const CommonRoutes: React.FC = () => {
         path="/appointments"
         element={
           <ProtectedRoute>
-            <AppointmentsPage />
+            <PlaceholderPage title="Appointments Page" />
           </ProtectedRoute>
         }
       />
@@ -50,17 +43,16 @@ export const CommonRoutes: React.FC = () => {
         path="/opensim"
         element={
           <ProtectedRoute>
-            <OpenSimPage />
+            <PlaceholderPage title="OpenSim Page" />
           </ProtectedRoute>
         }
       />
       
-      {/* Settings and Help (accessible to all authenticated users) */}
       <Route
         path="/settings"
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <PlaceholderPage title="Settings Page" />
           </ProtectedRoute>
         }
       />
@@ -74,7 +66,6 @@ export const CommonRoutes: React.FC = () => {
         }
       />
       
-      {/* 404 Not Found */}
       <Route path="*" element={<NotFoundPage />} />
     </>
   );

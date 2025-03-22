@@ -3,13 +3,10 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 // Lazy-loaded receptionist components
 const ReceptionistDashboard = lazy(() => import('@/pages/dashboard/receptionist/ReceptionistDashboard'));
-const BillingPage = lazy(() => import('@/pages/dashboard/receptionist/billing/BillingPage'));
-const InventoryPage = lazy(() => import('@/pages/dashboard/receptionist/inventory/InventoryPage'));
-const CommunicationsPage = lazy(() => import('@/pages/dashboard/receptionist/communications/CommunicationsPage'));
-const FormsPage = lazy(() => import('@/pages/dashboard/receptionist/forms/FormsPage'));
 
 export const ReceptionistRoutes: React.FC = () => {
   return (
@@ -27,7 +24,7 @@ export const ReceptionistRoutes: React.FC = () => {
         path="/billing"
         element={
           <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-            <BillingPage />
+            <PlaceholderPage title="Billing Page" />
           </ProtectedRoute>
         }
       />
@@ -36,7 +33,7 @@ export const ReceptionistRoutes: React.FC = () => {
         path="/inventory"
         element={
           <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-            <InventoryPage />
+            <PlaceholderPage title="Inventory Page" />
           </ProtectedRoute>
         }
       />
@@ -45,7 +42,7 @@ export const ReceptionistRoutes: React.FC = () => {
         path="/communications"
         element={
           <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-            <CommunicationsPage />
+            <PlaceholderPage title="Communications Page" />
           </ProtectedRoute>
         }
       />
@@ -54,7 +51,7 @@ export const ReceptionistRoutes: React.FC = () => {
         path="/forms"
         element={
           <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-            <FormsPage />
+            <PlaceholderPage title="Forms Page" />
           </ProtectedRoute>
         }
       />

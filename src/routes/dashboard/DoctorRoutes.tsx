@@ -3,12 +3,11 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 // Lazy-loaded doctor components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/doctor/DoctorDashboard'));
 const MotionAnalysisPage = lazy(() => import('@/pages/dashboard/doctor/motion-analysis'));
-const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
-const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
 
 export const DoctorRoutes: React.FC = () => {
   return (
@@ -35,7 +34,7 @@ export const DoctorRoutes: React.FC = () => {
         path="/reports"
         element={
           <ProtectedRoute requiredRole={UserRole.DOCTOR}>
-            <ReportsPage />
+            <PlaceholderPage title="Reports Page" />
           </ProtectedRoute>
         }
       />
@@ -44,7 +43,7 @@ export const DoctorRoutes: React.FC = () => {
         path="/analytics"
         element={
           <ProtectedRoute requiredRole={UserRole.DOCTOR}>
-            <AnalyticsPage />
+            <PlaceholderPage title="Analytics Page" />
           </ProtectedRoute>
         }
       />

@@ -3,14 +3,10 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 // Lazy-loaded patient components
 const PatientDashboard = lazy(() => import('@/pages/dashboard/patient/PatientDashboard'));
-const AIAnalysisPage = lazy(() => import('@/pages/dashboard/patient/ai-analysis/AIAnalysisPage'));
-const AnatomyMapPage = lazy(() => import('@/pages/dashboard/patient/anatomy-map/AnatomyMapPage'));
-const BiomarkersPage = lazy(() => import('@/pages/dashboard/patient/biomarkers/BiomarkersPage'));
-const ExercisesPage = lazy(() => import('@/pages/exercises/ExercisesPage'));
-const HealthAppsPage = lazy(() => import('@/pages/dashboard/patient/health-apps/HealthAppsPage'));
 
 export const PatientRoutes: React.FC = () => {
   return (
@@ -28,7 +24,7 @@ export const PatientRoutes: React.FC = () => {
         path="/ai-analysis"
         element={
           <ProtectedRoute requiredRole={UserRole.PATIENT}>
-            <AIAnalysisPage />
+            <PlaceholderPage title="AI Analysis Page" />
           </ProtectedRoute>
         }
       />
@@ -37,7 +33,7 @@ export const PatientRoutes: React.FC = () => {
         path="/anatomy-map"
         element={
           <ProtectedRoute requiredRole={UserRole.PATIENT}>
-            <AnatomyMapPage />
+            <PlaceholderPage title="Anatomy Map Page" />
           </ProtectedRoute>
         }
       />
@@ -46,7 +42,7 @@ export const PatientRoutes: React.FC = () => {
         path="/biomarkers"
         element={
           <ProtectedRoute requiredRole={UserRole.PATIENT}>
-            <BiomarkersPage />
+            <PlaceholderPage title="Biomarkers Page" />
           </ProtectedRoute>
         }
       />
@@ -55,7 +51,7 @@ export const PatientRoutes: React.FC = () => {
         path="/exercises"
         element={
           <ProtectedRoute requiredRole={UserRole.PATIENT}>
-            <ExercisesPage />
+            <PlaceholderPage title="Exercises Page" />
           </ProtectedRoute>
         }
       />
@@ -64,7 +60,7 @@ export const PatientRoutes: React.FC = () => {
         path="/health-apps"
         element={
           <ProtectedRoute requiredRole={UserRole.PATIENT}>
-            <HealthAppsPage />
+            <PlaceholderPage title="Health Apps Page" />
           </ProtectedRoute>
         }
       />
