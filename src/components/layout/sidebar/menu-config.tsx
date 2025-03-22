@@ -16,7 +16,8 @@ import {
   PackageCheck,
   PhoneCall,
   ClipboardList,
-  LineChart
+  LineChart,
+  Camera
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -58,6 +59,14 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     label: 'Analytics', 
     path: '/analytics',
     description: 'Visualize clinical data and treatment outcomes'
+  },
+  {
+    icon: Camera,
+    label: 'Motion Analysis',
+    path: '/dashboard/doctor/motion-analysis',
+    description: 'Analyze patient movements with AI-assisted motion tracking',
+    badge: 'New',
+    badgeColor: 'green'
   },
   { 
     icon: Calendar, 

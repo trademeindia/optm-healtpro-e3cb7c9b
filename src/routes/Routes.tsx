@@ -1,214 +1,264 @@
 
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import LoginPage from '@/pages/LoginPage';
-import Index from '@/pages/Index';
-import NotFound from '@/pages/NotFound';
-import OAuthCallback from '@/pages/OAuthCallback';
-import ReportsPage from '@/pages/ReportsPage';
-import AnalyticsPage from '@/pages/AnalyticsPage';
-import PatientReportsPage from '@/pages/PatientReportsPage';
-import AnatomyMapPage from '@/pages/AnatomyMapPage';
-import BiomarkersPage from '@/pages/BiomarkersPage';
-import HealthAppsPage from '@/pages/HealthAppsPage';
-import AppointmentsPage from '@/pages/AppointmentsPage';
-import { AnalysisPage } from '@/pages/analysis';
-import AIAnalysisPage from '@/pages/AIAnalysisPage';
-import PatientsPage from '@/pages/patients';
-import SettingsPage from '@/pages/SettingsPage';
-import HelpPage from '@/pages/HelpPage';
-import ExercisePage from '@/pages/exercises/ExercisePage';
-import OpenSimPage from '@/pages/OpenSimPage';
-import PatientDashboard from '@/pages/PatientDashboard';
+import { UserRole } from '@/contexts/auth/types';
+import SessionExpired from '@/pages/auth/SessionExpired';
 
-// Lazy load components
-const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
-const ReceptionistDashboard = lazy(() => import('@/pages/dashboard/ReceptionistDashboard'));
+// Lazy-loaded components
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const PasswordResetPage = lazy(() => import('@/pages/auth/PasswordResetPage'));
+const PasswordRecoveryPage = lazy(() => import('@/pages/auth/PasswordRecoveryPage'));
+const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
+const Index = lazy(() => import('@/pages/Index'));
 
-// Loading Component
-const Loading = () => (
-  <div className="flex justify-center items-center min-h-screen">
-    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-  </div>
-);
+// Dashboard
+const DoctorDashboard = lazy(() => import('@/pages/dashboard/doctor/DoctorDashboard'));
+const PatientDashboard = lazy(() => import('@/pages/dashboard/patient/PatientDashboard'));
+const ReceptionistDashboard = lazy(() => import('@/pages/dashboard/receptionist/ReceptionistDashboard'));
+
+// Patient-related pages
+const PatientDetailsPage = lazy(() => import('@/pages/patients/PatientDetailsPage'));
+const PatientsListPage = lazy(() => import('@/pages/patients/PatientsListPage'));
+
+// Reports and other pages
+const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
+const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
+const AppointmentsPage = lazy(() => import('@/pages/appointments/AppointmentsPage'));
+const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
+const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+
+// Patient-specific pages
+const AIAnalysisPage = lazy(() => import('@/pages/dashboard/patient/ai-analysis/AIAnalysisPage'));
+const AnatomyMapPage = lazy(() => import('@/pages/dashboard/patient/anatomy-map/AnatomyMapPage'));
+const BiomarkersPage = lazy(() => import('@/pages/dashboard/patient/biomarkers/BiomarkersPage'));
+const ExercisesPage = lazy(() => import('@/pages/exercises/ExercisesPage'));
+const HealthAppsPage = lazy(() => import('@/pages/dashboard/patient/health-apps/HealthAppsPage'));
+const OpenSimPage = lazy(() => import('@/pages/opensim/OpenSimPage'));
+
+// Receptionist-specific pages
+const BillingPage = lazy(() => import('@/pages/dashboard/receptionist/billing/BillingPage'));
+const InventoryPage = lazy(() => import('@/pages/dashboard/receptionist/inventory/InventoryPage'));
+const CommunicationsPage = lazy(() => import('@/pages/dashboard/receptionist/communications/CommunicationsPage'));
+const FormsPage = lazy(() => import('@/pages/dashboard/receptionist/forms/FormsPage'));
+
+// Doctor-specific pages
+const MotionAnalysisPage = lazy(() => import('@/pages/dashboard/doctor/motion-analysis'));
 
 const AppRoutes: React.FC = () => {
-  console.log("AppRoutes component rendering");
-  
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<LoadingScreen />}>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/password-reset" element={<PasswordResetPage />} />
+        <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
+        <Route path="/session-expired" element={<SessionExpired />} />
+        
+        {/* Root redirect based on auth status */}
+        <Route path="/" element={<Index />} />
         
         {/* Doctor Routes */}
-        <Route 
-          path="/dashboard/doctor" 
+        <Route
+          path="/dashboard/doctor"
           element={
-            <ProtectedRoute requiredRole="doctor">
+            <ProtectedRoute requiredRole={UserRole.DOCTOR}>
               <DoctorDashboard />
             </ProtectedRoute>
-          } 
+          }
+        />
+        
+        <Route
+          path="/dashboard/doctor/motion-analysis"
+          element={
+            <ProtectedRoute requiredRole={UserRole.DOCTOR}>
+              <MotionAnalysisPage />
+            </ProtectedRoute>
+          }
         />
         
         {/* Patient Routes */}
-        <Route 
-          path="/dashboard/patient" 
+        <Route
+          path="/dashboard/patient"
           element={
-            <ProtectedRoute requiredRole="patient">
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
               <PatientDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
         
         {/* Receptionist Routes */}
-        <Route 
-          path="/dashboard/receptionist" 
+        <Route
+          path="/dashboard/receptionist"
           element={
-            <ProtectedRoute requiredRole="receptionist">
+            <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
               <ReceptionistDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* OpenSim Route - accessible by all users */}
-        <Route 
-          path="/opensim" 
+        {/* Common Routes with Role-specific Access */}
+        <Route
+          path="/patients"
           element={
-            <ProtectedRoute>
-              <OpenSimPage />
+            <ProtectedRoute requiredRole={[UserRole.DOCTOR, UserRole.RECEPTIONIST]}>
+              <PatientsListPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* Analytics Route */}
-        <Route 
-          path="/analytics" 
+        <Route
+          path="/patients/:id"
           element={
-            <ProtectedRoute requiredRole="doctor">
-              <AnalyticsPage />
+            <ProtectedRoute requiredRole={[UserRole.DOCTOR, UserRole.RECEPTIONIST]}>
+              <PatientDetailsPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* Patients Route */}
-        <Route 
-          path="/patients" 
+        <Route
+          path="/reports"
           element={
-            <ProtectedRoute requiredRole={["doctor", "receptionist"]}>
-              <PatientsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Patient-specific Routes */}
-        <Route 
-          path="/patient-reports" 
-          element={
-            <ProtectedRoute requiredRole="patient">
-              <PatientReportsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/anatomy-map" 
-          element={
-            <ProtectedRoute requiredRole={["patient", "doctor"]}>
-              <AnatomyMapPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/biomarkers" 
-          element={
-            <ProtectedRoute requiredRole={["patient", "doctor"]}>
-              <BiomarkersPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/health-apps" 
-          element={
-            <ProtectedRoute requiredRole="patient">
-              <HealthAppsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/analysis" 
-          element={
-            <ProtectedRoute requiredRole={["patient", "doctor"]}>
-              <AnalysisPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/ai-analysis" 
-          element={
-            <ProtectedRoute requiredRole={["patient", "doctor"]}>
-              <AIAnalysisPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/exercises" 
-          element={
-            <ProtectedRoute requiredRole="patient">
-              <ExercisePage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Reports Route */}
-        <Route 
-          path="/reports" 
-          element={
-            <ProtectedRoute requiredRole="doctor">
+            <ProtectedRoute requiredRole={UserRole.DOCTOR}>
               <ReportsPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* Shared Routes (accessible by multiple roles) */}
-        <Route 
-          path="/appointments" 
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute requiredRole={UserRole.DOCTOR}>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/appointments"
           element={
             <ProtectedRoute>
               <AppointmentsPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* Settings and Help Routes */}
-        <Route 
-          path="/settings" 
+        {/* Patient-specific pages */}
+        <Route
+          path="/ai-analysis"
+          element={
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
+              <AIAnalysisPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/anatomy-map"
+          element={
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
+              <AnatomyMapPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/biomarkers"
+          element={
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
+              <BiomarkersPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/exercises"
+          element={
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
+              <ExercisesPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/health-apps"
+          element={
+            <ProtectedRoute requiredRole={UserRole.PATIENT}>
+              <HealthAppsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/opensim"
+          element={
+            <ProtectedRoute>
+              <OpenSimPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Receptionist-specific pages */}
+        <Route
+          path="/billing"
+          element={
+            <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
+              <BillingPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/inventory"
+          element={
+            <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
+              <InventoryPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/communications"
+          element={
+            <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
+              <CommunicationsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/forms"
+          element={
+            <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
+              <FormsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Settings and Help (accessible to all authenticated users) */}
+        <Route
+          path="/settings"
           element={
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        <Route 
-          path="/help" 
+        <Route
+          path="/help"
           element={
             <ProtectedRoute>
               <HelpPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
-        {/* Fallback - 404 */}
-        <Route path="*" element={<NotFound />} />
+        {/* 404 Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );
