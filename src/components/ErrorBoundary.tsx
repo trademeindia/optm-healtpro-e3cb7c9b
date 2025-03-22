@@ -21,11 +21,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Update state so the next render will show the fallback UI
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // Log the error to console
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
+    
+    // Call the onError callback if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -37,14 +41,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
         return this.props.fallback;
       }
 
+      const errorMessage = this.state.error?.message || 'An unexpected error occurred';
+
       return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
           <div className="max-w-md w-full bg-card border border-border shadow-lg rounded-lg p-6 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-            <p className="text-muted-foreground mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </p>
+            <p className="text-muted-foreground mb-4">{errorMessage}</p>
             <Button 
               onClick={() => {
                 console.log('Attempting to recover from error');
