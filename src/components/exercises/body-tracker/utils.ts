@@ -2,11 +2,17 @@
 import { BodyKeypoint } from '@vladmandic/human';
 import { JointAngle } from './types';
 
+// Define a Point interface that matches the structure we're using
+interface Point {
+  x: number;
+  y: number;
+}
+
 // Calculate angle between three points
 export const calculateAngle = (
-  p1: { x: number; y: number },
-  p2: { x: number; y: number },
-  p3: { x: number; y: number }
+  p1: Point,
+  p2: Point,
+  p3: Point
 ): number => {
   // Convert to vectors
   const vec1 = {
@@ -32,7 +38,7 @@ export const calculateAngle = (
 };
 
 // Helper function to extract point coordinates from keypoint
-const getPoint = (keypoint: BodyKeypoint): { x: number; y: number } => {
+const getPoint = (keypoint: BodyKeypoint): Point => {
   return {
     x: keypoint.position.x,
     y: keypoint.position.y
