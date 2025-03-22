@@ -3,11 +3,13 @@ import * as React from "react";
 import { toast as sonnerToast } from 'sonner';
 
 // Define types for toast props
-type ToastProps = {
+export type ToastProps = {
+  id?: string;
   title?: string;
   description?: string;
   variant?: "default" | "destructive";
   duration?: number;
+  action?: React.ReactNode;
 };
 
 // Main toast function
@@ -27,7 +29,7 @@ export const toast = (props: ToastProps) => {
 
 // Creating a custom hook that manages toast state and provides the toast function
 export const useToast = () => {
-  // Create a mutable ref to store the toast state
+  // Create an array to store toasts for backward compatibility
   const [toasts, setToasts] = React.useState<ToastProps[]>([]);
 
   return {

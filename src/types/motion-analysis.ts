@@ -15,7 +15,7 @@ export interface MotionAnalysisSession {
   notes: string;
   jointAngles: JointAngle[];
   status: 'pending' | 'completed' | 'failed';
-  targetJoints?: string[]; // Adding targetJoints as optional property
+  targetJoints?: string[]; // Adding targetJoints property to fix the TypeScript error
 }
 
 export interface MotionAnalysisReport {

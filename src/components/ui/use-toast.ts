@@ -3,7 +3,7 @@ import * as React from "react";
 import { toast as sonnerToast } from 'sonner';
 
 // Re-export the internal toast implementation for components that need it
-export { useToast, toast } from '@/hooks/use-toast';
+export { useToast, toast, type ToastProps } from '@/hooks/use-toast';
 
 // Simple wrapper around sonner toast for backward compatibility
 export const useInternalToast = () => {
