@@ -98,6 +98,7 @@ export const useHumanPoseDetection = (videoRef: React.RefObject<HTMLVideoElement
     body.keypoints.forEach(keypoint => {
       const name = keypoint.part as string;
       if (keypointMap[name]) {
+        // Fix: Access x and y from position object correctly
         detectedJoints[keypointMap[name]] = [keypoint.position.x, keypoint.position.y];
       }
     });
