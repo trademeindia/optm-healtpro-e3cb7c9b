@@ -37,7 +37,16 @@ export const cameraResolutionManager = {
         (constraints.video as MediaTrackConstraints).height = { ideal: 720 };
       }
       
-      return constraints;
+      // Add fallback constraints for compatibility
+      return {
+        ...constraints,
+        video: {
+          ...(constraints.video as MediaTrackConstraints),
+          // Add fallback values for better browser compatibility
+          width: { min: 320, ideal: (constraints.video as MediaTrackConstraints).width?.ideal || 640, max: 1280 },
+          height: { min: 240, ideal: (constraints.video as MediaTrackConstraints).height?.ideal || 480, max: 720 },
+        }
+      };
     } catch (error) {
       console.warn("Error determining optimal camera constraints:", error);
       return constraints; // Return default constraints on error
@@ -66,5 +75,51 @@ export const cameraResolutionManager = {
     }
     
     return false;
+  },
+  
+  /**
+   * Check if camera is available and accessible
+   */
+  checkCameraAvailability: async (): Promise<boolean> => {
+    try {
+      // List available media devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasCamera = devices.some(device => device.kind === 'videoinput');
+      
+      if (!hasCamera) {
+        console.warn("No camera detected on this device");
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error checking camera availability:", error);
+      return false;
+    }
+  },
+  
+  /**
+   * Attempt to get a camera stream with progressively lower requirements
+   */
+  getFallbackCameraStream: async (): Promise<MediaStream | null> => {
+    // Try different constraints in order of preference
+    const fallbackConstraints = [
+      { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } },
+      { video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } } },
+      { video: { facingMode: 'environment' } }, // Try back camera as last resort
+      { video: true } // Most basic constraint
+    ];
+    
+    for (const constraints of fallbackConstraints) {
+      try {
+        console.log("Trying camera with constraints:", constraints);
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        console.warn("Failed with constraints:", constraints, error);
+      }
+    }
+    
+    console.error("All camera fallbacks failed");
+    return null;
   }
 };

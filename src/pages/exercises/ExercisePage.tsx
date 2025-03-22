@@ -1,107 +1,60 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/layout/Header';
-import Sidebar from '@/components/layout/Sidebar';
-import useExercises from '@/hooks/useExercises';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { toast } from 'sonner';
-import ExerciseContent from './components/ExerciseContent';
-import ProgressTracking from './components/ProgressTracking';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Play, Dumbbell } from 'lucide-react';
+import MotionTracker from '@/components/exercises/motion-tracker/MotionTracker';
 
 const ExercisePage: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const isMobile = useIsMobile();
-  const [showMonitor, setShowMonitor] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<{ id: string; name: string } | null>(null);
   
-  const {
-    exercises,
-    muscleGroups,
-    progressData,
-    selectedExercise,
-    setSelectedExercise,
-    markExerciseCompleted,
-    startExercise,
-    filterExercisesByCategory
-  } = useExercises();
-
-  const filteredExercises = filterExercisesByCategory(activeCategory);
-
-  const handleCategoryFilter = (category: string | null) => {
-    setActiveCategory(category);
+  const exercises = [
+    { id: 'squat', name: 'Squats' },
+    { id: 'lunge', name: 'Lunges' },
+    { id: 'pushup', name: 'Push-ups' }
+  ];
+  
+  const handleSelectExercise = (exercise: { id: string; name: string }) => {
+    setSelectedExercise(exercise);
   };
-
-  const handleStartExercise = (exerciseId: string) => {
-    startExercise(exerciseId);
-    setShowMonitor(true);
-    toast.success("Starting exercise session", {
-      description: "Get ready for your guided workout"
-    });
-  };
-
+  
   const handleFinishExercise = () => {
-    if (selectedExercise) {
-      markExerciseCompleted(selectedExercise.id);
-      toast.success("Exercise completed!", {
-        description: "Great job! Your progress has been saved."
-      });
-    }
-    setShowMonitor(false);
     setSelectedExercise(null);
   };
   
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar />
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6">Exercise Tracker</h1>
       
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
-        <Header />
-        
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="mb-6 pl-4 md:pl-6 lg:pl-0">
-            <h1 className="text-2xl font-bold">Exercise Therapy</h1>
-            <p className="text-sm text-muted-foreground">
-              Personalized exercises with AI-powered posture monitoring
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-            {/* Main content area */}
-            <div className="lg:col-span-8 space-y-4">
-              <ExerciseContent 
-                showMonitor={showMonitor}
-                selectedExercise={selectedExercise}
-                filteredExercises={filteredExercises}
-                activeCategory={activeCategory}
-                onCategoryFilter={handleCategoryFilter}
-                onStartExercise={handleStartExercise}
-                onFinishExercise={handleFinishExercise}
-                setShowMonitor={setShowMonitor}
-              />
-            </div>
-            
-            {/* Right sidebar with progress tracking */}
-            {!isMobile && !showMonitor && (
-              <div className="lg:col-span-4 space-y-4">
-                <ProgressTracking 
-                  muscleGroups={muscleGroups}
-                  progressData={progressData}
-                />
-              </div>
-            )}
-            
-            {/* Responsive design - show progress below content on mobile */}
-            {isMobile && !showMonitor && (
-              <div className="col-span-1 space-y-4 mt-4">
-                <ProgressTracking 
-                  muscleGroups={muscleGroups}
-                  progressData={progressData}
-                />
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+      {!selectedExercise ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {exercises.map((exercise) => (
+            <Card key={exercise.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>{exercise.name}</CardTitle>
+                <CardDescription>AI-guided motion tracking</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Dumbbell className="h-8 w-8 text-primary" />
+                  </div>
+                  <Button onClick={() => handleSelectExercise(exercise)}>
+                    <Play className="mr-2 h-4 w-4" />
+                    Start
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <MotionTracker
+          exerciseId={selectedExercise.id}
+          exerciseName={selectedExercise.name}
+          onFinish={handleFinishExercise}
+        />
+      )}
     </div>
   );
 };

@@ -64,6 +64,13 @@ export const humanModelManager = {
       // Create Human instance with optimized configuration
       const human = new Human.Human(config);
       
+      // Try to configure WebGL for optimal performance
+      try {
+        tensorflowMemoryManager.configureForOptimalPerformance();
+      } catch (err) {
+        console.warn("Failed to configure TensorFlow performance:", err);
+      }
+      
       // Pre-load and warm up the model
       try {
         if (onProgress) onProgress("Loading body tracking model...");
@@ -124,10 +131,11 @@ export const humanModelManager = {
     if (!human) return;
     
     try {
-      // Clear instance reference to allow garbage collection
-      // No need to call dispose() as it's not available
-      // Just ensure TensorFlow memory is cleaned up
+      // Human.js doesn't have a dispose method, but we can clean up TensorFlow memory
       tensorflowMemoryManager.cleanupTensors();
+      
+      // Set human to null to allow garbage collection
+      // Note: We don't call dispose() as it's not available in Human.js
       console.log("Human.js resources cleaned up successfully");
     } catch (error) {
       console.error("Error during Human.js cleanup:", error);
