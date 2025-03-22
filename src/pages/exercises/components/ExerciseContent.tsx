@@ -6,7 +6,6 @@ import ExerciseVideo from '@/components/exercises/ExerciseVideo';
 import PostureMonitor from '@/components/exercises/PostureMonitor';
 import CategoryFilter from './CategoryFilter';
 import { Exercise } from '@/types/exercise.types';
-import BodyTrackerExercisePage from '@/components/exercises/body-tracker/BodyTrackerExercisePage';
 
 interface ExerciseContentProps {
   showMonitor: boolean;
@@ -54,9 +53,6 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
             activeCategory={activeCategory}
             onCategoryFilter={onCategoryFilter}
           />
-          
-          {/* Add the BodyTracker component at the top of the exercise list */}
-          <BodyTrackerExercisePage />
           
           <ExerciseList 
             exercises={filteredExercises}
