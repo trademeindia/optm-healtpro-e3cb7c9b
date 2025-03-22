@@ -35,7 +35,7 @@ export const useHumanDetection = ({
     confidence: null
   });
 
-  // Initialize Human.js
+  // Initialize Human.js with optimized settings
   useEffect(() => {
     const initHuman = async () => {
       if (!humanRef.current) {
@@ -44,25 +44,36 @@ export const useHumanDetection = ({
         console.log("Initializing Human.js model...");
 
         try {
+          // Optimized configuration for better performance and accuracy
           const config: Human.Config = {
             modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
-            filter: { enabled: true },
+            filter: { 
+              enabled: true,
+              equalization: false,  // Disable for better performance
+              width: 640,
+              height: 480
+            },
             face: { enabled: false },
-            body: { enabled: true, modelPath: 'blazepose.json' },
+            body: { 
+              enabled: true, 
+              modelPath: 'blazepose.json',
+              maxDetected: 1,  // Only need to detect one person
+              scoreThreshold: 0.3,
+              segmentation: false  // Disable for better performance
+            },
             hand: { enabled: false },
             object: { enabled: false },
             gesture: { enabled: true },
-            debug: true, // Enable debug for troubleshooting
-            // Required fields
+            debug: false,  // Disable debug in production
             backend: 'webgl',
             wasmPath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
             wasmPlatformFetch: false,
             async: true,
-            warmup: 'none',
+            warmup: 'none',  // 'none' for faster startup, 'body' for better initial performance
             cacheModels: true,
             cacheSensitivity: 0.7,
             skipAllowed: false,
-            deallocate: false,
+            deallocate: true,  // Release memory when possible
             flags: {},
             softwareKernels: true,
             validateModels: false,
@@ -97,11 +108,23 @@ export const useHumanDetection = ({
 
   // The calculateAngle function for joint angle calculation
   const calculateAngle = (pointA: number[], pointB: number[], pointC: number[]): number => {
-    const AB = Math.sqrt(Math.pow(pointB[0] - pointA[0], 2) + Math.pow(pointB[1] - pointA[1], 2));
-    const BC = Math.sqrt(Math.pow(pointB[0] - pointC[0], 2) + Math.pow(pointB[1] - pointC[1], 2));
-    const AC = Math.sqrt(Math.pow(pointC[0] - pointA[0], 2) + Math.pow(pointC[1] - pointA[1], 2));
+    // Create vectors from B to A and B to C
+    const vectorBA = [pointA[0] - pointB[0], pointA[1] - pointB[1]];
+    const vectorBC = [pointC[0] - pointB[0], pointC[1] - pointB[1]];
     
-    return Math.acos((BC * BC + AB * AB - AC * AC) / (2 * BC * AB)) * (180 / Math.PI);
+    // Calculate dot product
+    const dotProduct = vectorBA[0] * vectorBC[0] + vectorBA[1] * vectorBC[1];
+    
+    // Calculate magnitudes
+    const magnitudeBA = Math.sqrt(vectorBA[0] * vectorBA[0] + vectorBA[1] * vectorBA[1]);
+    const magnitudeBC = Math.sqrt(vectorBC[0] * vectorBC[0] + vectorBC[1] * vectorBC[1]);
+    
+    // Calculate cosine of the angle
+    const cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
+    
+    // Calculate angle in degrees, ensuring value is in valid range for acos
+    const clampedCosTheta = Math.max(-1, Math.min(1, cosTheta));
+    return Math.acos(clampedCosTheta) * (180 / Math.PI);
   };
 
   const startDetection = () => {
@@ -125,7 +148,7 @@ export const useHumanDetection = ({
       return;
     }
 
-    // Setup canvas
+    // Setup canvas with proper dimensions
     if (video.videoWidth && video.videoHeight) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -139,20 +162,33 @@ export const useHumanDetection = ({
 
     let lastTime = performance.now();
     let frameCount = 0;
+    let skipFrames = 0; // For frame skipping optimization
 
     const detect = async () => {
       if (!human || !video || !canvas || !ctx || !cameraActive) {
-        console.log("Detection loop stopping - prerequisites not met", {
-          human: !!human,
-          video: !!video,
-          canvas: !!canvas,
-          ctx: !!ctx,
-          cameraActive
-        });
+        console.log("Detection loop stopping - prerequisites not met");
         return;
       }
 
       try {
+        // Skip frames for better performance if needed
+        skipFrames++;
+        if (skipFrames < 2) { // Process every second frame
+          // Just draw the previous frame without detection
+          if (lastDetection) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            human.draw.all(canvas, lastDetection);
+            
+            if (lastDetection.body.length > 0) {
+              drawJointAngles(ctx, lastDetection.body[0]);
+            }
+          }
+          
+          animationRef.current = requestAnimationFrame(detect);
+          return;
+        }
+        skipFrames = 0;
+
         // Make sure video is playing
         if (video.paused || video.ended) {
           console.log("Video not playing, attempting to play...");
@@ -172,7 +208,7 @@ export const useHumanDetection = ({
           console.log(`Updated canvas size to ${canvas.width}x${canvas.height}`);
         }
 
-        // Perform detection
+        // Perform detection with optimized settings
         const result = await human.detect(video);
         if (result.body.length > 0) {
           console.log("Detection result:", {
@@ -228,9 +264,18 @@ export const useHumanDetection = ({
       }
     };
 
-    // Draw joint angles on canvas
+    // Draw joint angles on canvas with optimized rendering
     const drawJointAngles = (ctx: CanvasRenderingContext2D, body: Human.BodyResult) => {
       const keypoints = body.keypoints;
+      
+      // Draw text with shadow for better visibility
+      const drawText = (text: string, x: number, y: number) => {
+        ctx.font = '16px Arial';
+        ctx.fillStyle = 'black';
+        ctx.fillText(text, x + 1, y + 1); // Shadow
+        ctx.fillStyle = 'yellow';
+        ctx.fillText(text, x, y);
+      };
       
       // Find specific keypoints for angle calculations
       const leftHip = keypoints.find(kp => kp.part === 'leftHip');
@@ -250,9 +295,7 @@ export const useHumanDetection = ({
         );
         
         // Draw angle on canvas
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'yellow';
-        ctx.fillText(`${Math.round(leftKneeAngle)}°`, leftKnee.position[0] + 10, leftKnee.position[1]);
+        drawText(`${Math.round(leftKneeAngle)}°`, leftKnee.position[0] + 10, leftKnee.position[1]);
       }
       
       // Calculate and draw right knee angle
@@ -264,9 +307,7 @@ export const useHumanDetection = ({
         );
         
         // Draw angle on canvas
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'yellow';
-        ctx.fillText(`${Math.round(rightKneeAngle)}°`, rightKnee.position[0] - 40, rightKnee.position[1]);
+        drawText(`${Math.round(rightKneeAngle)}°`, rightKnee.position[0] - 40, rightKnee.position[1]);
       }
     };
 
