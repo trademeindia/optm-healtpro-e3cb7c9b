@@ -1,21 +1,21 @@
 
-import { toast } from 'sonner';
-import { useToast as useInternalToast } from '@/hooks/use-toast';
+import * as React from "react";
+import { toast as sonnerToast } from 'sonner';
 
+// Re-export the internal toast implementation for components that need it
+export { useToast as useInternalToast } from '@/hooks/use-toast';
+
+// Simple wrapper around sonner toast
 export const useToast = () => {
-  const internalToast = useInternalToast();
-  
   return {
     toast: {
-      success: (message: string) => toast.success(message),
-      error: (message: string) => toast.error(message),
-      info: (message: string) => toast(message),
-      warning: (message: string) => toast(message, {
+      success: (message: string) => sonnerToast.success(message),
+      error: (message: string) => sonnerToast.error(message),
+      info: (message: string) => sonnerToast(message),
+      warning: (message: string) => sonnerToast(message, {
         style: { backgroundColor: 'var(--warning)' }
       })
-    },
-    // Also expose the internal toast API for components that need it
-    internalToast
+    }
   };
 };
 

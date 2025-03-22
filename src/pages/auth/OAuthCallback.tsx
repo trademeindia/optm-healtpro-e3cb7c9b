@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { useOAuthCallback } from '@/hooks/useOAuthCallback';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

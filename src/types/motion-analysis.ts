@@ -8,6 +8,7 @@ export interface JointAngle {
 export interface MotionAnalysisSession {
   id: string;
   patientId: string;
+  doctorId?: string; // Added doctorId as optional for backward compatibility
   type: string;
   measurementDate: string;
   duration: number;
