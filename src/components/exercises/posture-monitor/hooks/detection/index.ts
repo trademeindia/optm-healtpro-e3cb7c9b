@@ -1,13 +1,12 @@
 
-// Export specific items from usePoseDetectionLoop to avoid duplicate type exports
-import { usePoseDetectionLoop } from './usePoseDetectionLoop';
-export { usePoseDetectionLoop };
-
-// Export types except for UsePoseDetectionLoopProps which is already in usePoseDetectionLoop
-export type {
-  VideoStatus,
+// Export components from detection-related hooks
+export { usePoseDetectionLoop } from './usePoseDetectionLoop';
+export { useDetectionStatus } from './useDetectionStatus';
+export { useDetectionFailureHandler } from './useDetectionFailureHandler';
+export type { 
   DetectionStatus,
   DetectionState,
   CustomFeedback,
-  UsePoseDetectionResult
+  UsePoseDetectionResult,
+  VideoStatus
 } from './types';

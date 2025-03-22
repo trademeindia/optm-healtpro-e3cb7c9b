@@ -38,3 +38,14 @@ export interface UsePoseDetectionResult {
   isDetectionRunning: boolean;
   detectionStatus: DetectionStatus;
 }
+
+// Props for detection loop
+export interface PoseDetectionLoopProps {
+  model: any;
+  cameraActive: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  config: any;
+  onPoseDetected: (pose: any) => void;
+  setFeedback: (message: string, type: FeedbackType) => void;
+  videoReady: boolean;
+}

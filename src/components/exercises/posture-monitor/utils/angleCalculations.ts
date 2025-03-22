@@ -1,15 +1,23 @@
-
 import * as posenet from '@tensorflow-models/posenet';
+
+type Point = posenet.Keypoint | number[] | { x: number, y: number };
 
 // Calculate angle between three points (in degrees)
 export const calculateAngle = (
-  pointA: posenet.Keypoint | number[], 
-  pointB: posenet.Keypoint | number[], 
-  pointC: posenet.Keypoint | number[]
+  pointA: Point, 
+  pointB: Point, 
+  pointC: Point
 ): number => {
   // Extract positions based on input type
-  const getPosition = (point: posenet.Keypoint | number[]): number[] => {
-    return Array.isArray(point) ? point : point.position;
+  const getPosition = (point: Point): [number, number] => {
+    if (Array.isArray(point)) {
+      return [point[0], point[1]];
+    } else if ('position' in point) {
+      return [point.position.x, point.position.y];
+    } else if ('x' in point && 'y' in point) {
+      return [point.x, point.y];
+    }
+    throw new Error('Invalid point format');
   };
 
   const posA = getPosition(pointA);
@@ -26,8 +34,12 @@ export const calculateAngle = (
   const magBC = Math.sqrt(BC[0] * BC[0] + BC[1] * BC[1]);
   
   // Calculate angle in radians and convert to degrees
-  const angleRad = Math.acos(dotProduct / (magAB * magBC));
-  return angleRad * (180 / Math.PI);
+  // Make sure to handle edge cases to avoid NaN
+  if (magAB === 0 || magBC === 0) return 0;
+  
+  // Ensure value is in valid range for acos
+  const cosTheta = Math.max(-1, Math.min(1, dotProduct / (magAB * magBC)));
+  return Math.acos(cosTheta) * (180 / Math.PI);
 };
 
 // Calculate the average of multiple angles

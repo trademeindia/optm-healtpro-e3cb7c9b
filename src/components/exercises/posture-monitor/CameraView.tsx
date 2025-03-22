@@ -2,7 +2,6 @@
 import React from 'react';
 import { Loader, Camera, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HumanDetectionStatus } from './types';
 
 interface CameraViewProps {
   cameraActive: boolean;
@@ -61,7 +60,7 @@ const CameraView: React.FC<CameraViewProps> = ({
           className="absolute inset-0 w-full h-full object-cover"
           style={{ 
             transform: 'scaleX(-1)', // Mirror the video for more intuitive feedback
-            display: cameraActive ? 'block' : 'none' // Hide when not active
+            display: 'block' // Always display the video element
           }} 
           playsInline 
           muted
@@ -73,7 +72,7 @@ const CameraView: React.FC<CameraViewProps> = ({
           className="absolute inset-0 w-full h-full object-cover z-10"
           style={{ 
             transform: 'scaleX(-1)', // Mirror the canvas to match the video
-            display: cameraActive ? 'block' : 'none' // Hide when not active
+            display: 'block' // Always display the canvas element
           }} 
         />
       </div>

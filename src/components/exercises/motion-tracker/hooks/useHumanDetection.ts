@@ -1,335 +1,229 @@
-
-import { useRef, useState, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import * as Human from '@vladmandic/human';
-import { HumanDetectionStatus, FeedbackType } from '../types';
+import { FeedbackType } from '../types';
+import { HumanDetectionStatus } from '../types';
+import { performanceMonitor } from '../../utils/performanceMonitor';
 
-type UseHumanDetectionProps = {
+interface UseHumanDetectionProps {
   cameraActive: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   onFeedbackChange: (message: string | null, type: FeedbackType) => void;
-};
-
-type UseHumanDetectionReturn = {
-  isModelLoading: boolean;
-  humanRef: React.RefObject<Human.Human | null>;
-  lastDetection: Human.Result | null;
-  detectionStatus: HumanDetectionStatus;
-  startDetection: () => void;
-  stopDetection: () => void;
-};
+}
 
 export const useHumanDetection = ({
   cameraActive,
   videoRef,
   canvasRef,
-  onFeedbackChange,
-}: UseHumanDetectionProps): UseHumanDetectionReturn => {
-  const humanRef = useRef<Human.Human | null>(null);
-  const animationRef = useRef<number | null>(null);
+  onFeedbackChange
+}: UseHumanDetectionProps) => {
+  // State
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [lastDetection, setLastDetection] = useState<Human.Result | null>(null);
   const [detectionStatus, setDetectionStatus] = useState<HumanDetectionStatus>({
     isActive: false,
     fps: null,
-    confidence: null
+    confidence: null,
   });
-
-  // Initialize Human.js with optimized settings
+  
+  // Refs
+  const humanRef = useRef<Human.Human | null>(null);
+  const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const fpsCounterRef = useRef<number[]>([]);
+  const frameCountRef = useRef(0);
+  
+  // Initialize Human.js
   useEffect(() => {
-    const initHuman = async () => {
-      if (!humanRef.current) {
+    if (humanRef.current) return; // Already initialized
+    
+    const initializeHuman = async () => {
+      try {
         setIsModelLoading(true);
         onFeedbackChange("Loading motion detection model...", FeedbackType.INFO);
-        console.log("Initializing Human.js model...");
-
-        try {
-          // Optimized configuration for better performance and accuracy
-          const config: Human.Config = {
-            modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
-            filter: { 
-              enabled: true,
-              equalization: false,  // Disable for better performance
-              width: 640,
-              height: 480
-            },
-            face: { enabled: false },
-            body: { 
-              enabled: true, 
-              modelPath: 'blazepose.json',
-              maxDetected: 1,  // Only need to detect one person
-              scoreThreshold: 0.3,
-              segmentation: false  // Disable for better performance
-            },
-            hand: { enabled: false },
-            object: { enabled: false },
-            gesture: { enabled: true },
-            debug: false,  // Disable debug in production
-            backend: 'webgl',
-            wasmPath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
-            wasmPlatformFetch: false,
-            async: true,
-            warmup: 'none',  // 'none' for faster startup, 'body' for better initial performance
-            cacheModels: true,
-            cacheSensitivity: 0.7,
-            skipAllowed: false,
-            deallocate: true,  // Release memory when possible
-            flags: {},
-            softwareKernels: true,
-            validateModels: false,
-            segmentation: { enabled: false }
-          };
-
-          const human = new Human.Human(config);
-          console.log("Human.js instance created, loading models...");
-          await human.load();
-          console.log("Human.js model loaded successfully");
-          humanRef.current = human;
-          
-          onFeedbackChange("Motion detection model loaded. Start camera to begin tracking.", FeedbackType.SUCCESS);
-        } catch (error) {
-          console.error('Failed to initialize Human.js:', error);
-          onFeedbackChange("Failed to load motion detection model. Please try again.", FeedbackType.ERROR);
-        } finally {
-          setIsModelLoading(false);
-        }
+        
+        console.log("Initializing Human.js");
+        
+        // Configure Human.js
+        const config: Partial<Human.Config> = {
+          modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
+          filter: { enabled: true, equalization: false },
+          face: { enabled: false },
+          hand: { enabled: false },
+          gesture: { enabled: false },
+          // Configure body pose detection
+          body: { 
+            enabled: true,
+            modelPath: 'blazepose-heavy.json', // Use heavy model for better accuracy
+            minConfidence: 0.2, // Lower threshold for initial detection
+            maxDetected: 1, // Only detect one person
+          },
+          // Segmentation is expensive, disable it
+          segmentation: { enabled: false },
+          // Optimize for performance
+          backend: 'webgl',
+          warmup: 'none',
+          // Debug settings
+          debug: false,
+        };
+        
+        // Create Human instance with configuration
+        const human = new Human.Human(config);
+        
+        // Pre-load and warm up the model
+        await human.load();
+        await human.warmup();
+        
+        humanRef.current = human;
+        setIsModelLoading(false);
+        onFeedbackChange("Motion detection ready. Starting camera will begin tracking.", FeedbackType.SUCCESS);
+        
+        console.log("Human.js initialized successfully");
+      } catch (error) {
+        console.error("Error initializing Human.js:", error);
+        setIsModelLoading(false);
+        onFeedbackChange(
+          "Failed to initialize motion detection. Please try refreshing the page.",
+          FeedbackType.ERROR
+        );
       }
     };
-
-    initHuman();
-
+    
+    initializeHuman();
+    
+    // Cleanup
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
+      if (humanRef.current) {
+        console.log("Cleaning up Human.js instance");
+        humanRef.current = null;
       }
     };
   }, [onFeedbackChange]);
-
-  // The calculateAngle function for joint angle calculation
-  const calculateAngle = (pointA: number[], pointB: number[], pointC: number[]): number => {
-    // Create vectors from B to A and B to C
-    const vectorBA = [pointA[0] - pointB[0], pointA[1] - pointB[1]];
-    const vectorBC = [pointC[0] - pointB[0], pointC[1] - pointB[1]];
-    
-    // Calculate dot product
-    const dotProduct = vectorBA[0] * vectorBC[0] + vectorBA[1] * vectorBC[1];
-    
-    // Calculate magnitudes
-    const magnitudeBA = Math.sqrt(vectorBA[0] * vectorBA[0] + vectorBA[1] * vectorBA[1]);
-    const magnitudeBC = Math.sqrt(vectorBC[0] * vectorBC[0] + vectorBC[1] * vectorBC[1]);
-    
-    // Calculate cosine of the angle
-    const cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
-    
-    // Calculate angle in degrees, ensuring value is in valid range for acos
-    const clampedCosTheta = Math.max(-1, Math.min(1, cosTheta));
-    return Math.acos(clampedCosTheta) * (180 / Math.PI);
-  };
-
-  const startDetection = () => {
-    if (!humanRef.current || !videoRef.current || !canvasRef.current) {
-      console.log("Cannot start detection: missing refs", {
-        human: !!humanRef.current,
-        video: !!videoRef.current,
-        canvas: !!canvasRef.current
-      });
+  
+  // Start detection loop
+  const startDetection = useCallback(() => {
+    if (!humanRef.current || !videoRef.current || !canvasRef.current || !cameraActive) {
+      console.warn("Cannot start detection: missing prerequisites");
       return;
     }
-
-    console.log("Starting detection loop");
-    const human = humanRef.current;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
     
-    if (!ctx) {
-      console.error("Failed to get canvas context");
+    if (detectionIntervalRef.current) {
+      console.log("Detection already running");
       return;
     }
-
-    // Setup canvas with proper dimensions
-    if (video.videoWidth && video.videoHeight) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      console.log(`Canvas size set to ${canvas.width}x${canvas.height}`);
-    } else {
-      // Fallback dimensions
-      canvas.width = 640;
-      canvas.height = 480;
-      console.log("Using fallback canvas dimensions: 640x480");
-    }
-
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let skipFrames = 0; // For frame skipping optimization
-
+    
+    console.log("Starting Human.js detection loop");
+    
     const detect = async () => {
-      if (!human || !video || !canvas || !ctx || !cameraActive) {
-        console.log("Detection loop stopping - prerequisites not met");
+      if (!humanRef.current || !videoRef.current || !cameraActive) {
+        stopDetection();
         return;
       }
-
+      
+      frameCountRef.current += 1;
+      
+      // Skip frames for better performance (process every other frame)
+      if (frameCountRef.current % 2 !== 0) {
+        requestAnimationFrame(detect);
+        return;
+      }
+      
       try {
-        // Skip frames for better performance if needed
-        skipFrames++;
-        if (skipFrames < 2) { // Process every second frame
-          // Just draw the previous frame without detection
-          if (lastDetection) {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            human.draw.all(canvas, lastDetection);
-            
-            if (lastDetection.body.length > 0) {
-              drawJointAngles(ctx, lastDetection.body[0]);
-            }
-          }
-          
-          animationRef.current = requestAnimationFrame(detect);
-          return;
-        }
-        skipFrames = 0;
-
-        // Make sure video is playing
-        if (video.paused || video.ended) {
-          console.log("Video not playing, attempting to play...");
-          try {
-            await video.play();
-          } catch (e) {
-            console.error("Could not play video:", e);
-          }
-        }
-
-        // Check if video has dimensions and update canvas if needed
-        if (video.videoWidth === 0 || video.videoHeight === 0) {
-          console.log("Video dimensions not available yet");
-        } else if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          console.log(`Updated canvas size to ${canvas.width}x${canvas.height}`);
-        }
-
-        // Perform detection with optimized settings
-        const result = await human.detect(video);
-        if (result.body.length > 0) {
-          console.log("Detection result:", {
-            bodyCount: result.body.length,
-            confidence: result.body[0]?.score,
-            keypoints: result.body[0]?.keypoints.length || 0
-          });
-        }
+        // Start timing
+        const endTiming = performanceMonitor.startTiming('humanDetection');
         
-        setLastDetection(result);
+        // Run detection
+        const result = await humanRef.current.detect(videoRef.current);
+        
+        // End timing and record performance
+        endTiming();
         
         // Calculate FPS
         const now = performance.now();
-        frameCount++;
+        fpsCounterRef.current.push(now);
         
-        if (now - lastTime >= 1000) {
-          const fps = Math.round(frameCount * 1000 / (now - lastTime));
-          console.log(`FPS: ${fps}`);
-          setDetectionStatus({
-            isActive: true,
-            fps: fps,
-            confidence: result.body[0]?.score || null
-          });
-          frameCount = 0;
-          lastTime = now;
+        // Keep only the last 30 timestamps for FPS calculation
+        if (fpsCounterRef.current.length > 30) {
+          fpsCounterRef.current.shift();
         }
-
-        // Clear the canvas first
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Draw video frame
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Calculate FPS based on the last 30 frames
+        let fps = null;
+        if (fpsCounterRef.current.length >= 2) {
+          const timeElapsed = fpsCounterRef.current[fpsCounterRef.current.length - 1] - 
+                             fpsCounterRef.current[0];
+          const frameCount = fpsCounterRef.current.length - 1;
+          fps = Math.round((1000 * frameCount) / timeElapsed);
+        }
         
-        // Draw detected body keypoints
-        if (result.body.length > 0) {
-          human.draw.all(canvas, result);
+        // Update status
+        setDetectionStatus({
+          isActive: true,
+          fps,
+          confidence: result.body[0]?.score || null
+        });
+        
+        // Draw results on canvas if we have a body detection
+        if (result.body && result.body.length > 0) {
+          // Store the latest detection for analysis
+          setLastDetection(result);
           
-          // Draw joint angles if available
-          const body = result.body[0];
-          if (body && body.keypoints.length > 0) {
-            drawJointAngles(ctx, body);
+          // Draw to canvas
+          if (canvasRef.current) {
+            await humanRef.current.draw.canvas(canvasRef.current, result);
           }
-        } else {
-          onFeedbackChange("No person detected. Please make sure you're visible in the camera.", FeedbackType.WARNING);
         }
+        
+        // Continue detection loop
+        requestAnimationFrame(detect);
       } catch (error) {
-        console.error('Detection error:', error);
-      }
-
-      // Continue detection loop with requestAnimationFrame
-      if (cameraActive) {
-        animationRef.current = requestAnimationFrame(detect);
+        console.error("Error in Human.js detection:", error);
+        
+        // Try to continue detection despite error
+        requestAnimationFrame(detect);
       }
     };
-
-    // Draw joint angles on canvas with optimized rendering
-    const drawJointAngles = (ctx: CanvasRenderingContext2D, body: Human.BodyResult) => {
-      const keypoints = body.keypoints;
-      
-      // Draw text with shadow for better visibility
-      const drawText = (text: string, x: number, y: number) => {
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'black';
-        ctx.fillText(text, x + 1, y + 1); // Shadow
-        ctx.fillStyle = 'yellow';
-        ctx.fillText(text, x, y);
-      };
-      
-      // Find specific keypoints for angle calculations
-      const leftHip = keypoints.find(kp => kp.part === 'leftHip');
-      const leftKnee = keypoints.find(kp => kp.part === 'leftKnee');
-      const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle');
-      
-      const rightHip = keypoints.find(kp => kp.part === 'rightHip');
-      const rightKnee = keypoints.find(kp => kp.part === 'rightKnee');
-      const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
-      
-      // Calculate and draw left knee angle
-      if (leftHip && leftKnee && leftAnkle) {
-        const leftKneeAngle = calculateAngle(
-          [leftHip.position[0], leftHip.position[1]],
-          [leftKnee.position[0], leftKnee.position[1]],
-          [leftAnkle.position[0], leftAnkle.position[1]]
-        );
-        
-        // Draw angle on canvas
-        drawText(`${Math.round(leftKneeAngle)}°`, leftKnee.position[0] + 10, leftKnee.position[1]);
-      }
-      
-      // Calculate and draw right knee angle
-      if (rightHip && rightKnee && rightAnkle) {
-        const rightKneeAngle = calculateAngle(
-          [rightHip.position[0], rightHip.position[1]],
-          [rightKnee.position[0], rightKnee.position[1]],
-          [rightAnkle.position[0], rightAnkle.position[1]]
-        );
-        
-        // Draw angle on canvas
-        drawText(`${Math.round(rightKneeAngle)}°`, rightKnee.position[0] - 40, rightKnee.position[1]);
-      }
-    };
-
-    // Start detection loop
-    animationRef.current = requestAnimationFrame(detect);
+    
+    // Initialize the detection loop
+    frameCountRef.current = 0;
+    fpsCounterRef.current = [];
+    requestAnimationFrame(detect);
+    
     setDetectionStatus(prev => ({ ...prev, isActive: true }));
-  };
-
-  const stopDetection = () => {
-    console.log("Stopping detection loop");
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+    
+  }, [cameraActive, videoRef, canvasRef, humanRef]);
+  
+  // Stop detection
+  function stopDetection() {
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
     }
     
     setDetectionStatus({
       isActive: false,
       fps: null,
-      confidence: null
+      confidence: null,
     });
-  };
-
+    
+    console.log("Human.js detection stopped");
+  }
+  
+  // Automatically start/stop detection based on cameraActive state
+  useEffect(() => {
+    if (cameraActive && humanRef.current) {
+      startDetection();
+    } else if (!cameraActive && detectionStatus.isActive) {
+      stopDetection();
+    }
+    
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+    };
+  }, [cameraActive, detectionStatus.isActive, humanRef, startDetection]);
+  
   return {
     isModelLoading,
     humanRef,

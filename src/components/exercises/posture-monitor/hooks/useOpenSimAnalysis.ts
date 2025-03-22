@@ -1,14 +1,30 @@
 
-import { useState, useEffect } from 'react';
-import * as posenet from '@tensorflow-models/posenet';
-import { SquatState, FeedbackType } from '../types';
-import { openSimService, OpenSimModelParams, OpenSimAnalysisResult } from '@/services/opensim/opensimService';
+import { useState, useEffect, useCallback } from 'react';
+import { FeedbackType } from '../types';
+import { SquatState } from '../types';
+import { performanceMonitor } from '../../utils/performanceMonitor';
+
+interface ModelParams {
+  height: number;
+  weight: number;
+  age: number;
+  gender: string;
+}
+
+interface AnalysisResult {
+  kneeForce?: number;
+  hipForce?: number;
+  ankleForce?: number;
+  backLoad?: number;
+  impactScore?: number;
+  recommendation?: string;
+}
 
 interface UseOpenSimAnalysisProps {
-  pose: posenet.Pose | null;
+  pose: any;
   currentSquatState: SquatState;
   setFeedback: (message: string, type: FeedbackType) => void;
-  modelParams: OpenSimModelParams;
+  modelParams: ModelParams;
 }
 
 export const useOpenSimAnalysis = ({
@@ -17,50 +33,82 @@ export const useOpenSimAnalysis = ({
   setFeedback,
   modelParams
 }: UseOpenSimAnalysisProps) => {
-  const [analysisResult, setAnalysisResult] = useState<OpenSimAnalysisResult | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [lastAnalysisTime, setLastAnalysisTime] = useState<number>(0);
-
-  useEffect(() => {
-    // Only analyze poses with reasonable confidence
-    if (!pose || pose.score < 0.6) return;
+  
+  // Mock biomechanical analysis based on squat state and pose
+  const analyzeBiomechanics = useCallback(() => {
+    if (!pose) return null;
     
-    // Don't run analysis too frequently - aim for 2-3 per second max
-    const now = Date.now();
-    if (now - lastAnalysisTime < 500) return;
+    const startTime = performance.now();
+    setIsAnalyzing(true);
     
-    const analyzeCurrentPose = async () => {
-      try {
-        setIsAnalyzing(true);
-        setAnalysisError(null);
-        
-        const result = await openSimService.analyzePose({
-          poseKeypoints: pose.keypoints,
-          modelParams,
-          exerciseType: 'squat',
-          currentState: currentSquatState
-        });
-        
-        setAnalysisResult(result);
-        setLastAnalysisTime(Date.now());
-        
-        // Provide feedback based on the analysis result
-        if (result.formAssessment && result.formAssessment.issues.length > 0) {
-          // Display the first issue as feedback
-          setFeedback(result.formAssessment.issues[0], FeedbackType.WARNING);
-        }
-      } catch (error) {
-        console.error('Error in biomechanical analysis:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        setAnalysisError(`Analysis failed: ${errorMessage}`);
-      } finally {
-        setIsAnalyzing(false);
+    try {
+      // This is a simplified mock of what would be a complex calculation
+      // In a real implementation, this would use OpenSim or similar biomechanical modeling
+      
+      // Mock values based on squat state
+      let kneeForce = 1.0; // Base force multiplier (1x body weight)
+      let hipForce = 1.5;  // Base force multiplier (1.5x body weight)
+      let backLoad = 1.2;  // Base load multiplier (1.2x body weight)
+      
+      // Adjust forces based on squat state
+      if (currentSquatState === SquatState.BOTTOM) {
+        kneeForce = 2.5;
+        hipForce = 3.2;
+        backLoad = 2.0;
+      } else if (currentSquatState === SquatState.DESCENDING || 
+                currentSquatState === SquatState.ASCENDING) {
+        kneeForce = 1.8;
+        hipForce = 2.4;
+        backLoad = 1.8;
       }
-    };
-    
-    analyzeCurrentPose();
-  }, [pose, currentSquatState, modelParams, lastAnalysisTime, setFeedback]);
+      
+      // Calculate impact score (0-10 scale)
+      const impactScore = (kneeForce + hipForce + backLoad) / 3 * 2.5;
+      
+      // Generate recommendation
+      let recommendation = "Form looks good, maintain current form.";
+      
+      if (impactScore > 6) {
+        recommendation = "High joint forces detected. Consider adjusting your form to reduce stress on joints.";
+      } else if (impactScore > 4) {
+        recommendation = "Moderate joint loading. Focus on controlled movements and proper alignment.";
+      }
+      
+      // Add a small delay to simulate processing time
+      setTimeout(() => {
+        setAnalysisResult({
+          kneeForce,
+          hipForce,
+          backLoad,
+          impactScore,
+          recommendation
+        });
+        setIsAnalyzing(false);
+        
+        // Record performance
+        const endTime = performance.now();
+        performanceMonitor.recordMetric('biomechanicalAnalysis', endTime - startTime);
+        
+      }, 500);
+      
+      return null;
+    } catch (error) {
+      console.error("Biomechanical analysis error:", error);
+      setIsAnalyzing(false);
+      setAnalysisError("Failed to analyze biomechanics");
+      return null;
+    }
+  }, [pose, currentSquatState]);
+  
+  // Run analysis when pose or squat state changes
+  useEffect(() => {
+    if (pose && currentSquatState !== SquatState.UNKNOWN) {
+      analyzeBiomechanics();
+    }
+  }, [pose, currentSquatState, analyzeBiomechanics]);
   
   return {
     analysisResult,

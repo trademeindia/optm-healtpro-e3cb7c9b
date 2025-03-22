@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { DetectionStatus, DetectionState } from './types';
 
@@ -14,14 +15,14 @@ export const useDetectionStatus = () => {
   const updateFpsStats = useCallback((detectionTime: number, stateRef: React.MutableRefObject<DetectionState>) => {
     const state = stateRef.current;
     
-    // Add current detection time to the array (keep only last 30 frames for FPS calculation)
-    state.detectionTimes.push(detectionTime);
-    if (state.detectionTimes.length > 30) {
-      state.detectionTimes.shift();
+    // Add current detection time to the array
+    state.frameTimes.push(detectionTime);
+    if (state.frameTimes.length > 30) {
+      state.frameTimes.shift();
     }
     
     // Calculate average detection time
-    const avgDetectionTime = state.detectionTimes.reduce((acc, time) => acc + time, 0) / state.detectionTimes.length;
+    const avgDetectionTime = state.frameTimes.reduce((acc, time) => acc + time, 0) / state.frameTimes.length;
     
     // Calculate FPS based on average detection time
     const fps = Math.round(1000 / avgDetectionTime);

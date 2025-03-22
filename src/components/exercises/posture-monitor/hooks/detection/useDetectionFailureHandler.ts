@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from 'react';
 import { DetectionState } from './types';
 import { FeedbackType } from '../../types';
@@ -8,10 +7,10 @@ export const useDetectionFailureHandler = (
 ) => {
   // State for tracking detection success/failure
   const detectionStateRef = useRef<DetectionState>({
-    framesProcessed: 0,
-    lastDetectionTime: 0,
-    detectionTimes: [],
-    failureCount: 0
+    failureCounter: 0,
+    lastFrameTime: 0,
+    frameTimes: [],
+    lastDetectionTime: 0
   });
   
   // Handle detection failures
@@ -20,10 +19,10 @@ export const useDetectionFailureHandler = (
     console.error('Pose detection error:', errorMessage);
     
     // Increment failure counter
-    detectionStateRef.current.failureCount += 1;
+    detectionStateRef.current.failureCounter += 1;
     
     // If we have too many consecutive failures, show a message to the user
-    if (detectionStateRef.current.failureCount > 5) {
+    if (detectionStateRef.current.failureCounter > 5) {
       setFeedback(
         'Having trouble detecting your pose. Please ensure you are visible in the camera.',
         FeedbackType.WARNING
@@ -31,7 +30,7 @@ export const useDetectionFailureHandler = (
     }
     
     // If we have a critical number of failures, show more detailed error
-    if (detectionStateRef.current.failureCount > 20) {
+    if (detectionStateRef.current.failureCounter > 20) {
       setFeedback(
         `Detection error: ${errorMessage}. Try restarting the camera.`,
         FeedbackType.ERROR
@@ -41,15 +40,20 @@ export const useDetectionFailureHandler = (
   
   // Reset failure counter on successful detection
   const resetFailureCounter = useCallback(() => {
-    if (detectionStateRef.current.failureCount > 0) {
-      detectionStateRef.current.failureCount = 0;
+    if (detectionStateRef.current.failureCounter > 0) {
+      detectionStateRef.current.failureCounter = 0;
     }
   }, []);
   
   // Update detection time on successful detection
   const updateDetectionTime = useCallback(() => {
     detectionStateRef.current.lastDetectionTime = performance.now();
-    detectionStateRef.current.framesProcessed += 1;
+    // Add current frame time to the array
+    detectionStateRef.current.frameTimes.push(performance.now());
+    // Keep only the last 30 frames for performance
+    if (detectionStateRef.current.frameTimes.length > 30) {
+      detectionStateRef.current.frameTimes.shift();
+    }
   }, []);
   
   return {
