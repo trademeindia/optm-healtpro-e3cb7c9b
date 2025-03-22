@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+
+import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info, Play, Pause, RotateCcw, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,13 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     exerciseType: getExerciseType()
   });
 
+  const { cameraActive, toggleCamera, stopCamera } = useCamera({
+    videoRef,
+    onFeedbackChange: handleFeedbackChange,
+    onCameraStart: () => console.log("Camera started"),
+    onCameraStop: () => console.log("Camera stopped")
+  });
+  
   const { 
     isModelLoading, 
     humanRef, 
@@ -55,21 +63,23 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     startDetection, 
     stopDetection 
   } = useHumanDetection({
-    cameraActive: false,  // We'll update this from the camera hook
+    cameraActive: cameraActive,
     videoRef,
     canvasRef,
     onFeedbackChange: handleFeedbackChange
   });
-  
-  const { cameraActive, toggleCamera, stopCamera } = useCamera({
-    videoRef,
-    onFeedbackChange: handleFeedbackChange,
-    onCameraStart: startDetection,
-    onCameraStop: stopDetection
-  });
+
+  // Handle camera state changes
+  useEffect(() => {
+    if (cameraActive) {
+      startDetection();
+    } else {
+      stopDetection();
+    }
+  }, [cameraActive]);
 
   // Analyze movement when we have new detection data
-  React.useEffect(() => {
+  useEffect(() => {
     if (lastDetection && cameraActive) {
       analyzeMovement(lastDetection);
     }
@@ -86,6 +96,17 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     stopCamera();
     onFinish();
   };
+
+  // Log status for debugging
+  useEffect(() => {
+    console.log("Motion tracker state:", {
+      cameraActive,
+      detectionStatus,
+      modelLoaded: !!humanRef.current,
+      hasVideo: !!videoRef.current,
+      hasCanvas: !!canvasRef.current
+    });
+  }, [cameraActive, detectionStatus]);
 
   // Display exercise selection if no exercise selected
   if (!exerciseId || !exerciseName) {

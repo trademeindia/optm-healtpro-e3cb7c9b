@@ -90,15 +90,37 @@ export const useHumanDetection = ({
     };
   }, [onFeedbackChange]);
 
-  const startDetection = () => {
-    if (!humanRef.current || !videoRef.current || !canvasRef.current) return;
+  // Auto-start detection when camera becomes active
+  useEffect(() => {
+    if (cameraActive && humanRef.current && videoRef.current) {
+      console.log("Camera active, starting detection");
+      startDetection();
+    } else if (!cameraActive && detectionStatus.isActive) {
+      console.log("Camera inactive, stopping detection");
+      stopDetection();
+    }
+  }, [cameraActive]);
 
+  const startDetection = () => {
+    if (!humanRef.current || !videoRef.current || !canvasRef.current) {
+      console.log("Cannot start detection: missing refs", {
+        human: !!humanRef.current,
+        video: !!videoRef.current,
+        canvas: !!canvasRef.current
+      });
+      return;
+    }
+
+    console.log("Starting detection loop");
     const human = humanRef.current;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    if (!ctx) return;
+    if (!ctx) {
+      console.error("Failed to get canvas context");
+      return;
+    }
 
     // Setup canvas
     canvas.width = video.videoWidth || 640;
@@ -108,11 +130,24 @@ export const useHumanDetection = ({
     let frameCount = 0;
 
     const detect = async () => {
-      if (!human || !video || !canvas || !ctx || !cameraActive) return;
+      if (!human || !video || !canvas || !ctx || !cameraActive) {
+        console.log("Detection loop stopping - prerequisites not met", {
+          human: !!human,
+          video: !!video,
+          canvas: !!canvas,
+          ctx: !!ctx,
+          cameraActive
+        });
+        return;
+      }
 
       try {
         // Perform detection
         const result = await human.detect(video);
+        console.log("Detection result:", {
+          bodyCount: result.body.length,
+          confidence: result.body[0]?.score
+        });
         setLastDetection(result);
         
         // Calculate FPS
@@ -120,9 +155,11 @@ export const useHumanDetection = ({
         frameCount++;
         
         if (now - lastTime >= 1000) {
+          const fps = Math.round(frameCount * 1000 / (now - lastTime));
+          console.log(`FPS: ${fps}`);
           setDetectionStatus({
             isActive: true,
-            fps: Math.round(frameCount * 1000 / (now - lastTime)),
+            fps: fps,
             confidence: result.body[0]?.score || null
           });
           frameCount = 0;
@@ -151,9 +188,11 @@ export const useHumanDetection = ({
 
     // Start detection loop
     animationRef.current = requestAnimationFrame(detect);
+    setDetectionStatus(prev => ({ ...prev, isActive: true }));
   };
 
   const stopDetection = () => {
+    console.log("Stopping detection loop");
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
