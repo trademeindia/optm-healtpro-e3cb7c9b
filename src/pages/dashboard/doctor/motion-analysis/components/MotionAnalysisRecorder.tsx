@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,8 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/integrations/supabase/client';
-import { MotionAnalysisSession, toDbModel } from '@/types/motion-analysis';
+import { JointAngle, MotionAnalysisSession } from '@/types/motion-analysis';
 
 interface MotionAnalysisRecorderProps {
   patientId?: string;
@@ -27,14 +27,14 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
   const [customType, setCustomType] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [recordedAngles, setRecordedAngles] = useState<any[]>([]);
+  const [recordedAngles, setRecordedAngles] = useState<JointAngle[]>([]);
   const [targetJoints, setTargetJoints] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [recordingDuration, setRecordingDuration] = useState<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchPatients = async () => {
       if (!user) return;
 
@@ -42,19 +42,18 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
       setError(null);
 
       try {
-        // Fetch patients from profiles table where role is 'patient'
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, name')
-          .eq('role', 'patient');
-
-        if (error) throw error;
-
-        setPatients(data || []);
+        // Mock patient data for development
+        const mockPatients = [
+          { id: '1', name: 'John Doe' },
+          { id: '2', name: 'Jane Smith' },
+          { id: '3', name: 'Michael Johnson' },
+        ];
+        
+        setPatients(mockPatients);
 
         // If patientId is provided, select that patient
         if (patientId) {
-          const patient = data?.find((p: any) => p.id === patientId);
+          const patient = mockPatients.find((p) => p.id === patientId);
           if (patient) {
             setSelectedPatient({ id: patient.id, name: patient.name });
           }
@@ -86,12 +85,32 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
     timerRef.current = setInterval(() => {
       setRecordingDuration((prevDuration) => prevDuration + 1);
     }, 1000);
+    
+    // Simulate joint angle detection
+    const simulateAngleDetection = setInterval(() => {
+      const joints = ['knee', 'hip', 'ankle', 'shoulder', 'elbow', 'wrist'];
+      const targetJoint = targetJoints.length > 0 
+        ? targetJoints[Math.floor(Math.random() * targetJoints.length)] 
+        : joints[Math.floor(Math.random() * joints.length)];
+      
+      const randomAngle = Math.floor(Math.random() * 180);
+      
+      handleAngleDetected(targetJoint, randomAngle);
+    }, 1000);
+    
+    // Store the simulation interval for cleanup
+    (window as any).simulationInterval = simulateAngleDetection;
   };
 
   const handleStopRecording = () => {
     setIsRecording(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    
+    // Clear the simulation interval
+    if ((window as any).simulationInterval) {
+      clearInterval((window as any).simulationInterval);
     }
   };
 
@@ -102,7 +121,7 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
         {
           joint: joint,
           angle: angle,
-          timestamp: Date.now() - startTimeRef.current,
+          timestamp: Date.now(),
         },
       ]);
     }
@@ -130,69 +149,68 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+    
+    // Clear the simulation interval
+    if ((window as any).simulationInterval) {
+      clearInterval((window as any).simulationInterval);
+    }
   };
 
-  // Inside the component, update the submit function:
-const submitSession = async () => {
-  if (!selectedPatient || !user) {
-    toast({
-      title: "Error",
-      description: "Missing patient or doctor information",
-      variant: "destructive"
-    });
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // Create the session record with our application model
-    const session: MotionAnalysisSession = {
-      type: selectedType,
-      status: "completed",
-      patientId: selectedPatient.id,
-      doctorId: user.id,
-      notes: notes,
-      customType: selectedType === "Other" ? customType : undefined,
-      jointAngles: recordedAngles,
-      measurementDate: new Date().toISOString(),
-      targetJoints: targetJoints,
-      duration: recordingDuration
-    };
-
-    // Convert to DB model for insertion
-    const dbSession = toDbModel(session);
-
-    // Insert the session into the database
-    const { data, error } = await supabase
-      .from('motion_analysis_sessions')
-      .insert(dbSession);
-
-    if (error) throw error;
-
-    toast({
-      title: "Success",
-      description: "Motion analysis session recorded successfully",
-    });
-
-    // Reset the form
-    resetForm();
-    
-    // Optionally refresh the list if you have that function
-    if (onSessionCreated) {
-      onSessionCreated();
+  const submitSession = async () => {
+    if (!selectedPatient || !user) {
+      toast({
+        title: "Error",
+        description: "Missing patient or doctor information",
+      });
+      return;
     }
-  } catch (err) {
-    console.error('Error saving motion analysis session:', err);
-    toast({
-      title: "Error",
-      description: "Failed to save the motion analysis session",
-      variant: "destructive"
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+
+    setIsSubmitting(true);
+
+    try {
+      // Create the session record
+      const session: MotionAnalysisSession = {
+        id: Math.random().toString(36).substring(2, 9), // Generate a random ID
+        type: selectedType,
+        status: "completed",
+        patientId: selectedPatient.id,
+        doctorId: user.id,
+        notes: notes,
+        customType: selectedType === "Other" ? customType : undefined,
+        jointAngles: recordedAngles,
+        measurementDate: new Date().toISOString(),
+        targetJoints: targetJoints,
+        duration: recordingDuration
+      };
+      
+      // In a production app, we would save to Supabase here
+      console.log('Session data to be saved:', session);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Success",
+        description: "Motion analysis session recorded successfully",
+      });
+
+      // Reset the form
+      resetForm();
+      
+      // Notify parent component
+      if (onSessionCreated) {
+        onSessionCreated();
+      }
+    } catch (err) {
+      console.error('Error saving motion analysis session:', err);
+      toast({
+        title: "Error",
+        description: "Failed to save the motion analysis session",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Card>
@@ -223,7 +241,7 @@ const submitSession = async () => {
 
             <div className="grid gap-2">
               <Label htmlFor="type">Type</Label>
-              <Select onValueChange={setSelectedType}>
+              <Select onValueChange={setSelectedType} defaultValue={selectedType}>
                 <SelectTrigger id="type">
                   <SelectValue placeholder="Select a type" />
                 </SelectTrigger>

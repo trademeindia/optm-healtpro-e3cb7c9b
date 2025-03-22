@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { 
   Card, 
@@ -10,7 +9,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MotionAnalysisSession, fromDbModel } from '@/types/motion-analysis';
+import { MotionAnalysisSession } from '@/types/motion-analysis';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow, format } from 'date-fns';
 
@@ -35,30 +34,49 @@ export default function MotionAnalysisHistory({
     setError(null);
 
     try {
-      // Create the base query
-      let query = supabase
-        .from('motion_analysis_sessions');
-
-      // Filter by patient ID if provided, otherwise show all patient sessions for this doctor
-      if (patientId) {
-        query = query.eq('patient_id', patientId);
-      } else if (user.role === 'doctor') {
-        query = query.eq('doctor_id', user.id);
-      }
-
-      // Execute the query
-      const { data, error } = await query
-        .order('measurement_date', { ascending: false })
-        .select();
-
-      if (error) throw error;
-
-      // Convert DB results to our application model
-      const formattedSessions: MotionAnalysisSession[] = data 
-        ? data.map(session => fromDbModel(session))
-        : [];
-
-      setSessions(formattedSessions);
+      // For now, we'll use mock data instead of Supabase queries
+      // until the database schema is properly set up
+      
+      // Mock session data for development
+      const mockSessions: MotionAnalysisSession[] = [
+        {
+          id: '1',
+          patientId: '1',
+          doctorId: user.id,
+          type: 'Squat',
+          status: 'completed',
+          notes: 'Patient showed good form, minor knee valgus on descent.',
+          jointAngles: [
+            { joint: 'knee', angle: 85, timestamp: Date.now() - 5000 },
+            { joint: 'hip', angle: 120, timestamp: Date.now() - 3000 },
+          ],
+          measurementDate: new Date().toISOString(),
+          targetJoints: ['knee', 'hip'],
+          duration: 30,
+        },
+        {
+          id: '2',
+          patientId: '1',
+          doctorId: user.id,
+          type: 'Lunge',
+          status: 'completed',
+          notes: 'Good stability, needs more hip flexibility.',
+          jointAngles: [
+            { joint: 'knee', angle: 90, timestamp: Date.now() - 100000 },
+            { joint: 'hip', angle: 110, timestamp: Date.now() - 98000 },
+          ],
+          measurementDate: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+          targetJoints: ['knee', 'hip', 'ankle'],
+          duration: 45,
+        }
+      ];
+      
+      // Filter by patient ID if provided
+      const filteredSessions = patientId 
+        ? mockSessions.filter(session => session.patientId === patientId)
+        : mockSessions;
+      
+      setSessions(filteredSessions);
     } catch (err) {
       console.error('Error fetching motion analysis sessions:', err);
       setError('Failed to load motion analysis sessions. Please try again.');

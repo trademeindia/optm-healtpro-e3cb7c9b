@@ -2,21 +2,19 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes as RouterRoutes } from 'react-router-dom';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { AuthRoutes } from './auth/AuthRoutes';
-import { DoctorRoutes } from './dashboard/DoctorRoutes';
-import { PatientRoutes } from './dashboard/PatientRoutes';
-import { ReceptionistRoutes } from './dashboard/ReceptionistRoutes';
-import { CommonRoutes } from './common/CommonRoutes';
+import { DoctorRouter } from './dashboard/DoctorRouter';
+import { PatientRouter } from './dashboard/PatientRouter';
+import { ReceptionistRouter } from './dashboard/ReceptionistRouter';
+import { AuthRouter } from './auth/AuthRouter';
 
 const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <RouterRoutes>
-        <AuthRoutes />
-        <DoctorRoutes />
-        <PatientRoutes />
-        <ReceptionistRoutes />
-        <CommonRoutes />
+        <AuthRouter />
+        <DoctorRouter />
+        <PatientRouter />
+        <ReceptionistRouter />
       </RouterRoutes>
     </Suspense>
   );

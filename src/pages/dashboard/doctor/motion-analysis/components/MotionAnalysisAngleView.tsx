@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { JointAngle } from './MotionAnalysisRecorder';
+import { JointAngle } from '@/types/motion-analysis';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -39,7 +39,7 @@ const MotionAnalysisAngleView: React.FC<MotionAnalysisAngleViewProps> = ({
   
   // Get unique joint names from the data
   const uniqueJoints = useMemo(() => {
-    return Array.from(new Set(jointAngles.map(angle => angle.jointName)));
+    return Array.from(new Set(jointAngles.map(angle => angle.joint)));
   }, [jointAngles]);
   
   // Set default selected joint if none is selected
@@ -69,7 +69,7 @@ const MotionAnalysisAngleView: React.FC<MotionAnalysisAngleViewProps> = ({
         dataByTime[timeInSeconds] = { timeInSeconds };
       }
       
-      dataByTime[timeInSeconds][angle.jointName] = angle.angle;
+      dataByTime[timeInSeconds][angle.joint] = angle.angle;
     });
     
     // Convert to array and sort by time
@@ -96,7 +96,7 @@ const MotionAnalysisAngleView: React.FC<MotionAnalysisAngleViewProps> = ({
     
     uniqueJoints.forEach(joint => {
       const angles = jointAngles
-        .filter(angle => angle.jointName === joint)
+        .filter(angle => angle.joint === joint)
         .map(angle => angle.angle);
       
       if (angles.length > 0) {
@@ -141,7 +141,7 @@ const MotionAnalysisAngleView: React.FC<MotionAnalysisAngleViewProps> = ({
               <SelectValue placeholder="Select a joint" />
             </SelectTrigger>
             <SelectContent>
-              {uniqueJoints.map((joint, index) => (
+              {uniqueJoints.map((joint) => (
                 <SelectItem key={joint} value={joint}>
                   {joint} {targetJoints.includes(joint) && '(targeted)'}
                 </SelectItem>

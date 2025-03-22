@@ -1,14 +1,4 @@
 
-/**
- * Motion Analysis Types
- * 
- * This file contains type definitions for the motion analysis feature
- * These types are used to work with the existing Supabase database schema
- * without modifying the auto-generated types.ts file.
- */
-
-import { Database } from "@/integrations/supabase/types";
-
 // Joint angle measurement type
 export interface JointAngle {
   joint: string;
