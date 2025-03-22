@@ -42,28 +42,28 @@ const LoginPage: React.FC = () => {
     console.log('Signing up with:', signupData);
     toast.success('Account created successfully!');
     setShowSignupDialog(false);
-    return Promise.resolve(); // Explicitly return a Promise
+    return Promise.resolve(); // Explicitly return a Promise to satisfy TypeScript
   };
   
-  const handleSocialLogin = (provider: string) => {
+  const handleSocialLogin = (provider: string): void => {
     console.log(`Logging in with ${provider}`);
     toast.info(`Redirecting to ${provider} login...`);
   };
   
-  const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist') => {
+  const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist'): void => {
     setUserType(value);
   };
   
-  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setSignupData(prev => ({ ...prev, [name]: value }));
   };
 
-  const toggleDebugMode = () => {
+  const toggleDebugMode = (): void => {
     setShowDebug(!showDebug);
   };
 
-  const toggleSignUpDialog = () => {
+  const toggleSignUpDialog = (): void => {
     setShowSignupDialog(!showSignupDialog);
   };
 
