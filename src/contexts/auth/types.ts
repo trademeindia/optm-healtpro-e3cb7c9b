@@ -23,6 +23,7 @@ export interface User {
   role: UserRole;
   picture?: string;
   provider?: string;
+  patientId?: string; // Added to fix errors
 }
 
 // Define the authentication context
@@ -37,4 +38,9 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (profile: Partial<User>) => Promise<void>;
   socialAuth: (provider: string) => Promise<void>;
+  
+  // Adding missing methods
+  forgotPassword?: (email: string) => Promise<void>;
+  loginWithSocialProvider?: (provider: string) => Promise<void>;
+  handleOAuthCallback?: (params: URLSearchParams) => Promise<void>;
 }
