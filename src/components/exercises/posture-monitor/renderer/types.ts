@@ -22,3 +22,23 @@ export interface AngleDisplayProps {
   offsetX?: number;
   offsetY?: number;
 }
+
+// Add the missing type definitions
+export interface KeypointProps {
+  keypoint: posenet.Keypoint;
+  scaleX: number;
+  scaleY: number;
+  minPartConfidence: number;
+}
+
+export interface SkeletonProps {
+  pose: posenet.Pose;
+  scaleX: number;
+  scaleY: number;
+  minPartConfidence: number;
+}
+
+export interface StateInfoProps {
+  currentSquatState: SquatState;
+  poseScore: number | null;
+}
