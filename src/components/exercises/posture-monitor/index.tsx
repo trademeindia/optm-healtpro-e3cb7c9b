@@ -106,17 +106,10 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     setCustomFeedback
   });
   
-  // Add missing properties to videoStatus to match the expected interface
-  const enhancedVideoStatus = {
-    ...videoStatus,
-    hasStarted: videoStatus.hasStream,
-    error: cameraError
-  };
-  
   // Hook for video status monitoring
   useVideoStatusMonitor({
     cameraActive,
-    videoStatus: enhancedVideoStatus,
+    videoStatus,
     setCustomFeedback
   });
   

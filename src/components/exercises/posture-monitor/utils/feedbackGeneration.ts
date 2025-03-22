@@ -1,85 +1,52 @@
 
-import { FeedbackType, SquatState } from '../types';
+import { SquatState, FeedbackType } from '../types';
+import { FeedbackResult } from '../poseDetectionTypes';
 
-interface FeedbackResult {
-  feedback: string;
-  feedbackType: FeedbackType;
-}
-
+// Generate feedback based on squat state and angles
 export const generateFeedback = (
-  squatState: SquatState,
+  currentSquatState: SquatState,
   kneeAngle: number | null,
   hipAngle: number | null
 ): FeedbackResult => {
-  // Default feedback if we can't determine from angles
-  if (kneeAngle === null || hipAngle === null) {
+  if (currentSquatState === SquatState.STANDING) {
     return {
-      feedback: "Stand in position so your full body is visible",
+      feedback: "Start your squat by bending your knees.",
       feedbackType: FeedbackType.INFO
     };
+  } else if (currentSquatState === SquatState.MID_SQUAT) {
+    if (hipAngle && hipAngle < 70) {
+      return {
+        feedback: "You're leaning too far forward.",
+        feedbackType: FeedbackType.WARNING
+      };
+    } else if (hipAngle && hipAngle > 150) {
+      return {
+        feedback: "Bend forward slightly at the hips.",
+        feedbackType: FeedbackType.WARNING
+      };
+    } else {
+      return {
+        feedback: "Good! Continue lowering into your squat.",
+        feedbackType: FeedbackType.SUCCESS
+      };
+    }
+  } else if (currentSquatState === SquatState.BOTTOM_SQUAT) {
+    if (kneeAngle && kneeAngle < 70) {
+      return {
+        feedback: "Squat is too deep. Rise up slightly.",
+        feedbackType: FeedbackType.WARNING
+      };
+    } else {
+      return {
+        feedback: "Great depth! Now push through your heels to rise up.",
+        feedbackType: FeedbackType.SUCCESS
+      };
+    }
   }
-
-  // Generate state-specific feedback
-  switch (squatState) {
-    case SquatState.STANDING:
-      return {
-        feedback: "Good starting position. Begin squatting down slowly.",
-        feedbackType: FeedbackType.INFO
-      };
-      
-    case SquatState.MID_SQUAT:
-      // Check for common form issues during descent
-      if (kneeAngle < 70 && hipAngle > 120) {
-        return {
-          feedback: "Keep your back straighter and bend at the hips more.",
-          feedbackType: FeedbackType.WARNING
-        };
-      }
-      
-      if (kneeAngle < 120 && hipAngle < 90) {
-        return {
-          feedback: "Keep your chest up as you descend.",
-          feedbackType: FeedbackType.WARNING
-        };
-      }
-      
-      return {
-        feedback: "Continue lowering into your squat with control.",
-        feedbackType: FeedbackType.INFO
-      };
-      
-    case SquatState.BOTTOM_SQUAT:
-      // Check bottom position form
-      if (kneeAngle < 70) {
-        return {
-          feedback: "Great depth! Pause briefly, then push back up.",
-          feedbackType: FeedbackType.SUCCESS
-        };
-      }
-      
-      if (kneeAngle >= 70 && kneeAngle < 90) {
-        return {
-          feedback: "Try to go a bit deeper if comfortable for your body.",
-          feedbackType: FeedbackType.INFO
-        };
-      }
-      
-      if (hipAngle < 70) {
-        return {
-          feedback: "Watch your back angle. Keep your chest upright.",
-          feedbackType: FeedbackType.WARNING
-        };
-      }
-      
-      return {
-        feedback: "Hold this position briefly, then rise back up.",
-        feedbackType: FeedbackType.INFO
-      };
-      
-    default:
-      return {
-        feedback: "Position yourself so your full body is visible.",
-        feedbackType: FeedbackType.INFO
-      };
-  }
+  
+  // Default feedback
+  return {
+    feedback: "Maintain good posture during your exercise.",
+    feedbackType: FeedbackType.INFO
+  };
 };

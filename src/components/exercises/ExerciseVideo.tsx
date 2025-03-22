@@ -1,106 +1,138 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PlayCircle, Dumbbell, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check, Play, Pause, Dumbbell, Trophy, BarChart } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Exercise } from '@/types/exercise.types';
 
-interface ExerciseVideoProps {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  thumbnailUrl: string;
-  videoUrl: string;
-  muscleGroups: string[];
-  onStart: () => void;
-  status: 'completed' | 'in-progress' | 'not-started';
-}
+type ExerciseVideoProps = Omit<Exercise, 'completionStatus' | 'category'> & {
+  onStartExercise: (exerciseId: string) => void;
+};
 
 const ExerciseVideo: React.FC<ExerciseVideoProps> = ({
   id,
   title,
   description,
+  videoUrl,
+  thumbnailUrl,
   duration,
   difficulty,
-  thumbnailUrl,
-  videoUrl,
   muscleGroups,
-  onStart,
-  status
+  onStartExercise,
 }) => {
-  // Get badge color based on difficulty
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleTogglePlay = () => {
+    if (!isPlaying) {
+      onStartExercise(id);
+    }
+    setIsPlaying(!isPlaying);
+  };
+  
+  const handleStartAIAnalysis = () => {
+    onStartExercise(id);
+  };
+
   const getDifficultyColor = () => {
     switch (difficulty) {
       case 'beginner':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'intermediate':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'advanced':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get status indicator
-  const getStatusIndicator = () => {
-    switch (status) {
-      case 'completed':
-        return <div className="w-2 h-2 rounded-full bg-green-500"></div>;
-      case 'in-progress':
-        return <div className="w-2 h-2 rounded-full bg-amber-500"></div>;
-      default:
-        return <div className="w-2 h-2 rounded-full bg-gray-300"></div>;
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
     }
   };
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full">
-      <div className="relative">
-        <img 
-          src={thumbnailUrl} 
-          alt={title} 
-          className="h-48 w-full object-cover"
-        />
-        <div className="absolute top-2 right-2 flex gap-2">
-          <Badge variant="secondary" className={getDifficultyColor()}>
-            {difficulty}
-          </Badge>
+    <Card className="overflow-hidden">
+      <div className="relative" 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="relative aspect-video bg-muted overflow-hidden rounded-t-lg">
+          {!isPlaying ? (
+            <>
+              <img 
+                src={thumbnailUrl} 
+                alt={title} 
+                className="w-full h-full object-cover transition-opacity duration-300" 
+                style={{ opacity: isHovered ? 0.8 : 1 }}
+              />
+              {isHovered && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <Play className="w-16 h-16 text-white" />
+                </div>
+              )}
+            </>
+          ) : (
+            <video 
+              src={videoUrl}
+              controls
+              autoPlay
+              className="w-full h-full object-cover"
+              onEnded={() => setIsPlaying(false)}
+            >
+              Your browser does not support the video tag.
+            </video>
+          )}
+          <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 text-xs rounded-md">
+            {duration}
+          </div>
+          <div className="absolute top-2 left-2">
+            <span className={cn("px-2 py-1 text-xs rounded-md font-medium", getDifficultyColor())}>
+              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+            </span>
+          </div>
         </div>
       </div>
-      
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">{title}</CardTitle>
-          {getStatusIndicator()}
-        </div>
-        <CardDescription className="line-clamp-2">
-          {description}
-        </CardDescription>
+      <CardHeader className="py-3">
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>
-      
-      <CardContent className="pb-2 grow">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{duration}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Dumbbell className="h-4 w-4" />
-            <span>{muscleGroups.join(', ')}</span>
-          </div>
+      <CardContent className="pt-0 pb-2">
+        <div className="flex flex-wrap gap-1">
+          {muscleGroups.map((muscle) => (
+            <span 
+              key={muscle} 
+              className="bg-primary/10 text-primary px-2 py-0.5 text-xs rounded-full"
+            >
+              {muscle}
+            </span>
+          ))}
         </div>
       </CardContent>
-      
-      <CardFooter className="pt-0">
-        <Button 
-          onClick={onStart} 
-          className="w-full flex items-center gap-2"
+      <CardFooter className="exercise-card-footer">
+        <Button
+          variant="outline"
+          size="sm"
+          className="exercise-card-button gap-1"
+          onClick={handleTogglePlay}
         >
-          <PlayCircle className="h-4 w-4" />
-          Start Exercise
+          {isPlaying ? (
+            <>
+              <Pause className="h-4 w-4" />
+              <span>Pause</span>
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              <span>Watch</span>
+            </>
+          )}
+        </Button>
+        <Button
+          variant="default"
+          size="sm"
+          className="exercise-card-button gap-1"
+          onClick={handleStartAIAnalysis}
+        >
+          <BarChart className="h-4 w-4" />
+          <span>AI Analysis</span>
         </Button>
       </CardFooter>
     </Card>

@@ -1,128 +1,170 @@
 
-import { SquatState } from '@/components/exercises/posture-monitor/types';
+import axios from 'axios';
+import { toast } from 'sonner';
+import type { SquatState } from '@/components/exercises/posture-monitor/types';
 
-interface OpenSimParams {
-  height: number;
-  weight: number;
+// Define types for OpenSim API responses and requests
+export interface OpenSimModelParams {
+  height: number; // in cm
+  weight: number; // in kg
   age: number;
-  gender: string;
+  gender: 'male' | 'female';
 }
 
-interface JointLoad {
+export interface OpenSimAnalysisRequest {
+  poseKeypoints: any[]; // Keypoints from PoseNet
+  modelParams: OpenSimModelParams;
+  exerciseType: string; // e.g., "squat", "lunge"
+  currentState?: SquatState; // Current state of the exercise
+}
+
+export interface OpenSimForceOutput {
   joint: string;
   force: number;
-  torque: number;
+  unit: string;
 }
 
-interface MuscleActivation {
-  muscle: string;
-  activation: number;
+export interface OpenSimJointAngle {
+  joint: string;
+  angle: number;
+  unit: string;
 }
 
-interface OpenSimAnalysisResult {
-  jointLoads: JointLoad[];
-  muscleActivations: MuscleActivation[];
-  energyExpenditure: number;
-  recommendation: string;
+export interface OpenSimAnalysisResult {
+  joints: OpenSimJointAngle[];
+  forces: OpenSimForceOutput[];
+  muscleActivations: {
+    muscle: string;
+    activation: number; // 0-1 scale
+  }[];
+  formAssessment: {
+    issues: string[];
+    recommendations: string[];
+    overallScore: number; // 0-100 scale
+  };
+  energyExpenditure: number; // in joules
 }
 
 /**
- * OpenSim biomechanical analysis service
+ * Service for interacting with OpenSim API
  * 
- * NOTE: This is a mock implementation that would connect to the OpenSim API
- * in a real application
+ * Note: In a production environment, we would set up proper error handling,
+ * authentication, and potentially WebSocket connections for real-time analysis.
  */
-export class OpenSimService {
+class OpenSimService {
   private apiUrl: string;
-  private apiKey: string;
-  
+  private isSimulationMode: boolean;
+
   constructor() {
-    this.apiUrl = import.meta.env.VITE_OPENSIM_API_URL || 'https://api.opensim.org/v1';
-    this.apiKey = import.meta.env.VITE_OPENSIM_API_KEY || 'mock-key';
+    // In a real implementation, this would be an environment variable
+    this.apiUrl = import.meta.env.VITE_OPENSIM_API_URL || 'http://localhost:3001/api/opensim';
+    
+    // If no API URL is provided, use simulation mode
+    this.isSimulationMode = !import.meta.env.VITE_OPENSIM_API_URL;
+    
+    if (this.isSimulationMode) {
+      console.log('OpenSim service running in simulation mode. No actual API calls will be made.');
+    }
+  }
+
+  /**
+   * Analyze pose data using OpenSim
+   */
+  public async analyzePose(data: OpenSimAnalysisRequest): Promise<OpenSimAnalysisResult> {
+    try {
+      if (this.isSimulationMode) {
+        return this.simulateAnalysis(data);
+      }
+      
+      const response = await axios.post<OpenSimAnalysisResult>(
+        `${this.apiUrl}/analyze-pose`,
+        data
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error analyzing pose with OpenSim:', error);
+      toast.error('Failed to analyze pose with biomechanical model');
+      throw error;
+    }
   }
   
   /**
-   * Analyze pose data using OpenSim biomechanical model
+   * Simulate an OpenSim analysis when no actual API is available
+   * This is useful for development and testing
    */
-  async analyzePose(
-    poseData: any,
-    squatState: SquatState,
-    params: OpenSimParams
-  ): Promise<OpenSimAnalysisResult> {
-    // In a real app, this would send the pose data to the OpenSim API
-    // For this mock version, we'll generate plausible data based on the squat state
+  private simulateAnalysis(data: OpenSimAnalysisRequest): OpenSimAnalysisResult {
+    console.log('Simulating OpenSim analysis with data:', data);
     
-    console.log('Analyzing pose data with OpenSim model');
-    console.log('Squat state:', squatState);
+    // Generate realistic-looking simulation data based on exercise state
+    const isSquatting = data.currentState === 'bottom_squat';
+    const isMidSquat = data.currentState === 'mid_squat';
     
-    // Simulate API latency
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Simulate some knee and hip angles based on squat depth
+    const kneeAngle = isSquatting ? 120 : (isMidSquat ? 100 : 175);
+    const hipAngle = isSquatting ? 95 : (isMidSquat ? 120 : 170);
     
-    // Generate mock joint loads based on squat state
-    const jointLoads: JointLoad[] = [
-      {
-        joint: 'knee',
-        force: squatState === SquatState.BOTTOM_SQUAT ? params.weight * 2.5 : params.weight * 1.5,
-        torque: squatState === SquatState.BOTTOM_SQUAT ? 45 : 25
-      },
-      {
-        joint: 'hip',
-        force: squatState === SquatState.BOTTOM_SQUAT ? params.weight * 2 : params.weight * 1.2,
-        torque: squatState === SquatState.BOTTOM_SQUAT ? 60 : 30
-      },
-      {
-        joint: 'ankle',
-        force: params.weight * 1.1,
-        torque: squatState === SquatState.BOTTOM_SQUAT ? 30 : 15
-      }
-    ];
+    // Simulate higher muscle activation during squatting
+    const quadActivation = isSquatting ? 0.85 : (isMidSquat ? 0.65 : 0.15);
+    const gluteActivation = isSquatting ? 0.75 : (isMidSquat ? 0.60 : 0.10);
     
-    // Generate mock muscle activations
-    const muscleActivations: MuscleActivation[] = [
-      {
-        muscle: 'quadriceps',
-        activation: squatState === SquatState.BOTTOM_SQUAT ? 0.85 : 0.4
-      },
-      {
-        muscle: 'hamstrings',
-        activation: squatState === SquatState.BOTTOM_SQUAT ? 0.6 : 0.3
-      },
-      {
-        muscle: 'gluteus_maximus',
-        activation: squatState === SquatState.BOTTOM_SQUAT ? 0.75 : 0.35
-      },
-      {
-        muscle: 'gastrocnemius',
-        activation: 0.5
-      }
-    ];
+    // Add some variation to make it realistic
+    const addVariation = (value: number) => value + (Math.random() * 0.2 - 0.1) * value;
     
-    // Mock energy expenditure calculation
-    const energyExpenditure = squatState === SquatState.BOTTOM_SQUAT ? 5.2 : 3.1;
+    // Simulate some common form issues
+    const hasKneeValgus = Math.random() > 0.7;
+    const hasExcessiveForwardLean = Math.random() > 0.8 && isSquatting;
     
-    // Generate recommendations based on analysis
-    let recommendation = '';
-    if (squatState === SquatState.BOTTOM_SQUAT) {
-      recommendation = 
-        'Good depth achieved. Knee loads are within normal range. ' +
-        'Strong activation in quadriceps and glutes indicate proper form.';
-    } else if (squatState === SquatState.MID_SQUAT) {
-      recommendation = 
-        'Consider increasing squat depth for better muscle engagement. ' +
-        'Current joint loads are moderate with balanced muscle activation.';
-    } else {
-      recommendation =
-        'Standing position shows normal joint loading. ' +
-        'Begin squat by hinging at the hips and maintaining neutral spine.';
+    // Build form assessment
+    const issues: string[] = [];
+    if (hasKneeValgus) {
+      issues.push('Knee valgus (knees caving inward) detected');
+    }
+    if (hasExcessiveForwardLean) {
+      issues.push('Excessive forward lean detected');
     }
     
+    // Create recommendations based on issues
+    const recommendations: string[] = [];
+    if (hasKneeValgus) {
+      recommendations.push('Focus on pushing knees outward during descent');
+    }
+    if (hasExcessiveForwardLean) {
+      recommendations.push('Maintain more upright torso position');
+    }
+    
+    // Calculate overall score (lower if issues present)
+    let overallScore = 85;
+    overallScore -= (issues.length * 15);
+    
+    // Add random variation
+    overallScore = Math.min(100, Math.max(50, overallScore + (Math.random() * 10 - 5)));
+    
     return {
-      jointLoads,
-      muscleActivations,
-      energyExpenditure,
-      recommendation
+      joints: [
+        { joint: 'knee', angle: addVariation(kneeAngle), unit: 'degrees' },
+        { joint: 'hip', angle: addVariation(hipAngle), unit: 'degrees' },
+        { joint: 'ankle', angle: addVariation(isSquatting ? 80 : 90), unit: 'degrees' }
+      ],
+      forces: [
+        { joint: 'knee', force: addVariation(isSquatting ? 120 : 40), unit: 'N' },
+        { joint: 'hip', force: addVariation(isSquatting ? 180 : 60), unit: 'N' },
+        { joint: 'ankle', force: addVariation(isSquatting ? 100 : 50), unit: 'N' }
+      ],
+      muscleActivations: [
+        { muscle: 'quadriceps', activation: addVariation(quadActivation) },
+        { muscle: 'gluteus_maximus', activation: addVariation(gluteActivation) },
+        { muscle: 'hamstrings', activation: addVariation(isSquatting ? 0.45 : 0.2) },
+        { muscle: 'gastrocnemius', activation: addVariation(isSquatting ? 0.4 : 0.15) }
+      ],
+      formAssessment: {
+        issues,
+        recommendations,
+        overallScore: Math.round(overallScore)
+      },
+      energyExpenditure: addVariation(isSquatting ? 12 : (isMidSquat ? 8 : 3))
     };
   }
 }
 
-export default new OpenSimService();
+export const openSimService = new OpenSimService();

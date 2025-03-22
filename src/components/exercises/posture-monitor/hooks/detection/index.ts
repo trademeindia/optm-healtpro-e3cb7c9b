@@ -1,12 +1,8 @@
 
-// Export components from detection-related hooks
 export { usePoseDetectionLoop } from './usePoseDetectionLoop';
-export { useDetectionStatus } from './useDetectionStatus';
+export type { DetectionStatus } from './useDetectionStatus';
+export { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
 export { useDetectionFailureHandler } from './useDetectionFailureHandler';
-export type { 
-  DetectionStatus,
-  DetectionState,
-  CustomFeedback,
-  UsePoseDetectionResult,
-  VideoStatus
-} from './types';
+export { useVideoReadyCheck } from './useVideoReadyCheck';
+export { usePoseEstimation } from './usePoseEstimation';
+

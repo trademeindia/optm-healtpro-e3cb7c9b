@@ -1,33 +1,31 @@
-
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
-import { PoseDetectionLoopProps } from './types';
-import { FeedbackType } from '../../types';
-import { useDetectionStatus } from './useDetectionStatus';
+import { UsePoseDetectionLoopProps } from './types';
 import { useDetectionFailureHandler } from './useDetectionFailureHandler';
-import { performanceMonitor } from '../../../utils/performanceMonitor';
+import { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
+import { useDetectionStatus } from './useDetectionStatus';
+import { useVideoReadyCheck } from './useVideoReadyCheck';
+import { usePoseEstimation } from './usePoseEstimation';
+import { FeedbackType } from '../../types';
 
-export const usePoseDetectionLoop = ({ 
-  model, 
-  cameraActive, 
-  videoRef, 
-  config, 
-  onPoseDetected, 
-  setFeedback, 
-  videoReady 
-}: PoseDetectionLoopProps) => {
-  const [isDetectionRunning, setIsDetectionRunning] = useState(false);
-  const requestIdRef = useRef<number | null>(null);
-  const frameCountRef = useRef(0);
+export const useDetectionLoop = ({
+  model,
+  cameraActive,
+  videoRef,
+  config,
+  onPoseDetected,
+  setFeedback,
+  videoReady
+}: UsePoseDetectionLoopProps) => {
+  const requestAnimationRef = useRef<number | null>(null);
+  const isDetectingRef = useRef(false);
   
-  // Detection status management
-  const { 
-    detectionStatus, 
+  const {
+    detectionStatus,
     setDetectionStatus,
     updateFpsStats
   } = useDetectionStatus();
   
-  // Detection failure handling
   const {
     detectionStateRef,
     handleDetectionFailure,
@@ -35,131 +33,150 @@ export const usePoseDetectionLoop = ({
     updateDetectionTime
   } = useDetectionFailureHandler(setFeedback);
   
-  // Skip frames for better performance
-  const shouldProcessFrame = useCallback(() => {
-    // Process every frame when starting
-    if (frameCountRef.current < 30) return true;
-    
-    // Then process every 2nd frame to save resources
-    return frameCountRef.current % 2 === 0;
-  }, []);
+  const { calculateFrameDelay } = useAdaptiveFrameRate();
   
-  // Detect pose in current video frame
+  const { isVideoReady } = useVideoReadyCheck({ videoRef, videoReady });
+  
+  const handlePoseDetectionSuccess = useCallback((detectedPose: posenet.Pose, detectionTime: number) => {
+    updateFpsStats(detectionTime, detectionStateRef);
+    updateDetectionTime();
+    
+    const visibleKeypoints = detectedPose.keypoints.filter(kp => kp.score > config.minPartConfidence).length;
+    
+    setDetectionStatus(prevStatus => ({
+      ...prevStatus,
+      isDetecting: true,
+      confidence: detectedPose.score,
+      detectedKeypoints: visibleKeypoints,
+      lastDetectionTime: performance.now()
+    }));
+    
+    resetFailureCounter();
+    
+    if (detectedPose.score > config.minPoseConfidence) {
+      onPoseDetected(detectedPose);
+    }
+  }, [
+    updateFpsStats, 
+    detectionStateRef, 
+    updateDetectionTime, 
+    config, 
+    setDetectionStatus, 
+    resetFailureCounter, 
+    onPoseDetected
+  ]);
+  
+  const { estimatePose } = usePoseEstimation({
+    model,
+    videoRef,
+    config,
+    onDetectionSuccess: handlePoseDetectionSuccess,
+    onDetectionFailure: handleDetectionFailure,
+    setFeedback
+  });
+  
   const detectPose = useCallback(async () => {
-    if (!model || !videoRef.current || !cameraActive || !videoReady) {
-      // Stop detection if prerequisites not met
-      if (requestIdRef.current) {
-        cancelAnimationFrame(requestIdRef.current);
-        requestIdRef.current = null;
-        setIsDetectionRunning(false);
-      }
+    if (isDetectingRef.current) return;
+    
+    if (!model || !videoRef.current || !cameraActive) {
+      if (!model) console.log("Cannot detect pose: missing model");
+      if (!videoRef.current) console.log("Cannot detect pose: missing video element");
+      if (!cameraActive) console.log("Cannot detect pose: camera inactive");
+      
+      setDetectionStatus(prevStatus => ({
+        ...prevStatus,
+        isDetecting: false
+      }));
+      
+      requestAnimationRef.current = requestAnimationFrame(detectPose);
       return;
     }
     
-    // Start performance timing
-    const endTiming = performanceMonitor.startTiming('poseDetection');
-    
     try {
-      frameCountRef.current += 1;
-      
-      // Skip frames for better performance
-      if (!shouldProcessFrame()) {
-        // Still process animation frame but skip the heavy detection
-        requestIdRef.current = requestAnimationFrame(detectPose);
+      if (!isVideoReady()) {
+        setDetectionStatus(prevStatus => ({
+          ...prevStatus,
+          isDetecting: false
+        }));
+        
+        requestAnimationRef.current = requestAnimationFrame(detectPose);
         return;
       }
       
-      // Get actual pose detection with configured parameters
-      const pose = await model.estimateSinglePose(
-        videoRef.current, 
-        {
-          flipHorizontal: true,
-          ...config
-        }
-      );
-      
-      // Record successful detection
-      endTiming();
-      updateDetectionTime();
-      resetFailureCounter();
-      
-      // Calculate FPS
-      const currentTime = performance.now();
-      const timeDiff = currentTime - detectionStateRef.current.lastFrameTime;
-      detectionStateRef.current.lastFrameTime = currentTime;
-      
-      // Update FPS in status
-      updateFpsStats(timeDiff, detectionStateRef);
-      
-      // Process detected keypoints
-      const validKeypoints = pose.keypoints.filter(kp => kp.score > (config.minPartConfidence || 0.5));
-      
-      // Update detection status with results
-      setDetectionStatus({
-        isDetecting: true,
-        fps: detectionStatus.fps,
-        confidence: pose.score,
-        detectedKeypoints: validKeypoints.length,
-        lastDetectionTime: currentTime
-      });
-      
-      // Pass the detected pose to handler
-      onPoseDetected(pose);
-      
+      isDetectingRef.current = true;
+      await estimatePose();
     } catch (error) {
-      endTiming();
-      handleDetectionFailure(error);
+      setDetectionStatus(prevStatus => ({
+        ...prevStatus,
+        isDetecting: false
+      }));
+    } finally {
+      isDetectingRef.current = false;
     }
     
-    // Continue detection loop
-    if (cameraActive && videoReady) {
-      requestIdRef.current = requestAnimationFrame(detectPose);
-    }
+    const frameDelay = calculateFrameDelay(detectionStateRef.current.lastDetectionTime);
+    requestAnimationRef.current = setTimeout(() => {
+      requestAnimationRef.current = requestAnimationFrame(detectPose);
+    }, frameDelay) as unknown as number;
   }, [
     model, 
-    videoRef, 
     cameraActive, 
-    videoReady, 
-    config, 
-    onPoseDetected, 
-    shouldProcessFrame, 
-    updateDetectionTime, 
-    resetFailureCounter, 
-    updateFpsStats, 
-    detectionStateRef, 
-    setDetectionStatus, 
-    detectionStatus.fps, 
-    handleDetectionFailure
+    videoRef, 
+    isVideoReady, 
+    estimatePose,
+    setDetectionStatus,
+    calculateFrameDelay,
+    detectionStateRef
   ]);
   
-  // Start detection when dependencies change
   useEffect(() => {
-    const shouldStartDetection = 
-      cameraActive && 
-      model && 
-      videoRef.current && 
-      videoReady && 
-      !requestIdRef.current;
-    
-    if (shouldStartDetection) {
-      console.log("Starting pose detection loop");
-      setFeedback("Starting pose detection...", FeedbackType.INFO);
-      frameCountRef.current = 0;
-      requestIdRef.current = requestAnimationFrame(detectPose);
-      setIsDetectionRunning(true);
+    if (cameraActive && model) {
+      console.log("Starting pose detection loop...");
+      
+      const startTimeout = setTimeout(() => {
+        requestAnimationRef.current = requestAnimationFrame(detectPose);
+      }, 1000);
+      
+      return () => {
+        clearTimeout(startTimeout);
+        
+        if (requestAnimationRef.current) {
+          if (typeof requestAnimationRef.current === 'number') {
+            cancelAnimationFrame(requestAnimationRef.current);
+          } else {
+            clearTimeout(requestAnimationRef.current);
+          }
+          requestAnimationRef.current = null;
+        }
+        
+        setDetectionStatus(prevStatus => ({
+          ...prevStatus,
+          isDetecting: false
+        }));
+      };
+    } else {
+      setDetectionStatus(prevStatus => ({
+        ...prevStatus,
+        isDetecting: false
+      }));
     }
-    
+  }, [cameraActive, model, detectPose, setDetectionStatus]);
+  
+  useEffect(() => {
     return () => {
-      if (requestIdRef.current) {
-        cancelAnimationFrame(requestIdRef.current);
-        requestIdRef.current = null;
-        setIsDetectionRunning(false);
+      if (requestAnimationRef.current) {
+        if (typeof requestAnimationRef.current === 'number') {
+          cancelAnimationFrame(requestAnimationRef.current);
+        } else {
+          clearTimeout(requestAnimationRef.current);
+        }
+        requestAnimationRef.current = null;
       }
     };
-  }, [cameraActive, model, videoRef, videoReady, detectPose, setFeedback]);
+  }, []);
   
   return {
-    isDetectionRunning,
+    isDetectionRunning: !!requestAnimationRef.current,
     detectionStatus
   };
 };

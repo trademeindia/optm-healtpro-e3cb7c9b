@@ -1,7 +1,17 @@
 
+import * as posenet from '@tensorflow-models/posenet';
 import { FeedbackType } from '../../types';
 
-// Video status information
+export interface UsePoseDetectionLoopProps {
+  model: posenet.PoseNet | null;
+  cameraActive: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  config: any;
+  onPoseDetected: (pose: posenet.Pose) => void;
+  setFeedback: (message: string, type: FeedbackType) => void;
+  videoReady: boolean;
+}
+
 export interface VideoStatus {
   isReady: boolean;
   hasStream: boolean;
@@ -10,42 +20,10 @@ export interface VideoStatus {
   errorCount: number;
 }
 
-// Detection status information
 export interface DetectionStatus {
   isDetecting: boolean;
   fps: number | null;
   confidence: number | null;
   detectedKeypoints: number;
   lastDetectionTime: number;
-}
-
-// Internal state for detection process
-export interface DetectionState {
-  failureCounter: number;
-  lastFrameTime: number;
-  frameTimes: number[];
-  lastDetectionTime: number;
-}
-
-// Feedback message with type
-export interface CustomFeedback {
-  message: string | null;
-  type: FeedbackType;
-}
-
-// Result of pose detection hook
-export interface UsePoseDetectionResult {
-  isDetectionRunning: boolean;
-  detectionStatus: DetectionStatus;
-}
-
-// Props for detection loop
-export interface PoseDetectionLoopProps {
-  model: any;
-  cameraActive: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  config: any;
-  onPoseDetected: (pose: any) => void;
-  setFeedback: (message: string, type: FeedbackType) => void;
-  videoReady: boolean;
 }

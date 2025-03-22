@@ -1,53 +1,66 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, RefObject } from 'react';
 
-interface CanvasSize {
+interface CanvasSizeState {
   width: number;
   height: number;
 }
 
-export const useCanvasSize = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
-  const [canvasSize, setCanvasSize] = useState<CanvasSize>({ width: 640, height: 480 });
+export const useCanvasSize = (canvasRef: RefObject<HTMLCanvasElement>) => {
+  const [canvasSize, setCanvasSize] = useState<CanvasSizeState>({ 
+    width: 640, 
+    height: 480 
+  });
 
   useEffect(() => {
+    if (!canvasRef.current) return;
+
     const updateCanvasSize = () => {
-      if (!canvasRef.current) return;
-      
       const canvas = canvasRef.current;
-      const { width, height } = canvas.getBoundingClientRect();
-      
-      // Only update if sizes have actually changed
-      if (canvasSize.width !== width || canvasSize.height !== height) {
-        console.log('Canvas size set to ' + Math.round(width) + 'x' + Math.round(height));
-        
-        // Set the canvas resolution to match its display size
-        canvas.width = width;
-        canvas.height = height;
-        
-        setCanvasSize({ width, height });
+      if (!canvas) return;
+
+      // Get the computed style to account for any CSS that affects the canvas size
+      const computedStyle = window.getComputedStyle(canvas);
+      const displayWidth = parseInt(computedStyle.width, 10);
+      const displayHeight = parseInt(computedStyle.height, 10);
+
+      // Check if the canvas is not the right size
+      const needsResize = 
+        canvas.width !== displayWidth || 
+        canvas.height !== displayHeight;
+
+      if (needsResize) {
+        // Set the canvas size to match its parent
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        setCanvasSize({ width: displayWidth, height: displayHeight });
       }
     };
 
-    // Run once on component mount
+    // Initial update
     updateCanvasSize();
 
-    // Set up resize observer
-    const resizeObserver = new ResizeObserver(() => {
-      updateCanvasSize();
-    });
-    
-    if (canvasRef.current) {
-      resizeObserver.observe(canvasRef.current);
+    // Add resize event listener
+    window.addEventListener('resize', updateCanvasSize);
+
+    // Create a ResizeObserver to watch for parent element size changes
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(updateCanvasSize);
+      if (canvasRef.current.parentElement) {
+        resizeObserver.observe(canvasRef.current.parentElement);
+      }
+
+      return () => {
+        window.removeEventListener('resize', updateCanvasSize);
+        resizeObserver.disconnect();
+      };
     }
 
-    // Clean up
+    // Fallback cleanup if ResizeObserver is not available
     return () => {
-      if (canvasRef.current) {
-        resizeObserver.unobserve(canvasRef.current);
-      }
-      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateCanvasSize);
     };
-  }, [canvasRef, canvasSize.width, canvasSize.height]);
+  }, [canvasRef]);
 
   return { canvasSize };
 };

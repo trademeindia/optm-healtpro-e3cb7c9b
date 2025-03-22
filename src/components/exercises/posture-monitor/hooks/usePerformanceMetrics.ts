@@ -1,54 +1,44 @@
 
 import { useState, useCallback } from 'react';
-import { TrackingStats } from '../types';
+import { toast } from 'sonner';
 
 export const usePerformanceMetrics = () => {
-  const [stats, setStats] = useState<TrackingStats>({
-    reps: 0,
-    incorrectReps: 0,
-    accuracy: 0
-  });
+  const [accuracy, setAccuracy] = useState(75); // Starting value
+  const [reps, setReps] = useState(0);
+  const [incorrectReps, setIncorrectReps] = useState(0);
   
   const updateMetricsForGoodRep = useCallback(() => {
-    setStats(prevStats => {
-      const newReps = prevStats.reps + 1;
-      // Calculate new accuracy based on the ratio of good reps to total reps
-      const newAccuracy = Math.round(((newReps - prevStats.incorrectReps) / newReps) * 100);
-      
-      return {
-        ...prevStats,
-        reps: newReps,
-        accuracy: newAccuracy
-      };
+    setReps(prev => prev + 1);
+    setAccuracy(prev => Math.min(prev + 2, 100));
+    
+    toast.success("Rep Completed", {
+      description: "Great form! Keep going!",
+      duration: 3000
     });
   }, []);
   
   const updateMetricsForBadRep = useCallback(() => {
-    setStats(prevStats => {
-      const newReps = prevStats.reps + 1;
-      const newIncorrectReps = prevStats.incorrectReps + 1;
-      // Calculate new accuracy based on the ratio of good reps to total reps
-      const newAccuracy = Math.round(((newReps - newIncorrectReps) / newReps) * 100);
-      
-      return {
-        ...prevStats,
-        reps: newReps,
-        incorrectReps: newIncorrectReps,
-        accuracy: newAccuracy
-      };
-    });
+    setIncorrectReps(prev => prev + 1);
+    setAccuracy(prev => Math.max(prev - 5, 50));
   }, []);
   
   const resetMetrics = useCallback(() => {
-    setStats({
-      reps: 0,
-      incorrectReps: 0,
-      accuracy: 0
+    setReps(0);
+    setIncorrectReps(0);
+    setAccuracy(75);
+    
+    toast.info("Session Reset", {
+      description: "Your workout session has been reset. Ready to start new exercises!",
+      duration: 3000
     });
   }, []);
   
   return {
-    stats,
+    stats: {
+      accuracy,
+      reps,
+      incorrectReps
+    },
     updateMetricsForGoodRep,
     updateMetricsForBadRep,
     resetMetrics

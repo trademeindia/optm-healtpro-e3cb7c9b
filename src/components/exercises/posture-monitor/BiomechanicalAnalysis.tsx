@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { OpenSimAnalysisResult } from '@/services/opensim/opensimService';
 
 interface BiomechanicalAnalysisProps {
-  analysisResult: any | null;
+  analysisResult: OpenSimAnalysisResult | null;
   isAnalyzing: boolean;
   error: string | null;
 }
@@ -14,46 +16,14 @@ const BiomechanicalAnalysis: React.FC<BiomechanicalAnalysisProps> = ({
   isAnalyzing,
   error
 }) => {
-  if (isAnalyzing) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Biomechanical Analysis</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <div className="flex flex-col items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-muted-foreground">Processing movement data...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Biomechanical Analysis</CardTitle>
+      <Card className="border-warning/50 bg-warning/10">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">Biomechanical Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
-            <p>{error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!analysisResult) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Biomechanical Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">No biomechanical data available yet. Complete a rep to see analysis.</p>
+          <p className="text-sm text-warning">{error}</p>
         </CardContent>
       </Card>
     );
@@ -61,51 +31,103 @@ const BiomechanicalAnalysis: React.FC<BiomechanicalAnalysisProps> = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Biomechanical Analysis</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium flex items-center justify-between">
+          <span>Biomechanical Analysis</span>
+          {analysisResult && (
+            <span className="text-sm font-normal">
+              Score: {analysisResult.formAssessment.overallScore}/100
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {analysisResult.jointLoads && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Joint Loads</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-muted p-2 rounded-md">
-                <p className="text-xs text-muted-foreground">Knees:</p>
-                <p className="font-medium">{analysisResult.jointLoads.knees} N</p>
-              </div>
-              <div className="bg-muted p-2 rounded-md">
-                <p className="text-xs text-muted-foreground">Lower Back:</p>
-                <p className="font-medium">{analysisResult.jointLoads.lowerBack} N</p>
-              </div>
-            </div>
+        {isAnalyzing ? (
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-20 w-full" />
           </div>
-        )}
-
-        {analysisResult.muscleActivation && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Muscle Activation</h3>
+        ) : analysisResult ? (
+          <>
+            {/* Form Assessment */}
             <div className="space-y-2">
-              {Object.entries(analysisResult.muscleActivation).map(([muscle, activation]: [string, any]) => (
-                <div key={muscle} className="flex items-center">
-                  <span className="text-xs w-24">{muscle}:</span>
-                  <div className="flex-1 h-2 bg-muted rounded-full">
-                    <div 
-                      className="h-2 bg-primary rounded-full" 
-                      style={{ width: `${Math.round(Number(activation) * 100)}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-xs ml-2 w-8">{Math.round(Number(activation) * 100)}%</span>
+              <h3 className="text-sm font-medium">Form Assessment</h3>
+              {analysisResult.formAssessment.issues.length > 0 ? (
+                <ul className="text-xs space-y-1 list-disc list-inside">
+                  {analysisResult.formAssessment.issues.map((issue, i) => (
+                    <li key={i} className="text-warning">{issue}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-success">Great form! No issues detected.</p>
+              )}
+              
+              {analysisResult.formAssessment.recommendations.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="text-xs font-medium">Recommendations:</h4>
+                  <ul className="text-xs space-y-1 list-disc list-inside">
+                    {analysisResult.formAssessment.recommendations.map((rec, i) => (
+                      <li key={i}>{rec}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        )}
-
-        {analysisResult.feedback && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Biomechanical Insights</h3>
-            <p className="text-sm">{analysisResult.feedback}</p>
-          </div>
+            
+            {/* Muscle Activations */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Muscle Activation</h3>
+              <div className="space-y-2">
+                {analysisResult.muscleActivations.map((muscle) => (
+                  <div key={muscle.muscle} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span>{muscle.muscle.replace('_', ' ')}</span>
+                      <span>{Math.round(muscle.activation * 100)}%</span>
+                    </div>
+                    <Progress value={muscle.activation * 100} className="h-1" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Joint Forces and Angles */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Joint Angles</h3>
+                <div className="space-y-1">
+                  {analysisResult.joints.map((joint) => (
+                    <div key={joint.joint} className="text-xs flex justify-between">
+                      <span>{joint.joint}</span>
+                      <span>{Math.round(joint.angle)}°</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Joint Forces</h3>
+                <div className="space-y-1">
+                  {analysisResult.forces.map((force) => (
+                    <div key={force.joint} className="text-xs flex justify-between">
+                      <span>{force.joint}</span>
+                      <span>{Math.round(force.force)} {force.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Energy Expenditure */}
+            <div className="text-xs">
+              <span className="font-medium">Energy Expenditure: </span>
+              <span>{analysisResult.energyExpenditure.toFixed(1)} J</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Complete a squat to see biomechanical analysis results.
+          </p>
         )}
       </CardContent>
     </Card>

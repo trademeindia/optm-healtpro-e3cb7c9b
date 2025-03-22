@@ -1,7 +1,13 @@
 
 import { useEffect } from 'react';
-import { FeedbackType, VideoStatus } from '../types';
+import { FeedbackType } from '../types';
 import type { CustomFeedback } from './types';
+
+interface VideoStatus {
+  isReady: boolean;
+  hasStarted: boolean;
+  error: string | null;
+}
 
 interface UseVideoStatusMonitorProps {
   cameraActive: boolean;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AppRoutes from './routes/Routes';
 import { Toaster } from "./components/ui/sonner";
 
@@ -14,26 +14,31 @@ const Loading = () => (
 );
 
 const App = () => {
-  const { isLoading } = useAuth();
-  const [appReady, setAppReady] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set app as ready after a short delay to ensure all resources are loaded
-    const timer = setTimeout(() => {
-      setAppReady(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    // Simulate loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   }, []);
 
-  if (isLoading || !appReady) {
+  if (loading) {
     return <Loading />;
   }
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <AppRoutes />
-      <Toaster position="top-right" />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      <div className="app-container full-height-layout">
+        <AppRoutes />
+        <Toaster position="top-right" />
+      </div>
     </ThemeProvider>
   );
 };
