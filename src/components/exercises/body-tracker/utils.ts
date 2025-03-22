@@ -3,7 +3,7 @@ import { BodyKeypoint } from '@vladmandic/human';
 import { JointAngle } from './types';
 
 // Define a Point interface that matches the structure we're using
-interface Point {
+export interface Point {
   x: number;
   y: number;
 }
