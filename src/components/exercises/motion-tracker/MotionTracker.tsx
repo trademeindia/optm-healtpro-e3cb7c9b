@@ -54,6 +54,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
         });
 
         try {
+          // Updated configuration with required fields
           const config: Human.Config = {
             modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
             filter: { enabled: true },
@@ -62,7 +63,20 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
             hand: { enabled: false },
             object: { enabled: false },
             gesture: { enabled: true },
-            debug: false
+            debug: false,
+            // Adding required fields
+            backend: 'webgl',
+            wasmPath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
+            wasmPlatformFetch: false,
+            async: true,
+            warmup: 'none', 
+            cacheModels: true,
+            cacheSensitivity: 0.7,
+            skipAllowed: false,
+            deallocate: false,
+            flags: {},
+            softwareKernels: true,
+            checkSizeEvery: 16
           };
 
           humanRef.current = new Human.Human(config);

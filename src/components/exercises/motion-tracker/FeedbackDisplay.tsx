@@ -18,12 +18,12 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, feedbackTyp
       title: 'Info'
     },
     [FeedbackType.WARNING]: {
-      variant: 'warning' as const,
+      variant: 'default' as const, // Changed from 'warning'
       icon: <AlertTriangle className="h-4 w-4" />,
       title: 'Attention'
     },
     [FeedbackType.SUCCESS]: {
-      variant: 'success' as const,
+      variant: 'default' as const, // Changed from 'success'
       icon: <CheckCircle className="h-4 w-4" />,
       title: 'Success'
     },
