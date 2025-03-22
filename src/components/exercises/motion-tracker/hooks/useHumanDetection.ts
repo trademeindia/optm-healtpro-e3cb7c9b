@@ -175,9 +175,9 @@ export const useHumanDetection = ({
               // First clear the canvas
               ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
               
-              // Use Human's draw method properly - passing the canvas directly
-              // instead of the result object
-              humanRef.current.draw.body(canvasRef.current, result);
+              // FIX: Pass the body array instead of the full result object
+              // The draw.body method expects the body array, not the full result
+              humanRef.current.draw.body(canvasRef.current, result.body);
             }
           }
         }
