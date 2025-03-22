@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FeedbackType } from '../types';
 
 export interface FeedbackState {
@@ -28,9 +28,10 @@ export const useFeedbackState = (isModelLoading: boolean, modelError: string | n
     }
   }, [isModelLoading, modelError]);
   
-  const updateFeedback = (message: string | null, type: FeedbackType = FeedbackType.INFO) => {
+  // Use callback to prevent unnecessary re-renders
+  const updateFeedback = useCallback((message: string | null, type: FeedbackType = FeedbackType.INFO) => {
     setFeedback({ message, type });
-  };
+  }, []);
   
   return {
     feedback,

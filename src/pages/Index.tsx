@@ -1,16 +1,17 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user });
+    console.log("Index page rendered with auth state:", { isAuthenticated, isLoading, user, hasRedirected });
     
-    if (!isLoading) {
+    if (!isLoading && !hasRedirected) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
         // Handle routing based on user role
@@ -19,13 +20,15 @@ const Index: React.FC = () => {
           user.role === 'receptionist' ? '/dashboard/receptionist' : 
           '/dashboard/patient';
         console.log(`Navigating to ${dashboard}`);
+        setHasRedirected(true);
         navigate(dashboard);
       } else {
         console.log('Index page: User not authenticated, redirecting to login');
+        setHasRedirected(true);
         navigate('/login');
       }
     }
-  }, [isAuthenticated, isLoading, navigate, user]);
+  }, [isAuthenticated, isLoading, navigate, user, hasRedirected]);
 
   if (isLoading) {
     return (

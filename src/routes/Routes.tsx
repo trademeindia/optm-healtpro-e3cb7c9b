@@ -64,6 +64,16 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
+        {/* Receptionist Routes */}
+        <Route 
+          path="/dashboard/receptionist" 
+          element={
+            <ProtectedRoute requiredRole="receptionist">
+              <ReceptionistDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
         {/* OpenSim Route - accessible by all users */}
         <Route 
           path="/opensim" 
@@ -90,16 +100,6 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredRole={["doctor", "receptionist"]}>
               <PatientsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Receptionist Routes */}
-        <Route 
-          path="/dashboard/receptionist" 
-          element={
-            <ProtectedRoute requiredRole="receptionist">
-              <ReceptionistDashboard />
             </ProtectedRoute>
           } 
         />
@@ -207,11 +207,7 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Legacy Redirects */}
-        <Route path="/dashboard" element={<Navigate to="/dashboard/doctor" replace />} />
-        <Route path="/patient-dashboard" element={<Navigate to="/dashboard/patient" replace />} />
-        
-        {/* 404 Route */}
+        {/* Fallback - 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
