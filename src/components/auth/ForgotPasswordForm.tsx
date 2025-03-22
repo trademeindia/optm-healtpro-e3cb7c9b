@@ -8,7 +8,7 @@ interface ForgotPasswordFormProps {
   forgotEmail: string;
   setForgotEmail: React.Dispatch<React.SetStateAction<string>>;
   onSubmit: () => Promise<void>;
-  onBackToLogin: () => void;
+  onBackToLogin: () => Promise<void>; // Updated to Promise<void>
   isSubmitting: boolean;
 }
 

@@ -67,6 +67,12 @@ const LoginPage: React.FC = () => {
     setShowSignupDialog(!showSignupDialog);
     return Promise.resolve();
   };
+  
+  // Add this function to handle the back to login action with Promise<void> return type
+  const handleBackToLogin = async (): Promise<void> => {
+    setShowForgotPassword(false);
+    return Promise.resolve();
+  };
 
   return (
     <ErrorBoundary>
@@ -109,7 +115,7 @@ const LoginPage: React.FC = () => {
                     forgotEmail={forgotEmail} 
                     setForgotEmail={setForgotEmail} 
                     onSubmit={handleForgotPassword}
-                    onBackToLogin={() => setShowForgotPassword(false)}
+                    onBackToLogin={handleBackToLogin}
                     isSubmitting={loginState.isLoading}
                   />
                 ) : (
