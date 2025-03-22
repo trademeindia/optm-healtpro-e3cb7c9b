@@ -45,9 +45,11 @@ const LoginPage: React.FC = () => {
     return Promise.resolve();
   };
   
-  const handleSocialLogin = (provider: string): void => {
+  // Updated to return Promise<void>
+  const handleSocialLogin = async (provider: string): Promise<void> => {
     console.log(`Logging in with ${provider}`);
     toast.info(`Redirecting to ${provider} login...`);
+    return Promise.resolve();
   };
   
   const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist'): void => {
@@ -122,7 +124,7 @@ const LoginPage: React.FC = () => {
                   <>
                     {/* Social Login Options - Now only Google */}
                     <SocialLoginButtons 
-                      onGoogleLogin={() => handleSocialLogin('google')}
+                      onGoogleLogin={handleSocialLogin}
                       isSubmitting={loginState.isLoading}
                     />
                     

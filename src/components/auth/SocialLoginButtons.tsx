@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 
 interface SocialLoginButtonsProps {
-  onGoogleLogin: () => Promise<void>;
+  onGoogleLogin: (provider: string) => Promise<void>;
   isSubmitting: boolean;
 }
 
@@ -27,7 +27,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <GoogleLoginButton 
-          onLogin={onGoogleLogin}
+          onLogin={() => onGoogleLogin('google')}
           disabled={isSubmitting}
         />
       </motion.div>
