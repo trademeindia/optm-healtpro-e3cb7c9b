@@ -156,7 +156,9 @@ const calculateRightHipAngle = (
 // Calculate all important joint angles from keypoints
 export const calculateJointAngles = (keypoints: BodyKeypoint[]): JointAngle[] => {
   // Helper function to find keypoint by name
-  const findKeypoint = (name: string) => keypoints.find(kp => kp.part === name);
+  const findKeypoint = (name: string): BodyKeypoint | undefined => 
+    keypoints.find(kp => kp.part === name);
+    
   const angles: JointAngle[] = [];
   
   // Left elbow angle
