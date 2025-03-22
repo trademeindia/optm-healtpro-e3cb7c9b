@@ -1,76 +1,71 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
 
 interface TutorialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) => {
+const TutorialDialog: React.FC<TutorialDialogProps> = ({
+  open,
+  onOpenChange
+}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>How to Use AI Squat Analyzer</DialogTitle>
+          <DialogTitle>How to Use the Posture Monitor</DialogTitle>
           <DialogDescription>
-            Follow these steps to get accurate squat form analysis
+            Follow these steps for the best AI-powered workout experience
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-2 text-sm">
-          <div>
-            <h3 className="font-semibold text-base mb-1">Setting Up</h3>
-            <ol className="list-decimal list-inside space-y-1 pl-2">
-              <li>Position your device so your full body is visible</li>
-              <li>Ensure good lighting in the room</li>
-              <li>Wear form-fitting clothing for better detection</li>
-              <li>Clear the area around you for safety</li>
-            </ol>
+        <div className="space-y-4 my-4">
+          <div className="rounded-lg p-3 bg-muted/50">
+            <h3 className="font-medium text-sm mb-1">1. Prepare Your Space</h3>
+            <p className="text-sm text-muted-foreground">
+              Ensure you have enough room to perform the exercise. Position your device so your 
+              full body is visible in the camera.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1">Performing Squats</h3>
-            <ol className="list-decimal list-inside space-y-1 pl-2">
-              <li>Stand facing the camera with feet shoulder-width apart</li>
-              <li>Keep your back straight throughout the movement</li>
-              <li>Lower your body by bending at the knees and hips</li>
-              <li>Aim to get your thighs parallel to the ground</li>
-              <li>Push through your heels to return to standing</li>
-            </ol>
+          <div className="rounded-lg p-3 bg-muted/50">
+            <h3 className="font-medium text-sm mb-1">2. Start the Camera</h3>
+            <p className="text-sm text-muted-foreground">
+              Click the "Start Camera" button and allow camera permissions when prompted.
+              Position yourself so your full body is visible.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1">Understanding Feedback</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Green feedback indicates good form</li>
-              <li>Yellow feedback suggests minor adjustments</li>
-              <li>Red feedback indicates form that should be corrected</li>
-              <li>Your accuracy score reflects your overall form quality</li>
-            </ul>
+          <div className="rounded-lg p-3 bg-muted/50">
+            <h3 className="font-medium text-sm mb-1">3. Follow the Guidance</h3>
+            <p className="text-sm text-muted-foreground">
+              The AI will analyze your movements and provide real-time feedback. Pay attention
+              to form corrections and angle measurements.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1">Biomechanical Analysis</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Click "Show Biomechanics" to see detailed analysis</li>
-              <li>Joint angles show the position of your knees, hips, and ankles</li>
-              <li>Muscle activation shows which muscles are working hardest</li>
-              <li>Form assessment provides specific recommendations</li>
-              <li>Analysis happens automatically when you reach the bottom of your squat</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="font-semibold text-base mb-1">Tips for Best Results</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Move slowly and with control</li>
-              <li>Keep your movements smooth and deliberate</li>
-              <li>Use a proper squat stance with toes slightly pointed out</li>
-              <li>Complete full squat repetitions for accurate counting</li>
-            </ul>
+          <div className="rounded-lg p-3 bg-muted/50">
+            <h3 className="font-medium text-sm mb-1">4. Complete Your Session</h3>
+            <p className="text-sm text-muted-foreground">
+              Continue until you've completed your target number of repetitions. Click "Finish"
+              when you're done to save your progress.
+            </p>
           </div>
         </div>
+        
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>Got it</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

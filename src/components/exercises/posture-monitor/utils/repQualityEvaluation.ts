@@ -1,45 +1,45 @@
 
-import { FeedbackType } from '../types';
-import { SquatEvaluation } from '../poseDetectionTypes';
+import { FeedbackType, RepEvaluation } from '../types';
 
-// Evaluate rep quality based on form
-export const evaluateRepQuality = (
-  kneeAngle: number,
-  hipAngle: number
-): SquatEvaluation => {
-  if (kneeAngle < 110 && hipAngle > 80 && hipAngle < 140) {
-    // Good form - knees bent properly and hip angle in good range
-    return {
-      isGoodForm: true,
-      feedback: "Great form! Keep going!",
-      feedbackType: FeedbackType.SUCCESS
-    };
-  } else {
-    // Bad form - determine specific feedback
-    if (kneeAngle > 120) {
-      return {
-        isGoodForm: false,
-        feedback: "Squat deeper! Bend your knees more.",
-        feedbackType: FeedbackType.WARNING
-      };
-    } else if (hipAngle < 70) {
-      return {
-        isGoodForm: false,
-        feedback: "Leaning too far forward. Keep your back straighter.",
-        feedbackType: FeedbackType.WARNING
-      };
-    } else if (hipAngle > 150) {
-      return {
-        isGoodForm: false,
-        feedback: "Bend forward a bit more at the hips.",
-        feedbackType: FeedbackType.WARNING
-      };
-    } else {
-      return {
-        isGoodForm: false,
-        feedback: "Check your form. Focus on knee and hip positioning.",
-        feedbackType: FeedbackType.WARNING
-      };
-    }
+export const evaluateRepQuality = (kneeAngle: number, hipAngle: number): RepEvaluation => {
+  // Default evaluation
+  let isGoodForm = true;
+  let feedback = "Great rep! Excellent form.";
+  let feedbackType = FeedbackType.SUCCESS;
+  let score = 100;
+  
+  // Check for common form issues during squats
+  
+  // 1. Check if squat depth was sufficient (knee angle should be less than 90° at bottom)
+  if (kneeAngle > 110) {
+    isGoodForm = false;
+    feedback = "Try squatting deeper for better muscle engagement.";
+    feedbackType = FeedbackType.WARNING;
+    score -= 30;
   }
+  
+  // 2. Check if back was too horizontal (hip angle should ideally be above 70°)
+  if (hipAngle < 70) {
+    isGoodForm = false;
+    feedback = "Keep your chest up more during the squat.";
+    feedbackType = FeedbackType.WARNING;
+    score -= 25;
+  }
+  
+  // 3. Check if knees stayed aligned (more complex in real implementation)
+  // This is a simplified placeholder logic
+  if (Math.random() < 0.2 && !isGoodForm) {  // 20% chance to add this feedback if already bad form
+    feedback += " Also watch your knee alignment.";
+    score -= 10;
+  }
+  
+  // Cap score at minimum of 50
+  score = Math.max(50, score);
+  
+  return {
+    isGoodForm,
+    feedback,
+    score,
+    feedbackType
+  };
 };

@@ -1,69 +1,36 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
-import { openSimService, OpenSimAnalysisResult, OpenSimModelParams } from '@/services/opensim/opensimService';
 import { SquatState, FeedbackType } from '../types';
+import { openSimService, OpenSimModelParams, OpenSimAnalysisResult } from '@/services/opensim/opensimService';
 
 interface UseOpenSimAnalysisProps {
   pose: posenet.Pose | null;
   currentSquatState: SquatState;
   setFeedback: (message: string, type: FeedbackType) => void;
-  modelParams?: OpenSimModelParams;
+  modelParams: OpenSimModelParams;
 }
 
 export const useOpenSimAnalysis = ({
-  pose, 
+  pose,
   currentSquatState,
   setFeedback,
-  modelParams = {
-    height: 175, // Default height in cm
-    weight: 70,  // Default weight in kg
-    age: 30,     // Default age
-    gender: 'male' // Default gender
-  }
+  modelParams
 }: UseOpenSimAnalysisProps) => {
   const [analysisResult, setAnalysisResult] = useState<OpenSimAnalysisResult | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  
-  // Only run analysis when in the bottom position of the squat to avoid excessive API calls
-  const shouldAnalyze = currentSquatState === SquatState.BOTTOM_SQUAT;
-  
-  // Process OpenSim results and provide feedback
-  const processResults = useCallback((results: OpenSimAnalysisResult) => {
-    // Extract form assessment
-    const { formAssessment } = results;
-    
-    // Format feedback message
-    if (formAssessment.issues.length > 0) {
-      // If issues were found, display them with recommendations
-      const issuesList = formAssessment.issues.join(', ');
-      const recommendationsList = formAssessment.recommendations.join(' ');
-      
-      const feedbackMessage = `Biomechanical analysis: ${issuesList}. ${recommendationsList}`;
-      
-      // Determine feedback type based on score
-      const feedbackType = formAssessment.overallScore > 70 
-        ? FeedbackType.INFO 
-        : FeedbackType.WARNING;
-      
-      setFeedback(feedbackMessage, feedbackType);
-    } else {
-      // If no issues, provide positive feedback
-      setFeedback(
-        `Great form! Biomechanical analysis shows optimal joint angles and muscle activation.`,
-        FeedbackType.SUCCESS
-      );
-    }
-  }, [setFeedback]);
-  
-  // Run the analysis when pose data is available and we're in the bottom squat position
+  const [lastAnalysisTime, setLastAnalysisTime] = useState<number>(0);
+
   useEffect(() => {
-    let isActive = true;
+    // Only analyze poses with reasonable confidence
+    if (!pose || pose.score < 0.6) return;
     
-    const runAnalysis = async () => {
-      if (!pose || !shouldAnalyze || isAnalyzing) return;
-      
+    // Don't run analysis too frequently - aim for 2-3 per second max
+    const now = Date.now();
+    if (now - lastAnalysisTime < 500) return;
+    
+    const analyzeCurrentPose = async () => {
       try {
         setIsAnalyzing(true);
         setAnalysisError(null);
@@ -75,28 +42,25 @@ export const useOpenSimAnalysis = ({
           currentState: currentSquatState
         });
         
-        if (isActive) {
-          setAnalysisResult(result);
-          processResults(result);
+        setAnalysisResult(result);
+        setLastAnalysisTime(Date.now());
+        
+        // Provide feedback based on the analysis result
+        if (result.formAssessment && result.formAssessment.issues.length > 0) {
+          // Display the first issue as feedback
+          setFeedback(result.formAssessment.issues[0], FeedbackType.WARNING);
         }
       } catch (error) {
-        console.error('Error in OpenSim analysis:', error);
-        if (isActive) {
-          setAnalysisError('Failed to complete biomechanical analysis');
-        }
+        console.error('Error in biomechanical analysis:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        setAnalysisError(`Analysis failed: ${errorMessage}`);
       } finally {
-        if (isActive) {
-          setIsAnalyzing(false);
-        }
+        setIsAnalyzing(false);
       }
     };
     
-    runAnalysis();
-    
-    return () => {
-      isActive = false;
-    };
-  }, [pose, shouldAnalyze, isAnalyzing, modelParams, currentSquatState, processResults]);
+    analyzeCurrentPose();
+  }, [pose, currentSquatState, modelParams, lastAnalysisTime, setFeedback]);
   
   return {
     analysisResult,

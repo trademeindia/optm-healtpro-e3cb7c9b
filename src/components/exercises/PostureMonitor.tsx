@@ -27,7 +27,13 @@ const PostureMonitor: React.FC<PostureMonitorProps> = (props) => {
     }
   }, [exerciseId, exerciseName]);
 
-  return <MotionTracker {...props} />;
+  return (
+    <MotionTracker 
+      exerciseId={exerciseId}
+      exerciseName={exerciseName}
+      onFinish={props.onFinish}
+    />
+  );
 };
 
 export default PostureMonitor;

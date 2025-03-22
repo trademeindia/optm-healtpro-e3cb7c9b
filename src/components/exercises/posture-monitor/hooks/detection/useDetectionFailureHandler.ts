@@ -1,51 +1,55 @@
 
 import { useRef, useCallback } from 'react';
+import { DetectionState } from './types';
 import { FeedbackType } from '../../types';
-
-interface DetectionState {
-  failedDetections: number;
-  consecutiveFailures: number;
-  lastDetectionTime: number;
-}
 
 export const useDetectionFailureHandler = (
   setFeedback: (message: string, type: FeedbackType) => void
 ) => {
+  // State for tracking detection success/failure
   const detectionStateRef = useRef<DetectionState>({
-    failedDetections: 0,
-    consecutiveFailures: 0,
-    lastDetectionTime: 0
+    framesProcessed: 0,
+    lastDetectionTime: 0,
+    detectionTimes: [],
+    failureCount: 0
   });
   
+  // Handle detection failures
   const handleDetectionFailure = useCallback((error: any) => {
-    detectionStateRef.current.failedDetections++;
-    detectionStateRef.current.consecutiveFailures++;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Pose detection error:', errorMessage);
     
-    // Log error but don't overwhelm the console
-    if (detectionStateRef.current.consecutiveFailures <= 3 || detectionStateRef.current.consecutiveFailures % 10 === 0) {
-      console.error('Pose detection error:', error);
-    }
+    // Increment failure counter
+    detectionStateRef.current.failureCount += 1;
     
-    // Only show feedback for persistent failures
-    if (detectionStateRef.current.consecutiveFailures === 5) {
+    // If we have too many consecutive failures, show a message to the user
+    if (detectionStateRef.current.failureCount > 5) {
       setFeedback(
-        "Having trouble detecting your pose. Make sure your whole body is visible.",
+        'Having trouble detecting your pose. Please ensure you are visible in the camera.',
         FeedbackType.WARNING
       );
-    } else if (detectionStateRef.current.consecutiveFailures === 20) {
+    }
+    
+    // If we have a critical number of failures, show more detailed error
+    if (detectionStateRef.current.failureCount > 20) {
       setFeedback(
-        "Detection issues persist. Try adjusting lighting or camera position.",
-        FeedbackType.WARNING
+        `Detection error: ${errorMessage}. Try restarting the camera.`,
+        FeedbackType.ERROR
       );
     }
   }, [setFeedback]);
   
+  // Reset failure counter on successful detection
   const resetFailureCounter = useCallback(() => {
-    detectionStateRef.current.consecutiveFailures = 0;
+    if (detectionStateRef.current.failureCount > 0) {
+      detectionStateRef.current.failureCount = 0;
+    }
   }, []);
   
+  // Update detection time on successful detection
   const updateDetectionTime = useCallback(() => {
     detectionStateRef.current.lastDetectionTime = performance.now();
+    detectionStateRef.current.framesProcessed += 1;
   }, []);
   
   return {

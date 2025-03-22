@@ -1,8 +1,5 @@
-
-import { useState, useRef, useCallback } from 'react';
-import type { DetectionStatus } from './useDetectionStatusHandler';
-
-export { type DetectionStatus } from './useDetectionStatusHandler';
+import { useState, useCallback } from 'react';
+import { DetectionStatus, DetectionState } from './types';
 
 export const useDetectionStatus = () => {
   const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
@@ -13,36 +10,27 @@ export const useDetectionStatus = () => {
     lastDetectionTime: 0
   });
   
-  // Track frame times for FPS calculation
-  const fpsTracker = useRef({
-    frames: 0,
-    lastFpsUpdate: 0,
-    frameTimes: [] as number[]
-  });
-  
-  // Update FPS calculation
-  const updateFpsStats = useCallback((detectionTime: number, detectionStateRef: any) => {
-    const now = performance.now();
+  // Update the FPS calculation based on recent detection times
+  const updateFpsStats = useCallback((detectionTime: number, stateRef: React.MutableRefObject<DetectionState>) => {
+    const state = stateRef.current;
     
-    // Add current frame to tracker
-    fpsTracker.current.frames++;
-    fpsTracker.current.frameTimes.push(now);
-    
-    // Remove old frames outside of our 1-second window
-    const oneSecondAgo = now - 1000;
-    fpsTracker.current.frameTimes = fpsTracker.current.frameTimes.filter(time => time > oneSecondAgo);
-    
-    // Update FPS if it's been more than 500ms since last update
-    if (now - fpsTracker.current.lastFpsUpdate > 500) {
-      const fps = fpsTracker.current.frameTimes.length;
-      
-      // Only update FPS value if we have meaningful data
-      if (fps > 0) {
-        setDetectionStatus(prev => ({ ...prev, fps }));
-      }
-      
-      fpsTracker.current.lastFpsUpdate = now;
+    // Add current detection time to the array (keep only last 30 frames for FPS calculation)
+    state.detectionTimes.push(detectionTime);
+    if (state.detectionTimes.length > 30) {
+      state.detectionTimes.shift();
     }
+    
+    // Calculate average detection time
+    const avgDetectionTime = state.detectionTimes.reduce((acc, time) => acc + time, 0) / state.detectionTimes.length;
+    
+    // Calculate FPS based on average detection time
+    const fps = Math.round(1000 / avgDetectionTime);
+    
+    // Update detection status with new FPS
+    setDetectionStatus(prevStatus => ({
+      ...prevStatus,
+      fps
+    }));
   }, []);
   
   return {
