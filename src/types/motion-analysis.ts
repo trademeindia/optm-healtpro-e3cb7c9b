@@ -8,25 +8,30 @@ export interface JointAngle {
 export interface MotionAnalysisSession {
   id: string;
   patientId: string;
-  doctorId?: string; // Added doctorId as optional for backward compatibility
   type: string;
   measurementDate: string;
   duration: number;
-  notes: string;
   jointAngles: JointAngle[];
-  status: 'pending' | 'completed' | 'failed';
-  targetJoints?: string[]; // Adding targetJoints property to fix the TypeScript error
+  notes?: string;
 }
 
-export interface MotionAnalysisReport {
-  id: string;
-  sessionId: string;
-  patientId: string;
-  createdAt: string;
-  asymmetryScore?: number;
-  stabilityScore?: number;
-  rangeOfMotionScore?: number;
-  overallScore?: number;
-  findings?: string;
-  recommendations?: string;
+export enum SquatState {
+  STANDING = 'standing',
+  DESCENDING = 'descending',
+  BOTTOM = 'bottom',
+  ASCENDING = 'ascending'
+}
+
+export interface PoseAnalysis {
+  kneeAngle: number | null;
+  hipAngle: number | null;
+  currentSquatState: SquatState;
+  reps: number;
+  formErrors: string[];
+}
+
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
 }

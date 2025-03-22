@@ -1,102 +1,68 @@
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
 
-interface Patient {
-  id: string;
-  name: string;
-  email?: string;
-}
+// Mocked patient data for now - replace with actual API call
+const MOCK_PATIENTS = [
+  { id: '1', name: 'John Doe' },
+  { id: '2', name: 'Jane Smith' },
+  { id: '3', name: 'Robert Johnson' },
+];
 
 interface PatientSelectorProps {
   onSelect: (patientId: string) => void;
 }
 
-export default function PatientSelector({ onSelect }: PatientSelectorProps) {
-  const { user } = useAuth();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+const PatientSelector: React.FC<PatientSelectorProps> = ({ onSelect }) => {
+  const [patients, setPatients] = useState(MOCK_PATIENTS);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const { toast } = useToast();
+  
   useEffect(() => {
-    const fetchPatients = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // For now, we'll use a mock approach to avoid Supabase schema issues
-        // In a real implementation, we'd query the profiles table for patients
-        
-        // Mock data for development
-        const mockPatients = [
-          { id: '1', name: 'John Doe', email: 'john@example.com' },
-          { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
-          { id: '3', name: 'Michael Johnson', email: 'michael@example.com' },
-        ];
-        
-        setPatients(mockPatients);
-      } catch (err) {
-        console.error('Error fetching patients:', err);
-        setError('Failed to load patients. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPatients();
-  }, [user]);
+    // In a real application, fetch patients from an API
+    // For now, we'll use the mocked data
+    if (patients.length > 0 && !selectedPatientId) {
+      handleSelectPatient(patients[0].id);
+    }
+  }, []);
 
   const handleSelectPatient = (patientId: string) => {
+    setSelectedPatientId(patientId);
     onSelect(patientId);
+    
+    toast({
+      title: "Patient Selected",
+      description: `Selected patient: ${patients.find(p => p.id === patientId)?.name}`,
+      duration: 3000,
+    });
   };
 
   return (
     <Card className="mb-6">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle>Select Patient</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-10 w-full" />
-        ) : (
-          <>
-            <Select onValueChange={handleSelectPatient}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a patient" />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    {patient.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {error && (
-              <p className="text-red-500 text-sm mt-2">{error}</p>
-            )}
-            
-            {!isLoading && patients.length === 0 && !error && (
-              <p className="text-yellow-500 text-sm mt-2">
-                No patients found. Please add patients first.
-              </p>
-            )}
-          </>
-        )}
+        <Select 
+          onValueChange={handleSelectPatient} 
+          value={selectedPatientId || undefined}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a patient" />
+          </SelectTrigger>
+          <SelectContent>
+            {patients.map((patient) => (
+              <SelectItem key={patient.id} value={patient.id}>
+                {patient.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default PatientSelector;

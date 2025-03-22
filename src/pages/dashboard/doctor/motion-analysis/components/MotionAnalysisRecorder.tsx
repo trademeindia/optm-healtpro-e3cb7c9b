@@ -1,317 +1,172 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Camera, Video, Pause, Save, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { VideoCamera, StopCircle, Save, RefreshCw } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { useMotionAnalysisDetection } from '../hooks/useMotionAnalysisDetection';
-import { saveMotionRecord } from '@/utils/mock-database/motionRecords';
 import DetectionMethodSelector from './DetectionMethodSelector';
+import { JointAngle } from '@/types/motion-analysis';
 
 interface MotionAnalysisRecorderProps {
   patientId: string;
   onSessionCreated: () => void;
 }
 
-export default function MotionAnalysisRecorder({ patientId, onSessionCreated }: MotionAnalysisRecorderProps) {
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [sessionType, setSessionType] = useState('');
-  const [notes, setNotes] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  
+const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({
+  patientId,
+  onSessionCreated
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const [notes, setNotes] = useState('');
+  const { toast } = useToast();
   
   const {
+    detectionMethod,
+    switchDetectionMethod,
     isDetecting,
+    isRecording,
     startRecording,
     stopRecording,
-    isRecording,
-    joints,
-    fps,
-    detectionMethod,
-    switchDetectionMethod
+    fps
   } = useMotionAnalysisDetection(videoRef);
 
-  useEffect(() => {
-    // Clean up on component unmount
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
-
-  const toggleCamera = async () => {
-    if (isCameraActive) {
-      // Turn off camera
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-      setIsCameraActive(false);
-      
-      if (isRecording) {
-        stopRecording();
-      }
-    } else {
-      // Turn on camera
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: 'user'
-          },
-          audio: false
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          streamRef.current = stream;
-          setIsCameraActive(true);
-        }
-      } catch (err) {
-        console.error('Error accessing camera:', err);
-        toast.error('Could not access camera. Please check permissions.');
-      }
-    }
+  const handleStartRecording = () => {
+    startRecording();
+    toast({
+      title: "Recording Started",
+      description: "Motion analysis recording has begun",
+    });
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      // Stop recording
-      const recordingResult = stopRecording();
-      toast.success(`Recording stopped. Captured ${recordingResult.jointAngles.length} measurements.`);
-    } else {
-      // Start recording
-      if (!sessionType) {
-        toast.error('Please enter a session type before recording');
-        return;
-      }
-      
-      startRecording();
-      toast.success('Recording started');
-    }
-  };
-
-  const handleSaveSession = async () => {
-    if (!sessionType) {
-      toast.error('Please enter a session type');
-      return;
-    }
+  const handleStopRecording = async () => {
+    const result = stopRecording();
     
-    setIsSaving(true);
-    
-    try {
-      const recordingResult = isRecording ? stopRecording() : { jointAngles: [], duration: 0 };
-      
-      // Create a new session record
-      await saveMotionRecord({
-        patientId,
-        doctorId: 'current-doctor-id', // In a real app, get this from authentication context
-        type: sessionType,
-        measurementDate: new Date().toISOString(),
-        duration: recordingResult.duration,
-        notes,
-        jointAngles: recordingResult.jointAngles,
-        status: 'completed',
-        targetJoints: ['rightKnee', 'leftKnee', 'rightElbow', 'leftElbow'] // Simplified for demo
-      });
-      
-      toast.success('Session saved successfully');
-      onSessionCreated();
-      
-      // Reset form
-      setSessionType('');
-      setNotes('');
-    } catch (err) {
-      console.error('Error saving session:', err);
-      toast.error('Failed to save session. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const renderPoseOnCanvas = () => {
-    if (!canvasRef.current || !videoRef.current || Object.keys(joints).length === 0) return;
-    
-    const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
-    
-    const videoWidth = videoRef.current.videoWidth;
-    const videoHeight = videoRef.current.videoHeight;
-    
-    canvasRef.current.width = videoWidth;
-    canvasRef.current.height = videoHeight;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, videoWidth, videoHeight);
-    
-    // Draw joints
-    Object.entries(joints).forEach(([part, position]) => {
-      ctx.beginPath();
-      ctx.arc(position[0], position[1], 5, 0, 2 * Math.PI);
-      ctx.fillStyle = 'red';
-      ctx.fill();
+    toast({
+      title: "Recording Completed",
+      description: `Recorded ${result.jointAngles.length} joint angle measurements over ${result.duration} seconds`,
     });
     
-    // Draw connections between joints (simplified example)
-    if (joints.leftShoulder && joints.leftElbow) {
-      ctx.beginPath();
-      ctx.moveTo(joints.leftShoulder[0], joints.leftShoulder[1]);
-      ctx.lineTo(joints.leftElbow[0], joints.leftElbow[1]);
-      ctx.strokeStyle = 'green';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
+    // In a real app, you would save this data to a database
+    console.log("Recording data:", result);
     
-    if (joints.rightShoulder && joints.rightElbow) {
-      ctx.beginPath();
-      ctx.moveTo(joints.rightShoulder[0], joints.rightShoulder[1]);
-      ctx.lineTo(joints.rightElbow[0], joints.rightElbow[1]);
-      ctx.strokeStyle = 'green';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-    
-    // Request next frame
-    requestAnimationFrame(renderPoseOnCanvas);
+    // Notify parent that session was created
+    onSessionCreated();
   };
-  
-  // Render pose on canvas whenever joints update
-  useEffect(() => {
-    if (isCameraActive && Object.keys(joints).length > 0) {
-      renderPoseOnCanvas();
-    }
-  }, [joints, isCameraActive]);
+
+  // For demo purposes, let's simulate some joint angles
+  const simulatedJointAngles: JointAngle[] = [
+    { joint: 'leftKnee', angle: 120, timestamp: Date.now() },
+    { joint: 'rightKnee', angle: 115, timestamp: Date.now() },
+    { joint: 'leftElbow', angle: 95, timestamp: Date.now() },
+    { joint: 'rightElbow', angle: 90, timestamp: Date.now() },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
             <CardHeader>
-              <CardTitle>Motion Recording</CardTitle>
-              <CardDescription>
-                Record patient movement and analyze joint angles
-              </CardDescription>
+              <CardTitle>Record Motion Analysis</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="relative aspect-video bg-muted mb-4 rounded-md overflow-hidden flex items-center justify-center">
-                {!isCameraActive ? (
-                  <div className="text-center p-8">
-                    <Video className="h-10 w-10 mb-2 mx-auto text-muted-foreground" />
-                    <p>Camera inactive. Click the button below to start.</p>
+            <CardContent className="space-y-4">
+              <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+                
+                {!isDetecting && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
+                    <p>Click Start Recording to begin</p>
                   </div>
-                ) : (
-                  <>
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <canvas
-                      ref={canvasRef}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    
-                    {isDetecting && (
-                      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                        FPS: {fps}
-                      </div>
-                    )}
-                  </>
+                )}
+                
+                {fps > 0 && (
+                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    {fps} FPS
+                  </div>
                 )}
               </div>
               
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  onClick={toggleCamera}
-                  variant={isCameraActive ? "destructive" : "default"}
+              <div className="flex gap-2 justify-between">
+                <Button
+                  onClick={handleStartRecording}
+                  disabled={isRecording}
+                  variant="default"
+                  className="flex-1"
                 >
-                  {isCameraActive ? (
-                    <>
-                      <X className="mr-2 h-4 w-4" /> Stop Camera
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="mr-2 h-4 w-4" /> Start Camera
-                    </>
-                  )}
+                  <VideoCamera className="mr-2 h-4 w-4" />
+                  Start Recording
                 </Button>
-                
-                {isCameraActive && (
-                  <Button
-                    onClick={toggleRecording}
-                    variant={isRecording ? "destructive" : "default"}
-                    disabled={!isCameraActive}
-                  >
-                    {isRecording ? (
-                      <>
-                        <Pause className="mr-2 h-4 w-4" /> Stop Recording
-                      </>
-                    ) : (
-                      <>
-                        <Video className="mr-2 h-4 w-4" /> Start Recording
-                      </>
-                    )}
-                  </Button>
-                )}
                 
                 <Button
-                  onClick={handleSaveSession}
-                  disabled={isSaving}
-                  variant="outline"
+                  onClick={handleStopRecording}
+                  disabled={!isRecording}
+                  variant="destructive"
+                  className="flex-1"
                 >
-                  <Save className="mr-2 h-4 w-4" /> Save Session
+                  <StopCircle className="mr-2 h-4 w-4" />
+                  Stop Recording
+                </Button>
+                
+                <Button
+                  onClick={onSessionCreated}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Session
                 </Button>
               </div>
+              
+              <Textarea
+                placeholder="Add notes about this motion analysis session..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+              />
             </CardContent>
           </Card>
         </div>
         
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Session Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="session-type">Session Type</Label>
-                <Input
-                  id="session-type"
-                  placeholder="e.g., Knee Flexion, Shoulder Rotation"
-                  value={sessionType}
-                  onChange={(e) => setSessionType(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add session notes..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          
+        <div>
           <DetectionMethodSelector
             currentMethod={detectionMethod}
             onMethodChange={switchDetectionMethod}
             disabled={isRecording}
           />
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-md">Recent Measurements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {simulatedJointAngles.length > 0 ? (
+                <div className="space-y-2">
+                  {simulatedJointAngles.map((angle, index) => (
+                    <div key={index} className="flex justify-between text-sm border-b pb-1">
+                      <span>{angle.joint}:</span>
+                      <span className="font-medium">{angle.angle.toFixed(1)}°</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No measurements recorded yet
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default MotionAnalysisRecorder;
