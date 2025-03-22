@@ -4,6 +4,12 @@ import { ExerciseSession, JointAngle } from '@/components/exercises/body-tracker
 
 export const saveExerciseSession = async (sessionData: ExerciseSession) => {
   try {
+    // Convert angles to a plain object that can be stored as JSON
+    const plainAngles = sessionData.angles.map(angle => ({
+      joint: angle.joint,
+      angle: angle.angle
+    }));
+
     // Ensure sessionData matches the expected database schema
     const { data, error } = await supabase
       .from('exercise_sessions')
@@ -11,7 +17,7 @@ export const saveExerciseSession = async (sessionData: ExerciseSession) => {
         patient_id: sessionData.patient_id,
         exercise_type: sessionData.exercise_type,
         timestamp: sessionData.timestamp,
-        angles: sessionData.angles, // Supabase automatically converts this to JSON
+        angles: plainAngles, // Now properly formatted for JSON storage
         notes: sessionData.notes
       });
       
