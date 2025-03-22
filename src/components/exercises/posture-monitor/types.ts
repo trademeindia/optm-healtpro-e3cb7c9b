@@ -24,5 +24,23 @@ export enum SquatState {
   DESCENDING = "descending",
   BOTTOM = "bottom",
   ASCENDING = "ascending",
-  UNKNOWN = "unknown"
+  UNKNOWN = "unknown",
+  // Add the missing states used in the code
+  BOTTOM_SQUAT = "bottom_squat",
+  MID_SQUAT = "mid_squat"
+}
+
+// Add TrackingStats interface that was missing
+export interface TrackingStats {
+  reps: number;
+  incorrectReps: number;
+  accuracy: number;
+}
+
+// Add RepEvaluation interface that was missing
+export interface RepEvaluation {
+  isGoodForm: boolean;
+  feedback: string;
+  score: number;
+  feedbackType: FeedbackType;
 }

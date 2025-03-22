@@ -38,13 +38,17 @@ export const cameraResolutionManager = {
       }
       
       // Add fallback constraints for compatibility
+      const videoConstraints = constraints.video as MediaTrackConstraints;
+      const widthIdeal = typeof videoConstraints.width === 'object' ? videoConstraints.width.ideal as number : 640;
+      const heightIdeal = typeof videoConstraints.height === 'object' ? videoConstraints.height.ideal as number : 480;
+      
       return {
         ...constraints,
         video: {
-          ...(constraints.video as MediaTrackConstraints),
+          ...videoConstraints,
           // Add fallback values for better browser compatibility
-          width: { min: 320, ideal: (constraints.video as MediaTrackConstraints).width?.ideal || 640, max: 1280 },
-          height: { min: 240, ideal: (constraints.video as MediaTrackConstraints).height?.ideal || 480, max: 720 },
+          width: { min: 320, ideal: widthIdeal, max: 1280 },
+          height: { min: 240, ideal: heightIdeal, max: 720 },
         }
       };
     } catch (error) {
