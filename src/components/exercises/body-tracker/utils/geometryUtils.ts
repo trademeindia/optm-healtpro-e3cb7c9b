@@ -1,5 +1,5 @@
 
-import { Point } from '../types/geometry';
+import type { Point } from '../types/geometry';
 import { BodyKeypoint } from '@vladmandic/human';
 
 // Calculate angle between three points
