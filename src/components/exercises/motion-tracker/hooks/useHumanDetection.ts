@@ -1,9 +1,11 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import * as Human from '@vladmandic/human';
 import { FeedbackType } from '../types';
 import { HumanDetectionStatus } from '../types';
 import { performanceMonitor } from '../../utils/performanceMonitor';
+import { tensorflowMemoryManager } from '../../utils/tensorflowMemoryManager';
+import { humanModelManager } from '../../utils/humanModelManager';
+import { cameraResolutionManager } from '../../utils/cameraResolutionManager';
 
 interface UseHumanDetectionProps {
   cameraActive: boolean;
@@ -48,84 +50,29 @@ export const useHumanDetection = ({
         
         console.log("Initializing Human.js");
         
-        // Memory usage check
-        const memoryInfo = (performance as any).memory;
-        const initialMemory = memoryInfo ? {
-          totalJSHeapSize: memoryInfo.totalJSHeapSize,
-          usedJSHeapSize: memoryInfo.usedJSHeapSize
-        } : null;
-        
-        if (initialMemory) {
-          console.log("Initial memory usage:", 
-            `${Math.round(initialMemory.usedJSHeapSize / 1048576)}MB / ${Math.round(initialMemory.totalJSHeapSize / 1048576)}MB`);
+        // Check if WebGL is available, show warning if not
+        if (!humanModelManager.checkWebGLSupport()) {
+          onFeedbackChange(
+            "Your browser may not support hardware acceleration. Motion detection might be slow.",
+            FeedbackType.WARNING
+          );
         }
         
-        // Detect device capabilities for adaptive settings
-        const isLowEndDevice = navigator.hardwareConcurrency <= 4 || 
-                              (initialMemory && initialMemory.totalJSHeapSize < 2 * 1073741824);
+        // Configure TensorFlow for best performance
+        tensorflowMemoryManager.configureForOptimalPerformance();
         
-        console.log(`Detected ${isLowEndDevice ? 'low-end' : 'capable'} device, adjusting settings accordingly`);
-                              
-        // Configure Human.js with performance optimizations
-        const config: Partial<Human.Config> = {
-          modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
-          filter: { enabled: true, equalization: false },
-          face: { enabled: false },
-          hand: { enabled: false },
-          gesture: { enabled: false },
-          // Configure body pose detection
-          body: { 
-            enabled: true,
-            // For low-end devices, use lighter model
-            modelPath: isLowEndDevice ? 'blazepose.json' : 'blazepose-heavy.json',
-            minConfidence: 0.2, 
-            maxDetected: 1, 
-          },
-          // Segmentation is expensive, disable it
-          segmentation: { enabled: false },
-          // Optimize for performance
-          backend: 'webgl',
-          // Reduced warmup for faster startup
-          warmup: 'none',
-          // Debug settings
-          debug: false,
-        };
+        // Initialize Human.js with progress feedback
+        const human = await humanModelManager.initializeHuman((message) => {
+          onFeedbackChange(message, FeedbackType.INFO);
+        });
         
-        // Create Human instance with configuration
-        const human = new Human.Human(config);
-        
-        // Pre-load and warm up the model with proper error handling
-        try {
-          await human.load();
-          await human.warmup();
-          
+        if (human) {
           humanRef.current = human;
           setIsModelLoading(false);
           onFeedbackChange("Motion detection ready. Starting camera will begin tracking.", FeedbackType.SUCCESS);
-          
           console.log("Human.js initialized successfully");
-        } catch (modelError) {
-          console.error("Error during model loading:", modelError);
-          // Try to recover with simpler model
-          try {
-            console.log("Attempting to load with lighter model as fallback...");
-            config.body.modelPath = 'blazepose.json';
-            await human.load(config);
-            await human.warmup();
-            
-            humanRef.current = human;
-            setIsModelLoading(false);
-            onFeedbackChange("Motion detection ready (using lighter model).", FeedbackType.WARNING);
-            
-            console.log("Human.js initialized with fallback model");
-          } catch (fallbackError) {
-            console.error("Fallback model loading failed:", fallbackError);
-            setIsModelLoading(false);
-            onFeedbackChange(
-              "Failed to initialize motion detection. Please try refreshing the page or using a different device.",
-              FeedbackType.ERROR
-            );
-          }
+        } else {
+          throw new Error("Failed to initialize Human.js");
         }
       } catch (error) {
         console.error("Error initializing Human.js:", error);
@@ -145,14 +92,9 @@ export const useHumanDetection = ({
         console.log("Cleaning up Human.js instance");
         isDisposingRef.current = true;
         
-        // Instead of calling dispose(), we'll clean up resources manually
-        try {
-          // Clean up tensors and resources
-          humanRef.current = null;
-          console.log("Human.js resources cleaned up successfully");
-        } catch (error) {
-          console.error("Error during Human.js cleanup:", error);
-        }
+        // Clean up tensors and resources
+        humanModelManager.cleanupHumanResources(humanRef.current);
+        humanRef.current = null;
         
         isDisposingRef.current = false;
       }
@@ -186,21 +128,15 @@ export const useHumanDetection = ({
         console.log(`Performance optimization: Decreasing frame skip to ${adaptiveFrameSkipRef.current} (${fps} FPS)`);
       }
       
-      // Check for memory leaks
-      const memoryInfo = (performance as any).memory;
-      if (memoryInfo && memoryInfo.usedJSHeapSize > 0.8 * memoryInfo.totalJSHeapSize) {
-        console.warn("Memory usage high, performing cleanup");
-        
-        // Cleanup resources that might be causing memory pressure
-        fpsCounterRef.current = fpsCounterRef.current.slice(-10);
-        
-        // Force garbage collection if possible (requires --expose-gc flag)
-        if (typeof global !== 'undefined' && (global as any).gc) {
-          (global as any).gc();
-        }
+      // Check if we need to adapt video resolution
+      if (videoRef.current && fps < 10) {
+        cameraResolutionManager.adaptResolutionIfNeeded(videoRef.current, fpsCounterRef.current);
       }
+      
+      // Clean up memory if needed
+      tensorflowMemoryManager.checkAndCleanupMemoryIfNeeded();
     }
-  }, [onFeedbackChange]);
+  }, [onFeedbackChange, videoRef]);
   
   // Start detection loop with improved error handling
   const startDetection = useCallback(() => {
@@ -289,8 +225,7 @@ export const useHumanDetection = ({
               // First clear the canvas
               ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
               
-              // Pass the body array instead of the full result object
-              // The draw.body method expects the body array, not the full result
+              // Draw the body detection results
               humanRef.current.draw.body(canvasRef.current, result.body);
             }
           }
@@ -316,6 +251,9 @@ export const useHumanDetection = ({
           
           // Inform user
           onFeedbackChange("Detection issues detected. Trying to recover...", FeedbackType.WARNING);
+          
+          // Clean up TensorFlow memory to help recovery
+          tensorflowMemoryManager.cleanupTensors();
           
           // Try to recover by restarting detection
           if (humanRef.current) {

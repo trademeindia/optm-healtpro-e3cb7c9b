@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { FeedbackType } from '../types';
+import { cameraResolutionManager } from '../../utils/cameraResolutionManager';
 
 interface UseCameraProps {
   videoRef?: React.RefObject<HTMLVideoElement>;
@@ -32,8 +33,9 @@ export const useCamera = ({
   const internalVideoRef = useRef<HTMLVideoElement | null>(null);
   const currentVideoRef = videoRef || internalVideoRef;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const startAttemptsRef = useRef<number>(0);
 
-  // Start camera
+  // Start camera with optimized resolution management
   const startCamera = useCallback(async () => {
     try {
       setCameraError(null);
@@ -53,16 +55,11 @@ export const useCamera = ({
         return;
       }
       
+      // Get optimal camera constraints based on device capabilities
+      const constraints = await cameraResolutionManager.getOptimalCameraConstraints();
+      
       // Request camera with specific constraints for better detection
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user',
-          frameRate: { ideal: 30 }
-        },
-        audio: false
-      });
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       // Update permission status
       setPermission('granted');
@@ -88,6 +85,9 @@ export const useCamera = ({
                   lastCheckTime: Date.now(),
                   errorCount: 0
                 });
+                
+                // Reset start attempts counter on success
+                startAttemptsRef.current = 0;
                 
                 if (onFeedbackChange) {
                   onFeedbackChange("Camera started successfully.", FeedbackType.SUCCESS);
@@ -116,6 +116,32 @@ export const useCamera = ({
         setCameraError("Camera access denied. Please grant permission.");
         if (onFeedbackChange) {
           onFeedbackChange("Camera permission denied. Please enable camera access.", FeedbackType.ERROR);
+        }
+      } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+        setCameraError("No camera found. Please connect a camera and try again.");
+        if (onFeedbackChange) {
+          onFeedbackChange("No camera found. Please connect a camera and try again.", FeedbackType.ERROR);
+        }
+      } else if (error instanceof DOMException && error.name === 'NotReadableError') {
+        // Camera might be in use by another application, try with lower resolution
+        startAttemptsRef.current++;
+        
+        if (startAttemptsRef.current <= 2) {
+          console.log("Camera might be in use, trying with lower resolution...");
+          if (onFeedbackChange) {
+            onFeedbackChange("Trying with alternative camera settings...", FeedbackType.INFO);
+          }
+          
+          // Small delay before retrying
+          setTimeout(() => {
+            startCamera();
+          }, 500);
+          return;
+        } else {
+          setCameraError("Camera is in use by another application or not available.");
+          if (onFeedbackChange) {
+            onFeedbackChange("Camera is in use by another application. Please close other programs using your camera.", FeedbackType.ERROR);
+          }
         }
       } else {
         setCameraError(`Failed to access camera: ${(error as Error).message}`);
@@ -163,6 +189,8 @@ export const useCamera = ({
     if (cameraActive) {
       stopCamera();
     } else {
+      // Reset attempts counter when starting fresh
+      startAttemptsRef.current = 0;
       startCamera();
     }
   }, [cameraActive, startCamera, stopCamera]);
@@ -173,6 +201,8 @@ export const useCamera = ({
       stopCamera();
     }
     setCameraError(null);
+    // Reset attempts counter for retry
+    startAttemptsRef.current = 0;
     startCamera();
   }, [startCamera, stopCamera]);
   
