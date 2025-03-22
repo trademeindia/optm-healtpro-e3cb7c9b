@@ -63,8 +63,9 @@ const LoginPage: React.FC = () => {
     setShowDebug(!showDebug);
   };
 
-  const toggleSignUpDialog = (): void => {
+  const toggleSignUpDialog = async (): Promise<void> => {
     setShowSignupDialog(!showSignupDialog);
+    return Promise.resolve();
   };
 
   return (
