@@ -6,3 +6,6 @@ export { default as StatsDisplay } from './StatsDisplay';
 export { default as TutorialDialog } from './TutorialDialog';
 export { default as PoseRenderer } from './PoseRenderer';
 export * from './types';
+export * from './hooks/useCamera';
+export * from './hooks/useHumanDetection';
+export * from './hooks/useMotionAnalysis';
