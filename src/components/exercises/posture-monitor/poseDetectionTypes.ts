@@ -12,7 +12,8 @@ export interface PoseDetectionConfig {
   // Add missing properties for PoseNet configuration
   architecture?: 'MobileNetV1' | 'ResNet50';
   outputStride?: 8 | 16 | 32;
-  multiplier?: 0.5 | 0.75 | 1.0 | 1.01;
+  // Fix the multiplier values to match the allowed MobileNetMultiplier type
+  multiplier?: 0.5 | 0.75 | 1.0;
   quantBytes?: 1 | 2 | 4;
 }
 
