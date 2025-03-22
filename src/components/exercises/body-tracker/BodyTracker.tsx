@@ -137,41 +137,6 @@ const BodyTracker: React.FC<BodyTrackerProps> = ({
     }
   }, [human, isTracking, onAnglesDetected]);
 
-  const startTracking = () => {
-    setIsTracking(true);
-    requestRef.current = requestAnimationFrame(detect);
-  };
-
-  const stopTracking = () => {
-    setIsTracking(false);
-    if (requestRef.current) {
-      cancelAnimationFrame(requestRef.current);
-    }
-  };
-
-  const toggleCamera = () => {
-    if (cameraActive) {
-      setCameraActive(false);
-      stopTracking();
-    } else {
-      setCameraActive(true);
-    }
-  };
-
-  const saveToSupabase = () => {
-    if (!angles.length) return;
-    
-    // Prepare data for saving
-    const sessionData = {
-      timestamp: new Date().toISOString(),
-      angles: angles,
-    };
-    
-    if (onSaveData) {
-      onSaveData(sessionData);
-    }
-  };
-
   // Effect to handle resize events
   useEffect(() => {
     const handleResize = () => {
