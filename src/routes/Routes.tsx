@@ -7,25 +7,30 @@ import MotionAnalysisPage from '@/pages/dashboard/doctor/motion-analysis';
 import { UserRole } from '@/contexts/auth/types';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SessionExpired from '@/components/SessionExpired';
+import Index from '@/pages/Index';
+import LoginPage from '@/pages/LoginPage';
+import DoctorDashboard from '@/pages/dashboard/DoctorDashboard';
+import PatientDashboard from '@/pages/dashboard/patient/PatientDashboard';
+import ReceptionistDashboard from '@/pages/dashboard/receptionist/ReceptionistDashboard';
 
 const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <RouterRoutes>
         {/* Auth Routes */}
-        <Route path="/login" element={<PlaceholderPage title="Login Page" />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<PlaceholderPage title="Signup Page" />} />
         <Route path="/password-reset" element={<PlaceholderPage title="Password Reset Page" />} />
         <Route path="/password-recovery" element={<PlaceholderPage title="Password Recovery Page" />} />
         <Route path="/session-expired" element={<SessionExpired />} />
-        <Route path="/" element={<PlaceholderPage title="Index Page" />} />
+        <Route path="/" element={<Index />} />
 
         {/* Doctor Routes */}
         <Route
           path="/dashboard/doctor"
           element={
             <ProtectedRoute requiredRole={UserRole.DOCTOR}>
-              <PlaceholderPage title="Doctor Dashboard" />
+              <DoctorDashboard />
             </ProtectedRoute>
           }
         />
@@ -62,7 +67,7 @@ const AppRoutes: React.FC = () => {
           path="/dashboard/patient"
           element={
             <ProtectedRoute requiredRole={UserRole.PATIENT}>
-              <PlaceholderPage title="Patient Dashboard" />
+              <PatientDashboard />
             </ProtectedRoute>
           }
         />
@@ -117,7 +122,7 @@ const AppRoutes: React.FC = () => {
           path="/dashboard/receptionist"
           element={
             <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-              <PlaceholderPage title="Receptionist Dashboard" />
+              <ReceptionistDashboard />
             </ProtectedRoute>
           }
         />
