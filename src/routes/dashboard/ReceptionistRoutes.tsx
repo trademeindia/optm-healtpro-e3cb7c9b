@@ -1,12 +1,10 @@
 
-import React, { lazy } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import ReceptionistDashboard from '@/pages/dashboard/receptionist/ReceptionistDashboard';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
-
-// Lazy-loaded receptionist components
-const ReceptionistDashboard = lazy(() => import('@/pages/dashboard/receptionist/ReceptionistDashboard'));
 
 export const ReceptionistRoutes: React.FC = () => {
   return (

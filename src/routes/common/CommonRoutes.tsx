@@ -1,13 +1,9 @@
 
-import React, { lazy } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
-
-// Lazy-loaded common components for settings, help, and shared routes
-const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export const CommonRoutes: React.FC = () => {
   return (
@@ -61,12 +57,13 @@ export const CommonRoutes: React.FC = () => {
         path="/help"
         element={
           <ProtectedRoute>
-            <HelpPage />
+            <PlaceholderPage title="Help Page" />
           </ProtectedRoute>
         }
       />
       
-      <Route path="*" element={<NotFoundPage />} />
+      {/* 404 Not Found */}
+      <Route path="*" element={<PlaceholderPage title="Not Found Page" />} />
     </>
   );
 };

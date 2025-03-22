@@ -1,12 +1,10 @@
 
-import React, { lazy } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
+import PatientDashboard from '@/pages/dashboard/patient/PatientDashboard';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
-
-// Lazy-loaded patient components
-const PatientDashboard = lazy(() => import('@/pages/dashboard/patient/PatientDashboard'));
 
 export const PatientRoutes: React.FC = () => {
   return (
