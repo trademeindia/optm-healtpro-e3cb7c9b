@@ -21,7 +21,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
-  picture?: string;
+  picture?: string | null;
   provider?: string;
   patientId?: string; // Added to fix errors
 }
@@ -31,16 +31,10 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string, role?: UserRole) => Promise<void>;
-  logout: () => Promise<void>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  updateProfile: (profile: Partial<User>) => Promise<void>;
-  socialAuth: (provider: string) => Promise<void>;
-  
-  // Adding missing methods
-  forgotPassword?: (email: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
   loginWithSocialProvider?: (provider: string) => Promise<void>;
-  handleOAuthCallback?: (params: URLSearchParams) => Promise<void>;
+  handleOAuthCallback?: (provider: string, code: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
+  logout: () => Promise<void>;
+  forgotPassword?: (email: string) => Promise<void>;
 }

@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-admin-${Date.now()}`,
           email: email,
           name: 'Admin Demo Account',
-          role: 'admin',
+          role: UserRole.ADMIN,
           provider: 'email',
           picture: null
         };
@@ -107,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-doctor-${Date.now()}`,
           email: email,
           name: 'Dr. Demo Account',
-          role: 'doctor',
+          role: UserRole.DOCTOR,
           provider: 'email',
           picture: null
         };
@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-patient-${Date.now()}`,
           email: email,
           name: 'Patient Demo',
-          role: 'patient',
+          role: UserRole.PATIENT,
           provider: 'email',
           picture: null,
           patientId: 'demo-patient-id-123'
@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-receptionist-${Date.now()}`,
           email: email,
           name: 'Receptionist Demo',
-          role: 'receptionist',
+          role: UserRole.RECEPTIONIST,
           provider: 'email',
           picture: null
         };

@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../../utils';
-import { User } from '../../types';
+import { User, UserRole } from '../../types';
 
 type UseOAuthCallbackHandlerProps = {
   setIsLoading: (isLoading: boolean) => void;
@@ -44,8 +44,8 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
           toast.success('Successfully signed in!');
           
           // Navigate to the appropriate dashboard based on user role
-          const dashboard = user.role === 'doctor' ? '/dashboard/doctor' : 
-                            user.role === 'receptionist' ? '/dashboard/receptionist' : 
+          const dashboard = user.role === UserRole.DOCTOR ? '/dashboard/doctor' : 
+                            user.role === UserRole.RECEPTIONIST ? '/dashboard/receptionist' : 
                             '/dashboard/patient';
                             
           setTimeout(() => navigate(dashboard), 500);
@@ -63,7 +63,7 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
             id: `demo-patient-${Date.now()}`,
             email: 'google-demo@example.com',
             name: 'Google Demo User',
-            role: 'patient',
+            role: UserRole.PATIENT,
             provider: 'google',
             picture: 'https://i.pravatar.cc/150?u=google'
           };

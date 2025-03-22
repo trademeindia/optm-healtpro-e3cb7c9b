@@ -1,7 +1,15 @@
 
-import { toast as toastFunction } from "sonner";
+import { toast } from 'sonner';
 
-// Export the toast function from sonner directly
-export const toast = toastFunction;
-
-// Since sonner doesn't export useToast, we don't need to import or re-export it
+export const useToast = () => {
+  return {
+    toast: {
+      success: (message: string) => toast.success(message),
+      error: (message: string) => toast.error(message),
+      info: (message: string) => toast(message),
+      warning: (message: string) => toast(message, {
+        style: { backgroundColor: 'var(--warning)' }
+      })
+    }
+  };
+};
