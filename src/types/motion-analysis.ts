@@ -1,6 +1,4 @@
 
-// Define types for motion analysis
-
 export interface JointAngle {
   joint: string;
   angle: number;
@@ -10,24 +8,23 @@ export interface JointAngle {
 export interface MotionAnalysisSession {
   id: string;
   patientId: string;
-  doctorId: string;
   type: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-  notes?: string;
   measurementDate: string;
   duration: number;
+  notes: string;
   jointAngles: JointAngle[];
-  targetJoints: string[];
-  customType?: string;
+  status: 'pending' | 'completed' | 'failed';
 }
 
-export interface AnalysisResult {
+export interface MotionAnalysisReport {
+  id: string;
   sessionId: string;
-  abnormalities: string[];
-  recommendations: string[];
-  comparisonToPrevious?: {
-    sessionId: string;
-    improvementPercentage: number;
-    keyDifferences: string[];
-  };
+  patientId: string;
+  createdAt: string;
+  asymmetryScore?: number;
+  stabilityScore?: number;
+  rangeOfMotionScore?: number;
+  overallScore?: number;
+  findings?: string;
+  recommendations?: string;
 }

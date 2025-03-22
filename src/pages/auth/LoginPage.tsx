@@ -1,155 +1,197 @@
 
-import React from 'react';
-import LoginForm from '@/components/auth/LoginForm';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import UserTypeSelector from '@/components/auth/UserTypeSelector';
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import SignupDialog from '@/components/auth/SignupDialog';
-import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import React, { useState } from 'react';
 import { useLoginState } from '@/hooks/useLoginState';
-import { motion } from 'framer-motion';
-import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
+import { UserRole } from '@/contexts/auth/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
+  // Use the login state hook that provides the correct methods and state
   const {
-    email, setEmail,
-    password, setPassword,
-    isSubmitting,
-    showForgotPassword, setShowForgotPassword,
-    forgotEmail, setForgotEmail,
-    userType, setUserType,
-    showSignupDialog, setShowSignupDialog,
-    signupData, handleSignupInputChange,
+    email,
+    password,
+    isLoading,
+    handleEmailChange,
+    handlePasswordChange,
     handleSubmit,
-    handleForgotPassword,
-    handleSignup,
-    handleSocialLogin,
-    handleTabChange,
+    handleDemoLogin
   } = useLoginState();
 
+  // Add additional state for the login page UI
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [userType, setUserType] = useState<UserRole>(UserRole.PATIENT);
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement forgot password logic here
+    setShowForgotPassword(false);
+  };
+
+  const handleSignup = () => {
+    setShowSignupDialog(true);
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    console.log(`Social login with ${provider}`);
+    // Implementation would depend on your auth context
+  };
+
   return (
-    <ErrorBoundary>
-      <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-950 dark:to-indigo-950">
-        {/* Marketing Panel (left side) */}
-        <motion.div 
-          className="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="absolute inset-0 bg-[url('/public/lovable-uploads/d8b182a9-ac94-4497-b6c9-770065e4e760.png')] bg-center bg-no-repeat bg-cover opacity-10"></div>
-          <div className="relative z-10 flex flex-col justify-center items-start p-12 text-white">
-            <h1 className="text-4xl font-bold mb-6">OPTM HealPro</h1>
-            <h2 className="text-2xl font-semibold mb-4">Advanced Healthcare Platform</h2>
-            <p className="text-lg mb-8 max-w-lg opacity-90">
-              {userType === 'doctor' ? 
-                'Access comprehensive patient data, motion analysis tools, and AI-powered diagnostics.' : 
-                'Monitor your health progress, access personalized exercise plans, and connect with healthcare providers.'}
-            </p>
-            <ul className="space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2">✓</span> 
-                {userType === 'doctor' ? 'Advanced motion analysis tools' : 'Personalized care plans'}
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2">✓</span> 
-                {userType === 'doctor' ? 'AI-assisted diagnostics' : 'Exercise tracking and feedback'}
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2">✓</span> 
-                {userType === 'doctor' ? 'Patient progress tracking' : 'Secure communication with providers'}
-              </li>
-            </ul>
-          </div>
-        </motion.div>
-        
-        {/* Login Form Area (right side) */}
-        <div className="flex-1 flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full max-w-md"
-          >
-            <Card className="shadow-xl border border-white/30 dark:border-white/5 bg-white/95 dark:bg-gray-800/90 backdrop-blur-md">
-              <CardHeader className="space-y-1 pb-6">
-                <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Medical Platform Access
-                </CardTitle>
-                <CardDescription className="text-center">
-                  Sign in to continue to the healthcare portal
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* User Type Selector (tabs for patient, doctor, receptionist) */}
-                <UserTypeSelector userType={userType} onTabChange={handleTabChange} />
-                
-                {showForgotPassword ? (
-                  <ForgotPasswordForm 
-                    forgotEmail={forgotEmail} 
-                    setForgotEmail={setForgotEmail} 
-                    onSubmit={handleForgotPassword}
-                    onBackToLogin={() => setShowForgotPassword(false)}
-                    isSubmitting={isSubmitting}
-                  />
-                ) : (
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
+      <div className="w-full max-w-md">
+        <Card className="border shadow-lg">
+          <CardContent className="p-6">
+            <div className="mb-6 text-center">
+              <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+              <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="name@example.com"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => setShowForgotPassword(true)}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
                   <>
-                    {/* Social Login Options */}
-                    <SocialLoginButtons 
-                      onGoogleLogin={() => handleSocialLogin('google')}
-                      isSubmitting={isSubmitting}
-                    />
-                    
-                    {/* Login Form */}
-                    <LoginForm
-                      email={email}
-                      setEmail={setEmail}
-                      password={password}
-                      setPassword={setPassword}
-                      userType={userType}
-                      isSubmitting={isSubmitting}
-                      onSubmit={handleSubmit}
-                      onForgotPassword={() => setShowForgotPassword(true)}
-                    />
-                    
-                    {/* Sign Up Option */}
-                    <motion.div 
-                      className="mt-6 text-center text-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6, duration: 0.4 }}
-                    >
-                      <p className="text-muted-foreground">
-                        Don't have an account?{' '}
-                        <button
-                          type="button"
-                          onClick={() => setShowSignupDialog(true)}
-                          className="text-primary hover:underline font-medium transition-colors"
-                        >
-                          Sign up
-                        </button>
-                      </p>
-                    </motion.div>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
                   </>
+                ) : (
+                  'Sign In'
                 )}
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          {/* Sign Up Dialog */}
-          <SignupDialog
-            showSignupDialog={showSignupDialog}
-            setShowSignupDialog={setShowSignupDialog}
-            signupData={signupData}
-            handleSignupInputChange={handleSignupInputChange}
-            handleSignup={handleSignup}
-            isSubmitting={isSubmitting}
-            userType={userType === 'receptionist' ? 'patient' : userType}
-          />
-        </div>
+              </Button>
+            </form>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="flex items-center justify-center"
+                  onClick={() => handleSocialLogin('google')}
+                >
+                  Google
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="flex items-center justify-center"
+                  onClick={() => handleSocialLogin('apple')}
+                >
+                  Apple
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="flex items-center justify-center"
+                  onClick={() => handleSocialLogin('github')}
+                >
+                  GitHub
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <div className="text-center text-sm">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={handleSignup}
+                  className="font-medium text-primary hover:underline"
+                >
+                  Sign up
+                </button>
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <p className="text-center text-xs text-muted-foreground">Demo Accounts</p>
+                <div className="flex justify-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDemoLogin('patient')}
+                    className="text-xs"
+                  >
+                    Patient
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDemoLogin('doctor')}
+                    className="text-xs"
+                  >
+                    Doctor
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDemoLogin('receptionist')}
+                    className="text-xs"
+                  >
+                    Receptionist
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 

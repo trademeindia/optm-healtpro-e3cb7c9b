@@ -15,6 +15,13 @@ interface MotionAnalysisRecorderProps {
   onSessionCreated: () => void;
 }
 
+// Define the type for joint angle data
+interface JointAngle {
+  joint: string;
+  angle: number;
+  timestamp: number;
+}
+
 const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patientId, onSessionCreated }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [analysisType, setAnalysisType] = useState('gait');
@@ -82,12 +89,12 @@ const MotionAnalysisRecorder: React.FC<MotionAnalysisRecorderProps> = ({ patient
     }
   };
   
-  const generateMockJointAngles = () => {
+  const generateMockJointAngles = (): JointAngle[] => {
     // Generate some mock joint angle data
     return [
-      { joint: 'knee', angle: Math.random() * 30 + 80, timestamp: new Date().toISOString() },
-      { joint: 'hip', angle: Math.random() * 20 + 100, timestamp: new Date().toISOString() },
-      { joint: 'ankle', angle: Math.random() * 15 + 85, timestamp: new Date().toISOString() }
+      { joint: 'knee', angle: Math.random() * 30 + 80, timestamp: Date.now() },
+      { joint: 'hip', angle: Math.random() * 20 + 100, timestamp: Date.now() },
+      { joint: 'ankle', angle: Math.random() * 15 + 85, timestamp: Date.now() }
     ];
   };
   
