@@ -11,7 +11,7 @@ export const saveExerciseSession = async (sessionData: ExerciseSession) => {
         patient_id: sessionData.patient_id,
         exercise_type: sessionData.exercise_type,
         timestamp: sessionData.timestamp,
-        angles: sessionData.angles, // This will be automatically converted to JSON
+        angles: sessionData.angles, // Supabase automatically converts this to JSON
         notes: sessionData.notes
       });
       
