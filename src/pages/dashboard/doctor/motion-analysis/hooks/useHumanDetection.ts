@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { JointAngle } from '../components/MotionAnalysisRecorder';
 
@@ -417,3 +416,35 @@ export const useHumanDetection = ({
     setCameraStream
   };
 };
+
+export function convertToHumanPoseKeypoints(keypoints: any): HumanPoseKeypoints {
+  // Ensure all arrays are exactly of length 2
+  const ensurePair = (arr: number[]): [number, number] => {
+    if (!arr || arr.length < 2) {
+      return [0, 0]; // Default if missing data
+    }
+    return [arr[0], arr[1]];
+  };
+
+  return {
+    nose: ensurePair(keypoints.nose),
+    leftEye: ensurePair(keypoints.leftEye),
+    rightEye: ensurePair(keypoints.rightEye),
+    leftEar: ensurePair(keypoints.leftEar),
+    rightEar: ensurePair(keypoints.rightEar),
+    leftShoulder: ensurePair(keypoints.leftShoulder),
+    rightShoulder: ensurePair(keypoints.rightShoulder),
+    leftElbow: ensurePair(keypoints.leftElbow),
+    rightElbow: ensurePair(keypoints.rightElbow),
+    leftWrist: ensurePair(keypoints.leftWrist),
+    rightWrist: ensurePair(keypoints.rightWrist),
+    leftHip: ensurePair(keypoints.leftHip),
+    rightHip: ensurePair(keypoints.rightHip),
+    leftKnee: ensurePair(keypoints.leftKnee),
+    rightKnee: ensurePair(keypoints.rightKnee),
+    leftAnkle: ensurePair(keypoints.leftAnkle),
+    rightAnkle: ensurePair(keypoints.rightAnkle),
+    leftFoot: ensurePair(keypoints.leftFoot),
+    rightFoot: ensurePair(keypoints.rightFoot)
+  };
+}

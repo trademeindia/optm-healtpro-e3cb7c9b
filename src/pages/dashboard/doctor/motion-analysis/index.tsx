@@ -1,126 +1,134 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Save, LineChart, Camera, FileText } from 'lucide-react';
-import PatientSelector from '@/components/patient/PatientSelector';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MotionAnalysisRecorder from './components/MotionAnalysisRecorder';
 import MotionAnalysisHistory from './components/MotionAnalysisHistory';
-import MotionAnalysisSettings from './components/MotionAnalysisSettings';
+import PatientSelector from './components/PatientSelector';
+import { MotionAnalysisSession } from '@/types/motion-analysis';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
-export type SelectedPatient = {
-  id: string;
-  name: string;
-  avatar?: string;
-};
+export default function MotionAnalysisPage() {
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = useState<MotionAnalysisSession | null>(null);
+  const [activeTab, setActiveTab] = useState('record');
 
-const MotionAnalysisPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("record");
-  const [selectedPatient, setSelectedPatient] = useState<SelectedPatient | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-
-  const handlePatientSelect = (patient: SelectedPatient | null) => {
-    setSelectedPatient(patient);
-    // Reset recording state when patient changes
-    if (isRecording) {
-      setIsRecording(false);
-    }
+  const handlePatientSelected = (patientId: string) => {
+    setSelectedPatientId(patientId);
+    setSelectedSession(null);
   };
 
-  const handleBackToDashboard = () => {
-    navigate('/dashboard/doctor');
+  const handleSessionSelected = (session: MotionAnalysisSession) => {
+    setSelectedSession(session);
+    setActiveTab('view');
+  };
+
+  const handleSessionCreated = () => {
+    setActiveTab('history');
+  };
+
+  const handleBackToList = () => {
+    setSelectedSession(null);
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleBackToDashboard}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Motion Analysis</h1>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <PatientSelector 
-            selectedPatient={selectedPatient} 
-            onSelectPatient={handlePatientSelect}
-            className="min-w-[200px]"
-          />
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {selectedPatient 
-              ? `Motion Analysis for ${selectedPatient.name}`
-              : "Select a patient to begin analysis"}
-          </CardTitle>
-          <CardDescription>
-            Measure and analyze patient movements with AI-assisted motion tracking
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-3 w-full max-w-md">
-              <TabsTrigger value="record" className="flex items-center gap-2">
-                <Camera className="h-4 w-4" />
-                <span>Record</span>
-              </TabsTrigger>
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                <span>History</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <LineChart className="h-4 w-4" />
-                <span>Analysis</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="record" className="space-y-4">
-              {selectedPatient ? (
-                <MotionAnalysisRecorder 
-                  patientId={selectedPatient.id}
-                  patientName={selectedPatient.name}
-                  isRecording={isRecording}
-                  setIsRecording={setIsRecording}
-                />
-              ) : (
-                <div className="p-6 text-center text-muted-foreground">
-                  <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <h3 className="text-lg font-medium mb-2">No Patient Selected</h3>
-                  <p>Please select a patient to start motion analysis recording</p>
+    <div className="container mx-auto py-6">
+      <h1 className="text-3xl font-bold mb-6">Motion Analysis</h1>
+      
+      <PatientSelector onSelect={handlePatientSelected} />
+      
+      {selectedPatientId && (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="record">Record New Session</TabsTrigger>
+            <TabsTrigger value="history">Session History</TabsTrigger>
+            {selectedSession && (
+              <TabsTrigger value="view">View Session</TabsTrigger>
+            )}
+          </TabsList>
+          
+          <TabsContent value="record">
+            <MotionAnalysisRecorder 
+              patientId={selectedPatientId} 
+              onSessionCreated={handleSessionCreated}
+            />
+          </TabsContent>
+          
+          <TabsContent value="history">
+            <MotionAnalysisHistory 
+              patientId={selectedPatientId}
+              onSelectSession={handleSessionSelected}
+            />
+          </TabsContent>
+          
+          <TabsContent value="view">
+            {selectedSession && (
+              <div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleBackToList}
+                  className="mb-4"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                </Button>
+                
+                <div className="border rounded-lg p-6">
+                  <h2 className="text-2xl font-semibold mb-4">
+                    {selectedSession.type} Analysis
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Date</p>
+                      <p>{new Date(selectedSession.measurementDate).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Duration</p>
+                      <p>{selectedSession.duration} seconds</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <p className="text-sm text-muted-foreground">Notes</p>
+                    <p className="whitespace-pre-line">{selectedSession.notes || "No notes"}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Joint Angles</p>
+                    {selectedSession.jointAngles.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="text-left py-2">Joint</th>
+                              <th className="text-left py-2">Angle (°)</th>
+                              <th className="text-left py-2">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedSession.jointAngles.map((angle, i) => (
+                              <tr key={i} className="border-t">
+                                <td className="py-2">{angle.joint}</td>
+                                <td className="py-2">{angle.angle.toFixed(1)}°</td>
+                                <td className="py-2">
+                                  {new Date(angle.timestamp).toLocaleTimeString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p>No joint angles recorded</p>
+                    )}
+                  </div>
                 </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="history" className="space-y-4">
-              {selectedPatient ? (
-                <MotionAnalysisHistory patientId={selectedPatient.id} />
-              ) : (
-                <div className="p-6 text-center text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <h3 className="text-lg font-medium mb-2">No Patient Selected</h3>
-                  <p>Please select a patient to view their motion analysis history</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="settings" className="space-y-4">
-              <MotionAnalysisSettings 
-                patientId={selectedPatient?.id}
-                patientName={selectedPatient?.name}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
-};
-
-export default MotionAnalysisPage;
+}
