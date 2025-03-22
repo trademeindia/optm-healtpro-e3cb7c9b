@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
     console.log('Handling forgot password for:', forgotEmail);
     toast.success('Password reset email sent!');
     setShowForgotPassword(false);
-    return Promise.resolve(); // Explicitly return a Promise to satisfy TypeScript
+    return Promise.resolve();
   };
   
   const handleSignup = async (e: React.FormEvent): Promise<void> => {
@@ -42,7 +42,7 @@ const LoginPage: React.FC = () => {
     console.log('Signing up with:', signupData);
     toast.success('Account created successfully!');
     setShowSignupDialog(false);
-    return Promise.resolve(); // Explicitly return a Promise to satisfy TypeScript
+    return Promise.resolve();
   };
   
   const handleSocialLogin = (provider: string): void => {
