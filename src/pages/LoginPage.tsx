@@ -30,17 +30,19 @@ const LoginPage: React.FC = () => {
   const [showDebug, setShowDebug] = useState(false);
   
   // Helper functions that aren't in the useLoginState hook
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = async (): Promise<void> => {
     console.log('Handling forgot password for:', forgotEmail);
     toast.success('Password reset email sent!');
     setShowForgotPassword(false);
+    return Promise.resolve(); // Explicitly return a Promise to satisfy TypeScript
   };
   
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     console.log('Signing up with:', signupData);
     toast.success('Account created successfully!');
     setShowSignupDialog(false);
+    return Promise.resolve(); // Explicitly return a Promise
   };
   
   const handleSocialLogin = (provider: string) => {
