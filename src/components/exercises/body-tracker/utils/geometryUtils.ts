@@ -1,6 +1,7 @@
 
 import type { Point } from '../types/geometry';
 import { BodyKeypoint } from '@vladmandic/human';
+import { JointAngle } from '../types';
 
 // Calculate angle between three points
 export const calculateAngle = (
