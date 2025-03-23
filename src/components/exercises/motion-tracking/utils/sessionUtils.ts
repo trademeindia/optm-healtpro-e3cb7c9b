@@ -1,41 +1,52 @@
 
-import { MotionStats } from '@/lib/human/types';
+import { BodyAngles, MotionState, MotionStats } from '@/lib/human/types';
 
-/**
- * Create a new exercise session
- */
+// Create a new session for the exercise
 export const createSession = async (exerciseType: string): Promise<string> => {
-  console.log('Creating session for:', exerciseType);
-  // In a real implementation, this would connect to a database
-  return `session-${Date.now()}`;
+  // In a real implementation, this would create a record in a database
+  // For now, we'll just generate a session ID
+  const sessionId = `${exerciseType}-${Date.now()}`;
+  console.log('Creating new exercise session:', sessionId);
+  
+  return sessionId;
 };
 
-/**
- * Save detection data for a session
- */
+// Save detection data to the session
 export const saveDetectionData = async (
   sessionId: string | undefined,
   detectionResult: any,
-  angles: any,
+  angles: BodyAngles,
   biomarkers: any,
-  motionState: string,
+  motionState: MotionState,
   exerciseType: string,
   stats: MotionStats
 ): Promise<boolean> => {
-  console.log('Saving detection data for session:', sessionId);
-  // In a real implementation, this would connect to a database
+  // In a real implementation, this would save to a database
+  console.log('Saving detection data for session:', sessionId, {
+    timestamp: new Date().toISOString(),
+    motionState,
+    stats: {
+      totalReps: stats.totalReps,
+      accuracy: stats.accuracy
+    }
+  });
+  
   return true;
 };
 
-/**
- * Mark a session as completed
- */
-export const completeSession = (
+// Complete a session
+export const completeSession = async (
   sessionId: string | undefined,
   stats: MotionStats,
   biomarkers: any
-): void => {
-  console.log('Completing session:', sessionId);
-  console.log('Final stats:', stats);
-  // In a real implementation, this would update the session status
+): Promise<boolean> => {
+  if (!sessionId) return false;
+  
+  // In a real implementation, this would update the database
+  console.log('Completing session:', sessionId, {
+    completedAt: new Date().toISOString(),
+    finalStats: stats
+  });
+  
+  return true;
 };

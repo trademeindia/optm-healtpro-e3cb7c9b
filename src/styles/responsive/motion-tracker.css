@@ -100,10 +100,11 @@
 .full-body-view {
   width: 100%;
   height: auto;
-  aspect-ratio: 3/4;
+  aspect-ratio: 16/9;
   margin: 0 auto;
   position: relative;
   overflow: hidden;
+  background-color: #000;
 }
 
 .full-body-view video,
@@ -111,6 +112,9 @@
   object-fit: contain;
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 /* Adjust layout for better exercise tracking */
@@ -123,5 +127,44 @@
 @media (min-width: 1024px) {
   .motion-tracker-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Active tracking indicator */
+.tracking-active-indicator {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(16, 185, 129, 0.8);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 10;
+}
+
+.tracking-active-indicator .indicator-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: white;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }

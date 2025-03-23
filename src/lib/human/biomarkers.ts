@@ -1,84 +1,102 @@
 
 import * as Human from '@vladmandic/human';
-import { EnhancedResult } from './types';
+import { BodyAngles } from './types';
 
-// Additional biomarkers extracted from pose data
-export const extractBiomarkers = (result: EnhancedResult, angles: any): Record<string, any> => {
-  const biomarkers: Record<string, any> = {};
-  
-  if (!result.body || result.body.length === 0) {
-    return biomarkers;
+/**
+ * Extracts biomechanical markers from pose data
+ */
+export const extractBiomarkers = (
+  result: Human.Result | null,
+  angles: BodyAngles
+): Record<string, number> => {
+  if (!result || !result.body || result.body.length === 0) {
+    return {
+      postureScore: 0,
+      balanceScore: 0,
+      shoulderSymmetry: 0,
+      kneeStability: 0
+    };
   }
   
-  try {
-    const body = result.body[0];
-    
-    // Calculate overall posture score (0-100)
-    let postureScore = 100;
-    
-    // Check neck alignment (ideal is around 0 degrees from vertical)
-    if (angles.neckAngle !== null) {
-      const neckDeviationFromIdeal = Math.abs(angles.neckAngle - 0);
-      postureScore -= neckDeviationFromIdeal * 0.5; // Reduce score based on deviation
-    }
-    
-    // Check shoulder symmetry
-    const leftShoulder = body.keypoints.find(kp => kp.part === 'leftShoulder');
-    const rightShoulder = body.keypoints.find(kp => kp.part === 'rightShoulder');
-    if (leftShoulder && rightShoulder) {
-      const shoulderHeightDifference = Math.abs(leftShoulder.y - rightShoulder.y);
-      // Use canvas dimensions as a fallback if result.source is not available
-      const heightNormalizer = result.source?.height || 480;
-      const shoulderHeightNormalized = shoulderHeightDifference / heightNormalizer;
-      const shoulderSymmetryScore = 100 - (shoulderHeightNormalized * 1000);
-      biomarkers.shoulderSymmetry = Math.max(0, Math.min(100, shoulderSymmetryScore));
-      
-      // Factor shoulder symmetry into posture score
-      postureScore -= (100 - biomarkers.shoulderSymmetry) * 0.2;
-    }
-    
-    // Calculate body balance (how centered the body is)
-    const nose = body.keypoints.find(kp => kp.part === 'nose');
-    const leftHip = body.keypoints.find(kp => kp.part === 'leftHip');
-    const rightHip = body.keypoints.find(kp => kp.part === 'rightHip');
-    
-    if (nose && leftHip && rightHip) {
-      const hipsX = (leftHip.x + rightHip.x) / 2;
-      const hipsY = (leftHip.y + rightHip.y) / 2;
-      
-      // Use canvas dimensions as a fallback if result.source is not available
-      const widthNormalizer = result.source?.width || 640;
-      const horizontalDeviation = Math.abs(nose.x - hipsX) / widthNormalizer;
-      const balanceScore = 100 - (horizontalDeviation * 200);
-      biomarkers.balanceScore = Math.max(0, Math.min(100, balanceScore));
-      
-      // Factor balance into posture score
-      postureScore -= (100 - biomarkers.balanceScore) * 0.2;
-    }
-    
-    // Add knee stability (consistency of knee angle during motion)
-    if (angles.kneeAngle !== null) {
-      // This is a simplified placeholder - in a real app this would track angle over time
-      const kneeStability = Math.min(100, Math.max(0, 100 - Math.abs(angles.kneeAngle - 90) * 0.5));
-      biomarkers.kneeStability = kneeStability;
-    }
-    
-    // Add hip-to-knee alignment
-    if (angles.hipAngle !== null && angles.kneeAngle !== null) {
-      // Better alignment if both angles are similar in motion
-      const alignmentDiff = Math.abs(angles.hipAngle - angles.kneeAngle);
-      const alignmentScore = Math.max(0, 100 - alignmentDiff * 0.5);
-      biomarkers.hipKneeAlignment = alignmentScore;
-    }
-    
-    biomarkers.postureScore = Math.max(0, Math.min(100, postureScore));
-    
-  } catch (e) {
-    console.error('Error calculating biomarkers:', e);
-  }
+  // Extract body data
+  const body = result.body[0];
+  const confidence = body.score || 0;
   
-  return biomarkers;
+  // Calculate biomarkers
+  
+  // Posture score based on shoulder, hip, and knee alignment
+  const postureScore = calculatePostureScore(angles);
+  
+  // Balance score based on body center and distribution
+  const balanceScore = calculateBalanceScore(result);
+  
+  // Shoulder symmetry
+  const shoulderSymmetry = calculateShoulderSymmetry(result);
+  
+  // Knee stability
+  const kneeStability = calculateKneeStability(result, angles);
+  
+  return {
+    postureScore,
+    balanceScore,
+    shoulderSymmetry,
+    kneeStability,
+    confidence: confidence * 100
+  };
 };
 
-// Alias for backward compatibility
-export const calculateBiomarkers = extractBiomarkers;
+// Calculate posture score based on ideal alignment
+const calculatePostureScore = (angles: BodyAngles): number => {
+  let score = 80; // Start with a default score
+  
+  // Penalize for knee angles far from ideal during squats (around 90 degrees at bottom)
+  if (angles.kneeAngle !== null) {
+    // For squats, ideal knee angle at bottom is around 90 degrees
+    // Higher scores for angles closer to 90 when in full squat
+    // If standing (around 170+), don't penalize
+    if (angles.kneeAngle < 170 && angles.kneeAngle > 70) {
+      const kneeDiff = Math.abs(angles.kneeAngle - 90);
+      score -= Math.min(20, kneeDiff * 0.5); // Penalize up to 20 points
+    }
+  }
+  
+  // Penalize for hip angle issues (should be around 90-110 at bottom of squat)
+  if (angles.hipAngle !== null) {
+    const hipDiff = Math.abs(angles.hipAngle - 100);
+    score -= Math.min(15, hipDiff * 0.3); // Penalize up to 15 points
+  }
+  
+  // Penalize for shoulder angle issues
+  if (angles.shoulderAngle !== null) {
+    // Shoulders should be relatively straight in most exercises
+    const shoulderDiff = Math.abs(angles.shoulderAngle - 180);
+    score -= Math.min(10, shoulderDiff * 0.2); // Penalize up to 10 points
+  }
+  
+  return Math.max(0, Math.min(100, score));
+};
+
+// Calculate balance score
+const calculateBalanceScore = (result: Human.Result): number => {
+  // Simple placeholder implementation
+  // In a real implementation, this would analyze center of gravity
+  return 85; // Default value for demo
+};
+
+// Calculate shoulder symmetry
+const calculateShoulderSymmetry = (result: Human.Result): number => {
+  // Simple placeholder implementation
+  // In a real implementation, this would compare left/right shoulder positions
+  return 90; // Default value for demo
+};
+
+// Calculate knee stability
+const calculateKneeStability = (result: Human.Result, angles: BodyAngles): number => {
+  // Simple placeholder implementation
+  // In a real implementation, this would analyze knee tracking over ankles
+  if (angles.kneeAngle !== null && angles.kneeAngle < 150) {
+    // If knees are bent, slightly reduce stability score
+    return 80;
+  }
+  return 95; // Default value when standing
+};

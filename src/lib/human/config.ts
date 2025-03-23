@@ -3,20 +3,21 @@
  * Configuration for Human.js library
  */
 export const humanConfig = {
-  // Use backend based on user's device capabilities
-  backend: 'webgl',
+  // Use WebGL backend for better performance
+  backend: 'webgl' as const,
   
   // Path for models
-  modelBasePath: '/',
+  modelBasePath: '/models/',
   
   // Skip warmup for better startup performance
-  warmup: 'none',
+  warmup: 'none' as const,
   
-  // Enable body pose detection
+  // Enable body pose detection with higher confidence
   body: {
     enabled: true,
-    modelPath: 'blazepose.json',
-    minConfidence: 0.2,
+    // Use lite model for better performance
+    modelPath: 'blazepose-lite.json',
+    minConfidence: 0.3,
     maxDetected: 1,
   },
   

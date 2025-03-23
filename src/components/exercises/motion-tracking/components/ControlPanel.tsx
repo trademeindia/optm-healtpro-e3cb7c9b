@@ -1,75 +1,81 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Activity, BarChart, Clipboard, Play, Save, StopCircle, RefreshCw, Settings } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Play, StopCircle, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ControlPanelProps {
-  controls: {
-    isDetecting: boolean;
-    isModelLoaded: boolean;
-    onStartDetection: () => void;
-    onStopDetection: () => void;
-    onReset: () => void;
-  };
+  isTracking: boolean;
+  isModelLoaded: boolean;
+  onStartTracking: () => void;
+  onStopTracking: () => void;
+  onResetSession: () => void;
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ controls }) => {
-  const { 
-    isDetecting, 
-    isModelLoaded, 
-    onStartDetection, 
-    onStopDetection, 
-    onReset 
-  } = controls;
+const ControlPanel: React.FC<ControlPanelProps> = ({
+  isTracking,
+  isModelLoaded,
+  onStartTracking,
+  onStopTracking,
+  onResetSession
+}) => {
+  
+  const handleStartTracking = () => {
+    if (!isModelLoaded) {
+      toast.error('AI model is still loading. Please wait.');
+      return;
+    }
+    
+    onStartTracking();
+    toast.success('Tracking started', {
+      description: 'Position yourself in the camera view to begin exercise analysis.',
+      duration: 3000
+    });
+  };
+  
+  const handleStopTracking = () => {
+    onStopTracking();
+    toast.info('Tracking paused', { 
+      description: 'Your session is paused. Resume whenever you\'re ready.',
+      duration: 3000
+    });
+  };
+  
+  const handleResetSession = () => {
+    onResetSession();
+  };
   
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Activity className="h-5 w-5 mr-2 text-primary" />
-          Exercise Controls
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          {!isDetecting ? (
+    <Card className="w-full">
+      <CardContent className="p-4">
+        <div className="flex flex-wrap justify-center gap-3">
+          {!isTracking ? (
             <Button 
-              onClick={onStartDetection} 
-              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleStartTracking} 
               disabled={!isModelLoaded}
+              className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
             >
-              <Play className="h-4 w-4 mr-2" />
-              Start
+              <Play className="h-4 w-4" />
+              Start Tracking
             </Button>
           ) : (
             <Button 
-              onClick={onStopDetection} 
-              variant="destructive" 
+              onClick={handleStopTracking}
+              className="flex-1 flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
             >
-              <StopCircle className="h-4 w-4 mr-2" />
-              Stop
+              <StopCircle className="h-4 w-4" />
+              Stop Tracking
             </Button>
           )}
           
-          <Button onClick={onReset} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button 
+            onClick={handleResetSession}
+            variant="outline" 
+            className="flex-1 flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
             Reset Session
-          </Button>
-          
-          <Button variant="outline" className="flex-1">
-            <Save className="h-4 w-4 mr-2" />
-            Save Data
-          </Button>
-          
-          <Button variant="outline" className="flex-1">
-            <BarChart className="h-4 w-4 mr-2" />
-            Analytics
-          </Button>
-          
-          <Button variant="secondary" className="col-span-2">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
           </Button>
         </div>
       </CardContent>

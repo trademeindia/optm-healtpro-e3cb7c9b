@@ -1,45 +1,30 @@
 
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ExerciseInstructionsProps {
   exerciseName: string;
 }
 
 const ExerciseInstructions: React.FC<ExerciseInstructionsProps> = ({ exerciseName }) => {
-  // Define instruction content based on exercise type
-  const getInstructions = () => {
-    // Default to basic squat instructions
-    return [
-      "Position yourself so your full body is visible in the camera",
-      "Keep your back straight and feet shoulder-width apart",
-      "Bend your knees while keeping your heels on the ground",
-      "Aim for controlled movements rather than speed",
-      "Complete 10-15 repetitions with good form"
-    ];
-  };
-  
-  const instructions = getInstructions();
-  
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Follow these instructions for proper form:
-      </p>
-      
-      <ul className="space-y-3">
-        {instructions.map((instruction, index) => (
-          <li key={index} className="flex items-start">
-            <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-            <span>{instruction}</span>
-          </li>
-        ))}
-      </ul>
-      
-      <p className="text-sm font-medium pt-2">
-        The AI will track your movements and provide feedback on your form.
-      </p>
-    </div>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Exercise Instructions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <h3 className="font-semibold mb-2">{exerciseName}</h3>
+        <div className="space-y-2 text-sm">
+          <p>• Stand with feet shoulder-width apart</p>
+          <p>• Keep your back straight and core engaged</p>
+          <p>• Lower your body by bending at the knees and hips</p>
+          <p>• Keep knees aligned with toes, not extending past them</p>
+          <p>• Aim for a 90-degree angle at the knees at bottom position</p>
+          <p>• Return to standing position with control</p>
+          <p>• Maintain consistent breathing throughout</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
