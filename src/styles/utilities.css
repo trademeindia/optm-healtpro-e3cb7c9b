@@ -119,43 +119,4 @@
     position: relative;
     z-index: 2;
   }
-
-  /* Improve visibility for exercise-specific components */
-  .exercise-component {
-    @apply visible opacity-100 relative z-10;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Fix dropdown visibility */
-  .dropdown-visible {
-    @apply bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 z-50;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: absolute;
-  }
-  
-  /* Fix modal and dialog visibility */
-  .modal-visible {
-    @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .dialog-content-visible {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-w-md w-full max-h-[90vh] overflow-auto;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative;
-    z-index: 51;
-  }
-  
-  /* Prevent disappearing UI elements */
-  .prevent-disappear {
-    @apply !opacity-100 !visible;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative;
-    z-index: auto;
-  }
 }

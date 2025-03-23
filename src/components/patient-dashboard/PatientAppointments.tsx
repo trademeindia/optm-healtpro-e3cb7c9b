@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,15 +22,11 @@ import { supabase } from '@/integrations/supabase/client';
 interface PatientAppointmentsProps {
   appointments: AppointmentWithProvider[];
   onMessageDoctor?: (doctorId: string, doctorName: string) => void;
-  onConfirmAppointment?: (appointmentId: string) => void;
-  onRescheduleAppointment?: (appointmentId: string) => void;
 }
 
 const PatientAppointments: React.FC<PatientAppointmentsProps> = ({ 
   appointments, 
-  onMessageDoctor,
-  onConfirmAppointment,
-  onRescheduleAppointment
+  onMessageDoctor 
 }) => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
@@ -47,12 +44,8 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   };
 
   const confirmAppointment = async (appointmentId: string) => {
-    if (onConfirmAppointment) {
-      onConfirmAppointment(appointmentId);
-      return;
-    }
-    
     try {
+      // Update appointment status to 'confirmed' using RPC function
       const { data, error } = await supabase.rpc(
         'update_appointment_status',
         {
@@ -84,13 +77,9 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   const handleRescheduleRequest = async () => {
     if (!selectedAppointment) return;
     
-    if (onRescheduleAppointment) {
-      onRescheduleAppointment(selectedAppointment.id);
-      setRescheduleDialogOpen(false);
-      return;
-    }
-    
     try {
+      // For now, we're just changing the status to indicate a reschedule request
+      // In a real app, this would trigger a workflow to find a new time
       const { data, error } = await supabase.rpc(
         'update_appointment_status',
         {
@@ -286,6 +275,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
         </Tabs>
       </CardContent>
 
+      {/* Reschedule Dialog */}
       <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
         <DialogContent>
           <DialogHeader>

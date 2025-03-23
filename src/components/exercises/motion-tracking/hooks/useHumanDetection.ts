@@ -99,8 +99,6 @@ export const useHumanDetection = (
     isDetecting: detectionState.isDetecting,
     detectionFps: detectionState.detectionFps,
     isModelLoaded: detectionState.isModelLoaded,
-    isModelLoading: detectionState.isModelLoading,
-    loadProgress: detectionState.loadProgress,
     detectionError: detectionState.detectionError,
     
     // Motion analysis

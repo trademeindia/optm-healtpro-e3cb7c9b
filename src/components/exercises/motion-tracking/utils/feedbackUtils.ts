@@ -1,121 +1,43 @@
 
-import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '../../posture-monitor/types';
 
-/**
- * Generate real-time feedback messages based on motion state and body angles
- */
-export const generateFeedback = (
-  motionState: MotionState | null,
-  angles: BodyAngles
-): FeedbackMessage => {
-  // Default feedback
-  if (!motionState) {
-    return {
-      message: "Position yourself in front of the camera",
-      type: FeedbackType.INFO
-    };
-  }
-  
-  // Feedback based on motion state
+export const generateFeedback = (motionState: MotionState, angles: BodyAngles): FeedbackMessage => {
   switch (motionState) {
     case MotionState.STANDING:
       return {
-        message: "Good starting position. Begin your exercise slowly.",
-        type: FeedbackType.SUCCESS
-      };
-    
-    case MotionState.MID_MOTION:
-      // Check knee angle for form
-      if (angles.kneeAngle !== null) {
-        if (angles.kneeAngle < 80) {
-          return {
-            message: "Watch your knees - don't bend them too much",
-            type: FeedbackType.WARNING
-          };
-        }
-      }
-      
-      // Check hip angle for form
-      if (angles.hipAngle !== null) {
-        if (angles.hipAngle < 70) {
-          return {
-            message: "Keep your back straight and hips aligned",
-            type: FeedbackType.WARNING
-          };
-        }
-      }
-      
-      return {
-        message: "Good form, continue the movement",
-        type: FeedbackType.SUCCESS
-      };
-    
-    case MotionState.FULL_MOTION:
-      // Check for proper depth
-      if (angles.kneeAngle !== null && angles.kneeAngle < 90) {
-        return {
-          message: "Great depth! Hold briefly, then return to starting position",
-          type: FeedbackType.SUCCESS
-        };
-      }
-      
-      return {
-        message: "Hold this position briefly, then slowly return up",
+        message: "Ready for exercise. Maintain good posture.",
         type: FeedbackType.INFO
       };
-    
+    case MotionState.MID_MOTION:
+      return {
+        message: "Good form, continue the movement.",
+        type: FeedbackType.INFO
+      };
+    case MotionState.FULL_MOTION:
+      return {
+        message: "Great depth! Now return to starting position.",
+        type: FeedbackType.SUCCESS
+      };
     default:
       return {
-        message: "Continue with controlled movements",
+        message: null,
         type: FeedbackType.INFO
       };
   }
 };
 
-/**
- * Evaluate the quality of a completed rep
- */
-export const evaluateRepQuality = (angles: BodyAngles): {
-  isGoodForm: boolean;
-  feedback: string;
-  feedbackType: FeedbackType;
-} | null => {
-  // If we don't have angle data, can't evaluate
-  if (!angles.kneeAngle && !angles.hipAngle) {
-    return null;
-  }
+export const evaluateRepQuality = (angles: BodyAngles) => {
+  // Simple evaluation logic
+  const kneeAngle = angles.kneeAngle || 180;
+  const hipAngle = angles.hipAngle || 180;
   
-  let isGoodForm = true;
-  let feedbackMessages = [];
+  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
   
-  // Check knee angle - was the squat deep enough?
-  if (angles.kneeAngle !== null) {
-    if (angles.kneeAngle > 120) {
-      feedbackMessages.push("Try to squat deeper next time");
-      isGoodForm = false;
-    }
-  }
-  
-  // Check hip angle - was the back straight?
-  if (angles.hipAngle !== null) {
-    if (angles.hipAngle < 70) {
-      feedbackMessages.push("Keep your back straighter");
-      isGoodForm = false;
-    }
-  }
-  
-  // Determine feedback based on form quality
-  if (isGoodForm) {
-    return {
-      isGoodForm: true,
-      feedback: "Great form! Rep completed perfectly.",
-      feedbackType: FeedbackType.SUCCESS
-    };
-  } else {
-    return {
-      isGoodForm: false,
-      feedback: feedbackMessages.join(". ") || "Form needs improvement",
-      feedbackType: FeedbackType.WARNING
-    };
-  }
+  return {
+    isGoodForm,
+    feedback: isGoodForm 
+      ? "Great form on that rep!" 
+      : "Try to keep your back straight and go deeper",
+    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
+  };
 };

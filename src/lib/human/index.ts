@@ -1,26 +1,12 @@
 
-// Export Human.js related utilities from a central location
+/**
+ * Human.js library integration
+ * Provides pose detection and analysis functionality
+ */
 
-// Export the human instance
-export { human } from './humanInstance';
-
-// Export configuration
-export { humanConfig } from './config';
-
-// Export core functions
-export { 
-  warmupModel,
-  resetModel,
-  getModelLoadProgress
-} from './modelLoader';
-
-// Export detector functions
-export { 
-  detectPose,
-  resetDetector
-} from './detector';
-
-// Export initialization functions
-export {
-  initHuman
-} from './core';
+// Re-export all functions and types from modules
+export * from './core';
+export * from './angles';
+export * from './biomarkers';
+export * from './config';
+export * from './types';

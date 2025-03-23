@@ -1,41 +1,24 @@
 
 import * as Human from '@vladmandic/human';
-import { BodyAngles, FeedbackMessage, MotionState, MotionStats } from '../../posture-monitor/types';
+import { 
+  BodyAngles, 
+  FeedbackMessage,
+  MotionState, 
+  MotionStats 
+} from '@/components/exercises/posture-monitor/types';
 
-// Result from detection process
 export interface DetectionResult {
   result: Human.Result | null;
   angles: BodyAngles;
   biomarkers: Record<string, any>;
-  newMotionState: MotionState | null;
+  newMotionState: MotionState;
 }
 
-// State of the detection service
-export interface DetectionState {
-  isDetecting: boolean;
-  detectionFps: number | null;
-  isModelLoaded: boolean;
-  isModelLoading: boolean;
-  detectionError: string | null;
-  loadProgress?: number;
-}
-
-// Model loading state
-export interface ModelState {
-  isModelLoaded: boolean;
-  isModelLoading: boolean;
-  modelError: string | null;
-  loadProgress: number;
-}
-
-// Return type for the useHumanDetection hook
 export interface UseHumanDetectionReturn {
   // Detection state
   isDetecting: boolean;
   detectionFps: number | null;
   isModelLoaded: boolean;
-  isModelLoading: boolean;
-  loadProgress?: number;
   detectionError: string | null;
   
   // Motion analysis
@@ -55,4 +38,25 @@ export interface UseHumanDetectionReturn {
   startDetection: () => void;
   stopDetection: () => void;
   resetSession: () => void;
+}
+
+export interface DetectionState {
+  isDetecting: boolean;
+  detectionFps: number | null;
+  isModelLoaded: boolean;
+  detectionError: string | null;
+}
+
+export interface MotionAnalysisState {
+  result: Human.Result | null;
+  angles: BodyAngles;
+  biomarkers: Record<string, any>;
+  currentMotionState: MotionState;
+  prevMotionState: MotionState;
+  feedback: FeedbackMessage;
+}
+
+export interface SessionState {
+  stats: MotionStats;
+  sessionId: string | undefined;
 }

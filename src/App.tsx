@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
+import { useAuth } from './contexts/auth';
 import AppRoutes from './routes/Routes';
 
 // Handle loading state
@@ -11,6 +12,7 @@ const Loading = () => (
 );
 
 function App() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

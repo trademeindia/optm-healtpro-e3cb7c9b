@@ -1,43 +1,26 @@
 
-// Enum for motion state
-export enum MotionState {
-  STANDING = 'STANDING',
-  MID_MOTION = 'MID_MOTION',
-  FULL_MOTION = 'FULL_MOTION'
-}
+// Definition of shared types for posture monitoring
 
-// Enum for feedback type
 export enum FeedbackType {
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR'
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error'
 }
 
-// Enum for squat state (legacy)
 export enum SquatState {
-  STANDING = 'STANDING',
-  DESCENDING = 'DESCENDING',
-  BOTTOM = 'BOTTOM',
-  ASCENDING = 'ASCENDING'
+  STANDING = 'standing',
+  DESCENDING = 'descending',
+  BOTTOM = 'bottom',
+  ASCENDING = 'ascending'
 }
 
-// Detection status for monitoring detection performance
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number | null;
-  confidence: number | null;
-  detectedKeypoints: number;
-  lastDetectionTime: number;
+export enum MotionState {
+  STANDING = 'standing',
+  MID_MOTION = 'mid_motion',
+  FULL_MOTION = 'full_motion'
 }
 
-// Posture check result
-export interface PostureCheckResult {
-  isGoodPosture: boolean;
-  message: string;
-}
-
-// Motion stats
 export interface MotionStats {
   totalReps: number;
   goodReps: number;
@@ -48,7 +31,6 @@ export interface MotionStats {
   lastUpdated?: number;
 }
 
-// Body angle measurements
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;
@@ -58,7 +40,14 @@ export interface BodyAngles {
   neckAngle: number | null;
 }
 
-// Feedback message
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number;
+  confidence: number | null;
+  detectedKeypoints?: number;
+  lastDetectionTime?: number;
+}
+
 export interface FeedbackMessage {
   message: string | null;
   type: FeedbackType;
