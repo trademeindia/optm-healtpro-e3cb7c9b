@@ -22,8 +22,7 @@ export const humanConfig: Partial<Human.Config> = {
   async: true,
   warmup: 'none',
   backend: 'webgl',
-  // useWebGPU: false, // Removing this property to fix the error
   cacheSensitivity: 0,
   deallocate: true,
-  profile: false,
+  // Remove the 'profile' property as it doesn't exist in Config type
 };

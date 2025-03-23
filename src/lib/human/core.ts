@@ -46,13 +46,7 @@ export const warmupModel = async (): Promise<boolean> => {
         (window as any).tf.engine().disposeVariables();
       }
       
-      // Load the model without using flag that's causing errors
-      const configWithoutWebGPU = { ...humanConfig };
-      delete configWithoutWebGPU.useWebGPU; // Remove problematic flag
-      
-      human.config = configWithoutWebGPU;
-      
-      // Load the model with more specific error handling
+      // Load the model with default config (no need to modify)
       await human.load();
       console.log('Human.js model loaded successfully');
       

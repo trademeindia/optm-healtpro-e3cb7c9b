@@ -50,7 +50,7 @@ export const useSessionManagement = () => {
   const saveSessionData = useCallback(async (
     detectionResult: any,
     angles: any,
-    biomarkers: any,
+    biomarkers: any, // Add biomarkers parameter
     motionState: MotionState
   ) => {
     if (!sessionId) return;
@@ -71,7 +71,7 @@ export const useSessionManagement = () => {
   }, [sessionId, exerciseType, stats]);
   
   // Complete the current session
-  const completeCurrentSession = useCallback(() => {
+  const completeCurrentSession = useCallback((biomarkers: any) => { // Add biomarkers parameter
     if (!sessionId) return;
     
     try {
@@ -81,7 +81,7 @@ export const useSessionManagement = () => {
       console.error('Error completing session:', error);
       toast.error('Failed to save session data');
     }
-  }, [sessionId, stats, biomarkers]);
+  }, [sessionId, stats]);
   
   // Reset the current session data
   const resetSession = useCallback(() => {
