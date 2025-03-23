@@ -77,7 +77,7 @@ const PostureMonitor: React.FC = () => {
               confidence: null,
               detectedKeypoints: 0,
               lastDetectionTime: Date.now()
-            } as DetectionStatus}
+            }}
           />
           
           <PoseRenderer

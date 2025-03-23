@@ -14,7 +14,7 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
           <video 
             className="w-full h-full object-cover" 
             controls
-            poster={exercise.imageUrl || '/placeholder.svg'} 
+            poster={exercise.thumbnailUrl || '/placeholder.svg'} 
           >
             <source src={exercise.videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
@@ -22,7 +22,7 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
         ) : (
           <div className="text-center p-6">
             <img 
-              src={exercise.imageUrl || '/placeholder.svg'} 
+              src={exercise.thumbnailUrl || '/placeholder.svg'} 
               alt={exercise.title} 
               className="max-h-64 mx-auto mb-4"
             />
