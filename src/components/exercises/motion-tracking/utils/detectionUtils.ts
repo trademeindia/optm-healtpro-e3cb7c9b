@@ -3,9 +3,8 @@ import * as Human from '@vladmandic/human';
 import { DetectionResult } from '../hooks/types';
 import { human, warmupModel, resetModel } from '@/lib/human';
 import { extractBodyAngles } from '@/lib/human/angles';
-import { extractBiomarkers } from '@/lib/human/biomarkers';
-import { determineMotionState } from './motionStateUtils';
 import { MotionState } from '@/components/exercises/posture-monitor/types';
+import { determineMotionState } from './motionStateUtils';
 
 // Default empty angles object for when detection fails
 const emptyAngles = {
@@ -106,6 +105,71 @@ const getAdaptiveTimeout = (): number => {
   
   // Standard timeout
   return 3000;
+};
+
+/**
+ * Extract biomarkers from detection result and angles
+ */
+const extractBiomarkers = (result: Human.Result | null, angles: any): Record<string, any> => {
+  if (!result || !result.body || result.body.length === 0) {
+    return {};
+  }
+  
+  const biomarkers: Record<string, any> = {};
+  
+  try {
+    const body = result.body[0];
+    
+    // Calculate balance score based on keypoint positions
+    if (body.keypoints) {
+      // Get relevant keypoints
+      const nose = body.keypoints.find(kp => kp.part === 'nose');
+      const leftAnkle = body.keypoints.find(kp => kp.part === 'leftAnkle');
+      const rightAnkle = body.keypoints.find(kp => kp.part === 'rightAnkle');
+      
+      if (nose && leftAnkle && rightAnkle) {
+        // Vertical alignment (lower is better)
+        const centerX = (leftAnkle.x + rightAnkle.x) / 2;
+        const verticalAlignment = Math.abs(nose.x - centerX);
+        
+        // Scale to a 0-100 score, where 100 is perfect alignment
+        const alignmentScore = Math.max(0, 100 - (verticalAlignment / 5));
+        biomarkers.balanceScore = Math.round(alignmentScore);
+      }
+    }
+    
+    // Add joint health indicators based on angles
+    if (angles.kneeAngle !== null) {
+      // Check if knee angle is in healthy range (avoiding hyperextension or excessive flexion)
+      const kneeAngle = angles.kneeAngle;
+      const kneeHealthy = kneeAngle > 80 && kneeAngle < 175;
+      biomarkers.kneeHealthy = kneeHealthy;
+    }
+    
+    if (angles.hipAngle !== null) {
+      // Check if hip angle is in healthy range
+      const hipAngle = angles.hipAngle;
+      const hipHealthy = hipAngle > 70 && hipAngle < 180;
+      biomarkers.hipHealthy = hipHealthy;
+    }
+    
+    // Calculate symmetry if both sides are detected
+    // This would require enhancements to extractBodyAngles to return both left and right angles
+    
+    // Add overall posture score based on angles
+    if (angles.kneeAngle !== null && angles.hipAngle !== null && angles.shoulderAngle !== null) {
+      const kneeScore = angles.kneeAngle > 80 && angles.kneeAngle < 175 ? 100 : 50;
+      const hipScore = angles.hipAngle > 70 && angles.hipAngle < 180 ? 100 : 50;
+      const shoulderScore = angles.shoulderAngle > 70 && angles.shoulderAngle < 180 ? 100 : 50;
+      
+      biomarkers.postureScore = Math.round((kneeScore + hipScore + shoulderScore) / 3);
+    }
+    
+    return biomarkers;
+  } catch (error) {
+    console.error('Error extracting biomarkers:', error);
+    return {};
+  }
 };
 
 /**

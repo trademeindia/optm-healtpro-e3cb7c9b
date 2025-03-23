@@ -4,6 +4,7 @@ import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
 /**
  * Extracts angles between body keypoints from Human.js detection results
+ * Enhanced to provide more accurate and stable measurements
  */
 export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   // Default angles object
@@ -17,7 +18,6 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   };
   
   if (!result || !result.body || result.body.length === 0) {
-    console.log("No body detected in result");
     return angles;
   }
   
@@ -25,20 +25,12 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   const keypoints = body.keypoints;
   
   if (!keypoints || keypoints.length < 15) {
-    console.log(`Insufficient keypoints detected: ${keypoints?.length || 0}`);
     return angles;
   }
 
   try {
-    // Log all keypoints for debugging
-    console.log("Detected keypoints:", keypoints.map(kp => ({ 
-      part: kp.part || kp.name, 
-      score: kp.score, 
-      position: { x: kp.x, y: kp.y } 
-    })));
-    
     // Extract specific keypoints needed for angle calculations
-    // Using BlazePose keypoint indices with better fallbacks
+    // Using a more robust method to find keypoints by name or index
     const leftHip = findKeypoint(keypoints, ['leftHip', 'left_hip'], 23);
     const rightHip = findKeypoint(keypoints, ['rightHip', 'right_hip'], 24);
     const leftKnee = findKeypoint(keypoints, ['leftKnee', 'left_knee'], 25);
@@ -51,39 +43,82 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
     const rightElbow = findKeypoint(keypoints, ['rightElbow', 'right_elbow'], 14);
     const leftWrist = findKeypoint(keypoints, ['leftWrist', 'left_wrist'], 15);
     const rightWrist = findKeypoint(keypoints, ['rightWrist', 'right_wrist'], 16);
+    const neck = findKeypoint(keypoints, ['neck'], 0);
     
-    // Only calculate if we have the necessary keypoints with sufficient confidence
-    // Lower threshold to improve detection
+    // Use a lower confidence threshold for better detection in challenging conditions
     const confidenceThreshold = 0.2;
     
-    // Calculate knee angle (average of left and right if both available)
-    if (leftKnee && leftHip && leftAnkle && 
-        leftKnee.score > confidenceThreshold && 
+    // Calculate knee angles
+    let leftKneeAngle = null;
+    let rightKneeAngle = null;
+    
+    if (leftHip && leftKnee && leftAnkle && 
         leftHip.score > confidenceThreshold && 
+        leftKnee.score > confidenceThreshold && 
         leftAnkle.score > confidenceThreshold) {
-      angles.kneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
-      console.log(`Left knee angle calculated: ${angles.kneeAngle}°`);
-    } else if (rightKnee && rightHip && rightAnkle && 
-              rightKnee.score > confidenceThreshold && 
-              rightHip.score > confidenceThreshold && 
-              rightAnkle.score > confidenceThreshold) {
-      angles.kneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
-      console.log(`Right knee angle calculated: ${angles.kneeAngle}°`);
+      leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     }
     
-    // Calculate hip angle (average of left and right if both available)
+    if (rightHip && rightKnee && rightAnkle && 
+        rightHip.score > confidenceThreshold && 
+        rightKnee.score > confidenceThreshold && 
+        rightAnkle.score > confidenceThreshold) {
+      rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+    }
+    
+    // Use the angle with higher confidence, or average them if both are available
+    if (leftKneeAngle !== null && rightKneeAngle !== null) {
+      const leftConfidence = Math.min(leftHip.score, leftKnee.score, leftAnkle.score);
+      const rightConfidence = Math.min(rightHip.score, rightKnee.score, rightAnkle.score);
+      
+      if (leftConfidence > rightConfidence) {
+        angles.kneeAngle = leftKneeAngle;
+      } else if (rightConfidence > leftConfidence) {
+        angles.kneeAngle = rightKneeAngle;
+      } else {
+        // Equal confidence, take average
+        angles.kneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+      }
+    } else if (leftKneeAngle !== null) {
+      angles.kneeAngle = leftKneeAngle;
+    } else if (rightKneeAngle !== null) {
+      angles.kneeAngle = rightKneeAngle;
+    }
+    
+    // Calculate hip angles using the same approach
+    let leftHipAngle = null;
+    let rightHipAngle = null;
+    
     if (leftShoulder && leftHip && leftKnee && 
         leftShoulder.score > confidenceThreshold && 
         leftHip.score > confidenceThreshold && 
         leftKnee.score > confidenceThreshold) {
-      angles.hipAngle = calculateAngle(leftShoulder, leftHip, leftKnee);
-      console.log(`Left hip angle calculated: ${angles.hipAngle}°`);
-    } else if (rightShoulder && rightHip && rightKnee && 
-              rightShoulder.score > confidenceThreshold && 
-              rightHip.score > confidenceThreshold && 
-              rightKnee.score > confidenceThreshold) {
-      angles.hipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
-      console.log(`Right hip angle calculated: ${angles.hipAngle}°`);
+      leftHipAngle = calculateAngle(leftShoulder, leftHip, leftKnee);
+    }
+    
+    if (rightShoulder && rightHip && rightKnee && 
+        rightShoulder.score > confidenceThreshold && 
+        rightHip.score > confidenceThreshold && 
+        rightKnee.score > confidenceThreshold) {
+      rightHipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
+    }
+    
+    // Determine best hip angle
+    if (leftHipAngle !== null && rightHipAngle !== null) {
+      const leftConfidence = Math.min(leftShoulder.score, leftHip.score, leftKnee.score);
+      const rightConfidence = Math.min(rightShoulder.score, rightHip.score, rightKnee.score);
+      
+      if (leftConfidence > rightConfidence) {
+        angles.hipAngle = leftHipAngle;
+      } else if (rightConfidence > leftConfidence) {
+        angles.hipAngle = rightHipAngle;
+      } else {
+        angles.hipAngle = (leftHipAngle + rightHipAngle) / 2;
+      }
+    } else if (leftHipAngle !== null) {
+      angles.hipAngle = leftHipAngle;
+    } else if (rightHipAngle !== null) {
+      angles.hipAngle = rightHipAngle;
     }
     
     // Calculate shoulder angle
@@ -92,13 +127,11 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         rightShoulder.score > confidenceThreshold && 
         rightElbow.score > confidenceThreshold) {
       angles.shoulderAngle = calculateAngle(rightHip, rightShoulder, rightElbow);
-      console.log(`Right shoulder angle calculated: ${angles.shoulderAngle}°`);
     } else if (leftHip && leftShoulder && leftElbow && 
-                leftHip.score > confidenceThreshold && 
-                leftShoulder.score > confidenceThreshold && 
-                leftElbow.score > confidenceThreshold) {
+              leftHip.score > confidenceThreshold && 
+              leftShoulder.score > confidenceThreshold && 
+              leftElbow.score > confidenceThreshold) {
       angles.shoulderAngle = calculateAngle(leftHip, leftShoulder, leftElbow);
-      console.log(`Left shoulder angle calculated: ${angles.shoulderAngle}°`);
     }
     
     // Calculate elbow angle
@@ -107,14 +140,58 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         leftElbow.score > confidenceThreshold && 
         leftWrist.score > confidenceThreshold) {
       angles.elbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
-      console.log(`Left elbow angle calculated: ${angles.elbowAngle}°`);
     } else if (rightShoulder && rightElbow && rightWrist && 
-                rightShoulder.score > confidenceThreshold && 
-                rightElbow.score > confidenceThreshold && 
-                rightWrist.score > confidenceThreshold) {
+              rightShoulder.score > confidenceThreshold && 
+              rightElbow.score > confidenceThreshold && 
+              rightWrist.score > confidenceThreshold) {
       angles.elbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
-      console.log(`Right elbow angle calculated: ${angles.elbowAngle}°`);
     }
+    
+    // Calculate ankle angle
+    if (leftKnee && leftAnkle && 
+        leftKnee.score > confidenceThreshold && 
+        leftAnkle.score > confidenceThreshold) {
+      // For ankle, we need a third point. We can use the toe or create a virtual point
+      const toeX = leftAnkle.x + (leftAnkle.x - leftKnee.x) * 0.3;
+      const toeY = leftAnkle.y + (leftAnkle.y - leftKnee.y) * 0.3;
+      const virtualToe = { x: toeX, y: toeY, score: leftAnkle.score };
+      
+      angles.ankleAngle = calculateAngle(leftKnee, leftAnkle, virtualToe);
+    } else if (rightKnee && rightAnkle && 
+              rightKnee.score > confidenceThreshold && 
+              rightAnkle.score > confidenceThreshold) {
+      const toeX = rightAnkle.x + (rightAnkle.x - rightKnee.x) * 0.3;
+      const toeY = rightAnkle.y + (rightAnkle.y - rightKnee.y) * 0.3;
+      const virtualToe = { x: toeX, y: toeY, score: rightAnkle.score };
+      
+      angles.ankleAngle = calculateAngle(rightKnee, rightAnkle, virtualToe);
+    }
+    
+    // Calculate neck angle if neck point is available
+    if (neck && leftShoulder && rightShoulder &&
+        neck.score > confidenceThreshold &&
+        leftShoulder.score > confidenceThreshold &&
+        rightShoulder.score > confidenceThreshold) {
+      // Create a virtual point directly below the neck for alignment
+      const verticalPointX = neck.x;
+      const verticalPointY = neck.y + 50; // 50 pixels down
+      const verticalPoint = { x: verticalPointX, y: verticalPointY, score: neck.score };
+      
+      // Midpoint between shoulders
+      const midShoulderX = (leftShoulder.x + rightShoulder.x) / 2;
+      const midShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+      const midShoulder = { x: midShoulderX, y: midShoulderY, score: Math.min(leftShoulder.score, rightShoulder.score) };
+      
+      angles.neckAngle = calculateAngle(verticalPoint, neck, midShoulder);
+    }
+    
+    // Round angles to improve readability and reduce small variations
+    Object.keys(angles).forEach(key => {
+      const angleKey = key as keyof BodyAngles;
+      if (angles[angleKey] !== null) {
+        angles[angleKey] = Math.round(angles[angleKey] as number);
+      }
+    });
     
     return angles;
   } catch (error) {
@@ -123,35 +200,46 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   }
 };
 
-// Enhanced function to find keypoint by multiple names or index
-function findKeypoint(keypoints: any[], possibleNames: string[], index: number) {
+/**
+ * Enhanced function to find keypoint by multiple names or index with better error handling
+ */
+function findKeypoint(keypoints: any[], possibleNames: string[], index: number): any {
+  if (!keypoints || !Array.isArray(keypoints)) {
+    return null;
+  }
+  
   // First try to find by part name
   for (const name of possibleNames) {
     const keypoint = keypoints.find(kp => 
-      (kp.part === name) || (kp.name === name)
+      (kp && kp.part === name) || (kp && kp.name === name)
     );
     if (keypoint && keypoint.score > 0) return keypoint;
   }
   
   // Then try to find by index
-  if (keypoints[index] && keypoints[index].score > 0) {
+  if (index >= 0 && index < keypoints.length && keypoints[index] && keypoints[index].score > 0) {
     return keypoints[index];
   }
   
   return null;
 }
 
-// Calculate angle between three points in degrees with improved handling
+/**
+ * Calculate angle between three points in degrees
+ * Improved for better accuracy and error handling
+ */
 function calculateAngle(pointA: any, pointB: any, pointC: any): number {
   try {
     // Extract coordinates, handling both normalized and pixel coordinates
     const getX = (point: any) => {
+      if (point === null) return null;
       if (typeof point.x === 'number') return point.x;
       if (point.position && typeof point.position.x === 'number') return point.position.x;
       return null;
     };
     
     const getY = (point: any) => {
+      if (point === null) return null;
       if (typeof point.y === 'number') return point.y;
       if (point.position && typeof point.position.y === 'number') return point.position.y;
       return null;
@@ -166,8 +254,7 @@ function calculateAngle(pointA: any, pointB: any, pointC: any): number {
     
     // Validate coordinates
     if (ax === null || ay === null || bx === null || by === null || cx === null || cy === null) {
-      console.error('Invalid coordinates for angle calculation');
-      return 180;
+      return 180; // Default value if coordinates are invalid
     }
     
     // Calculate vectors
@@ -183,8 +270,7 @@ function calculateAngle(pointA: any, pointB: any, pointC: any): number {
     
     // Avoid division by zero
     if (mag1 === 0 || mag2 === 0) {
-      console.error('Zero magnitude in angle calculation');
-      return 180;
+      return 180; // Default value for invalid magnitudes
     }
     
     // Calculate angle in radians and convert to degrees
@@ -195,6 +281,6 @@ function calculateAngle(pointA: any, pointB: any, pointC: any): number {
     return angleDeg;
   } catch (error) {
     console.error('Error in angle calculation:', error);
-    return 180; // Default angle
+    return 180; // Default angle on error
   }
 }
