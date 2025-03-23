@@ -1,8 +1,9 @@
 
 import { useSessionState } from './useSessionState';
 import { useSessionActions } from './useSessionActions';
+import { UseSessionManagementReturn } from './types';
 
-export const useSessionManagement = () => {
+export const useSessionManagement = (): UseSessionManagementReturn => {
   const {
     stats,
     setStats,
@@ -27,9 +28,12 @@ export const useSessionManagement = () => {
   );
   
   return {
+    // State
     stats,
     sessionId,
     exerciseType,
+    
+    // Actions
     initSession,
     handleGoodRep,
     handleBadRep,

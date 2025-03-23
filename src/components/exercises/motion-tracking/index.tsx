@@ -1,23 +1,25 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
-import MotionDetectionErrorBoundary from './components/MotionDetectionErrorBoundary';
 import MotionTrackingContainer from './components/MotionTrackingContainer';
 
 interface MotionTrackingProps {
   exerciseId?: string;
   exerciseName?: string;
+  onFinish?: () => void;
 }
 
 const MotionTracking: React.FC<MotionTrackingProps> = ({ 
   exerciseId = 'default-exercise',
-  exerciseName = 'Motion Analysis'
+  exerciseName = 'Motion Analysis',
+  onFinish
 }) => {
   return (
     <Card className="w-full overflow-hidden border shadow-sm">
       <MotionTrackingContainer 
         exerciseId={exerciseId}
         exerciseName={exerciseName}
+        onFinish={onFinish}
       />
     </Card>
   );

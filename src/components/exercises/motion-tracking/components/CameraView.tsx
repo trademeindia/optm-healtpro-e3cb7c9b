@@ -1,90 +1,37 @@
 
-import React, { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Camera, Pause, Play, RefreshCw, X } from 'lucide-react';
-import { toast } from 'sonner';
-import MotionRenderer from '../MotionRenderer';
+import React from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
-interface CameraViewProps {
+export interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  isModelLoading: boolean;
-  cameraActive: boolean;
-  isTracking: boolean;
-  detectionResult: any;
-  angles: any;
-  onStartCamera: () => void;
-  onToggleTracking: () => void;
-  onReset: () => void;
-  onFinish: () => void;
+  onToggleFullscreen: () => void;
 }
 
-const CameraView: React.FC<CameraViewProps> = ({
-  videoRef,
+const CameraView: React.FC<CameraViewProps> = ({ 
+  videoRef, 
   canvasRef,
-  isModelLoading,
-  cameraActive,
-  isTracking,
-  detectionResult,
-  angles,
-  onStartCamera,
-  onToggleTracking,
-  onReset,
-  onFinish
+  onToggleFullscreen
 }) => {
   return (
-    <div className="relative aspect-video bg-black flex items-center justify-center">
-      {/* Hidden video for capture */}
-      <video 
+    <div className="relative">
+      <video
         ref={videoRef}
-        autoPlay 
+        className="w-full h-full object-cover"
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover" 
-        style={{ display: cameraActive ? 'block' : 'none' }}
-        onLoadedData={() => {
-          if (videoRef.current?.readyState === 4) {
-            toast.success("Camera feed ready");
-          }
-        }}
       />
-      
-      {/* Canvas for rendering */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full z-10"
-        style={{ display: cameraActive ? 'block' : 'none' }}
+        className="absolute top-0 left-0 w-full h-full"
       />
-      
-      {/* Renderer component */}
-      {detectionResult && (
-        <MotionRenderer 
-          result={detectionResult} 
-          canvasRef={canvasRef} 
-          angles={angles}
-        />
-      )}
-      
-      {/* Camera inactive state */}
-      {!cameraActive && (
-        <div className="text-center p-8 max-w-md mx-auto">
-          <div className="inline-flex items-center justify-center p-4 mb-4 rounded-full bg-muted/20">
-            <Camera className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-medium mb-2">Camera Access Required</h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            To analyze your movement patterns, we need access to your camera. 
-            Your privacy is important - video is processed locally and not stored.
-          </p>
-          <Button 
-            onClick={onStartCamera} 
-            className="w-full"
-            disabled={isModelLoading}
-          >
-            {isModelLoading ? "Loading motion analysis model..." : "Start Camera"}
-          </Button>
-        </div>
-      )}
+      <button
+        onClick={onToggleFullscreen}
+        className="absolute top-2 right-2 p-2 bg-background/70 rounded-full"
+        aria-label="Toggle fullscreen"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
     </div>
   );
 };

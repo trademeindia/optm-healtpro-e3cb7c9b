@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { MotionStats } from '@/components/exercises/posture-monitor/types';
-import { updateStatsForGoodRep, updateStatsForBadRep } from '../../utils/statsUtils';
+import { updateStatsForGoodRep, updateStatsForBadRep, getInitialStats } from '../../utils/statsUtils';
 import { createSession, saveDetectionData, completeSession } from '../../utils/sessionUtils';
 
 export const useSessionActions = (

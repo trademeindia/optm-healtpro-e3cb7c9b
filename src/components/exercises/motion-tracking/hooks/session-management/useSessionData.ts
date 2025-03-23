@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { MotionStats } from '@/components/exercises/posture-monitor/types';
-import { getInitialStats } from '../utils/statsUtils';
+import { getInitialStats } from '../../utils/statsUtils';
 
 export interface SessionData {
   stats: MotionStats;

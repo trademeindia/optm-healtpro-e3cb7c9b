@@ -20,3 +20,5 @@ export interface SessionActions {
   completeCurrentSession: () => void;
   resetSession: () => void;
 }
+
+export interface UseSessionManagementReturn extends SessionState, SessionActions {}

@@ -4,7 +4,7 @@ import { useHumanDetection } from '../hooks/useHumanDetection';
 import { useCameraManager } from '../hooks/useCameraManager';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Camera, Maximize2, Minimize2 } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { DetectionError } from '@/lib/human/types';
 import { BodyAngles, MotionState, MotionStats } from '@/components/exercises/posture-monitor/types';
 import * as Human from '@vladmandic/human';
@@ -23,11 +23,13 @@ import DetectionErrorDisplay from './DetectionErrorDisplay';
 interface MotionTrackingContainerProps {
   exerciseId: string;
   exerciseName: string;
+  onFinish?: () => void;
 }
 
 const MotionTrackingContainer: React.FC<MotionTrackingContainerProps> = ({
   exerciseId,
-  exerciseName
+  exerciseName,
+  onFinish
 }) => {
   const { cameraActive, videoRef, startCamera, stopCamera } = useCameraManager();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -76,6 +78,10 @@ const MotionTrackingContainer: React.FC<MotionTrackingContainerProps> = ({
     stopDetection();
     stopCamera();
     toast.success(`${exerciseName} session completed`);
+    
+    if (onFinish) {
+      onFinish();
+    }
   };
 
   useEffect(() => {
