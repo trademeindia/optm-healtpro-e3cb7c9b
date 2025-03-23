@@ -176,3 +176,6 @@ export const extractBodyAngles = (result: Human.Result): {
   
   return angles;
 };
+
+// Alias for backward compatibility 
+export const calculateAngles = extractBodyAngles;

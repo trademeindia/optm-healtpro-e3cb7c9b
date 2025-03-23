@@ -58,3 +58,6 @@ export const extractBiomarkers = (result: Human.Result, angles: any): Record<str
   
   return biomarkers;
 };
+
+// Alias for backward compatibility
+export const calculateBiomarkers = extractBiomarkers;
