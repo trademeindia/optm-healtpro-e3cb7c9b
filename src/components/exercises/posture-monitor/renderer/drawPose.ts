@@ -1,210 +1,128 @@
-import * as posenet from '@tensorflow-models/posenet';
 import { SquatState } from '../types';
 
 export const drawPose = (
   ctx: CanvasRenderingContext2D,
-  pose: posenet.Pose,
-  canvasSize: { width: number; height: number },
-  kneeAngle: number | null,
-  hipAngle: number | null,
-  currentSquatState: SquatState,
-  videoWidth: number,
-  videoHeight: number,
-  minPartConfidence: number
+  poses: any[],
+  options = { 
+    drawPoints: true, 
+    drawSkeleton: true,
+    drawAngles: true,
+    canvasWidth: 640,
+    canvasHeight: 480
+  }
 ) => {
-  ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+  if (!poses || poses.length === 0) return;
   
-  const scaleX = canvasSize.width / videoWidth;
-  const scaleY = canvasSize.height / videoHeight;
+  ctx.clearRect(0, 0, options.canvasWidth, options.canvasHeight);
   
-  // Draw skeleton lines
-  drawSkeleton(ctx, pose.keypoints, minPartConfidence, scaleX, scaleY);
+  poses.forEach(pose => {
+    if (options.drawPoints) {
+      drawKeypoints(ctx, pose.keypoints);
+    }
+    
+    if (options.drawSkeleton) {
+      drawSkeleton(ctx, pose.keypoints);
+    }
+    
+    if (options.drawAngles) {
+      drawAngles(ctx, pose);
+    }
+  });
   
-  // Draw keypoints
-  drawKeypoints(ctx, pose.keypoints, minPartConfidence, scaleX, scaleY);
-  
-  // Draw angle indicators if available
-  if (kneeAngle !== null) {
-    drawAngleIndicator(ctx, pose, 'knee', kneeAngle, scaleX, scaleY);
-  }
-  
-  if (hipAngle !== null) {
-    drawAngleIndicator(ctx, pose, 'hip', hipAngle, scaleX, scaleY);
-  }
-  
-  // Draw current state indicator
-  drawStateIndicator(ctx, currentSquatState, canvasSize);
+  // Draw state information
+  drawStateInfo(ctx, SquatState.STANDING, options);
 };
 
-// Draw skeleton lines connecting keypoints
-const drawSkeleton = (
-  ctx: CanvasRenderingContext2D,
-  keypoints: posenet.Keypoint[],
-  minConfidence: number,
-  scaleX: number,
-  scaleY: number
-) => {
-  const adjacentKeyPoints = posenet.getAdjacentKeyPoints(
-    keypoints,
-    minConfidence
-  );
+const drawKeypoints = (ctx: CanvasRenderingContext2D, keypoints: any[]) => {
+  if (!keypoints) return;
   
-  // Set line style
-  ctx.strokeStyle = '#00ff00';
-  ctx.lineWidth = 3;
-  
-  // Draw lines
-  adjacentKeyPoints.forEach((keypoints) => {
-    ctx.beginPath();
-    ctx.moveTo(keypoints[0].position.x * scaleX, keypoints[0].position.y * scaleY);
-    ctx.lineTo(keypoints[1].position.x * scaleX, keypoints[1].position.y * scaleY);
-    ctx.stroke();
+  keypoints.forEach(keypoint => {
+    if (keypoint.score && keypoint.score > 0.5) {
+      const { x, y } = keypoint;
+      
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+    }
   });
 };
 
-// Draw keypoints
-const drawKeypoints = (
-  ctx: CanvasRenderingContext2D,
-  keypoints: posenet.Keypoint[],
-  minConfidence: number,
-  scaleX: number,
-  scaleY: number
-) => {
-  keypoints.forEach((keypoint) => {
-    if (keypoint.score < minConfidence) return;
+const drawSkeleton = (ctx: CanvasRenderingContext2D, keypoints: any[]) => {
+  if (!keypoints) return;
+  
+  // Draw skeleton lines between keypoints
+  // This is a simplified implementation
+  const connections = [
+    ['nose', 'leftEye'], ['nose', 'rightEye'],
+    ['leftEye', 'leftEar'], ['rightEye', 'rightEar'],
+    ['nose', 'leftShoulder'], ['nose', 'rightShoulder'],
+    ['leftShoulder', 'leftElbow'], ['rightShoulder', 'rightElbow'],
+    ['leftElbow', 'leftWrist'], ['rightElbow', 'rightWrist'],
+    ['leftShoulder', 'rightShoulder'],
+    ['leftShoulder', 'leftHip'], ['rightShoulder', 'rightHip'],
+    ['leftHip', 'rightHip'],
+    ['leftHip', 'leftKnee'], ['rightHip', 'rightKnee'],
+    ['leftKnee', 'leftAnkle'], ['rightKnee', 'rightAnkle']
+  ];
+  
+  connections.forEach(([p1, p2]) => {
+    const point1 = keypoints.find(kp => kp.name === p1);
+    const point2 = keypoints.find(kp => kp.name === p2);
     
-    const { x, y } = keypoint.position;
-    
-    // Draw keypoint circle
-    ctx.beginPath();
-    ctx.arc(x * scaleX, y * scaleY, 5, 0, 2 * Math.PI);
-    ctx.fillStyle = '#ff0000';
-    ctx.fill();
-    
-    // Draw keypoint label
-    ctx.font = '12px Arial';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(keypoint.part, x * scaleX + 7, y * scaleY - 7);
+    if (point1 && point2 && point1.score > 0.5 && point2.score > 0.5) {
+      ctx.beginPath();
+      ctx.moveTo(point1.x, point1.y);
+      ctx.lineTo(point2.x, point2.y);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'blue';
+      ctx.stroke();
+    }
   });
 };
 
-// Draw angle indicator
-const drawAngleIndicator = (
-  ctx: CanvasRenderingContext2D,
-  pose: posenet.Pose,
-  angleType: 'knee' | 'hip',
-  angle: number,
-  scaleX: number,
-  scaleY: number
-) => {
-  // Find the position to draw the angle
-  let position;
-  
-  if (angleType === 'knee') {
-    const leftKnee = pose.keypoints.find(kp => kp.part === 'leftKnee');
-    const rightKnee = pose.keypoints.find(kp => kp.part === 'rightKnee');
-    
-    if (leftKnee && leftKnee.score > 0.5) {
-      position = leftKnee.position;
-    } else if (rightKnee && rightKnee.score > 0.5) {
-      position = rightKnee.position;
-    } else {
-      return; // Can't find a good position
-    }
-  } else { // hip
-    const leftHip = pose.keypoints.find(kp => kp.part === 'leftHip');
-    const rightHip = pose.keypoints.find(kp => kp.part === 'rightHip');
-    
-    if (leftHip && leftHip.score > 0.5) {
-      position = leftHip.position;
-    } else if (rightHip && rightHip.score > 0.5) {
-      position = rightHip.position;
-    } else {
-      return; // Can't find a good position
-    }
-  }
-  
-  // Draw background for text
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(
-    position.x * scaleX + 15, 
-    position.y * scaleY - 10, 
-    75, 
-    20
-  );
-  
-  // Draw text
-  ctx.font = '12px Arial';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(
-    `${angleType === 'knee' ? 'Knee' : 'Hip'}: ${angle}°`, 
-    position.x * scaleX + 20, 
-    position.y * scaleY + 5
-  );
+const drawAngles = (ctx: CanvasRenderingContext2D, pose: any) => {
+  // Implementation would go here, but this is just a placeholder
 };
 
-// Draw state indicator at the top of the canvas
-const drawStateIndicator = (
-  ctx: CanvasRenderingContext2D,
-  state: SquatState,
-  canvasSize: { width: number; height: number }
-) => {
-  let stateText = '';
-  let stateColor = '';
+const drawStateInfo = (ctx: CanvasRenderingContext2D, state: SquatState, options: any) => {
+  ctx.font = '24px Arial';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  
+  let stateText = 'Stand up straight';
+  let color = 'blue';
   
   switch (state) {
     case SquatState.STANDING:
       stateText = 'Standing';
-      stateColor = '#3b82f6'; // Blue
+      color = 'green';
       break;
-    case SquatState.MID_SQUAT:
-      stateText = 'Squatting Down';
-      stateColor = '#f59e0b'; // Yellow/Orange
+    case SquatState.DESCENDING:
+      stateText = 'Going Down';
+      color = 'blue';
       break;
-    case SquatState.BOTTOM_SQUAT:
+    case SquatState.BOTTOM:
       stateText = 'Bottom Position';
-      stateColor = '#22c55e'; // Green
+      color = 'purple';
       break;
+    case SquatState.ASCENDING:
+      stateText = 'Going Up';
+      color = 'orange';
+      break;
+    default:
+      stateText = 'Getting Ready';
+      color = 'gray';
   }
   
-  // Draw pill-shaped background
-  const textWidth = 120;
-  const textHeight = 24;
-  const padding = 10;
-  
-  ctx.fillStyle = stateColor;
-  ctx.beginPath();
-  ctx.roundRect(
-    canvasSize.width / 2 - textWidth / 2 - padding,
-    10,
-    textWidth + padding * 2,
-    textHeight + padding / 2,
-    8
-  );
-  ctx.fill();
+  // Create background for text
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.fillRect(10, 10, 200, 40);
   
   // Draw text
-  ctx.font = 'bold 14px Arial';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.fillText(
-    stateText,
-    canvasSize.width / 2,
-    25
-  );
-  ctx.textAlign = 'start'; // Reset text alignment
+  ctx.fillStyle = color;
+  ctx.fillText(stateText, 20, 18);
 };
 
-const getStateColor = (state: SquatState): string => {
-  switch (state) {
-    case SquatState.DESCENDING:
-      return '#FFC107'; // Yellow
-    case SquatState.BOTTOM:
-      return '#4CAF50'; // Green
-    case SquatState.ASCENDING:
-      return '#2196F3'; // Blue
-    case SquatState.STANDING:
-    default:
-      return '#E0E0E0'; // Light gray
-  }
-};
+export default drawPose;

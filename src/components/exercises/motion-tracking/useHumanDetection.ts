@@ -11,10 +11,19 @@ import {
   MotionState, 
   MotionStats 
 } from '@/components/exercises/posture-monitor/types';
-import { performDetection } from './utils/detectionUtils';
-import { generateFeedback, evaluateRepQuality } from './utils/feedbackUtils';
-import { updateStatsForGoodRep, updateStatsForBadRep, getInitialStats } from './utils/statsUtils';
-import { saveDetectionData, createSession, completeSession } from './utils/sessionUtils';
+
+// Import all utilities from the central export file
+import {
+  performDetection,
+  generateFeedback,
+  evaluateRepQuality,
+  updateStatsForGoodRep,
+  updateStatsForBadRep,
+  getInitialStats,
+  saveDetectionData,
+  createSession,
+  completeSession
+} from './utils';
 
 interface UseHumanDetectionProps {
   videoRef: React.RefObject<HTMLVideoElement>;

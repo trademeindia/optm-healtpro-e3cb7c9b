@@ -1,4 +1,5 @@
 
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { toJsonObject } from './jsonUtils';
 import { BodyAngles, MotionState, MotionStats } from '@/components/exercises/posture-monitor/types';
@@ -91,4 +92,3 @@ export const completeSession = async (sessionId: string | undefined, stats: Moti
     console.error('Error completing session:', error);
   }
 };
-

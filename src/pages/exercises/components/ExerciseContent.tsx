@@ -1,94 +1,83 @@
 
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Exercise } from '@/types/exercise.types'; 
 import { Button } from '@/components/ui/button';
 import ExerciseVideo from '@/components/exercises/ExerciseVideo';
-import PostureMonitor from '@/components/exercises/PostureMonitor';
-import CategoryFilter from './CategoryFilter';
-import { Exercise } from '@/types/exercise.types';
+import { Play } from 'lucide-react';
+import MotionTracker from '@/components/exercises/motion-tracking';
 
 interface ExerciseContentProps {
-  showMonitor: boolean;
-  selectedExercise: Exercise | null;
-  filteredExercises: Exercise[];
-  activeCategory: string | null;
-  onCategoryFilter: (category: string | null) => void;
-  onStartExercise: (exerciseId: string) => void;
-  onFinishExercise: () => void;
-  setShowMonitor: (show: boolean) => void;
+  exercise: Exercise;
 }
 
-const ExerciseContent: React.FC<ExerciseContentProps> = ({
-  showMonitor,
-  selectedExercise,
-  filteredExercises,
-  activeCategory,
-  onCategoryFilter,
-  onStartExercise,
-  onFinishExercise,
-  setShowMonitor
-}) => {
+const ExerciseContent: React.FC<ExerciseContentProps> = ({ exercise }) => {
+  const navigate = useNavigate();
+  const [showMotionTracker, setShowMotionTracker] = React.useState(false);
+  
+  const handleStartExercise = () => {
+    setShowMotionTracker(true);
+  };
+  
+  const handleFinishExercise = () => {
+    setShowMotionTracker(false);
+    // Here you would typically update the completion status
+  };
+  
   return (
-    <>
-      {showMonitor ? (
-        <div className="space-y-4">
-          <Button 
-            variant="ghost" 
-            className="gap-2"
-            onClick={() => setShowMonitor(false)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Exercises</span>
-          </Button>
+    <div className="space-y-8">
+      <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold">{exercise.title}</h1>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+              {exercise.difficulty}
+            </span>
+            <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+              {exercise.duration}
+            </span>
+            {exercise.muscleGroups.map((group) => (
+              <span key={group} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                {group}
+              </span>
+            ))}
+          </div>
+          <p className="mt-4 text-muted-foreground">{exercise.description}</p>
           
-          <PostureMonitor 
-            exerciseId={selectedExercise?.id || null}
-            exerciseName={selectedExercise?.title || null}
-            onFinish={onFinishExercise}
-          />
+          {!showMotionTracker && (
+            <Button 
+              onClick={handleStartExercise} 
+              className="mt-6 gap-2"
+            >
+              <Play className="h-4 w-4" />
+              Start Exercise
+            </Button>
+          )}
         </div>
+      </div>
+      
+      {showMotionTracker ? (
+        <MotionTracker
+          exerciseId={exercise.id}
+          exerciseName={exercise.title}
+          onFinish={handleFinishExercise}
+        />
       ) : (
-        <>
-          <CategoryFilter 
-            activeCategory={activeCategory}
-            onCategoryFilter={onCategoryFilter}
-          />
-          
-          <ExerciseList 
-            exercises={filteredExercises}
-            onStartExercise={onStartExercise}
-          />
-        </>
+        <ExerciseVideo exercise={exercise} />
       )}
-    </>
+      
+      <div className="bg-card rounded-lg p-6 shadow-sm border">
+        <h2 className="text-xl font-semibold mb-4">Exercise Instructions</h2>
+        <ol className="list-decimal pl-5 space-y-2">
+          <li>Position yourself in front of the camera so your full body is visible.</li>
+          <li>Follow the exercise demonstration video for proper form.</li>
+          <li>The AI will track your movements and provide real-time feedback.</li>
+          <li>Complete the recommended number of repetitions with good form.</li>
+          <li>Take breaks if needed and focus on quality over quantity.</li>
+        </ol>
+      </div>
+    </div>
   );
 };
 
 export default ExerciseContent;
-
-// Extracted ExerciseList component
-interface ExerciseListProps {
-  exercises: Exercise[];
-  onStartExercise: (exerciseId: string) => void;
-}
-
-const ExerciseList: React.FC<ExerciseListProps> = ({ exercises, onStartExercise }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
-      {exercises.map((exercise) => (
-        <ExerciseVideo
-          key={exercise.id}
-          id={exercise.id}
-          title={exercise.title}
-          description={exercise.description}
-          videoUrl={exercise.videoUrl}
-          thumbnailUrl={exercise.thumbnailUrl}
-          duration={exercise.duration}
-          difficulty={exercise.difficulty}
-          muscleGroups={exercise.muscleGroups}
-          onStartExercise={onStartExercise}
-        />
-      ))}
-    </div>
-  );
-};
