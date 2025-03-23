@@ -12,17 +12,15 @@ export const humanConfig: Human.Config = {
   warmup: 'none', // Changed from 'full' to avoid blocking the UI during initial load
   cacheModels: true,
   cacheSensitivity: 0.7,
-  skipAllowed: false, // Set to false to ensure we don't miss frames
+  skipAllowed: true, // Allow skipping frames for better performance
   deallocate: true, // Better memory management
   
   // Additional required configs to satisfy TypeScript
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
   
-  // Remove useWebGPU flag that was causing errors
-  flags: {
-    useSimdWasm: true, // Use SIMD for better performance on supported browsers
-  },
+  // Remove useWebGPU and useSimdWasm flags that were causing errors
+  flags: {}, // Empty flags object to avoid errors
   
   softwareKernels: true, // Fallback to software implementation if needed
   
@@ -40,7 +38,7 @@ export const humanConfig: Human.Config = {
     enabled: true,
     modelPath: 'blazepose.json',
     minConfidence: 0.2,
-    skipFrames: 0, // Reduce to 0 to prevent missed frames
+    skipFrames: 1, // Skip every other frame to improve performance
     maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 

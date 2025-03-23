@@ -2,7 +2,7 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
-import { human, warmupModel, resetModel } from '@/lib/human';
+import { human, warmupModel, resetModel, getModelLoadProgress } from '@/lib/human';
 import { DetectionResult, DetectionState } from './types';
 import { performDetection } from '../utils/detectionUtils';
 
@@ -12,7 +12,9 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     isDetecting: false,
     detectionFps: null,
     isModelLoaded: false,
+    isModelLoading: false,
     detectionError: null,
+    loadProgress: 0
   });
 
   // Detection loop references
@@ -23,6 +25,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCount = useRef<number>(0);
   const maxRetries = 3;
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup function
   useEffect(() => {
@@ -33,8 +36,34 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
       }
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
     };
   }, []);
+
+  // Setup progress tracking
+  const setupProgressTracking = useCallback(() => {
+    if (progressInterval.current) {
+      clearInterval(progressInterval.current);
+    }
+    
+    progressInterval.current = setInterval(() => {
+      const progress = getModelLoadProgress();
+      setDetectionState(prev => ({ 
+        ...prev, 
+        loadProgress: progress 
+      }));
+      
+      // If model is fully loaded, stop the interval
+      if (progress >= 100 || detectionState.isModelLoaded) {
+        if (progressInterval.current) {
+          clearInterval(progressInterval.current);
+          progressInterval.current = null;
+        }
+      }
+    }, 300);
+  }, [detectionState.isModelLoaded]);
 
   // Ensure model is loaded with better error handling and retry logic
   const loadModel = useCallback(async () => {
@@ -51,8 +80,12 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       setDetectionState(prev => ({ 
         ...prev, 
         detectionError: null,
-        isModelLoading: true
+        isModelLoading: true,
+        loadProgress: 0
       }));
+      
+      // Start progress tracking
+      setupProgressTracking();
       
       // Set a timeout to prevent UI from hanging
       const loadingPromise = warmupModel();
@@ -62,7 +95,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
           console.warn('Model loading is taking longer than expected');
           toast.warning('Model loading is taking longer than expected. Please wait...');
         }
-      }, 5000);
+      }, 10000);
       
       await loadingPromise;
       
@@ -76,7 +109,8 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
         ...prev, 
         isModelLoaded: true,
         isModelLoading: false,
-        detectionError: null
+        detectionError: null,
+        loadProgress: 100
       }));
       
       toast.success('Motion detection model loaded successfully');
@@ -113,15 +147,16 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       setDetectionState(prev => ({ 
         ...prev, 
         isModelLoading: false,
-        detectionError: 'Failed to load motion detection model' 
+        detectionError: 'Failed to load motion detection model. Please try refreshing the page or check if your browser supports WebGL.',
+        loadProgress: 0
       }));
       
       toast.error('Failed to load motion detection model. Please try refreshing the page.');
       return false;
     }
-  }, [detectionState.isModelLoaded]);
+  }, [detectionState.isModelLoaded, setupProgressTracking]);
 
-  // Perform detection on a single frame with improved error handling
+  // Perform detection on a single frame with improved error handling and frame limiting
   const detectFrame = useCallback(async (
     time: number,
     onDetectionResult: (result: DetectionResult) => void
@@ -133,11 +168,11 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       return;
     }
     
-    // Calculate FPS
+    // Calculate elapsed time since last frame
     const elapsed = time - lastFrameTime.current;
     
-    // Limit detection rate for performance (aim for ~20-30 FPS)
-    if (elapsed < 33) { // ~30 FPS
+    // Limit detection rate for performance (aim for ~15 FPS which is plenty for motion tracking)
+    if (elapsed < 66) { // ~15 FPS (1000ms / 15 = 66.67ms per frame)
       requestRef.current = requestAnimationFrame(
         (newTime) => detectFrame(newTime, onDetectionResult)
       );
@@ -172,8 +207,14 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       setDetectionState(prev => ({ 
         ...prev, 
         isDetecting: false,
-        detectionError: 'Detection failed'
+        detectionError: 'Detection failed. The system will try to recover automatically.'
       }));
+      
+      // Try to recover by cleaning up tensors
+      if (human.tf && human.tf.engine) {
+        console.log('Cleaning up tensors after error');
+        human.tf.engine().disposeVariables();
+      }
     }
     
     // Continue detection loop
