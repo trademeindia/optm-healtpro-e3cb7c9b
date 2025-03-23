@@ -3,6 +3,7 @@
 @media (max-width: 768px) {
   .motion-tracker-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .feedback-stats-grid {

@@ -62,40 +62,40 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) =>
         </div>
         
         {/* Primary Stats - 4 columns layout */}
-        <div className="grid grid-cols-4 gap-3 text-center mb-3">
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Reps</div>
-            <div className="font-semibold text-lg">{stats.totalReps}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-3 stats-grid-4">
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Reps</div>
+            <div className="font-semibold text-lg stat-value">{stats.totalReps}</div>
           </div>
           
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Good</div>
-            <div className="font-semibold text-lg text-green-500">{stats.goodReps}</div>
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Good</div>
+            <div className="font-semibold text-lg text-green-500 stat-value">{stats.goodReps}</div>
           </div>
           
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Needs Work</div>
-            <div className="font-semibold text-lg text-orange-500">{stats.badReps}</div>
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Needs Work</div>
+            <div className="font-semibold text-lg text-orange-500 stat-value">{stats.badReps}</div>
           </div>
           
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Accuracy</div>
-            <div className="font-semibold text-lg">{stats.accuracy}%</div>
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Accuracy</div>
+            <div className="font-semibold text-lg stat-value">{stats.accuracy}%</div>
           </div>
         </div>
         
         {/* Streak Stats - 2 columns layout */}
-        <div className="grid grid-cols-2 gap-3 text-center">
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Current Streak</div>
-            <div className="font-semibold text-lg">
+        <div className="grid grid-cols-2 gap-3 text-center stats-grid-2">
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Current Streak</div>
+            <div className="font-semibold text-lg stat-value">
               {stats.currentStreak !== undefined ? stats.currentStreak : 0} reps
             </div>
           </div>
           
-          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
-            <div className="text-xs text-muted-foreground mb-1">Best Streak</div>
-            <div className="font-semibold text-lg">
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center stat-card">
+            <div className="text-xs text-muted-foreground mb-1 stat-label">Best Streak</div>
+            <div className="font-semibold text-lg stat-value">
               {stats.bestStreak !== undefined ? stats.bestStreak : 0} reps
             </div>
           </div>

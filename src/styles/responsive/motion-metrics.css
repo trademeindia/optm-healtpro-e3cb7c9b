@@ -44,6 +44,14 @@
   .stats-grid-4 {
     grid-template-columns: repeat(2, 1fr);
   }
+  
+  .stat-value {
+    font-size: 1rem;
+  }
+  
+  .stat-card {
+    padding: 0.5rem;
+  }
 }
 
 /* Improved metric cards */
@@ -57,6 +65,16 @@
   justify-content: center;
   gap: 0.5rem;
   height: 100%;
+}
+
+@media (max-width: 480px) {
+  .metric-card {
+    padding: 0.5rem;
+  }
+  
+  .metric-value {
+    font-size: 1.25rem;
+  }
 }
 
 .metric-value {

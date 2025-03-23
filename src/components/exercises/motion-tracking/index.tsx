@@ -75,7 +75,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   };
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 w-full motion-tracker-grid">
       {/* Left column - Camera view and controls */}
       <div className="lg:col-span-7 space-y-5">
         <Card className="overflow-hidden border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-300">
