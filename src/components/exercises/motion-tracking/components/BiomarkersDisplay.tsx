@@ -1,148 +1,64 @@
 
 import React from 'react';
-import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 import { Card } from '@/components/ui/card';
-import { Activity, ChevronRight, BarChart, Target, ArrowRight } from 'lucide-react';
+import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
 interface BiomarkersDisplayProps {
   biomarkers: Record<string, any>;
   angles: BodyAngles;
 }
 
-const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ 
-  biomarkers, 
-  angles 
-}) => {
-  // Format angle value for display
-  const formatAngle = (angle: number | null) => {
-    if (angle === null) return "--";
-    return Math.round(angle) + "°";
-  };
-  
-  // Determine optimal range status
-  const getAngleStatus = (angle: number | null, min: number, max: number) => {
-    if (angle === null) return "neutral";
-    
-    if (angle >= min && angle <= max) {
-      return "optimal";
-    } else if (angle < min) {
-      return "below";
-    } else {
-      return "above";
+const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angles }) => {
+  // Format values for display
+  const formatValue = (value: any) => {
+    if (typeof value === 'number') {
+      return value.toFixed(1);
     }
+    return value.toString();
   };
-  
-  // Get class name based on status
-  const getStatusClassname = (status: string) => {
-    switch(status) {
-      case "optimal": return "text-green-600 dark:text-green-400";
-      case "below": return "text-yellow-600 dark:text-yellow-400";
-      case "above": return "text-yellow-600 dark:text-yellow-400";
-      default: return "text-muted-foreground";
-    }
+
+  // Display angles in a readable format
+  const renderAngles = () => {
+    return Object.entries(angles)
+      .filter(([_, value]) => value !== null)
+      .map(([key, value]) => (
+        <div key={key} className="flex justify-between items-center border-b pb-2 mb-2 last:border-0 last:mb-0 last:pb-0">
+          <span className="text-sm capitalize">{key.replace('Angle', ' Angle')}</span>
+          <span className="font-semibold text-sm">{formatValue(value)}°</span>
+        </div>
+      ));
   };
-  
-  // Get descriptive text based on knee angle
-  const getKneeRecommendation = () => {
-    if (!angles.kneeAngle) return "Position yourself so your knees are visible.";
-    
-    const status = getAngleStatus(angles.kneeAngle, 90, 140);
-    
-    switch(status) {
-      case "optimal": 
-        return "Great knee bend! Maintain this depth for best results.";
-      case "below": 
-        return "Your squat is very deep. Ensure your heels stay on the ground.";
-      case "above": 
-        return "Try to achieve deeper knee bend for better muscle engagement.";
-      default:
-        return "Adjust your position to get accurate knee measurements.";
-    }
+
+  // Display biomarkers in a readable format
+  const renderBiomarkers = () => {
+    return Object.entries(biomarkers).map(([key, value]) => (
+      <div key={key} className="flex justify-between items-center border-b pb-2 mb-2 last:border-0 last:mb-0 last:pb-0">
+        <span className="text-sm capitalize">{key}</span>
+        <span className="font-semibold text-sm">{formatValue(value)}</span>
+      </div>
+    ));
   };
-  
-  const kneeStatus = getAngleStatus(angles.kneeAngle, 90, 140);
-  const hipStatus = getAngleStatus(angles.hipAngle, 75, 120);
-  const shoulderStatus = getAngleStatus(angles.shoulderAngle, 160, 180);
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="p-4 border-b flex items-center justify-between">
-        <div className="flex items-center">
-          <Activity className="h-5 w-5 text-primary mr-2" />
-          <h3 className="text-lg font-medium">Biomechanical Analysis</h3>
+    <div className="space-y-4">
+      {/* Angles Card */}
+      <Card className="p-4 border">
+        <h3 className="font-medium text-base mb-3">Body Angles</h3>
+        <div className="space-y-1">
+          {renderAngles()}
         </div>
-        <BarChart className="h-4 w-4 text-muted-foreground" />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        {/* Angles Display */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <Target className="h-4 w-4 mr-1" />
-            Body Angles
-          </h4>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Knee Angle:</span>
-              <span className={`font-medium ${getStatusClassname(kneeStatus)}`}>
-                {formatAngle(angles.kneeAngle)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Hip Angle:</span>
-              <span className={`font-medium ${getStatusClassname(hipStatus)}`}>
-                {formatAngle(angles.hipAngle)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Shoulder Angle:</span>
-              <span className={`font-medium ${getStatusClassname(shoulderStatus)}`}>
-                {formatAngle(angles.shoulderAngle)}
-              </span>
-            </div>
+      </Card>
+
+      {/* Biomarkers Card */}
+      {Object.keys(biomarkers).length > 0 && (
+        <Card className="p-4 border">
+          <h3 className="font-medium text-base mb-3">Motion Biomarkers</h3>
+          <div className="space-y-1">
+            {renderBiomarkers()}
           </div>
-        </div>
-        
-        {/* Biomarkers Display */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <BarChart className="h-4 w-4 mr-1" />
-            Performance Metrics
-          </h4>
-          <div className="space-y-3">
-            {Object.entries(biomarkers).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between">
-                <span className="text-sm capitalize">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}:
-                </span>
-                <span className="font-medium">
-                  {typeof value === 'number' ? `${Math.round(value * 100)}%` : value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Recommendations */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <ChevronRight className="h-4 w-4 mr-1" />
-            Real-time Analysis
-          </h4>
-          <p className="text-sm mb-3">
-            {getKneeRecommendation()}
-          </p>
-          {angles.kneeAngle && (
-            <div className="text-xs text-muted-foreground mt-2 pt-2 border-t flex items-center justify-between">
-              <span>Optimal knee angle: 90° - 140°</span>
-              <ArrowRight className="h-3 w-3" />
-            </div>
-          )}
-        </div>
-      </div>
-    </Card>
+        </Card>
+      )}
+    </div>
   );
 };
 

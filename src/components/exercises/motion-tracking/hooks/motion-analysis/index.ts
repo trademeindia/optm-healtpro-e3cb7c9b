@@ -15,7 +15,7 @@ import {
   // UseFeedbackReturn
 } from './types';
 
-export { 
+export type { 
   MotionAnalysisState,
   UseMotionAnalysisReturn
 };

@@ -10,6 +10,9 @@ export {
   useSessionState,
   useSessionActions,
   useSessionData,
+};
+
+export type {
   SessionState,
   SessionActions,
   UseSessionManagementReturn
