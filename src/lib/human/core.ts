@@ -12,10 +12,14 @@ let isModelLoading = false;
 let modelLoadingPromise: Promise<boolean> | null = null;
 let modelLoadProgress = 0;
 
-// Event handler for tracking model loading progress
-const updateProgress = (progress: { progress: number, status: string }) => {
-  modelLoadProgress = Math.floor(progress.progress * 100);
-  console.log(`Model loading progress: ${modelLoadProgress}%`, progress.status);
+// Properly typed event handler for tracking model loading progress
+const updateProgress = (event: Event) => {
+  // Cast the event to any since Human.js uses custom event types
+  const progressEvent = event as any;
+  if (progressEvent && typeof progressEvent.progress === 'number') {
+    modelLoadProgress = Math.floor(progressEvent.progress * 100);
+    console.log(`Model loading progress: ${modelLoadProgress}%`, progressEvent.status || '');
+  }
 };
 
 /**
@@ -45,7 +49,7 @@ export const warmupModel = async (): Promise<boolean> => {
   modelLoadProgress = 0;
   console.log('Starting Human.js model loading...');
   
-  // Register progress handler
+  // Register progress handler with correct type
   if (human.events) {
     human.events.addEventListener('progress', updateProgress);
   }
