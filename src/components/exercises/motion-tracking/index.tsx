@@ -14,7 +14,48 @@ import { useHumanDetection } from './hooks/useHumanDetection';
 import { useCameraManager } from './hooks/useCameraManager';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { DetectionError } from '@/lib/human/types';
+import { DetectionError, DetectionErrorType } from '@/lib/human/types';
+
+// Check the props for all components to make sure they match what we're providing
+interface ModelLoadingStateProps {
+  loadingProgress?: number;
+}
+
+interface CameraViewProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  showFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+}
+
+interface MotionRendererProps {
+  result?: any;
+  detectionResult?: any;
+  angles: any;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  motionState: any;
+}
+
+interface FeedbackDisplayProps {
+  feedback: any;
+  stats: any;
+}
+
+interface ControlPanelProps {
+  cameraActive: boolean;
+  detectionFps: number | null;
+  isModelLoaded: boolean;
+  isDetecting?: boolean;
+  motionState: any;
+  stats: any;
+  onCameraToggle: () => void;
+  onReset: () => void;
+}
+
+interface BiomarkersDisplayProps {
+  biomarkers: Record<string, any>;
+  angles: any;
+}
 
 const MotionTracking: React.FC = () => {
   const { cameraActive, videoRef, startCamera, stopCamera } = useCameraManager();
@@ -74,7 +115,7 @@ const MotionTracking: React.FC = () => {
 
   // Render loading state
   if (!isModelLoaded) {
-    return <ModelLoadingState />;
+    return <ModelLoadingState loadingProgress={0} />;
   }
 
   // Render error state for model loading errors
@@ -99,7 +140,7 @@ const MotionTracking: React.FC = () => {
               {/* Detection overlay */}
               {cameraActive && result && (
                 <MotionRenderer
-                  detectionResult={result}
+                  result={result}
                   angles={angles}
                   canvasRef={canvasRef}
                   motionState={motionState}
@@ -139,7 +180,7 @@ const MotionTracking: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-4"
               >
-                <FeedbackDisplay feedback={feedback} />
+                <FeedbackDisplay feedback={feedback} stats={stats} />
               </motion.div>
             )}
           </div>
@@ -164,7 +205,7 @@ const MotionTracking: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <BiomarkersDisplay biomarkers={biomarkers} />
+                  <BiomarkersDisplay biomarkers={biomarkers} angles={angles} />
                 </motion.div>
               )}
             </div>
