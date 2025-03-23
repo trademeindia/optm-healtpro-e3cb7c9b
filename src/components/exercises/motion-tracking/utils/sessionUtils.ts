@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MotionStats } from '../../posture-monitor/types';
+import { toJsonObject } from './jsonUtils';
 
 let offlineQueue: Array<any> = [];
 let isProcessingQueue = false;
@@ -114,18 +115,25 @@ export const saveDetectionData = async (
     // Try to get the authenticated user
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Prepare the data record with required patient_id field
+    // Create a JSON-safe version of the data
     const dataRecord = {
       session_id: sessionId,
       patient_id: user?.id || 'anonymous', // Ensure patient_id is always present
-      angles: angles || {},
-      biomarkers: biomarkers || {},
-      metadata: {
+      angles: toJsonObject(angles || {}),
+      biomarkers: toJsonObject(biomarkers || {}),
+      metadata: toJsonObject({
         motionState: motionState,
         exerciseType: exerciseType,
-        stats: stats,
+        stats: {
+          totalReps: stats.totalReps,
+          goodReps: stats.goodReps,
+          badReps: stats.badReps,
+          accuracy: stats.accuracy,
+          currentStreak: stats.currentStreak,
+          bestStreak: stats.bestStreak
+        },
         timestamp: new Date().toISOString()
-      }
+      })
     };
     
     // Try to save to Supabase
@@ -153,18 +161,25 @@ export const saveDetectionData = async (
     // Get the authenticated user for the offline queue item
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Add to offline queue with the patient_id
+    // Add to offline queue with the patient_id and properly converted to JSON
     offlineQueue.push({
       session_id: sessionId,
       patient_id: user?.id || 'anonymous', // Ensure patient_id is always present
-      angles: angles || {},
-      biomarkers: biomarkers || {},
-      metadata: {
+      angles: toJsonObject(angles || {}),
+      biomarkers: toJsonObject(biomarkers || {}),
+      metadata: toJsonObject({
         motionState: motionState,
         exerciseType: exerciseType,
-        stats: stats,
+        stats: {
+          totalReps: stats.totalReps,
+          goodReps: stats.goodReps,
+          badReps: stats.badReps,
+          accuracy: stats.accuracy,
+          currentStreak: stats.currentStreak || 0,
+          bestStreak: stats.bestStreak || 0
+        },
         timestamp: new Date().toISOString()
-      }
+      })
     });
     
     return false;
@@ -196,13 +211,13 @@ export const completeSession = (
     .from('analysis_sessions')
     .update({
       end_time: new Date().toISOString(),
-      summary: {
+      summary: toJsonObject({
         reps: stats.totalReps,
         goodReps: stats.goodReps,
         badReps: stats.badReps,
         accuracy: stats.accuracy,
         biomarkers: biomarkers
-      }
+      })
     })
     .eq('id', sessionId)
     .then(({ error }) => {

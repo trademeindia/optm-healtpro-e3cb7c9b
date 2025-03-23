@@ -29,4 +29,3 @@ export const toJsonObject = (obj: any): Json => {
   
   return result;
 };
-
