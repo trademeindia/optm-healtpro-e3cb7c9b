@@ -8,4 +8,4 @@ export * from './config';
 
 // Export shorthand for import convenience
 export { human } from './humanInstance';
-export { warmupModel, resetModel } from './modelLoader';
+export { warmupModel, resetModel, getModelLoadProgress } from './modelLoader';

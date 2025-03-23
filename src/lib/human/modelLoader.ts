@@ -2,12 +2,23 @@
 import { human } from './humanInstance';
 import { humanConfig } from './config';
 
+// Track loading progress
+let modelLoadProgress = 0;
+
+/**
+ * Get the current model loading progress (0-100)
+ */
+export const getModelLoadProgress = (): number => {
+  return modelLoadProgress;
+};
+
 /**
  * Warm up the model to ensure it's ready for detection
  */
 export const warmupModel = async () => {
   try {
     console.log('Warming up Human.js model...');
+    modelLoadProgress = 10;
     
     // Ensure model path is set correctly
     if (human.config.body.modelPath !== humanConfig.body.modelPath) {
@@ -16,14 +27,18 @@ export const warmupModel = async () => {
     }
     
     // Load the model
+    modelLoadProgress = 30;
     const loaded = await human.load();
-    console.log('Human.js model load status:', loaded ? 'Success' : 'Failed');
+    console.log('Human.js model load status:', loaded);
+    
+    modelLoadProgress = 70;
     
     // Check if models are actually loaded
-    const modelsLoaded = human.models.loaded();
+    const modelsLoaded = Object.keys(human.models).length > 0;
     console.log('Human.js models loaded:', modelsLoaded);
     
-    return loaded && modelsLoaded;
+    modelLoadProgress = 100;
+    return Boolean(loaded) && modelsLoaded;
   } catch (error) {
     console.error('Error warming up model:', error);
     return false;

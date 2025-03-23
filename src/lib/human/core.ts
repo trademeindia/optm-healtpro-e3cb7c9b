@@ -34,7 +34,10 @@ export const warmupModel = async (): Promise<boolean> => {
     // Load only what we need to reduce memory usage and speed up loading
     const modelLoaded = await human.load();
     
-    if (!modelLoaded) {
+    // Check that the model loaded successfully
+    const loadSuccess = Boolean(modelLoaded);
+    
+    if (!loadSuccess) {
       console.error('Failed to load Human model');
       return false;
     }
