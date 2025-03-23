@@ -47,7 +47,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   };
   
   return (
-    <Card className="w-full">
+    <Card className="border shadow-sm">
       <CardContent className="p-4">
         <div className="flex flex-wrap justify-center gap-3">
           {!isTracking ? (
@@ -55,6 +55,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               onClick={handleStartTracking} 
               disabled={!isModelLoaded}
               className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+              size="lg"
             >
               <Play className="h-4 w-4" />
               Start Tracking
@@ -63,6 +64,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <Button 
               onClick={handleStopTracking}
               className="flex-1 flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+              size="lg"
             >
               <StopCircle className="h-4 w-4" />
               Stop Tracking
@@ -73,6 +75,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             onClick={handleResetSession}
             variant="outline" 
             className="flex-1 flex items-center justify-center gap-2"
+            size="lg"
           >
             <RefreshCw className="h-4 w-4" />
             Reset Session

@@ -78,28 +78,26 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
       {/* Left column - Camera view and controls */}
       <div className="lg:col-span-7 space-y-4">
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex justify-between items-center">
-              <span>{exerciseName} Tracking</span>
-              {isModelLoaded && (
-                <div className="flex items-center text-sm font-normal">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  <span>AI Ready</span>
-                  {detectionFps && <span className="ml-2 text-muted-foreground">({Math.round(detectionFps)} FPS)</span>}
-                </div>
-              )}
-              {!isModelLoaded && (
-                <div className="flex items-center text-sm font-normal">
-                  <AlertCircle className="h-4 w-4 text-yellow-500 mr-1" />
-                  <span>Loading AI Model...</span>
-                </div>
-              )}
-            </CardTitle>
+        <Card className="overflow-hidden border shadow-sm">
+          <CardHeader className="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">{exerciseName} Tracking</CardTitle>
+            {isModelLoaded && (
+              <div className="flex items-center text-sm font-normal bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">
+                <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                <span>AI Ready</span>
+                {detectionFps && <span className="ml-1 opacity-70">({Math.round(detectionFps)} FPS)</span>}
+              </div>
+            )}
+            {!isModelLoaded && (
+              <div className="flex items-center text-sm font-normal bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full">
+                <AlertCircle className="h-3.5 w-3.5 mr-1" />
+                <span>Loading AI...</span>
+              </div>
+            )}
           </CardHeader>
           
           <CardContent className="p-0 relative">
-            <div className="full-body-view aspect-video">
+            <div className="aspect-video bg-muted/30">
               <CameraView 
                 videoRef={videoRef}
                 canvasRef={canvasRef}

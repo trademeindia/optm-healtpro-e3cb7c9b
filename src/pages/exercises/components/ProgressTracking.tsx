@@ -4,6 +4,7 @@ import MuscleProgress from '@/components/exercises/MuscleProgress';
 import WeeklyGoals from './WeeklyGoals';
 import DoctorRecommendations from './DoctorRecommendations';
 import { MuscleGroup, ProgressData } from '@/types/exercise.types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ProgressTrackingProps {
   muscleGroups: MuscleGroup[];
@@ -16,14 +17,35 @@ const ProgressTracking: React.FC<ProgressTrackingProps> = ({
 }) => {
   return (
     <>
-      <MuscleProgress 
-        muscleGroups={muscleGroups}
-        progressData={progressData}
-      />
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Progress Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MuscleProgress 
+            muscleGroups={muscleGroups}
+            progressData={progressData}
+          />
+        </CardContent>
+      </Card>
       
-      <WeeklyGoals />
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Weekly Goals</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeeklyGoals />
+        </CardContent>
+      </Card>
       
-      <DoctorRecommendations />
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Recommendations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DoctorRecommendations />
+        </CardContent>
+      </Card>
     </>
   );
 };
