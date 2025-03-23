@@ -61,8 +61,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     sessionStorage.removeItem('lastRoute');
     localStorage.removeItem('lastPath');
     
-    // Hard reload the page to ensure fresh assets
-    window.location.reload(true);
+    // Hard reload the page - use location.href to force full page refresh
+    window.location.href = window.location.href;
   }
 
   handleClearCache = () => {
@@ -83,8 +83,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     localStorage.clear();
     sessionStorage.clear();
     
-    // Force reload from server, not from cache
-    window.location.reload(true);
+    // Force reload using location.href to ensure fresh assets are loaded
+    window.location.href = window.location.href;
   }
 
   handleReturn = () => {

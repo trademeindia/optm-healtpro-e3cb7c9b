@@ -38,8 +38,8 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ onRetry, error }) => {
     // Clear local storage items related to app state
     localStorage.removeItem('lastRoute');
     
-    // Perform a hard reload
-    window.location.reload(true);
+    // Perform a hard reload by changing the URL to itself
+    window.location.href = window.location.href;
   };
 
   return (
