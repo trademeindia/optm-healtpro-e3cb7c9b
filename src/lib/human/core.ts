@@ -1,11 +1,11 @@
 
 import * as Human from '@vladmandic/human';
-import { modelConfig } from './config';
+import { humanConfig } from './config';
 
 /**
  * Global Human.js instance
  */
-const human = new Human.Human(modelConfig);
+const human = new Human.Human(humanConfig);
 
 /**
  * Initializes and warms up the Human model
