@@ -1,10 +1,10 @@
-
 import React, { Suspense, useState, useEffect } from 'react';
-import { Routes as RouterRoutes, Route } from 'react-router-dom';
+import { Routes as RouterRoutes, Route, useLocation } from 'react-router-dom';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { toast } from 'sonner';
 import { logRoutingState } from '@/utils/debugUtils';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { motion } from 'framer-motion';
 
 // Import actual components instead of route definitions
 import LoginPage from '@/pages/LoginPage';
@@ -18,12 +18,52 @@ import MotionAnalysisPage from '@/pages/dashboard/doctor/motion-analysis';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
 
+// Animation variants for page transitions
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 10,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -10,
+  }
+};
+
+// Animation transition configuration
+const pageTransition = {
+  type: "tween",
+  ease: "easeInOut",
+  duration: 0.3
+};
+
+// Animated route wrapper component
+const AnimatedRouteWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <motion.div
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+      className="page-wrapper"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const AppRoutes = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
   
   useEffect(() => {
     // Log routing state for debugging
-    logRoutingState('AppRoutes', { initialized: true });
+    logRoutingState('AppRoutes', { initialized: true, path: location.pathname });
     
     // Simulate loading to ensure everything is ready
     const timer = setTimeout(() => {
@@ -31,7 +71,7 @@ const AppRoutes = () => {
     }, 500);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [location]);
   
   if (isLoading) {
     return <LoadingScreen />;
@@ -48,21 +88,65 @@ const AppRoutes = () => {
   return (
     <ErrorBoundary onError={handleSuspenseError}>
       <Suspense fallback={<LoadingScreen />}>
-        <RouterRoutes>
+        <RouterRoutes location={location}>
           {/* Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<PlaceholderPage title="Signup Page" />} />
-          <Route path="/password-reset" element={<PlaceholderPage title="Password Reset Page" />} />
-          <Route path="/password-recovery" element={<PlaceholderPage title="Password Recovery Page" />} />
-          <Route path="/session-expired" element={<SessionExpired />} />
-          <Route path="/" element={<Index />} />
+          <Route 
+            path="/login" 
+            element={
+              <AnimatedRouteWrapper>
+                <LoginPage />
+              </AnimatedRouteWrapper>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <AnimatedRouteWrapper>
+                <PlaceholderPage title="Signup Page" />
+              </AnimatedRouteWrapper>
+            } 
+          />
+          <Route 
+            path="/password-reset" 
+            element={
+              <AnimatedRouteWrapper>
+                <PlaceholderPage title="Password Reset Page" />
+              </AnimatedRouteWrapper>
+            } 
+          />
+          <Route 
+            path="/password-recovery" 
+            element={
+              <AnimatedRouteWrapper>
+                <PlaceholderPage title="Password Recovery Page" />
+              </AnimatedRouteWrapper>
+            } 
+          />
+          <Route 
+            path="/session-expired" 
+            element={
+              <AnimatedRouteWrapper>
+                <SessionExpired />
+              </AnimatedRouteWrapper>
+            } 
+          />
+          <Route 
+            path="/" 
+            element={
+              <AnimatedRouteWrapper>
+                <Index />
+              </AnimatedRouteWrapper>
+            } 
+          />
           
           {/* Doctor Routes */}
           <Route
             path="/dashboard/doctor"
             element={
               <ProtectedRoute requiredRole={UserRole.DOCTOR}>
-                <DoctorDashboard />
+                <AnimatedRouteWrapper>
+                  <DoctorDashboard />
+                </AnimatedRouteWrapper>
               </ProtectedRoute>
             }
           />
@@ -71,7 +155,9 @@ const AppRoutes = () => {
             path="/dashboard/doctor/motion-analysis"
             element={
               <ProtectedRoute requiredRole={UserRole.DOCTOR}>
-                <MotionAnalysisPage />
+                <AnimatedRouteWrapper>
+                  <MotionAnalysisPage />
+                </AnimatedRouteWrapper>
               </ProtectedRoute>
             }
           />
@@ -99,7 +185,9 @@ const AppRoutes = () => {
             path="/dashboard/patient"
             element={
               <ProtectedRoute requiredRole={UserRole.PATIENT}>
-                <PatientDashboard />
+                <AnimatedRouteWrapper>
+                  <PatientDashboard />
+                </AnimatedRouteWrapper>
               </ProtectedRoute>
             }
           />
@@ -154,7 +242,9 @@ const AppRoutes = () => {
             path="/dashboard/receptionist"
             element={
               <ProtectedRoute requiredRole={UserRole.RECEPTIONIST}>
-                <ReceptionistDashboard />
+                <AnimatedRouteWrapper>
+                  <ReceptionistDashboard />
+                </AnimatedRouteWrapper>
               </ProtectedRoute>
             }
           />
@@ -251,7 +341,14 @@ const AppRoutes = () => {
           />
           
           {/* 404 Not Found */}
-          <Route path="*" element={<PlaceholderPage title="Not Found Page" />} />
+          <Route 
+            path="*" 
+            element={
+              <AnimatedRouteWrapper>
+                <PlaceholderPage title="Not Found Page" />
+              </AnimatedRouteWrapper>
+            } 
+          />
         </RouterRoutes>
       </Suspense>
     </ErrorBoundary>

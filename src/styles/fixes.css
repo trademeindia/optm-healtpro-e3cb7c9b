@@ -1,0 +1,81 @@
+
+/* Fix visibility and z-index issues */
+.dialog-content,
+.popover-content,
+.dropdown-content,
+.select-content {
+  z-index: 1000 !important;
+  background-color: hsl(var(--background)) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix card visibility */
+.card {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Make sure dialogs and modals show up */
+[role="dialog"] {
+  z-index: 1000;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure dropdowns are clickable */
+[data-state="open"] {
+  z-index: 50;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for radix/shadcn components */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for tab panels */
+[role="tabpanel"] {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for dropdown menus */
+.cm-menu {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for mobile layouts */
+@media (max-width: 768px) {
+  .responsive-stack {
+    flex-direction: column !important;
+  }
+  
+  .responsive-full-width {
+    width: 100% !important;
+  }
+  
+  .responsive-padding {
+    padding: 1rem !important;
+  }
+  
+  .responsive-hide {
+    display: none !important;
+  }
+  
+  .responsive-center {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
