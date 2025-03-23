@@ -5,7 +5,6 @@ import * as Human from '@vladmandic/human';
 import { human, warmupModel, resetModel } from '@/lib/human';
 import { DetectionResult, DetectionState } from './types';
 import { performDetection } from '../utils/detectionUtils';
-import { DetectionErrorType, DetectionError } from '@/lib/human/types';
 
 export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>) => {
   // Detection state
@@ -23,9 +22,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
   const lastFpsUpdateTime = useRef<number>(0);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCount = useRef<number>(0);
-  const detectionInProgress = useRef<boolean>(false);
   const maxRetries = 3;
-  const firstDetectionRef = useRef<boolean>(true);
 
   // Cleanup function
   useEffect(() => {
@@ -84,7 +81,6 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       
       toast.success('Motion detection model loaded successfully');
       retryCount.current = 0;
-      firstDetectionRef.current = true;
       return true;
     } catch (error) {
       console.error('Error loading Human.js model:', error);
@@ -106,11 +102,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
         setDetectionState(prev => ({ 
           ...prev, 
           isModelLoading: false,
-          detectionError: {
-            type: DetectionErrorType.MODEL_LOADING,
-            message: `Loading, retry ${retryCount.current}/${maxRetries}`,
-            retryable: true
-          }
+          detectionError: `Loading, retry ${retryCount.current}/${maxRetries}` 
         }));
         
         // Retry after a short delay
@@ -121,11 +113,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       setDetectionState(prev => ({ 
         ...prev, 
         isModelLoading: false,
-        detectionError: {
-          type: DetectionErrorType.MODEL_LOADING,
-          message: 'Failed to load motion detection model',
-          retryable: true
-        }
+        detectionError: 'Failed to load motion detection model' 
       }));
       
       toast.error('Failed to load motion detection model. Please try refreshing the page.');
@@ -149,15 +137,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     const elapsed = time - lastFrameTime.current;
     
     // Limit detection rate for performance (aim for ~20-30 FPS)
-    if (elapsed < 50) { // ~20 FPS max to avoid overwhelming the queue
-      requestRef.current = requestAnimationFrame(
-        (newTime) => detectFrame(newTime, onDetectionResult)
-      );
-      return;
-    }
-    
-    // Only start a new detection if there's not one already in progress
-    if (detectionInProgress.current) {
+    if (elapsed < 33) { // ~30 FPS
       requestRef.current = requestAnimationFrame(
         (newTime) => detectFrame(newTime, onDetectionResult)
       );
@@ -178,48 +158,22 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     }
     
     try {
-      detectionInProgress.current = true;
       setDetectionState(prev => ({ ...prev, isDetecting: true }));
       
       // Perform detection
       const detectionResult = await performDetection(videoRef.current);
       
-      // First detection succeeded, set flag to false
-      if (firstDetectionRef.current) {
-        firstDetectionRef.current = false;
-      }
-      
       // Pass detection result to callback
       onDetectionResult(detectionResult);
       
       setDetectionState(prev => ({ ...prev, isDetecting: false }));
-      detectionInProgress.current = false;
     } catch (error) {
       console.error('Error in detection:', error);
-      
-      // Convert to proper error type
-      const errorType = error.type || DetectionErrorType.UNKNOWN;
-      const errorMessage = error.message || 'Unknown detection error';
-      
       setDetectionState(prev => ({ 
         ...prev, 
         isDetecting: false,
-        detectionError: {
-          type: errorType,
-          message: errorMessage,
-          retryable: true
-        }
+        detectionError: 'Detection failed'
       }));
-      
-      // Only show toast error occasionally to avoid spam
-      if (frameCount.current % 10 === 0) {
-        toast.error('Detection error', {
-          description: errorMessage,
-          duration: 3000
-        });
-      }
-      
-      detectionInProgress.current = false;
     }
     
     // Continue detection loop
@@ -233,10 +187,6 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     onDetectionResult: (result: DetectionResult) => void
   ) => {
     if (!detectionState.isDetecting && detectionState.isModelLoaded) {
-      // Reset first detection flag
-      firstDetectionRef.current = true;
-      detectionInProgress.current = false;
-      
       requestRef.current = requestAnimationFrame(
         (time) => detectFrame(time, onDetectionResult)
       );
@@ -246,7 +196,6 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       // Try to load the model and then start detection
       loadModel().then(success => {
         if (success) {
-          detectionInProgress.current = false;
           requestRef.current = requestAnimationFrame(
             (time) => detectFrame(time, onDetectionResult)
           );
@@ -264,9 +213,6 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       setDetectionState(prev => ({ ...prev, isDetecting: false }));
       console.log('Stopping detection loop');
     }
-    
-    // Clear any detection in progress flag
-    detectionInProgress.current = false;
   }, []);
   
   return {

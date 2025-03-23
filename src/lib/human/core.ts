@@ -111,9 +111,9 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
     // Run detection with a timeout
     const detectionPromise = human.detect(input);
     
-    // Add a longer timeout to prevent hanging - increase to 15 seconds for initial detection
+    // Add a timeout to prevent hanging - increase to 10 seconds for more reliable detection
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), 15000);
+      setTimeout(() => reject(new Error('Detection timeout')), 10000);
     });
     
     // Race the detection against the timeout

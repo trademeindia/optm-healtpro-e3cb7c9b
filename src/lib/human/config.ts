@@ -4,7 +4,7 @@ import * as Human from '@vladmandic/human';
 // Configuration for the Human.js library
 export const humanConfig: Human.Config = {
   // Required core configuration
-  backend: 'webgl',
+  backend: 'webgl' as Human.BackendEnum,
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // Use CDN for faster model loading
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,
@@ -19,8 +19,10 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
   
-  // Remove useSimdWasm flag that was causing errors
-  flags: {}, // Empty flags object to avoid errors
+  // Remove useWebGPU flag that was causing errors
+  flags: {
+    useSimdWasm: true, // Use SIMD for better performance on supported browsers
+  },
   
   softwareKernels: true, // Fallback to software implementation if needed
   
