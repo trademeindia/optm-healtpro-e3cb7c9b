@@ -1,71 +1,47 @@
 
 import * as Human from '@vladmandic/human';
-import { BodyAngles, MotionState } from '../../posture-monitor/types';
+import { DetectionResult } from '../hooks/types';
+import { human } from '@/lib/human';
+import { calculateAngles } from '@/lib/human/angles';
+import { calculateBiomarkers } from '@/lib/human/biomarkers';
 
-export const performDetection = async (video: HTMLVideoElement) => {
-  const human = (window as any).human;
-  if (!human) {
-    console.error('Human.js not initialized');
+/**
+ * Performs pose detection on a video frame and returns processed results
+ */
+export const performDetection = async (
+  videoElement: HTMLVideoElement
+): Promise<DetectionResult> => {
+  if (!videoElement) {
+    throw new Error('Video element is not available');
+  }
+
+  try {
+    // Detect pose using Human.js
+    const result = await human.detect(videoElement);
+
+    if (!result || !result.body || result.body.length === 0) {
+      return {
+        result: null,
+        angles: {},
+        biomarkers: {},
+        timestamp: Date.now(),
+      };
+    }
+
+    // Calculate joint angles
+    const angles = calculateAngles(result);
+    
+    // Calculate biomarkers based on detection and angles
+    const biomarkers = calculateBiomarkers(result, angles);
+
     return {
-      result: null,
-      angles: {
-        kneeAngle: null,
-        hipAngle: null,
-        shoulderAngle: null,
-        elbowAngle: null,
-        ankleAngle: null,
-        neckAngle: null
-      },
-      biomarkers: {},
-      newMotionState: MotionState.STANDING
+      result,
+      angles,
+      biomarkers,
+      timestamp: Date.now(),
     };
+  } catch (error) {
+    console.error('Error in detection:', error);
+    throw new Error('Failed to perform detection');
   }
-  
-  const detectionResult = await human.detect(video);
-  
-  // In a real app, extract angles from the pose
-  const extractedAngles = {
-    kneeAngle: 170, // Simulated value
-    hipAngle: 160,  // Simulated value
-    shoulderAngle: 180,
-    elbowAngle: 170,
-    ankleAngle: 90,
-    neckAngle: 160
-  };
-  
-  const extractedBiomarkers = {
-    balance: 0.85,
-    stability: 0.9,
-    symmetry: 0.8
-  };
-  
-  // Determine motion state based on knee angle
-  const kneeAngle = extractedAngles.kneeAngle;
-  let newMotionState = MotionState.STANDING;
-  
-  if (kneeAngle < 130) {
-    newMotionState = MotionState.FULL_MOTION;
-  } else if (kneeAngle < 160) {
-    newMotionState = MotionState.MID_MOTION;
-  }
-  
-  return {
-    result: detectionResult,
-    angles: extractedAngles,
-    biomarkers: extractedBiomarkers,
-    newMotionState
-  };
-};
-
-export const calculateBodyAngles = (keypoints: any[]): BodyAngles => {
-  // This would contain complex angle calculation logic
-  // Simplified for this example
-  return {
-    kneeAngle: 170,
-    hipAngle: 160,
-    shoulderAngle: 180,
-    elbowAngle: 170,
-    ankleAngle: 90,
-    neckAngle: 160
-  };
 };
