@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Activity, BarChart, Clipboard, Play, Save, StopCircle } from 'lucide-react';
+import { Activity, BarChart, Clipboard, Play, Save, StopCircle, RefreshCw, Settings } from 'lucide-react';
 
 interface ControlPanelProps {
   controls: {
@@ -32,11 +32,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ controls }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {!isDetecting ? (
             <Button 
               onClick={onStartDetection} 
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white"
               disabled={!isModelLoaded}
             >
               <Play className="h-4 w-4 mr-2" />
@@ -46,14 +46,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ controls }) => {
             <Button 
               onClick={onStopDetection} 
               variant="destructive" 
-              className="flex-1"
             >
               <StopCircle className="h-4 w-4 mr-2" />
               Stop
             </Button>
           )}
           
-          <Button onClick={onReset} variant="outline" className="flex-1">
+          <Button onClick={onReset} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
             Reset Session
           </Button>
           
@@ -67,9 +67,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ controls }) => {
             Analytics
           </Button>
           
-          <Button variant="outline" className="col-span-2">
-            <Clipboard className="h-4 w-4 mr-2" />
-            Export Report
+          <Button variant="secondary" className="col-span-2">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
           </Button>
         </div>
       </CardContent>

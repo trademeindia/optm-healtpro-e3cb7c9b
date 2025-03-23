@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { AlertCircle, Play } from 'lucide-react';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -17,6 +17,41 @@ const CameraView: React.FC<CameraViewProps> = ({
   detectionStatus = { isDetecting: false },
   errorMessage
 }) => {
+  // Initialize camera when component mounts
+  useEffect(() => {
+    const initCamera = async () => {
+      if (!videoRef.current) return;
+      
+      try {
+        const constraints = {
+          audio: false,
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          }
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+      }
+    };
+    
+    initCamera();
+    
+    // Cleanup function to stop camera on unmount
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, [videoRef]);
+  
   return (
     <div className="relative w-full aspect-video bg-black flex items-center justify-center">
       <video
@@ -47,6 +82,7 @@ const CameraView: React.FC<CameraViewProps> = ({
       {!detectionStatus.isDetecting && !errorMessage && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
           <div className="text-center text-white">
+            <Play className="h-8 w-8 mx-auto mb-2 text-white" />
             <p className="text-xl">Camera Ready</p>
             <p className="text-sm text-gray-300 mt-2">Click "Start Tracking" to begin</p>
           </div>

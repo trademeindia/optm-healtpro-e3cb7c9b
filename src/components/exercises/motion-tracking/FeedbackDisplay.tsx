@@ -16,8 +16,8 @@ interface FeedbackDisplayProps {
 }
 
 const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) => {
-  // If no feedback or empty message, don't display
-  if (!feedback.message) return null;
+  // Default message if no feedback
+  const displayMessage = feedback.message || 'Ready for exercise. Maintain good posture.';
   
   // Set color based on feedback type
   const messageClass = 
@@ -34,40 +34,40 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) =>
       <CardContent>
         <div className="mb-4">
           <div className={`text-base font-medium ${messageClass}`}>
-            {feedback.message}
+            {displayMessage}
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-          <div className="bg-muted p-2 rounded-md">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+          <div className="bg-muted p-3 rounded-md">
             <div className="text-sm">Reps</div>
-            <div className="font-semibold">{stats.totalReps}</div>
+            <div className="font-semibold text-lg">{stats.totalReps}</div>
           </div>
-          <div className="bg-muted p-2 rounded-md">
+          <div className="bg-muted p-3 rounded-md">
             <div className="text-sm">Good</div>
-            <div className="font-semibold text-green-500">{stats.goodReps}</div>
+            <div className="font-semibold text-lg text-green-500">{stats.goodReps}</div>
           </div>
-          <div className="bg-muted p-2 rounded-md">
+          <div className="bg-muted p-3 rounded-md">
             <div className="text-sm">Needs Work</div>
-            <div className="font-semibold text-orange-500">{stats.badReps}</div>
+            <div className="font-semibold text-lg text-orange-500">{stats.badReps}</div>
           </div>
-          <div className="bg-muted p-2 rounded-md">
+          <div className="bg-muted p-3 rounded-md">
             <div className="text-sm">Accuracy</div>
-            <div className="font-semibold">{stats.accuracy}%</div>
+            <div className="font-semibold text-lg">{stats.accuracy}%</div>
           </div>
           
-          {stats.currentStreak !== undefined && stats.bestStreak !== undefined && (
-            <>
-              <div className="bg-muted p-2 rounded-md col-span-2">
-                <div className="text-sm">Current Streak</div>
-                <div className="font-semibold">{stats.currentStreak} reps</div>
-              </div>
-              <div className="bg-muted p-2 rounded-md col-span-2">
-                <div className="text-sm">Best Streak</div>
-                <div className="font-semibold">{stats.bestStreak} reps</div>
-              </div>
-            </>
-          )}
+          <div className="bg-muted p-3 rounded-md col-span-1 md:col-span-2">
+            <div className="text-sm">Current Streak</div>
+            <div className="font-semibold text-lg">
+              {stats.currentStreak !== undefined ? stats.currentStreak : 0} reps
+            </div>
+          </div>
+          <div className="bg-muted p-3 rounded-md col-span-1 md:col-span-2">
+            <div className="text-sm">Best Streak</div>
+            <div className="font-semibold text-lg">
+              {stats.bestStreak !== undefined ? stats.bestStreak : 0} reps
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

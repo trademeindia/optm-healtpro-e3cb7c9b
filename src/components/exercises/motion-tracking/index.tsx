@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle, Play, Settings, Zap } from 'lucide-react';
+import { AlertCircle, CheckCircle, Play, Settings, Zap, StopCircle, RefreshCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
@@ -42,8 +42,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   };
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <Card className="overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+      <Card className="overflow-hidden h-full">
         <CardHeader className="pb-2">
           <CardTitle className="flex justify-between items-center">
             <span>Exercise Tracking</span>
@@ -101,11 +101,13 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
               
               {isDetecting && (
                 <Button onClick={stopDetection} variant="destructive">
+                  <StopCircle className="h-4 w-4 mr-1" />
                   Stop Tracking
                 </Button>
               )}
               
               <Button onClick={resetSession} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-1" />
                 Reset Session
               </Button>
               
@@ -132,13 +134,13 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
         </CardContent>
       </Card>
       
-      <div className="space-y-4">
+      <div className="space-y-4 h-full flex flex-col">
         <FeedbackDisplay 
           feedback={feedback} 
           stats={stats}
         />
         
-        <Card>
+        <Card className="flex-grow">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
               <Zap className="h-5 w-5 mr-2 text-yellow-500" />

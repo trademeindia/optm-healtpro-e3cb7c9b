@@ -20,7 +20,22 @@ export const useDetectionState = () => {
     try {
       if (!isModelLoaded) {
         setDetectionError(null);
+        
+        // Configure human.js to use a lite model that's more reliable
+        human.config = {
+          ...human.config,
+          modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
+          body: {
+            enabled: true,
+            modelPath: 'blazepose-lite.json', // Use lite model instead of heavy
+          },
+          // Improve performance
+          backend: 'webgl',
+          warmup: 'none',
+        };
+        
         await human.load();
+        console.log('Human.js model loaded successfully');
         setIsModelLoaded(true);
       }
       return true;
