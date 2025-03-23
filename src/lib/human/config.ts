@@ -15,6 +15,12 @@ export const humanConfig: Human.Config = {
   skipAllowed: false,
   deallocate: false,
   
+  // Additional required configs to satisfy TypeScript
+  wasmPlatformFetch: false,
+  validateModels: true,
+  flags: {},
+  softwareKernels: false,
+  
   // Filter configuration
   filter: { 
     enabled: true, 

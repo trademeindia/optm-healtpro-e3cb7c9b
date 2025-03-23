@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pause, Play, RefreshCw, Camera, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useHumanDetection } from './useHumanDetection';
+import { useHumanDetection } from './hooks/useHumanDetection';
 import FeedbackDisplay from './FeedbackDisplay';
 import MotionRenderer from './MotionRenderer';
 import BiomarkersDisplay from './BiomarkersDisplay';
