@@ -42,7 +42,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   };
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full motion-tracker-grid">
       <Card className="overflow-hidden h-full">
         <CardHeader className="pb-2">
           <CardTitle className="flex justify-between items-center">
@@ -62,22 +62,24 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 relative">
-          <CameraView 
-            videoRef={videoRef} 
-            canvasRef={canvasRef}
-            detectionStatus={{ isDetecting }}
-            errorMessage={detectionError}
-          />
-          
-          <MotionRenderer 
-            result={result} 
-            canvasRef={canvasRef} 
-            angles={angles}
-          />
+        <CardContent className="p-0 relative exercise-camera-container">
+          <div className="exercise-tracking-wrapper">
+            <CameraView 
+              videoRef={videoRef} 
+              canvasRef={canvasRef}
+              detectionStatus={{ isDetecting }}
+              errorMessage={detectionError}
+            />
+            
+            <MotionRenderer 
+              result={result} 
+              canvasRef={canvasRef} 
+              angles={angles}
+            />
+          </div>
           
           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-            <div className="flex justify-center space-x-2">
+            <div className="flex justify-center space-x-2 control-buttons">
               {!isDetecting && (
                 <TooltipProvider>
                   <Tooltip>
@@ -85,10 +87,10 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
                       <Button 
                         onClick={startDetection} 
                         variant="default" 
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-green-600 hover:bg-green-700 text-white control-button"
                         disabled={!isModelLoaded}
                       >
-                        <Play className="h-4 w-4 mr-1" />
+                        <Play className="h-4 w-4 mr-1 control-icon" />
                         Start Tracking
                       </Button>
                     </TooltipTrigger>
@@ -100,19 +102,19 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
               )}
               
               {isDetecting && (
-                <Button onClick={stopDetection} variant="destructive">
-                  <StopCircle className="h-4 w-4 mr-1" />
+                <Button onClick={stopDetection} variant="destructive" className="control-button">
+                  <StopCircle className="h-4 w-4 mr-1 control-icon" />
                   Stop Tracking
                 </Button>
               )}
               
-              <Button onClick={resetSession} variant="outline">
-                <RefreshCw className="h-4 w-4 mr-1" />
+              <Button onClick={resetSession} variant="outline" className="control-button">
+                <RefreshCw className="h-4 w-4 mr-1 control-icon" />
                 Reset Session
               </Button>
               
               {onFinish && (
-                <Button onClick={handleFinish} variant="secondary">
+                <Button onClick={handleFinish} variant="secondary" className="control-button">
                   Finish Exercise
                 </Button>
               )}
@@ -120,8 +122,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Settings className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="control-button">
+                      <Settings className="h-4 w-4 control-icon" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>

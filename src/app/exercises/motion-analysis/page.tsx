@@ -13,7 +13,7 @@ export default function MotionAnalysisPage() {
         </p>
       </div>
       
-      <div className="motion-tracker-container">
+      <div className="motion-tracker-container w-full">
         <MotionTracker
           exerciseId="basic-squat"
           exerciseName="Basic Squat Technique"
