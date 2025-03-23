@@ -17,7 +17,7 @@ const handleDoctorRouteError = (error: Error) => {
   });
 };
 
-export const DoctorRoutes: React.FC = () => {
+export const DoctorRoutes = () => {
   return (
     <>
       <Route

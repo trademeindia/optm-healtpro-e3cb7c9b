@@ -1,6 +1,6 @@
 
 import React, { Suspense, useState, useEffect } from 'react';
-import { Routes as RouterRoutes } from 'react-router-dom';
+import { Routes as RouterRoutes, Route } from 'react-router-dom';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AuthRoutes } from './auth/AuthRoutes';
 import { DoctorRoutes } from './dashboard/DoctorRoutes';
@@ -42,19 +42,10 @@ const AppRoutes: React.FC = () => {
     <ErrorBoundary onError={handleSuspenseError}>
       <Suspense fallback={<LoadingScreen />}>
         <RouterRoutes>
-          {/* Auth Routes */}
           <AuthRoutes />
-          
-          {/* Doctor Routes */}
           <DoctorRoutes />
-          
-          {/* Patient Routes */}
           <PatientRoutes />
-          
-          {/* Receptionist Routes */}
           <ReceptionistRoutes />
-          
-          {/* Common Routes */}
           <CommonRoutes />
         </RouterRoutes>
       </Suspense>

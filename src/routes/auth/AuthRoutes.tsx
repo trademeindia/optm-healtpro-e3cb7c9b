@@ -6,7 +6,7 @@ import SessionExpired from '@/components/SessionExpired';
 import LoginPage from '@/pages/LoginPage';
 import Index from '@/pages/Index';
 
-export const AuthRoutes: React.FC = () => {
+export const AuthRoutes = () => {
   return (
     <>
       {/* Public Routes */}

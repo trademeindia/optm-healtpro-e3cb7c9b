@@ -5,7 +5,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { UserRole } from '@/contexts/auth/types';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
 
-export const CommonRoutes: React.FC = () => {
+export const CommonRoutes = () => {
   return (
     <>
       <Route

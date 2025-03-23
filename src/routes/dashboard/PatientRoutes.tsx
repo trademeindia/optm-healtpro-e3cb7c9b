@@ -6,7 +6,7 @@ import { UserRole } from '@/contexts/auth/types';
 import PatientDashboard from '@/pages/dashboard/patient/PatientDashboard';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
 
-export const PatientRoutes: React.FC = () => {
+export const PatientRoutes = () => {
   return (
     <>
       <Route

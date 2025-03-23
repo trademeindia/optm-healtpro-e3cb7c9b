@@ -43,13 +43,18 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
         }
       }
       
+      // Ensure the multiplier is one of the valid values
+      const safeMultiplier = config.multiplier && [0.5, 0.75, 1.0].includes(config.multiplier) 
+        ? config.multiplier 
+        : 0.75;
+      
       // Load PoseNet model with correct type-safe config
-      console.log("Loading PoseNet model with config:", config);
+      console.log("Loading PoseNet model with config:", {...config, multiplier: safeMultiplier});
       const loadedModel = await posenet.load({
         architecture: config.architecture || 'MobileNetV1',
         outputStride: config.outputStride || 16,
         inputResolution: config.inputResolution,
-        multiplier: config.multiplier || 0.75,
+        multiplier: safeMultiplier,
         quantBytes: config.quantBytes || 2
       });
       

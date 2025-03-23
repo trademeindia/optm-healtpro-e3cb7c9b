@@ -9,7 +9,6 @@ export interface PoseDetectionConfig {
     height: number;
   };
   scoreThreshold: number;
-  // Add missing properties for PoseNet configuration
   architecture?: 'MobileNetV1' | 'ResNet50';
   outputStride?: 8 | 16 | 32;
   // Fix the multiplier values to match the allowed MobileNetMultiplier type

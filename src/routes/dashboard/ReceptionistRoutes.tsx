@@ -6,7 +6,7 @@ import { UserRole } from '@/contexts/auth/types';
 import ReceptionistDashboard from '@/pages/dashboard/receptionist/ReceptionistDashboard';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
 
-export const ReceptionistRoutes: React.FC = () => {
+export const ReceptionistRoutes = () => {
   return (
     <>
       <Route
