@@ -19,10 +19,8 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
   
-  // Remove useWebGPU flag that was causing errors
-  flags: {
-    useSimdWasm: true, // Use SIMD for better performance on supported browsers
-  },
+  // Remove useSimdWasm flag that was causing errors
+  flags: {}, // Empty flags object to avoid errors
   
   softwareKernels: true, // Fallback to software implementation if needed
   

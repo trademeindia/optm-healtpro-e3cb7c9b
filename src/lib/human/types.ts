@@ -1,90 +1,32 @@
 
 import * as Human from '@vladmandic/human';
 
-// Enhanced BodyKeypoint type to ensure it always has x, y coordinates
-export interface EnhancedBodyKeypoint extends Human.BodyKeypoint {
-  x: number;
-  y: number;
-  score: number;
-  name?: string;
-}
+// Re-export Human types for convenience
+export type HumanConfig = Human.Config;
+export type HumanResult = Human.Result;
+export type BodyResult = Human.BodyResult;
+export type BodyKeypoint = Human.BodyKeypoint;
 
-// Extended Result type with additional properties
-export interface EnhancedResult extends Human.Result {
-  source?: {
-    width: number;
-    height: number;
-  };
-  body: Human.BodyResult[];
-}
-
-// Detection status interface
+// Detection status for UI updates
 export interface DetectionStatus {
   isDetecting: boolean;
-  fps: number;
+  fps: number | null;
   confidence: number | null;
   detectedKeypoints?: number;
-  lastDetectionTime?: number;
+  error?: string | null;
 }
 
-// Motion analysis state
-export enum MotionState {
-  STANDING = 'standing',
-  MID_MOTION = 'mid_motion',
-  FULL_MOTION = 'full_motion'
+// Define error types
+export enum DetectionErrorType {
+  MODEL_LOADING = 'MODEL_LOADING',
+  CAMERA_ACCESS = 'CAMERA_ACCESS',
+  DETECTION_TIMEOUT = 'DETECTION_TIMEOUT',
+  INSUFFICIENT_MEMORY = 'INSUFFICIENT_MEMORY',
+  UNKNOWN = 'UNKNOWN'
 }
 
-// Body angles interface
-export interface BodyAngles {
-  kneeAngle: number | null;
-  hipAngle: number | null;
-  shoulderAngle: number | null;
-  elbowAngle: number | null;
-  ankleAngle: number | null;
-  neckAngle: number | null;
-}
-
-// Feedback types
-export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
-
-// Feedback message interface
-export interface FeedbackMessage {
-  message: string | null;
-  type: FeedbackType;
-}
-
-// Motion statistics
-export interface MotionStats {
-  totalReps: number;
-  goodReps: number;
-  badReps: number;
-  accuracy: number;
-}
-
-// Exercise detection config
-export interface ExerciseDetectionConfig {
-  minConfidence: number;
-  repCountThreshold: {
-    kneeAngle?: {
-      min: number;
-      max: number;
-    };
-    hipAngle?: {
-      min: number;
-      max: number;
-    };
-    shoulderAngle?: {
-      min: number;
-      max: number;
-    };
-  };
-  feedbackThresholds: {
-    warning: number;
-    error: number;
-  };
+export interface DetectionError {
+  type: DetectionErrorType;
+  message: string;
+  retryable: boolean;
 }

@@ -50,27 +50,14 @@ export const performDetection = async (
       }
     }
     
-    // Run detection with longer timeout (10 seconds)
-    const detectionPromise = human.detect(videoElement);
-    
-    // Add a longer timeout for initial detections, then reduce for subsequent ones
-    const timeoutDuration = 10000; // 10 seconds
-    
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), timeoutDuration);
-    });
-    
-    // Log more details about the detection process
-    console.log(`Starting detection with ${timeoutDuration}ms timeout`);
+    // Run detection with longer timeout (15 seconds for first detection, 10s for subsequent)
+    console.log(`Starting detection with 15000ms timeout`);
     if (human.tf) {
       console.log(`Current tensor count: ${human.tf.engine().state.numTensors}`);
     }
     
-    // Race the detection against the timeout
-    const result = await Promise.race([
-      detectionPromise,
-      timeoutPromise
-    ]) as Human.Result;
+    // Direct detection without Promise.race to avoid timeout issues
+    const result = await human.detect(videoElement);
 
     if (!result || !result.body || result.body.length === 0) {
       console.log('No body detected in frame');
@@ -116,7 +103,7 @@ export const performDetection = async (
     try {
       if (human.tf && human.tf.engine) {
         const tensors = human.tf.engine().state.numTensors;
-        if (tensors > 500) {
+        if (tensors > 100) {
           console.warn(`High tensor count (${tensors}), cleaning up`);
           human.tf.engine().disposeVariables();
         }

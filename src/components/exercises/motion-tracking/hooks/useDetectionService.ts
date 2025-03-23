@@ -5,6 +5,7 @@ import * as Human from '@vladmandic/human';
 import { human, warmupModel, resetModel } from '@/lib/human';
 import { DetectionResult, DetectionState } from './types';
 import { performDetection } from '../utils/detectionUtils';
+import { DetectionErrorType } from '@/lib/human/types';
 
 export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>) => {
   // Detection state
@@ -23,6 +24,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCount = useRef<number>(0);
   const maxRetries = 3;
+  const firstDetectionRef = useRef<boolean>(true);
 
   // Cleanup function
   useEffect(() => {
@@ -81,6 +83,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       
       toast.success('Motion detection model loaded successfully');
       retryCount.current = 0;
+      firstDetectionRef.current = true;
       return true;
     } catch (error) {
       console.error('Error loading Human.js model:', error);
@@ -163,17 +166,36 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       // Perform detection
       const detectionResult = await performDetection(videoRef.current);
       
+      // First detection succeeded, set flag to false
+      if (firstDetectionRef.current) {
+        firstDetectionRef.current = false;
+      }
+      
       // Pass detection result to callback
       onDetectionResult(detectionResult);
       
       setDetectionState(prev => ({ ...prev, isDetecting: false }));
     } catch (error) {
       console.error('Error in detection:', error);
+      
+      // Check if this is still the first detection attempt
+      const errorType = firstDetectionRef.current 
+        ? DetectionErrorType.MODEL_LOADING
+        : DetectionErrorType.DETECTION_TIMEOUT;
+      
       setDetectionState(prev => ({ 
         ...prev, 
         isDetecting: false,
         detectionError: 'Detection failed'
       }));
+      
+      // Only show toast error every 5 frames to avoid spam
+      if (frameCount.current % 5 === 0) {
+        toast.error('Detection error', {
+          description: 'There was a problem detecting your pose',
+          duration: 3000
+        });
+      }
     }
     
     // Continue detection loop
@@ -187,6 +209,9 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     onDetectionResult: (result: DetectionResult) => void
   ) => {
     if (!detectionState.isDetecting && detectionState.isModelLoaded) {
+      // Reset first detection flag
+      firstDetectionRef.current = true;
+      
       requestRef.current = requestAnimationFrame(
         (time) => detectFrame(time, onDetectionResult)
       );
