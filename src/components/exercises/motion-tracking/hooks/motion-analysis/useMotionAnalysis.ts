@@ -1,100 +1,69 @@
 
-import { useState, useCallback } from 'react';
-import { FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
+import { useDetectionResults } from './useDetectionResults';
 import { useMotionState } from './useMotionState';
 import { useFeedback } from './useFeedback';
-import { useDetectionResults } from './useDetectionResults';
 import { evaluateRepQuality } from './repDetection';
+import { BodyAngles, MotionState } from '@/components/exercises/posture-monitor/types';
 
 export const useMotionAnalysis = () => {
-  const {
-    result,
-    angles,
-    biomarkers,
-    setResult,
-    setAngles,
-    setBiomarkers
-  } = useDetectionResults();
-  
-  const {
-    currentMotionState,
-    prevMotionState,
-    setCurrentMotionState,
-    setPrevMotionState
-  } = useMotionState();
-  
-  const {
-    feedback,
-    setFeedback,
-    generateFeedback
-  } = useFeedback();
+  const detectionResults = useDetectionResults();
+  const motionState = useMotionState();
+  const feedbackSystem = useFeedback();
 
-  // Process detection results
-  const processDetectionResult = useCallback((
+  const processMotionData = (
     detectionResult: any,
-    onRepComplete?: (isGoodForm: boolean) => void
+    angles: BodyAngles,
+    biomarkers: Record<string, any>
   ) => {
-    // Update state with detection results
-    setResult(detectionResult.result);
-    setAngles(detectionResult.angles);
-    setBiomarkers(detectionResult.biomarkers);
+    // Update detection results
+    detectionResults.updateResults(detectionResult, angles, biomarkers);
+
+    // Determine motion state based on knee angle
+    const kneeAngle = angles.kneeAngle;
+    let newMotionState = MotionState.STANDING;
     
+    if (kneeAngle && kneeAngle < 130) {
+      newMotionState = MotionState.FULL_MOTION;
+    } else if (kneeAngle && kneeAngle < 160) {
+      newMotionState = MotionState.MID_MOTION;
+    }
+
     // Check if a rep was completed (full motion to standing transition)
-    if (currentMotionState === MotionState.FULL_MOTION && 
-        detectionResult.newMotionState === MotionState.MID_MOTION &&
-        prevMotionState === MotionState.FULL_MOTION) {
+    if (motionState.currentMotionState === MotionState.FULL_MOTION && 
+        newMotionState === MotionState.MID_MOTION &&
+        motionState.prevMotionState === MotionState.FULL_MOTION) {
       
       // Evaluate rep quality
-      const evaluation = evaluateRepQuality(detectionResult.angles);
+      const evaluation = evaluateRepQuality(angles);
       
       if (evaluation) {
-        setFeedback({
-          message: evaluation.feedback,
-          type: evaluation.feedbackType
-        });
-        
-        // Notify parent component about rep completion
-        if (onRepComplete) {
-          onRepComplete(evaluation.isGoodForm);
-        }
+        return {
+          repCompleted: true,
+          isGoodForm: evaluation.isGoodForm,
+          feedback: evaluation.feedback,
+          feedbackType: evaluation.feedbackType
+        };
       }
-    } else {
-      // Update feedback based on current state
-      setFeedback(generateFeedback(detectionResult.newMotionState, detectionResult.angles));
     }
-    
-    // Update motion state
-    setPrevMotionState(currentMotionState);
-    setCurrentMotionState(detectionResult.newMotionState);
-  }, [
-    currentMotionState, 
-    prevMotionState, 
-    setResult, 
-    setAngles, 
-    setBiomarkers, 
-    setPrevMotionState, 
-    setCurrentMotionState, 
-    setFeedback,
-    generateFeedback
-  ]);
 
-  // Reset analysis
-  const resetAnalysis = useCallback(() => {
-    setCurrentMotionState(MotionState.STANDING);
-    setPrevMotionState(MotionState.STANDING);
-    setFeedback({
-      message: null,
-      type: FeedbackType.INFO
-    });
-  }, [setCurrentMotionState, setPrevMotionState, setFeedback]);
-  
+    // Update motion state
+    motionState.updateMotionState(newMotionState);
+    
+    // Update feedback if no rep was completed
+    const feedback = feedbackSystem.generateFeedback(newMotionState, angles);
+    feedbackSystem.updateFeedback(feedback);
+    
+    return { repCompleted: false };
+  };
+
   return {
-    result,
-    angles,
-    biomarkers,
-    currentMotionState,
-    feedback,
-    processDetectionResult,
-    resetAnalysis
+    processMotionData,
+    ...detectionResults,
+    motionState: motionState.currentMotionState,
+    prevMotionState: motionState.prevMotionState,
+    feedback: feedbackSystem.feedback,
+    updateMotionState: motionState.updateMotionState,
+    resetMotionState: motionState.resetMotionState,
+    updateFeedback: feedbackSystem.updateFeedback
   };
 };

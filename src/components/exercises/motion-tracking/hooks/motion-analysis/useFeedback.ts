@@ -1,31 +1,60 @@
 
-import { useState, useCallback } from 'react';
-import { FeedbackMessage, FeedbackType } from '@/components/exercises/posture-monitor/types';
-import { UseFeedbackReturn } from './types';
+import { useState } from 'react';
+import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
 
-export const useFeedback = (): UseFeedbackReturn => {
+export interface UseFeedbackReturn {
+  feedback: FeedbackMessage;
+  updateFeedback: (newFeedback: FeedbackMessage) => void;
+  resetFeedback: () => void;
+  generateFeedback: (motionState: MotionState, angles: BodyAngles) => FeedbackMessage;
+}
+
+export function useFeedback(): UseFeedbackReturn {
   const [feedback, setFeedback] = useState<FeedbackMessage>({
     message: null,
     type: FeedbackType.INFO
   });
 
-  const updateFeedback = useCallback((message: string | null, type: FeedbackType) => {
-    setFeedback({
-      message,
-      type
-    });
-  }, []);
+  const updateFeedback = (newFeedback: FeedbackMessage) => {
+    setFeedback(newFeedback);
+  };
 
-  const resetFeedback = useCallback(() => {
+  const resetFeedback = () => {
     setFeedback({
-      message: "Ready to start. Position yourself in the camera view.",
+      message: null,
       type: FeedbackType.INFO
     });
-  }, []);
+  };
+
+  const generateFeedback = (motionState: MotionState, angles: BodyAngles): FeedbackMessage => {
+    switch (motionState) {
+      case MotionState.STANDING:
+        return {
+          message: "Ready for exercise. Maintain good posture.",
+          type: FeedbackType.INFO
+        };
+      case MotionState.MID_MOTION:
+        return {
+          message: "Good form, continue the movement.",
+          type: FeedbackType.INFO
+        };
+      case MotionState.FULL_MOTION:
+        return {
+          message: "Great depth! Now return to starting position.",
+          type: FeedbackType.SUCCESS
+        };
+      default:
+        return {
+          message: null,
+          type: FeedbackType.INFO
+        };
+    }
+  };
 
   return {
     feedback,
     updateFeedback,
-    resetFeedback
+    resetFeedback,
+    generateFeedback
   };
-};
+}

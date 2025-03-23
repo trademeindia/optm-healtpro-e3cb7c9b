@@ -1,24 +1,6 @@
 
-import { MotionState, BodyAngles } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles, FeedbackType } from '@/components/exercises/posture-monitor/types';
 
-/**
- * Checks if a rep was completed based on state transitions
- */
-export const isRepCompleted = (
-  currentState: MotionState, 
-  prevState: MotionState,
-  beforePrevState: MotionState
-): boolean => {
-  return (
-    currentState === MotionState.MID_MOTION && 
-    prevState === MotionState.FULL_MOTION &&
-    beforePrevState === MotionState.FULL_MOTION
-  );
-};
-
-/**
- * Evaluates if the rep was performed with good form
- */
 export const evaluateRepQuality = (angles: BodyAngles) => {
   // Simple evaluation logic
   const kneeAngle = angles.kneeAngle || 180;
@@ -26,5 +8,28 @@ export const evaluateRepQuality = (angles: BodyAngles) => {
   
   const isGoodForm = kneeAngle < 120 && hipAngle < 140;
   
-  return isGoodForm;
+  return {
+    isGoodForm,
+    feedback: isGoodForm 
+      ? "Great form on that rep!" 
+      : "Try to keep your back straight and go deeper",
+    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
+  };
+};
+
+export const countReps = (
+  currentKneeAngle: number | null,
+  previousKneeAngle: number | null,
+  repThreshold: number = 130
+): boolean => {
+  if (currentKneeAngle === null || previousKneeAngle === null) {
+    return false;
+  }
+  
+  // Detect when knee angle changes from bent to more straight
+  // This indicates the completion of a rep (e.g., standing up from a squat)
+  const wasLowerThanThreshold = previousKneeAngle < repThreshold;
+  const isHigherThanThreshold = currentKneeAngle >= repThreshold;
+  
+  return wasLowerThanThreshold && isHigherThanThreshold;
 };

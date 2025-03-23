@@ -11,10 +11,7 @@ export default function MotionAnalysisPage() {
         Position yourself in front of the camera so your full body is visible.
       </p>
       
-      <MotionTracker
-        exerciseId="motion-analysis"
-        exerciseName="Motion Analysis"
-      />
+      <MotionTracker />
     </div>
   );
 }

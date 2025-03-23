@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Exercise } from '@/types/exercise.types'; 
@@ -31,9 +30,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   const navigate = useNavigate();
   const [showMotionTracker, setShowMotionTracker] = React.useState(false);
   
-  // Check if selectedExercise is null and handle it
   if (!selectedExercise) {
-    // Display a message or return a placeholder when no exercise is selected
     return (
       <div className="space-y-8">
         <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
@@ -73,7 +70,6 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   
   const handleFinishExercise = () => {
     setShowMotionTracker(false);
-    // Here you would typically update the completion status
     onFinishExercise();
   };
   
@@ -110,11 +106,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
       </div>
       
       {showMotionTracker ? (
-        <MotionTracker
-          exerciseId={selectedExercise.id}
-          exerciseName={selectedExercise.title}
-          onFinish={handleFinishExercise}
-        />
+        <MotionTracker onFinish={() => navigate('/exercises')} />
       ) : (
         <ExerciseVideo exercise={selectedExercise} />
       )}
