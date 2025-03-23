@@ -19,6 +19,10 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false,
   
+  // Add missing required properties
+  flags: {}, // Empty flags object
+  softwareKernels: false, // Disable software kernels for better performance
+  
   // Use a proper filter configuration that won't cause errors
   filter: {
     enabled: true,
