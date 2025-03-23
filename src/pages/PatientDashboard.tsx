@@ -1,17 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
-import usePatientDashboard from '@/hooks/usePatientDashboard';
-import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Appointment, AppointmentWithProvider } from '@/types/appointments';
 import DashboardHeader from '@/components/patient-dashboard/dashboard/DashboardHeader';
 import DashboardContent from '@/components/patient-dashboard/dashboard/DashboardContent';
 import DashboardLoading from '@/components/patient-dashboard/dashboard/DashboardLoading';
 import DashboardError from '@/components/patient-dashboard/dashboard/DashboardError';
+import DashboardTabs from '@/components/patient-dashboard/DashboardTabs';
+import usePatientDashboard from '@/hooks/usePatientDashboard';
 
 // Default values used in various places moved to a single location
 const defaultFitnessData = {
@@ -75,16 +75,16 @@ const PatientDashboard: React.FC = () => {
   }, [error]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoading) {
-        console.log("Loading timeout triggered");
-      }
-    }, 3000);
+    // Log when dashboard is mounted to debug
+    console.log("PatientDashboard mounted, user:", user?.id);
     
-    return () => clearTimeout(timer);
-  }, [isLoading]);
+    return () => {
+      console.log("PatientDashboard unmounted");
+    };
+  }, [user]);
 
   const handleRetry = () => {
+    console.log("Retrying dashboard load...");
     setHasError(false);
     setRetryCount(prev => prev + 1);
     window.location.reload();
@@ -110,7 +110,12 @@ const PatientDashboard: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-6 overflow-container bg-gray-50 dark:bg-gray-900">
           <DashboardHeader userName={user?.name || 'Patient'} />
           
-          <ErrorBoundary onError={(error) => console.error("Error boundary caught:", error)}>
+          <ErrorBoundary 
+            onError={(error) => {
+              console.error("Error boundary caught in PatientDashboard:", error);
+              setHasError(true);
+            }}
+          >
             <SymptomProvider>
               <DashboardTabs
                 initialTab={initialTab}
