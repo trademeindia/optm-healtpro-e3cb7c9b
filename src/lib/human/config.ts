@@ -1,21 +1,20 @@
 
 import * as Human from '@vladmandic/human';
 
-// Create Human instance with optimized configuration for body pose analysis
+// Configuration for the Human.js library
 export const humanConfig: Human.Config = {
-  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
+  // Model configuration
+  modelBasePath: '/',
   filter: { enabled: true, equalization: false },
   face: { enabled: false },
   body: { 
     enabled: true,
-    modelPath: 'blazepose-heavy.json',
-    maxDetected: 1, // Focus on one person at a time
-    // @ts-ignore - scoreThreshold exists but is missing in types 
-    scoreThreshold: 0.3,
-    nmsRadius: 20,
+    modelPath: 'blazepose.json',
+    minConfidence: 0.2,
+    skipFrames: 2
   },
   hand: { enabled: false },
   object: { enabled: false },
   gesture: { enabled: false },
-  segmentation: { enabled: false }
+  segmentation: { enabled: false },
 };
