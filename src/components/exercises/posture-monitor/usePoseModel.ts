@@ -53,15 +53,13 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       setModel(loadedModel);
       
       toast({
-        title: "Model Loaded",
-        description: "Pose detection model loaded successfully. You can start exercising now.",
+        description: "Pose detection model loaded successfully. You can start exercising now."
       });
     } catch (error) {
       console.error('Error loading PoseNet model:', error);
       setError("Failed to load pose detection model");
       
       toast({
-        title: "Model Loading Failed",
         description: "Failed to load pose detection model. Please try refreshing the page.",
         variant: "destructive"
       });
