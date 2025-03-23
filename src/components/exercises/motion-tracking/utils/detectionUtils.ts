@@ -5,31 +5,55 @@ import { human } from '@/lib/human';
 import { extractBodyAngles } from '@/lib/human/angles';
 import { extractBiomarkers } from '@/lib/human/biomarkers';
 
+// Default empty angles object for when detection fails
+const emptyAngles = {
+  kneeAngle: null,
+  hipAngle: null,
+  shoulderAngle: null,
+  elbowAngle: null,
+  ankleAngle: null,
+  neckAngle: null
+};
+
 /**
  * Performs pose detection on a video frame and returns processed results
+ * with improved error handling
  */
 export const performDetection = async (
   videoElement: HTMLVideoElement
 ): Promise<DetectionResult> => {
-  if (!videoElement) {
-    throw new Error('Video element is not available');
+  if (!videoElement || !videoElement.readyState || videoElement.readyState < 2) {
+    console.warn('Video element is not ready for detection');
+    return {
+      result: null,
+      angles: emptyAngles,
+      biomarkers: {},
+      newMotionState: null
+    };
   }
 
   try {
-    // Detect pose using Human.js
-    const result = await human.detect(videoElement);
+    // Check if model is loaded first
+    if (!human.models.loaded()) {
+      console.warn('Human model not loaded, detection may fail');
+    }
+    
+    // Add a timeout for detection to prevent hanging
+    const detectionPromise = human.detect(videoElement);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Detection timeout')), 3000);
+    });
+    
+    // Race the detection against the timeout
+    const result = await Promise.race([
+      detectionPromise,
+      timeoutPromise
+    ]) as Human.Result;
 
     if (!result || !result.body || result.body.length === 0) {
       return {
         result: null,
-        angles: {
-          kneeAngle: null,
-          hipAngle: null,
-          shoulderAngle: null,
-          elbowAngle: null,
-          ankleAngle: null,
-          neckAngle: null
-        },
+        angles: emptyAngles,
         biomarkers: {},
         newMotionState: null
       };
@@ -55,6 +79,12 @@ export const performDetection = async (
     };
   } catch (error) {
     console.error('Error in detection:', error);
-    throw new Error('Failed to perform detection');
+    // Return a valid result even on error to prevent crashes
+    return {
+      result: null,
+      angles: emptyAngles,
+      biomarkers: {},
+      newMotionState: null
+    };
   }
 };

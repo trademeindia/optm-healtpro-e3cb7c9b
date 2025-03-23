@@ -5,25 +5,28 @@ import * as Human from '@vladmandic/human';
 export const humanConfig: Human.Config = {
   // Required core configuration
   backend: 'webgl',
-  modelBasePath: '/',
+  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // Use CDN for faster model loading
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,
   async: true,
-  warmup: 'full',
+  warmup: 'none', // Changed from 'full' to avoid blocking the UI during initial load
   cacheModels: true,
   cacheSensitivity: 0.7,
-  skipAllowed: false,
-  deallocate: false,
+  skipAllowed: true, // Allow frame skipping to maintain performance
+  deallocate: true, // Better memory management
   
   // Additional required configs to satisfy TypeScript
   wasmPlatformFetch: false,
-  validateModels: true,
-  flags: {},
-  softwareKernels: false,
+  validateModels: false, // Skip validation for faster loading
+  flags: {
+    useWebGPU: true, // Try to use WebGPU if available
+    useSimdWasm: true, // Use SIMD for better performance on supported browsers
+  },
+  softwareKernels: true, // Fallback to software implementation if needed
   
   // Filter configuration
   filter: { 
-    enabled: true, 
+    enabled: false, // Disable filtering for better performance
     equalization: false 
   },
   
@@ -35,7 +38,7 @@ export const humanConfig: Human.Config = {
     enabled: true,
     modelPath: 'blazepose.json',
     minConfidence: 0.2,
-    skipFrames: 2
+    skipFrames: 4 // Skip more frames for better performance
   },
   hand: { 
     enabled: false 
