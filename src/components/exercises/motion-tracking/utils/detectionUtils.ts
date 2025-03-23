@@ -54,6 +54,13 @@ export const performDetection = async (
       }
     }
     
+    // Log current configuration
+    console.log("Current Human.js config:", {
+      modelPath: human.config.body.modelPath,
+      backend: human.config.backend,
+      warmup: human.config.warmup
+    });
+    
     // Use adaptive timeout based on past performance
     const timeoutDuration = consecutiveFailures === 0 ? 5000 : 3000; // Shorter timeout after failures
     

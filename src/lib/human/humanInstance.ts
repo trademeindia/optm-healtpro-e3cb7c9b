@@ -2,7 +2,15 @@
 import * as Human from '@vladmandic/human';
 import { humanConfig } from './config';
 
-/**
- * Global Human.js instance 
- */
+// Initialize the Human.js instance with configuration
 export const human = new Human.Human(humanConfig);
+
+// Log when the instance is created
+console.log('Human.js instance created with config:', {
+  backend: humanConfig.backend,
+  modelBasePath: humanConfig.modelBasePath,
+  body: {
+    enabled: humanConfig.body.enabled,
+    modelPath: humanConfig.body.modelPath
+  }
+});

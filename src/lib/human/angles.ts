@@ -17,36 +17,44 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   };
   
   if (!result || !result.body || result.body.length === 0) {
+    console.log("No body detected in result");
     return angles;
   }
   
   const body = result.body[0];
   const keypoints = body.keypoints;
   
-  if (!keypoints || keypoints.length < 20) {
+  if (!keypoints || keypoints.length < 15) {
+    console.log(`Insufficient keypoints detected: ${keypoints?.length || 0}`);
     return angles;
   }
 
   try {
+    // Log all keypoints for debugging
+    console.log("Detected keypoints:", keypoints.map(kp => ({ 
+      part: kp.part || kp.name, 
+      score: kp.score, 
+      position: { x: kp.x, y: kp.y } 
+    })));
+    
     // Extract specific keypoints needed for angle calculations
-    // Using BlazePose keypoint indices
-    const leftHip = keypoints.find(kp => kp.part === 'leftHip') || findKeypointByIndex(keypoints, 23);
-    const rightHip = keypoints.find(kp => kp.part === 'rightHip') || findKeypointByIndex(keypoints, 24);
-    const leftKnee = keypoints.find(kp => kp.part === 'leftKnee') || findKeypointByIndex(keypoints, 25);
-    const rightKnee = keypoints.find(kp => kp.part === 'rightKnee') || findKeypointByIndex(keypoints, 26);
-    const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle') || findKeypointByIndex(keypoints, 27);
-    const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle') || findKeypointByIndex(keypoints, 28);
-    const leftShoulder = keypoints.find(kp => kp.part === 'leftShoulder') || findKeypointByIndex(keypoints, 11);
-    const rightShoulder = keypoints.find(kp => kp.part === 'rightShoulder') || findKeypointByIndex(keypoints, 12);
-    const leftElbow = keypoints.find(kp => kp.part === 'leftElbow') || findKeypointByIndex(keypoints, 13);
-    const rightElbow = keypoints.find(kp => kp.part === 'rightElbow') || findKeypointByIndex(keypoints, 14);
-    const leftWrist = keypoints.find(kp => kp.part === 'leftWrist') || findKeypointByIndex(keypoints, 15);
-    const rightWrist = keypoints.find(kp => kp.part === 'rightWrist') || findKeypointByIndex(keypoints, 16);
-    const neck = keypoints.find(kp => kp.part === 'neck') || findKeypointByIndex(keypoints, 1);
-    const nose = keypoints.find(kp => kp.part === 'nose') || findKeypointByIndex(keypoints, 0);
+    // Using BlazePose keypoint indices with better fallbacks
+    const leftHip = findKeypoint(keypoints, ['leftHip', 'left_hip'], 23);
+    const rightHip = findKeypoint(keypoints, ['rightHip', 'right_hip'], 24);
+    const leftKnee = findKeypoint(keypoints, ['leftKnee', 'left_knee'], 25);
+    const rightKnee = findKeypoint(keypoints, ['rightKnee', 'right_knee'], 26);
+    const leftAnkle = findKeypoint(keypoints, ['leftAnkle', 'left_ankle'], 27);
+    const rightAnkle = findKeypoint(keypoints, ['rightAnkle', 'right_ankle'], 28);
+    const leftShoulder = findKeypoint(keypoints, ['leftShoulder', 'left_shoulder'], 11);
+    const rightShoulder = findKeypoint(keypoints, ['rightShoulder', 'right_shoulder'], 12);
+    const leftElbow = findKeypoint(keypoints, ['leftElbow', 'left_elbow'], 13);
+    const rightElbow = findKeypoint(keypoints, ['rightElbow', 'right_elbow'], 14);
+    const leftWrist = findKeypoint(keypoints, ['leftWrist', 'left_wrist'], 15);
+    const rightWrist = findKeypoint(keypoints, ['rightWrist', 'right_wrist'], 16);
     
     // Only calculate if we have the necessary keypoints with sufficient confidence
-    const confidenceThreshold = 0.3; // Lower threshold to improve detection
+    // Lower threshold to improve detection
+    const confidenceThreshold = 0.2;
     
     // Calculate knee angle (average of left and right if both available)
     if (leftKnee && leftHip && leftAnkle && 
@@ -54,11 +62,13 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         leftHip.score > confidenceThreshold && 
         leftAnkle.score > confidenceThreshold) {
       angles.kneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+      console.log(`Left knee angle calculated: ${angles.kneeAngle}°`);
     } else if (rightKnee && rightHip && rightAnkle && 
               rightKnee.score > confidenceThreshold && 
               rightHip.score > confidenceThreshold && 
               rightAnkle.score > confidenceThreshold) {
       angles.kneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+      console.log(`Right knee angle calculated: ${angles.kneeAngle}°`);
     }
     
     // Calculate hip angle (average of left and right if both available)
@@ -67,11 +77,13 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         leftHip.score > confidenceThreshold && 
         leftKnee.score > confidenceThreshold) {
       angles.hipAngle = calculateAngle(leftShoulder, leftHip, leftKnee);
+      console.log(`Left hip angle calculated: ${angles.hipAngle}°`);
     } else if (rightShoulder && rightHip && rightKnee && 
               rightShoulder.score > confidenceThreshold && 
               rightHip.score > confidenceThreshold && 
               rightKnee.score > confidenceThreshold) {
       angles.hipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
+      console.log(`Right hip angle calculated: ${angles.hipAngle}°`);
     }
     
     // Calculate shoulder angle
@@ -80,11 +92,13 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         rightShoulder.score > confidenceThreshold && 
         rightElbow.score > confidenceThreshold) {
       angles.shoulderAngle = calculateAngle(rightHip, rightShoulder, rightElbow);
+      console.log(`Right shoulder angle calculated: ${angles.shoulderAngle}°`);
     } else if (leftHip && leftShoulder && leftElbow && 
                 leftHip.score > confidenceThreshold && 
                 leftShoulder.score > confidenceThreshold && 
                 leftElbow.score > confidenceThreshold) {
       angles.shoulderAngle = calculateAngle(leftHip, leftShoulder, leftElbow);
+      console.log(`Left shoulder angle calculated: ${angles.shoulderAngle}°`);
     }
     
     // Calculate elbow angle
@@ -93,14 +107,14 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
         leftElbow.score > confidenceThreshold && 
         leftWrist.score > confidenceThreshold) {
       angles.elbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+      console.log(`Left elbow angle calculated: ${angles.elbowAngle}°`);
     } else if (rightShoulder && rightElbow && rightWrist && 
                 rightShoulder.score > confidenceThreshold && 
                 rightElbow.score > confidenceThreshold && 
                 rightWrist.score > confidenceThreshold) {
       angles.elbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+      console.log(`Right elbow angle calculated: ${angles.elbowAngle}°`);
     }
-    
-    console.log('Angles calculated successfully:', JSON.stringify(angles));
     
     return angles;
   } catch (error) {
@@ -109,17 +123,39 @@ export const extractBodyAngles = (result: Human.Result): BodyAngles => {
   }
 };
 
-// Helper function to find keypoint by index in case part name isn't available
-function findKeypointByIndex(keypoints: any[], index: number) {
-  return keypoints[index] || null;
+// Enhanced function to find keypoint by multiple names or index
+function findKeypoint(keypoints: any[], possibleNames: string[], index: number) {
+  // First try to find by part name
+  for (const name of possibleNames) {
+    const keypoint = keypoints.find(kp => 
+      (kp.part === name) || (kp.name === name)
+    );
+    if (keypoint && keypoint.score > 0) return keypoint;
+  }
+  
+  // Then try to find by index
+  if (keypoints[index] && keypoints[index].score > 0) {
+    return keypoints[index];
+  }
+  
+  return null;
 }
 
-// Calculate angle between three points in degrees
+// Calculate angle between three points in degrees with improved handling
 function calculateAngle(pointA: any, pointB: any, pointC: any): number {
   try {
     // Extract coordinates, handling both normalized and pixel coordinates
-    const getX = (point: any) => typeof point.x === 'number' ? point.x : point.position.x;
-    const getY = (point: any) => typeof point.y === 'number' ? point.y : point.position.y;
+    const getX = (point: any) => {
+      if (typeof point.x === 'number') return point.x;
+      if (point.position && typeof point.position.x === 'number') return point.position.x;
+      return null;
+    };
+    
+    const getY = (point: any) => {
+      if (typeof point.y === 'number') return point.y;
+      if (point.position && typeof point.position.y === 'number') return point.position.y;
+      return null;
+    };
     
     const ax = getX(pointA);
     const ay = getY(pointA);
@@ -127,6 +163,12 @@ function calculateAngle(pointA: any, pointB: any, pointC: any): number {
     const by = getY(pointB);
     const cx = getX(pointC);
     const cy = getY(pointC);
+    
+    // Validate coordinates
+    if (ax === null || ay === null || bx === null || by === null || cx === null || cy === null) {
+      console.error('Invalid coordinates for angle calculation');
+      return 180;
+    }
     
     // Calculate vectors
     const vec1 = { x: ax - bx, y: ay - by };
@@ -140,7 +182,10 @@ function calculateAngle(pointA: any, pointB: any, pointC: any): number {
     const mag2 = Math.sqrt(vec2.x * vec2.x + vec2.y * vec2.y);
     
     // Avoid division by zero
-    if (mag1 === 0 || mag2 === 0) return 180;
+    if (mag1 === 0 || mag2 === 0) {
+      console.error('Zero magnitude in angle calculation');
+      return 180;
+    }
     
     // Calculate angle in radians and convert to degrees
     const cosAngle = Math.max(-1, Math.min(1, dotProduct / (mag1 * mag2)));

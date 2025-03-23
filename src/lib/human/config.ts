@@ -36,7 +36,8 @@ export const humanConfig: Human.Config = {
   },
   body: { 
     enabled: true,
-    modelPath: 'blazepose-lite.json', // Use lite model for better performance
+    // Fix: Use the correct model name - "blazepose.json" instead of "blazepose-lite.json"
+    modelPath: 'blazepose.json', 
     minConfidence: 0.2,
     skipFrames: 2, // Skip more frames to improve performance
     maxDetected: 1, // Only detect one person to improve performance
