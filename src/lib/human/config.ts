@@ -18,10 +18,12 @@ export const humanConfig: Human.Config = {
   // Additional required configs to satisfy TypeScript
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
+  
+  // Removed flags.useWebGPU that was causing errors
   flags: {
-    useWebGPU: true, // Try to use WebGPU if available
     useSimdWasm: true, // Use SIMD for better performance on supported browsers
   },
+  
   softwareKernels: true, // Fallback to software implementation if needed
   
   // Filter configuration
@@ -38,7 +40,8 @@ export const humanConfig: Human.Config = {
     enabled: true,
     modelPath: 'blazepose.json',
     minConfidence: 0.2,
-    skipFrames: 4 // Skip more frames for better performance
+    skipFrames: 1, // Reduce frame skipping for more responsive detection
+    maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 
     enabled: false 

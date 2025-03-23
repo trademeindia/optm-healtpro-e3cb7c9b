@@ -10,7 +10,7 @@ interface MotionRendererProps {
 
 const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angles }) => {
   useEffect(() => {
-    if (!result || !canvasRef.current) return;
+    if (!canvasRef.current) return;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -19,11 +19,17 @@ const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angl
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // If no body detected, don't render anything
-    if (!result.body || result.body.length === 0) return;
+    // If no result detected or no body, show a message to the user
+    if (!result || !result.body || result.body.length === 0) {
+      drawNoBodyMessage(ctx, canvas.width, canvas.height);
+      return;
+    }
     
     const body = result.body[0];
-    if (!body.keypoints || body.keypoints.length === 0) return;
+    if (!body.keypoints || body.keypoints.length === 0) {
+      drawNoBodyMessage(ctx, canvas.width, canvas.height);
+      return;
+    }
     
     // Draw keypoints and skeleton
     drawKeypoints(ctx, body.keypoints, canvas.width, canvas.height);
@@ -31,9 +37,35 @@ const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angl
     
     // Draw angles if available
     drawAngles(ctx, angles, canvas.width, canvas.height);
+    
+    // Log that we've rendered successfully
+    console.log('Motion rendered successfully:', 
+      JSON.stringify({
+        width: canvas.width, 
+        height: canvas.height,
+        keypoints: body.keypoints.length,
+        hasAngles: Boolean(angles.kneeAngle || angles.hipAngle || angles.shoulderAngle)
+      })
+    );
   }, [result, canvasRef, angles]);
   
   return null; // This component only handles canvas drawing, doesn't render anything
+};
+
+// Helper function to draw "no body detected" message
+const drawNoBodyMessage = (
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number
+) => {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.fillRect(10, canvasHeight - 60, 250, 50);
+  
+  ctx.font = '16px Arial';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Position yourself in the camera view', 20, canvasHeight - 35);
 };
 
 // Helper function to draw keypoints
@@ -47,6 +79,9 @@ const drawKeypoints = (
     if (!keypoint.score || keypoint.score < 0.3) return;
     
     const { x, y } = keypoint;
+    
+    // Make sure x and y are valid numbers and within canvas bounds
+    if (isNaN(x) || isNaN(y) || x < 0 || y < 0 || x > 1 || y > 1) return;
     
     ctx.beginPath();
     ctx.arc(x * canvasWidth, y * canvasHeight, 5, 0, 2 * Math.PI);
@@ -68,7 +103,7 @@ const drawSkeleton = (
   canvasWidth: number, 
   canvasHeight: number
 ) => {
-  // Define connections between keypoints
+  // Define connections between keypoints (BlazePose keypoint indices)
   const connections = [
     [5, 7], [7, 9], // Left arm
     [6, 8], [8, 10], // Right arm
@@ -88,6 +123,11 @@ const drawSkeleton = (
     
     if (!kp1 || !kp2 || !kp1.score || !kp2.score || kp1.score < 0.3 || kp2.score < 0.3) return;
     
+    // Make sure x and y are valid numbers and within canvas bounds
+    if (isNaN(kp1.x) || isNaN(kp1.y) || isNaN(kp2.x) || isNaN(kp2.y)) return;
+    if (kp1.x < 0 || kp1.y < 0 || kp1.x > 1 || kp1.y > 1) return;
+    if (kp2.x < 0 || kp2.y < 0 || kp2.x > 1 || kp2.y > 1) return;
+    
     ctx.beginPath();
     ctx.moveTo(kp1.x * canvasWidth, kp1.y * canvasHeight);
     ctx.lineTo(kp2.x * canvasWidth, kp2.y * canvasHeight);
@@ -103,6 +143,11 @@ const drawSkeleton = (
     const kp2 = keypoints[j];
     
     if (!kp1 || !kp2 || !kp1.score || !kp2.score || kp1.score < 0.3 || kp2.score < 0.3) return;
+    
+    // Make sure x and y are valid numbers and within canvas bounds
+    if (isNaN(kp1.x) || isNaN(kp1.y) || isNaN(kp2.x) || isNaN(kp2.y)) return;
+    if (kp1.x < 0 || kp1.y < 0 || kp1.x > 1 || kp1.y > 1) return;
+    if (kp2.x < 0 || kp2.y < 0 || kp2.x > 1 || kp2.y > 1) return;
     
     ctx.beginPath();
     ctx.moveTo(kp1.x * canvasWidth, kp1.y * canvasHeight);
@@ -126,23 +171,27 @@ const drawAngles = (
   // Add a semi-transparent background for better readability
   if (angles.kneeAngle || angles.hipAngle || angles.shoulderAngle) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 150, 80);
+    ctx.fillRect(10, 10, 150, 110);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
   }
   
   let yOffset = 20;
   
-  if (angles.kneeAngle) {
+  // Draw the angle values with better error handling
+  ctx.fillText('Angle Measurements:', 20, yOffset);
+  yOffset += 25;
+  
+  if (angles.kneeAngle !== null && !isNaN(angles.kneeAngle)) {
     ctx.fillText(`Knee: ${Math.round(angles.kneeAngle)}°`, 20, yOffset);
     yOffset += 20;
   }
   
-  if (angles.hipAngle) {
+  if (angles.hipAngle !== null && !isNaN(angles.hipAngle)) {
     ctx.fillText(`Hip: ${Math.round(angles.hipAngle)}°`, 20, yOffset);
     yOffset += 20;
   }
   
-  if (angles.shoulderAngle) {
+  if (angles.shoulderAngle !== null && !isNaN(angles.shoulderAngle)) {
     ctx.fillText(`Shoulder: ${Math.round(angles.shoulderAngle)}°`, 20, yOffset);
   }
 };

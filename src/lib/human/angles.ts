@@ -26,7 +26,23 @@ export const calculateAngle = (
   return angle;
 };
 
-// Extract angles from detected body pose
+// Get valid keypoint or return null
+const getValidKeypoint = (keypoints: any[], index: number): [number, number] | null => {
+  if (!keypoints || !keypoints[index] || !keypoints[index].score || keypoints[index].score < 0.3) {
+    return null;
+  }
+  
+  const kp = keypoints[index];
+  
+  // Ensure keypoint has valid coordinates
+  if (isNaN(kp.x) || isNaN(kp.y) || kp.x < 0 || kp.y < 0 || kp.x > 1 || kp.y > 1) {
+    return null;
+  }
+  
+  return [kp.x, kp.y];
+};
+
+// Extract angles from detected body pose with improved error handling
 export const extractBodyAngles = (result: Human.Result): { 
   kneeAngle: number | null;
   hipAngle: number | null; 
@@ -45,133 +61,184 @@ export const extractBodyAngles = (result: Human.Result): {
   };
   
   if (!result.body || result.body.length === 0) {
+    console.log('No body detected for angle calculation');
     return angles;
   }
   
   const body = result.body[0];
   
+  // Log the first few keypoints to debug
+  if (body.keypoints && body.keypoints.length > 0) {
+    console.log(`First keypoint: ${JSON.stringify(body.keypoints[0])}`);
+    console.log(`Keypoints available: ${body.keypoints.length}`);
+  }
+  
   // Map key points for angle calculations (using BlazePose keypoint indices)
   const keypoints = body.keypoints;
   
-  if (!keypoints || keypoints.length < 25) {
+  if (!keypoints || keypoints.length < 20) {
+    console.warn('Not enough keypoints for angle calculation:', keypoints?.length ?? 0);
     return angles;
   }
   
   // Calculate knee angle (hip-knee-ankle)
   try {
-    // @ts-ignore - Using type assertion for accessing x, y properties
-    const leftHip = [keypoints[23].x, keypoints[23].y] as [number, number];
-    // @ts-ignore
-    const leftKnee = [keypoints[25].x, keypoints[25].y] as [number, number];
-    // @ts-ignore
-    const leftAnkle = [keypoints[27].x, keypoints[27].y] as [number, number];
+    // Get left side keypoints
+    const leftHip = getValidKeypoint(keypoints, 23);
+    const leftKnee = getValidKeypoint(keypoints, 25);
+    const leftAnkle = getValidKeypoint(keypoints, 27);
     
-    // @ts-ignore
-    const rightHip = [keypoints[24].x, keypoints[24].y] as [number, number];
-    // @ts-ignore
-    const rightKnee = [keypoints[26].x, keypoints[26].y] as [number, number];
-    // @ts-ignore
-    const rightAnkle = [keypoints[28].x, keypoints[28].y] as [number, number];
+    // Get right side keypoints
+    const rightHip = getValidKeypoint(keypoints, 24);
+    const rightKnee = getValidKeypoint(keypoints, 26);
+    const rightAnkle = getValidKeypoint(keypoints, 28);
     
-    const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
-    const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+    // Calculate left knee angle if all points are valid
+    if (leftHip && leftKnee && leftAnkle) {
+      const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+      angles.kneeAngle = leftKneeAngle;
+      console.log('Left knee angle calculated:', leftKneeAngle);
+    }
     
-    angles.kneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+    // Calculate right knee angle if all points are valid
+    if (rightHip && rightKnee && rightAnkle) {
+      const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+      
+      // If we already have a left knee angle, average them
+      if (angles.kneeAngle !== null) {
+        angles.kneeAngle = (angles.kneeAngle + rightKneeAngle) / 2;
+        console.log('Knee angle (averaged):', angles.kneeAngle);
+      } else {
+        angles.kneeAngle = rightKneeAngle;
+        console.log('Right knee angle calculated:', rightKneeAngle);
+      }
+    }
   } catch (e) {
-    console.log('Failed to calculate knee angle', e);
+    console.error('Failed to calculate knee angle:', e);
   }
   
   // Calculate hip angle (shoulder-hip-knee)
   try {
-    // @ts-ignore
-    const leftShoulder = [keypoints[11].x, keypoints[11].y] as [number, number];
-    // @ts-ignore
-    const leftHip = [keypoints[23].x, keypoints[23].y] as [number, number];
-    // @ts-ignore
-    const leftKnee = [keypoints[25].x, keypoints[25].y] as [number, number];
+    // Get left side keypoints
+    const leftShoulder = getValidKeypoint(keypoints, 11);
+    const leftHip = getValidKeypoint(keypoints, 23);
+    const leftKnee = getValidKeypoint(keypoints, 25);
     
-    // @ts-ignore
-    const rightShoulder = [keypoints[12].x, keypoints[12].y] as [number, number];
-    // @ts-ignore
-    const rightHip = [keypoints[24].x, keypoints[24].y] as [number, number];
-    // @ts-ignore
-    const rightKnee = [keypoints[26].x, keypoints[26].y] as [number, number];
+    // Get right side keypoints
+    const rightShoulder = getValidKeypoint(keypoints, 12);
+    const rightHip = getValidKeypoint(keypoints, 24);
+    const rightKnee = getValidKeypoint(keypoints, 26);
     
-    const leftHipAngle = calculateAngle(leftShoulder, leftHip, leftKnee);
-    const rightHipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
+    // Calculate left hip angle if all points are valid
+    if (leftShoulder && leftHip && leftKnee) {
+      const leftHipAngle = calculateAngle(leftShoulder, leftHip, leftKnee);
+      angles.hipAngle = leftHipAngle;
+      console.log('Left hip angle calculated:', leftHipAngle);
+    }
     
-    angles.hipAngle = (leftHipAngle + rightHipAngle) / 2;
+    // Calculate right hip angle if all points are valid
+    if (rightShoulder && rightHip && rightKnee) {
+      const rightHipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
+      
+      // If we already have a left hip angle, average them
+      if (angles.hipAngle !== null) {
+        angles.hipAngle = (angles.hipAngle + rightHipAngle) / 2;
+        console.log('Hip angle (averaged):', angles.hipAngle);
+      } else {
+        angles.hipAngle = rightHipAngle;
+        console.log('Right hip angle calculated:', rightHipAngle);
+      }
+    }
   } catch (e) {
-    console.log('Failed to calculate hip angle', e);
+    console.error('Failed to calculate hip angle:', e);
   }
   
   // Calculate shoulder angle (neck-shoulder-elbow)
   try {
-    // @ts-ignore
-    const neck = [keypoints[0].x, keypoints[0].y] as [number, number];
-    // @ts-ignore
-    const leftShoulder = [keypoints[11].x, keypoints[11].y] as [number, number];
-    // @ts-ignore
-    const leftElbow = [keypoints[13].x, keypoints[13].y] as [number, number];
+    // Use nose as neck approximation
+    const nose = getValidKeypoint(keypoints, 0);
+    const leftShoulder = getValidKeypoint(keypoints, 11);
+    const leftElbow = getValidKeypoint(keypoints, 13);
     
-    // @ts-ignore
-    const rightShoulder = [keypoints[12].x, keypoints[12].y] as [number, number];
-    // @ts-ignore
-    const rightElbow = [keypoints[14].x, keypoints[14].y] as [number, number];
+    const rightShoulder = getValidKeypoint(keypoints, 12);
+    const rightElbow = getValidKeypoint(keypoints, 14);
     
-    const leftShoulderAngle = calculateAngle(neck, leftShoulder, leftElbow);
-    const rightShoulderAngle = calculateAngle(neck, rightShoulder, rightElbow);
+    // Calculate left shoulder angle if all points are valid
+    if (nose && leftShoulder && leftElbow) {
+      const leftShoulderAngle = calculateAngle(nose, leftShoulder, leftElbow);
+      angles.shoulderAngle = leftShoulderAngle;
+      console.log('Left shoulder angle calculated:', leftShoulderAngle);
+    }
     
-    angles.shoulderAngle = (leftShoulderAngle + rightShoulderAngle) / 2;
+    // Calculate right shoulder angle if all points are valid
+    if (nose && rightShoulder && rightElbow) {
+      const rightShoulderAngle = calculateAngle(nose, rightShoulder, rightElbow);
+      
+      // If we already have a left shoulder angle, average them
+      if (angles.shoulderAngle !== null) {
+        angles.shoulderAngle = (angles.shoulderAngle + rightShoulderAngle) / 2;
+        console.log('Shoulder angle (averaged):', angles.shoulderAngle);
+      } else {
+        angles.shoulderAngle = rightShoulderAngle;
+        console.log('Right shoulder angle calculated:', rightShoulderAngle);
+      }
+    }
   } catch (e) {
-    console.log('Failed to calculate shoulder angle', e);
+    console.error('Failed to calculate shoulder angle:', e);
   }
   
   // Calculate elbow angle (shoulder-elbow-wrist)
   try {
-    // @ts-ignore
-    const leftShoulder = [keypoints[11].x, keypoints[11].y] as [number, number];
-    // @ts-ignore
-    const leftElbow = [keypoints[13].x, keypoints[13].y] as [number, number];
-    // @ts-ignore
-    const leftWrist = [keypoints[15].x, keypoints[15].y] as [number, number];
+    const leftShoulder = getValidKeypoint(keypoints, 11);
+    const leftElbow = getValidKeypoint(keypoints, 13);
+    const leftWrist = getValidKeypoint(keypoints, 15);
     
-    // @ts-ignore
-    const rightShoulder = [keypoints[12].x, keypoints[12].y] as [number, number];
-    // @ts-ignore
-    const rightElbow = [keypoints[14].x, keypoints[14].y] as [number, number];
-    // @ts-ignore
-    const rightWrist = [keypoints[16].x, keypoints[16].y] as [number, number];
+    const rightShoulder = getValidKeypoint(keypoints, 12);
+    const rightElbow = getValidKeypoint(keypoints, 14);
+    const rightWrist = getValidKeypoint(keypoints, 16);
     
-    const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
-    const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+    // Calculate left elbow angle if all points are valid
+    if (leftShoulder && leftElbow && leftWrist) {
+      const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+      angles.elbowAngle = leftElbowAngle;
+    }
     
-    angles.elbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
+    // Calculate right elbow angle if all points are valid
+    if (rightShoulder && rightElbow && rightWrist) {
+      const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+      
+      // If we already have a left elbow angle, average them
+      if (angles.elbowAngle !== null) {
+        angles.elbowAngle = (angles.elbowAngle + rightElbowAngle) / 2;
+      } else {
+        angles.elbowAngle = rightElbowAngle;
+      }
+    }
   } catch (e) {
-    console.log('Failed to calculate elbow angle', e);
+    console.error('Failed to calculate elbow angle:', e);
   }
   
   // Calculate neck angle (between shoulders and nose)
   try {
-    // @ts-ignore
-    const nose = [keypoints[0].x, keypoints[0].y] as [number, number];
-    // @ts-ignore
-    const leftShoulder = [keypoints[11].x, keypoints[11].y] as [number, number];
-    // @ts-ignore
-    const rightShoulder = [keypoints[12].x, keypoints[12].y] as [number, number];
+    const nose = getValidKeypoint(keypoints, 0);
+    const leftShoulder = getValidKeypoint(keypoints, 11);
+    const rightShoulder = getValidKeypoint(keypoints, 12);
     
-    // Calculate midpoint between shoulders
-    const midShoulders: [number, number] = [
-      (leftShoulder[0] + rightShoulder[0]) / 2,
-      (leftShoulder[1] + rightShoulder[1]) / 2
-    ];
-    
-    // Calculate a point directly below the nose at the same y-level as mid shoulders
-    const verticalPoint: [number, number] = [nose[0], midShoulders[1]];
-    
-    angles.neckAngle = calculateAngle(verticalPoint, nose, midShoulders);
+    if (nose && leftShoulder && rightShoulder) {
+      // Calculate midpoint between shoulders
+      const midShoulders: [number, number] = [
+        (leftShoulder[0] + rightShoulder[0]) / 2,
+        (leftShoulder[1] + rightShoulder[1]) / 2
+      ];
+      
+      // Calculate a point directly below the nose at the same y-level as mid shoulders
+      const verticalPoint: [number, number] = [nose[0], midShoulders[1]];
+      
+      angles.neckAngle = calculateAngle(verticalPoint, nose, midShoulders);
+      console.log('Neck angle calculated:', angles.neckAngle);
+    }
   } catch (e) {
-    console.log('Failed to calculate neck angle', e);
+    console.error('Failed to calculate neck angle:', e);
   }
   
   return angles;

@@ -17,6 +17,7 @@ let modelLoadingPromise: Promise<boolean> | null = null;
 export const warmupModel = async (): Promise<boolean> => {
   // If already loading, return the existing promise
   if (isModelLoading && modelLoadingPromise) {
+    console.log('Model already loading, returning existing promise');
     return modelLoadingPromise;
   }
   
@@ -27,33 +28,40 @@ export const warmupModel = async (): Promise<boolean> => {
   }
   
   isModelLoading = true;
+  console.log('Starting Human.js model loading...');
   
   // Create a promise with timeout
   modelLoadingPromise = new Promise(async (resolve, reject) => {
     // Add timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      console.error('Human.js model loading timed out after 15s');
+      console.error('Human.js model loading timed out after 20s');
       isModelLoading = false;
-      reject(new Error('Model loading timed out'));
-    }, 15000);
+      // Don't reject, instead try to continue with what we have
+      resolve(false);
+    }, 20000);
     
     try {
       console.log('Loading Human.js model...');
       
       // Force cleanup any existing TensorFlow memory before loading
-      // @ts-ignore - TF internal API
-      if (window.tf && window.tf.engine) {
+      if (human.tf && human.tf.engine) {
         console.log('Cleaning up TensorFlow memory...');
-        // @ts-ignore
-        window.tf.engine().disposeVariables();
+        human.tf.engine().disposeVariables();
       }
       
-      // Load the model with more specific error handling
-      await human.load();
-      console.log('Human.js model loaded successfully');
+      // First check if models are already available in cache
+      const modelsCached = await human.models.check();
+      console.log('Models cached status:', modelsCached);
       
-      // Initialize with a minimal warmup
-      const result = await human.warmup();
+      // Load the model with more specific error handling
+      const loadResult = await human.load();
+      console.log('Human.js models loaded successfully:', loadResult);
+      
+      // Initialize with a minimal warmup (only do body detection)
+      const warmupConfig = {...human.config};
+      warmupConfig.body = {...human.config.body, warmup: 1};
+      
+      const result = await human.warmup(warmupConfig);
       console.log('Human.js model warmed up:', result);
       
       clearTimeout(timeout);
@@ -63,7 +71,19 @@ export const warmupModel = async (): Promise<boolean> => {
       clearTimeout(timeout);
       isModelLoading = false;
       console.error('Error initializing Human.js model:', error);
-      reject(error);
+      
+      // Try one more time with minimal configuration
+      try {
+        console.log('Attempting fallback model load with minimal config...');
+        const minimalConfig = {...human.config};
+        minimalConfig.body = {enabled: true, modelPath: 'blazepose.json'};
+        await human.load(minimalConfig);
+        console.log('Fallback model load succeeded');
+        resolve(true);
+      } catch(fallbackError) {
+        console.error('Fallback model load failed:', fallbackError);
+        reject(error);
+      }
     }
   });
   
@@ -88,9 +108,9 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
     // Run detection with a timeout
     const detectionPromise = human.detect(input);
     
-    // Add a timeout to prevent hanging
+    // Add a timeout to prevent hanging - increase to 5 seconds for more reliable detection
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), 3000);
+      setTimeout(() => reject(new Error('Detection timeout')), 5000);
     });
     
     // Race the detection against the timeout
@@ -102,6 +122,16 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
     return result;
   } catch (error) {
     console.error('Error during pose detection:', error);
+    
+    // Clean up tensors on error to prevent memory leaks
+    if (human.tf && human.tf.engine) {
+      const tensors = human.tf.engine().state.numTensors;
+      if (tensors > 200) {
+        console.warn(`High tensor count (${tensors}) after error, cleaning up`);
+        human.tf.engine().disposeVariables();
+      }
+    }
+    
     return null;
   }
 };
@@ -110,9 +140,16 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
 export const resetModel = async () => {
   try {
     console.log('Resetting Human.js model...');
+    
+    // Clean up tensors first
+    if (human.tf && human.tf.engine) {
+      human.tf.engine().disposeVariables();
+    }
+    
     await human.reset();
     isModelLoading = false;
     modelLoadingPromise = null;
+    console.log('Human.js model reset successfully');
     return true;
   } catch (error) {
     console.error('Error resetting model:', error);
