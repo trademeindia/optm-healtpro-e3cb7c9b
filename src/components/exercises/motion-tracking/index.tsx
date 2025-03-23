@@ -1,268 +1,178 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera } from 'lucide-react';
-import { toast } from 'sonner';
-import { useHumanDetection } from './hooks/useHumanDetection';
-import FeedbackDisplay from './FeedbackDisplay';
-import BiomarkersDisplay from './BiomarkersDisplay';
-import { FeedbackType } from '../posture-monitor/types';
-import { warmupModel } from '@/lib/human/core';
+import React, { useEffect, useState } from 'react';
+import { AlertCircle, Camera, Headphones, RefreshCw } from 'lucide-react';
 import CameraView from './components/CameraView';
-import ControlPanel from './components/ControlPanel';
-import ExerciseInstructions from './components/ExerciseInstructions';
-import MotionDetectionErrorBoundary from './components/MotionDetectionErrorBoundary';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import ModelLoadingState from './components/ModelLoadingState';
 import ModelErrorState from './components/ModelErrorState';
+import ControlPanel from './components/ControlPanel';
+import FeedbackDisplay from './FeedbackDisplay';
+import MotionRenderer from './MotionRenderer';
+import BiomarkersDisplay from './BiomarkersDisplay';
+import DetectionErrorDisplay from './components/DetectionErrorDisplay';
+import MotionDetectionErrorBoundary from './components/MotionDetectionErrorBoundary';
+import { useHumanDetection } from './hooks/useHumanDetection';
+import { useCameraManager } from './hooks/useCameraManager';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { DetectionError } from '@/lib/human/types';
 
-interface MotionTrackerProps {
-  exerciseId: string;
-  exerciseName: string;
-  onFinish?: () => void;
-}
-
-const MotionTracker: React.FC<MotionTrackerProps> = ({ 
-  exerciseId, 
-  exerciseName,
-  onFinish 
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isTracking, setIsTracking] = useState(false);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [isModelLoading, setIsModelLoading] = useState(true);
-  const [loadingError, setLoadingError] = useState<string | null>(null);
-  const [loadingProgress, setLoadingProgress] = useState<number>(0);
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Human pose detection hook
-  const { 
-    startDetection, 
-    stopDetection, 
-    detectionResult,
+const MotionTracking: React.FC = () => {
+  const { cameraActive, videoRef, startCamera, stopCamera } = useCameraManager();
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [showFullscreen, setShowFullscreen] = useState(false);
+  
+  // Initialize human detection
+  const {
+    isDetecting,
+    detectionFps,
+    isModelLoaded,
+    detectionError,
+    result,
     angles,
+    biomarkers,
     motionState,
     feedback,
     stats,
-    resetSession,
-    biomarkers,
-    isModelLoaded
+    startDetection,
+    stopDetection,
+    resetSession
   } = useHumanDetection(videoRef, canvasRef);
 
-  useEffect(() => {
-    const loadModel = async () => {
-      setIsModelLoading(true);
-      setLoadingError(null);
-      
-      // Show progress simulation
-      let progress = 0;
-      const progressInterval = setInterval(() => {
-        progress += 5;
-        if (progress > 95) {
-          clearInterval(progressInterval);
-        } else {
-          setLoadingProgress(progress);
-        }
-      }, 500);
-      
-      // Set a timeout to show warning if loading takes too long
-      loadingTimeoutRef.current = setTimeout(() => {
-        toast.warning("Model loading is taking longer than expected. Please wait...");
-      }, 8000);
-      
-      try {
-        await warmupModel();
-        setIsModelLoading(false);
-        setLoadingProgress(100);
-        clearInterval(progressInterval);
-        toast.success("Motion analysis model loaded");
-        
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-          loadingTimeoutRef.current = null;
-        }
-      } catch (error) {
-        console.error("Failed to load motion analysis model:", error);
-        setLoadingError("Failed to load motion analysis model. Please refresh and try again.");
-        setIsModelLoading(false);
-        clearInterval(progressInterval);
-        
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-          loadingTimeoutRef.current = null;
-        }
-        
-        toast.error("Failed to load motion analysis model", {
-          description: "Please try refreshing the page or check your connection",
-          action: {
-            label: "Retry",
-            onClick: () => loadModel()
-          }
-        });
-      }
-    };
-
-    loadModel();
-
-    // Cleanup when component unmounts
-    return () => {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
+  // Handle camera start/stop
+  const handleCameraToggle = async () => {
+    if (cameraActive) {
       stopCamera();
       stopDetection();
-    };
-  }, [stopDetection]);
-
-  // Handle camera activation
-  const startCamera = async () => {
-    try {
-      if (!videoRef.current) return;
-      
-      if (isModelLoading) {
-        toast.warning("Please wait for the model to finish loading");
-        return;
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user'
-        } 
-      });
-      
-      videoRef.current.srcObject = stream;
-      videoRef.current.onloadedmetadata = () => {
-        if (videoRef.current) {
-          videoRef.current.play()
-            .then(() => {
-              setCameraActive(true);
-              toast.success("Camera activated");
-            })
-            .catch(err => {
-              console.error("Error playing video:", err);
-              toast.error("Could not start video stream");
-            });
-        }
-      };
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast.error("Could not access camera", {
-        description: "Please ensure camera permissions are granted to this site",
-        duration: 5000
-      });
-    }
-  };
-
-  // Handle camera deactivation
-  const stopCamera = () => {
-    if (!videoRef.current || !videoRef.current.srcObject) return;
-    
-    const stream = videoRef.current.srcObject as MediaStream;
-    const tracks = stream.getTracks();
-    
-    tracks.forEach(track => track.stop());
-    videoRef.current.srcObject = null;
-    setCameraActive(false);
-    stopDetection();
-    setIsTracking(false);
-  };
-
-  // Toggle motion tracking
-  const toggleTracking = () => {
-    if (isTracking) {
-      stopDetection();
-      setIsTracking(false);
-      toast.info("Motion tracking paused");
     } else {
-      startDetection();
-      setIsTracking(true);
-      toast.success("Motion tracking active");
+      const success = await startCamera();
+      if (success) {
+        startDetection();
+      }
     }
   };
 
-  // Reset session data
+  // Handle session reset
   const handleReset = () => {
     resetSession();
-    toast.info("Session reset");
   };
 
-  // Handle session completion
-  const handleFinish = () => {
-    stopCamera();
-    stopDetection();
-    setIsTracking(false);
-    
-    toast.success(`Exercise session completed`, {
-      description: `Great job! You completed ${stats.totalReps} reps with ${stats.accuracy}% accuracy.`
-    });
-    
-    if (onFinish) onFinish();
+  // Handle retry after error
+  const handleRetry = () => {
+    if (detectionError) {
+      toast.info("Retrying detection...");
+      startDetection();
+    }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopDetection();
+      stopCamera();
+    };
+  }, [stopDetection, stopCamera]);
+
+  // Render loading state
+  if (!isModelLoaded) {
+    return <ModelLoadingState />;
+  }
+
+  // Render error state for model loading errors
+  if (detectionError && detectionError.type === 'MODEL_LOADING' && !isModelLoaded) {
+    return <ModelErrorState loadingError={detectionError} />;
+  }
 
   return (
-    <ErrorBoundary>
-      <div className="space-y-4">
-        <Card className="overflow-hidden shadow-md">
-          <CardHeader className="bg-muted/30 p-4">
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Camera className="h-5 w-5 text-primary" />
-              <span>{exerciseName} - Motion Analysis</span>
-            </CardTitle>
-          </CardHeader>
-          
-          {isModelLoading ? (
-            <ModelLoadingState loadingProgress={loadingProgress} />
-          ) : loadingError ? (
-            <ModelErrorState loadingError={loadingError} />
-          ) : (
-            <MotionDetectionErrorBoundary onReset={handleReset}>
+    <MotionDetectionErrorBoundary onRetry={handleRetry}>
+      <div className="relative w-full max-w-screen-xl mx-auto p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Camera view */}
+          <div className={`relative ${showFullscreen ? 'fixed inset-0 z-50 p-4 bg-background' : 'w-full lg:w-2/3'}`}>
+            <div className="relative rounded-lg overflow-hidden aspect-video bg-muted border">
               <CameraView
                 videoRef={videoRef}
                 canvasRef={canvasRef}
-                isModelLoading={false}
-                cameraActive={cameraActive}
-                isTracking={isTracking}
-                detectionResult={detectionResult}
-                angles={angles}
-                onStartCamera={startCamera}
-                onToggleTracking={toggleTracking}
-                onReset={handleReset}
-                onFinish={handleFinish}
+                showFullscreen={showFullscreen}
+                onToggleFullscreen={() => setShowFullscreen(!showFullscreen)}
               />
-            </MotionDetectionErrorBoundary>
-          )}
+              
+              {/* Detection overlay */}
+              {cameraActive && result && (
+                <MotionRenderer
+                  detectionResult={result}
+                  angles={angles}
+                  canvasRef={canvasRef}
+                  motionState={motionState}
+                />
+              )}
+              
+              {/* Error display */}
+              {detectionError && detectionError.type !== 'MODEL_LOADING' && (
+                <DetectionErrorDisplay
+                  error={detectionError}
+                  onRetry={handleRetry}
+                />
+              )}
+              
+              {/* Camera inactive state */}
+              {!cameraActive && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
+                  <Camera className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Camera is off</h3>
+                  <p className="mb-4 text-muted-foreground text-center max-w-md">
+                    Turn on the camera to start motion detection and exercise tracking
+                  </p>
+                  <button
+                    onClick={handleCameraToggle}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+                  >
+                    Turn On Camera
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Feedback display */}
+            {cameraActive && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4"
+              >
+                <FeedbackDisplay feedback={feedback} />
+              </motion.div>
+            )}
+          </div>
           
-          <CardFooter className="p-0">
-            <ControlPanel
-              cameraActive={cameraActive}
-              isTracking={isTracking}
-              onToggleTracking={toggleTracking}
-              onReset={handleReset}
-              onFinish={handleFinish}
-            />
-          </CardFooter>
-        </Card>
-        
-        {/* Feedback and stats display */}
-        <FeedbackDisplay 
-          feedback={feedback || { message: "Prepare to start exercise", type: FeedbackType.INFO }} 
-          stats={stats} 
-        />
-        
-        {/* Biomarkers display */}
-        <BiomarkersDisplay 
-          biomarkers={biomarkers} 
-          angles={angles} 
-        />
-        
-        {/* Instructions card */}
-        <ExerciseInstructions />
+          {/* Controls and stats */}
+          {!showFullscreen && (
+            <div className="w-full lg:w-1/3 space-y-4">
+              <ControlPanel
+                isDetecting={isDetecting}
+                isModelLoaded={isModelLoaded}
+                cameraActive={cameraActive}
+                detectionFps={detectionFps}
+                motionState={motionState}
+                stats={stats}
+                onCameraToggle={handleCameraToggle}
+                onReset={handleReset}
+              />
+              
+              {/* Biomarkers display */}
+              {cameraActive && Object.keys(biomarkers).length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <BiomarkersDisplay biomarkers={biomarkers} />
+                </motion.div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </ErrorBoundary>
+    </MotionDetectionErrorBoundary>
   );
 };
 
-export default MotionTracker;
+export default MotionTracking;
