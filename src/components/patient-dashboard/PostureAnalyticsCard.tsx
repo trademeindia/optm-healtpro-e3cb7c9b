@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { safeGetFromJson } from '@/types/human';
 
 interface PostureAnalyticsCardProps {
   patientId?: string;
@@ -76,18 +77,16 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
         
         // Generate metrics based on collected data with safe type checking
         const shoulderScores = analysisData
-          .filter(item => typeof item.biomarkers === 'object' && item.biomarkers && 
-                 'shoulderSymmetry' in item.biomarkers)
-          .map(item => item.biomarkers.shoulderSymmetry);
+          .filter(item => item.biomarkers !== null)
+          .map(item => safeGetFromJson(item.biomarkers, 'shoulderSymmetry', 0));
         
         const avgShoulderScore = shoulderScores.length > 0
           ? Math.round(shoulderScores.reduce((sum, score) => sum + score, 0) / shoulderScores.length)
           : 0;
         
         const balanceScores = analysisData
-          .filter(item => typeof item.biomarkers === 'object' && item.biomarkers && 
-                 'balanceScore' in item.biomarkers)
-          .map(item => item.biomarkers.balanceScore);
+          .filter(item => item.biomarkers !== null)
+          .map(item => safeGetFromJson(item.biomarkers, 'balanceScore', 0));
         
         const avgBalanceScore = balanceScores.length > 0
           ? Math.round(balanceScores.reduce((sum, score) => sum + score, 0) / balanceScores.length)
@@ -95,9 +94,8 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
         
         // Extract neck angles for posture analysis with safe type checking
         const neckAngles = analysisData
-          .filter(item => typeof item.angles === 'object' && item.angles && 
-                 'neckAngle' in item.angles && item.angles.neckAngle !== null)
-          .map(item => item.angles.neckAngle);
+          .filter(item => item.angles !== null)
+          .map(item => safeGetFromJson(item.angles, 'neckAngle', 0));
         
         const avgNeckAngle = neckAngles.length > 0
           ? Math.round(neckAngles.reduce((sum, angle) => sum + angle, 0) / neckAngles.length)
@@ -155,18 +153,13 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
             sessionAnalysis.filter(item => item.posture_score !== null).length || 0;
           
           // Safely access nested properties
-          let accuracy = '0%';
-          if (typeof session.summary === 'object' && session.summary && 
-              typeof session.summary.stats === 'object' && session.summary.stats &&
-              'accuracy' in session.summary.stats) {
-            accuracy = `${session.summary.stats.accuracy}%`;
-          }
+          const accuracy = safeGetFromJson(session.summary, 'stats.accuracy', 0);
           
           return {
             date: new Date(session.start_time).toLocaleDateString(),
             posture: session.exercise_type,
             score: Math.round(avgSessionPostureScore),
-            improvement: accuracy
+            improvement: `${accuracy}%`
           };
         }).reverse();
         

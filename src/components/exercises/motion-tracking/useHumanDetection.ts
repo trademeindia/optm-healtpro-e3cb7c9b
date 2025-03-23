@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import * as Human from '@vladmandic/human';
 import { human, extractBodyAngles, extractBiomarkers } from '@/lib/human';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 export enum MotionState {
   STANDING = 'standing',
@@ -44,6 +45,32 @@ const determineMotionState = (kneeAngle: number | null): MotionState => {
   } else {
     return MotionState.MID_MOTION;
   }
+};
+
+// Helper function to convert any object to a JSON-compatible format for Supabase
+const toJsonObject = (obj: any): Json => {
+  if (obj === null || obj === undefined) return null;
+  
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => toJsonObject(item));
+  }
+  
+  // Convert to plain object with no methods
+  const result: Record<string, Json> = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (typeof value !== 'function' && key !== '__proto__') {
+        result[key] = toJsonObject(value);
+      }
+    }
+  }
+  
+  return result;
 };
 
 export const useHumanDetection = ({
@@ -268,9 +295,9 @@ export const useHumanDetection = ({
     
     try {
       // Convert complex objects to plain objects for JSON serialization
-      const serializedAngles = angles ? { ...angles } : null;
-      const serializedBiomarkers = biomarkers ? { ...biomarkers } : null;
-      const metadata = {
+      const serializedAngles = angles ? toJsonObject(angles) : null;
+      const serializedBiomarkers = biomarkers ? toJsonObject(biomarkers) : null;
+      const serializedMetadata = toJsonObject({
         exerciseType: exerciseType,
         motionState: currentMotionState,
         stats: {
@@ -279,7 +306,7 @@ export const useHumanDetection = ({
           badReps: stats.badReps,
           accuracy: stats.accuracy
         }
-      };
+      });
       
       await supabase.from('body_analysis').insert({
         patient_id: (await supabase.auth.getUser()).data.user?.id,
@@ -287,7 +314,7 @@ export const useHumanDetection = ({
         angles: serializedAngles,
         posture_score: biomarkers.postureScore || null,
         biomarkers: serializedBiomarkers,
-        metadata: metadata
+        metadata: serializedMetadata
       });
     } catch (error) {
       console.error('Error saving detection data:', error);
@@ -415,15 +442,15 @@ export const useHumanDetection = ({
         if (sessionId) {
           try {
             // Convert complex objects to plain objects for JSON serialization
-            const summaryData = {
+            const summaryData = toJsonObject({
               stats: {
                 totalReps: stats.totalReps,
                 goodReps: stats.goodReps,
                 badReps: stats.badReps,
                 accuracy: stats.accuracy
               },
-              lastBiomarkers: { ...biomarkers }
-            };
+              lastBiomarkers: biomarkers
+            });
             
             await supabase
               .from('analysis_sessions')

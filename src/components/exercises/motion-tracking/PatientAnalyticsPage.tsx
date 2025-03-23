@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Skeleton } from '@/components/ui/skeleton';
 import PostureAnalyticsCard from '@/components/patient-dashboard/PostureAnalyticsCard';
 import { Progress } from '@/components/ui/progress';
+import { isJsonObject, safeGetFromJson } from '@/types/human';
 
 interface PatientAnalyticsPageProps {
   patientId?: string;
@@ -46,20 +46,13 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
         const exerciseStats = exerciseTypes.map(type => {
           const sessionsOfType = sessionData.filter(s => s.exercise_type === type);
           
-          // Safely access nested properties with optional chaining and type checking
+          // Safely access nested properties with our helper functions
           const totalReps = sessionsOfType.reduce((sum, s) => {
-            // Check if summary and stats exist and are objects
-            if (typeof s.summary === 'object' && s.summary && typeof s.summary.stats === 'object' && s.summary.stats) {
-              return sum + (s.summary.stats.totalReps || 0);
-            }
-            return sum;
+            return sum + safeGetFromJson(s.summary, 'stats.totalReps', 0);
           }, 0);
           
           const goodReps = sessionsOfType.reduce((sum, s) => {
-            if (typeof s.summary === 'object' && s.summary && typeof s.summary.stats === 'object' && s.summary.stats) {
-              return sum + (s.summary.stats.goodReps || 0);
-            }
-            return sum;
+            return sum + safeGetFromJson(s.summary, 'stats.goodReps', 0);
           }, 0);
           
           const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
@@ -114,7 +107,7 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
   
   const totalRepsByDate = sessions.reduce((acc, session) => {
     const date = new Date(session.start_time).toLocaleDateString();
-    const reps = session.summary?.stats?.totalReps || 0;
+    const reps = safeGetFromJson(session.summary, 'stats.totalReps', 0);
     
     if (!acc[date]) {
       acc[date] = 0;
@@ -122,7 +115,7 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
     
     acc[date] += reps;
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
   
   const dailyRepData = Object.keys(totalRepsByDate).map(date => ({
     date,

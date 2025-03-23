@@ -1,9 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { safeGetFromJson } from '@/types/human';
 
 interface SessionAnalyticsProps {
   sessionId?: string;
@@ -53,16 +53,9 @@ const SessionAnalytics: React.FC<SessionAnalyticsProps> = ({ sessionId, patientI
         // Transform data for chart with safe type checking
         const transformedData = data.map(item => {
           // Safely extract angle values with type checking
-          let kneeAngle = 0;
-          let hipAngle = 0;
-          let shoulderAngle = 0;
-          
-          // Check if angles is an object before accessing properties
-          if (typeof item.angles === 'object' && item.angles) {
-            kneeAngle = item.angles.kneeAngle || 0;
-            hipAngle = item.angles.hipAngle || 0;
-            shoulderAngle = item.angles.shoulderAngle || 0;
-          }
+          const kneeAngle = safeGetFromJson(item.angles, 'kneeAngle', 0);
+          const hipAngle = safeGetFromJson(item.angles, 'hipAngle', 0);
+          const shoulderAngle = safeGetFromJson(item.angles, 'shoulderAngle', 0);
           
           return {
             timestamp: new Date(item.timestamp).toLocaleTimeString(),
