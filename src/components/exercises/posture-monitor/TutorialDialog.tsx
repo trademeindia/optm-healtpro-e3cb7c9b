@@ -1,6 +1,12 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 
 interface TutorialDialogProps {
   open: boolean;
@@ -10,65 +16,59 @@ interface TutorialDialogProps {
 const TutorialDialog: React.FC<TutorialDialogProps> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 dialog-content-solid">
-        <DialogHeader className="border-b pb-3 mb-2">
-          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">How to Use AI Squat Analyzer</DialogTitle>
-          <DialogDescription className="text-gray-600 dark:text-gray-300">
-            Follow these steps to get accurate squat form analysis
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>How to Use the AI Squat Analyzer</DialogTitle>
+          <DialogDescription>
+            Follow these steps for an effective workout session
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-          <div>
-            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Setting Up</h3>
-            <ol className="list-decimal list-inside space-y-1 pl-2">
-              <li>Position your device so your full body is visible</li>
-              <li>Ensure good lighting in the room</li>
-              <li>Wear form-fitting clothing for better detection</li>
-              <li>Clear the area around you for safety</li>
-            </ol>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm">Step 1: Preparation</h3>
+            <p className="text-sm text-muted-foreground">
+              Position your device so your full body is visible in the camera frame. 
+              Wear form-fitting clothing to help the AI detect your body accurately.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Performing Squats</h3>
-            <ol className="list-decimal list-inside space-y-1 pl-2">
-              <li>Stand facing the camera with feet shoulder-width apart</li>
-              <li>Keep your back straight throughout the movement</li>
-              <li>Lower your body by bending at the knees and hips</li>
-              <li>Aim to get your thighs parallel to the ground</li>
-              <li>Push through your heels to return to standing</li>
-            </ol>
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm">Step 2: Start the Camera</h3>
+            <p className="text-sm text-muted-foreground">
+              Click the "Start Camera" button and allow camera permissions when prompted. 
+              Make sure you can see yourself in the video display.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Understanding Feedback</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Green feedback indicates good form</li>
-              <li>Yellow feedback suggests minor adjustments</li>
-              <li>Red feedback indicates form that should be corrected</li>
-              <li>Your accuracy score reflects your overall form quality</li>
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm">Step 3: Perform the Exercise</h3>
+            <p className="text-sm text-muted-foreground">
+              Stand with feet shoulder-width apart. For proper squat form:
+            </p>
+            <ul className="text-sm list-disc pl-5 text-muted-foreground">
+              <li>Keep your back straight</li>
+              <li>Lower your body by bending your knees</li>
+              <li>Keep your knees aligned with your toes</li>
+              <li>Go as low as comfortable, ideally until thighs are parallel to the floor</li>
+              <li>Push through your heels to return to standing position</li>
             </ul>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Biomechanical Analysis</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Click "Show Biomechanics" to see detailed analysis</li>
-              <li>Joint angles show the position of your knees, hips, and ankles</li>
-              <li>Muscle activation shows which muscles are working hardest</li>
-              <li>Form assessment provides specific recommendations</li>
-              <li>Analysis happens automatically when you reach the bottom of your squat</li>
-            </ul>
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm">Step 4: Follow AI Feedback</h3>
+            <p className="text-sm text-muted-foreground">
+              The AI will analyze your form in real-time and provide feedback. 
+              Pay attention to the instructions to improve your technique.
+            </p>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Tips for Best Results</h3>
-            <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Move slowly and with control</li>
-              <li>Keep your movements smooth and deliberate</li>
-              <li>Use a proper squat stance with toes slightly pointed out</li>
-              <li>Complete full squat repetitions for accurate counting</li>
-            </ul>
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm">Step 5: Track Your Progress</h3>
+            <p className="text-sm text-muted-foreground">
+              Your reps and form accuracy are tracked automatically. 
+              Aim to improve your form score with each session.
+            </p>
           </div>
         </div>
       </DialogContent>

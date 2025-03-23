@@ -1,40 +1,30 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { FeedbackType } from '../types';
 
-export interface FeedbackState {
-  message: string | null;
-  type: FeedbackType;
-}
-
 export const useFeedbackState = (isModelLoading: boolean, modelError: string | null) => {
-  const [feedback, setFeedback] = useState<FeedbackState>({
-    message: isModelLoading ? "Loading pose detection model..." : null,
-    type: FeedbackType.INFO
-  });
+  const [feedback, setFeedback] = useState<string | null>(
+    isModelLoading ? "Loading pose detection model..." : null
+  );
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>(FeedbackType.INFO);
   
   // Update feedback when model loading state changes
   useEffect(() => {
     if (isModelLoading) {
-      setFeedback({
-        message: "Loading pose detection model...",
-        type: FeedbackType.INFO
-      });
+      setFeedback("Loading pose detection model...");
+      setFeedbackType(FeedbackType.INFO);
     } else if (modelError) {
-      setFeedback({
-        message: modelError,
-        type: FeedbackType.WARNING
-      });
+      setFeedback(modelError);
+      setFeedbackType(FeedbackType.WARNING);
     }
   }, [isModelLoading, modelError]);
   
-  // Use callback to prevent unnecessary re-renders
-  const updateFeedback = useCallback((message: string | null, type: FeedbackType = FeedbackType.INFO) => {
-    setFeedback({ message, type });
-  }, []);
-  
   return {
-    feedback,
-    updateFeedback
+    feedback: {
+      message: feedback,
+      type: feedbackType
+    },
+    setFeedback,
+    setFeedbackType
   };
 };

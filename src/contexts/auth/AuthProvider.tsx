@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -6,9 +5,10 @@ import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading: sessionLoading, setUser, error: sessionError } = useAuthSession();
+  const { user, isLoading: sessionLoading, setUser } = useAuthSession();
   const {
     isLoading: operationsLoading,
     login: loginBase,
@@ -20,30 +20,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } = useAuthOperations();
 
   const isLoading = sessionLoading || operationsLoading;
-  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user ? `${user.email} (${user.role})` : 'null', 
       sessionLoading, 
-      operationsLoading,
-      initialCheckComplete,
-      sessionError: sessionError ? sessionError.message : null
+      operationsLoading 
     });
-    
-    // Show error toast if session initialization failed
-    if (sessionError && !initialCheckComplete) {
-      toast.error('Authentication Error', {
-        description: 'There was a problem with the authentication system. Some features may be limited.',
-        duration: 5000
-      });
-      console.error('Session initialization error:', sessionError);
-    }
-  }, [user, sessionLoading, operationsLoading, initialCheckComplete, sessionError]);
+  }, [user, sessionLoading, operationsLoading]);
 
   useEffect(() => {
-    let mounted = true;
-    
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -51,25 +37,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Error checking session:', error);
         }
         console.log('Supabase session check:', data.session ? 'active' : 'none');
-        
-        if (mounted) {
-          setInitialCheckComplete(true);
-        }
       } catch (e) {
         console.error('Supabase session check failed:', e);
-        if (mounted) {
-          setInitialCheckComplete(true);
-        }
       }
     };
     
     checkSession();
     
-    // Set up listener for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Supabase auth state change:', event, session ? 'session exists' : 'no session');
-      
-      if (!mounted) return;
       
       if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -85,28 +61,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error('Error formatting user after auth state change:', error);
-          toast.error('Error loading profile', {
-            description: 'There was a problem loading your user profile'
-          });
         }
       }
     });
     
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, [setUser, user]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      // Handle demo user login as before
       if (email === 'admin@example.com' && password === 'password123') {
         const demoUser: User = {
           id: `demo-admin-${Date.now()}`,
           email: email,
           name: 'Admin Demo Account',
-          role: UserRole.ADMIN,
+          role: 'admin',
           provider: 'email',
           picture: null
         };
@@ -120,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-doctor-${Date.now()}`,
           email: email,
           name: 'Dr. Demo Account',
-          role: UserRole.DOCTOR,
+          role: 'doctor',
           provider: 'email',
           picture: null
         };
@@ -134,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-patient-${Date.now()}`,
           email: email,
           name: 'Patient Demo',
-          role: UserRole.PATIENT,
+          role: 'patient',
           provider: 'email',
           picture: null,
           patientId: 'demo-patient-id-123'
@@ -149,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: `demo-receptionist-${Date.now()}`,
           email: email,
           name: 'Receptionist Demo',
-          role: UserRole.RECEPTIONIST,
+          role: 'receptionist',
           provider: 'email',
           picture: null
         };
@@ -170,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
     console.log("AuthProvider handling OAuth callback:", { provider, hasCode: !!code });
     try {
-      await handleOAuthCallbackBase(provider, code);
+      await handleOAuthCallbackBase(provider, code, user);
     } catch (error) {
       console.error('OAuth callback error:', error);
       toast.error('OAuth authentication failed. Please try again.');

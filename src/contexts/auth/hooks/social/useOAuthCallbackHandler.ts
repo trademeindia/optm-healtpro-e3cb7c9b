@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../../utils';
-import { User, UserRole } from '../../types';
+import { User } from '../../types';
 
 type UseOAuthCallbackHandlerProps = {
   setIsLoading: (isLoading: boolean) => void;
@@ -10,7 +10,7 @@ type UseOAuthCallbackHandlerProps = {
 };
 
 export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCallbackHandlerProps) => {
-  const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
+  const handleOAuthCallback = async (provider: string, code: string, currentUser: User | null): Promise<void> => {
     setIsLoading(true);
     
     try {
@@ -22,21 +22,18 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
         throw new Error('No authorization code provided');
       }
       
-      // In Supabase auth flow, we don't need to exchange the code ourselves
-      // The code is in the URL, but Supabase already processed it through the redirect
-      // Just need to check if we have a session
-      console.log('Checking for session after OAuth redirect');
+      // Get the session from URL parameters (Supabase handles this automatically)
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error('Error getting session after OAuth redirect:', error);
+        console.error('Error getting session:', error);
         toast.error(`Authentication failed: ${error.message}`);
         throw error;
       }
       
-      // If we have a session, use it
+      // If we have a session, format the user
       if (data.session) {
-        console.log('Session found after OAuth redirect, formatting user');
+        console.log('Session found in callback, formatting user');
         const user = await formatUser(data.session.user);
         
         if (user) {
@@ -44,45 +41,23 @@ export const useOAuthCallbackHandler = ({ setIsLoading, navigate }: UseOAuthCall
           toast.success('Successfully signed in!');
           
           // Navigate to the appropriate dashboard based on user role
-          const dashboard = user.role === UserRole.DOCTOR ? '/dashboard/doctor' : 
-                            user.role === UserRole.RECEPTIONIST ? '/dashboard/receptionist' : 
+          const dashboard = user.role === 'doctor' ? '/dashboard/doctor' : 
+                            user.role === 'receptionist' ? '/dashboard/receptionist' : 
                             '/dashboard/patient';
                             
-          setTimeout(() => navigate(dashboard), 500);
+          setTimeout(() => navigate(dashboard), 100);
         } else {
           console.error('User profile not found after OAuth');
           toast.error('Authentication failed: User profile not found');
-          throw new Error('User profile not found after OAuth');
         }
       } else {
         console.error('No session found after OAuth callback');
-        
-        // Try to see if there's a demo user we can use (for testing)
-        if (provider === 'google') {
-          const demoUser: User = {
-            id: `demo-patient-${Date.now()}`,
-            email: 'google-demo@example.com',
-            name: 'Google Demo User',
-            role: UserRole.PATIENT,
-            provider: 'google',
-            picture: 'https://i.pravatar.cc/150?u=google'
-          };
-          
-          console.log('Using demo Google user for testing');
-          toast.success('Signed in with demo Google account!');
-          setTimeout(() => navigate('/dashboard/patient'), 500);
-          return;
-        }
-        
         toast.error('Authentication failed: No session found');
         throw new Error('No session found after OAuth callback');
       }
     } catch (error: any) {
       console.error(`Error processing OAuth callback: ${error.message}`, error);
       toast.error(`Authentication failed: ${error.message}`);
-      
-      // Navigate back to login after error
-      setTimeout(() => navigate('/login'), 3000);
       throw error;
     } finally {
       setIsLoading(false);

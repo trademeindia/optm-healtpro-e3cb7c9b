@@ -1,117 +1,181 @@
 
-import { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth/useAuth';
 import { toast } from 'sonner';
-import { UserRole } from '@/contexts/auth/types';
 
 export const useLoginState = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginErrors, setLoginErrors] = useState<string[]>([]);
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [userType, setUserType] = useState<'doctor' | 'patient' | 'receptionist'>('patient');
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
+  const [signupData, setSignupData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [showDebug, setShowDebug] = useState(false);
 
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    // Clear any error when user types
-    setLoginErrors([]);
-  }, []);
+  const { login, loginWithSocialProvider, signup, forgotPassword, isAuthenticated, user } = useAuth();
 
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    // Clear any error when user types
-    setLoginErrors([]);
-  }, []);
-
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reset errors
-    setLoginErrors([]);
-    
-    // Validate inputs
-    const errors: string[] = [];
-    if (!email) errors.push('Email is required');
-    if (!password) errors.push('Password is required');
-    
-    if (errors.length > 0) {
-      setLoginErrors(errors);
-      errors.forEach(error => toast.error(error));
+    if (!email || !password) {
+      toast.error('Please enter your email and password');
       return;
     }
-
-    setIsLoading(true);
     
+    setIsSubmitting(true);
     try {
-      const user = await login(email, password);
+      // For demo purposes, handle different role demo accounts
+      if (email === 'receptionist@example.com' && password === 'password123') {
+        const demoUser = await login(email, password);
+        console.log('Receptionist login successful');
+        setTimeout(() => navigate('/dashboard/receptionist'), 500);
+        return;
+      }
       
-      if (user) {
+      const result = await login(email, password);
+      
+      if (result) {
+        console.log('Login successful, redirecting to dashboard');
         // Navigate based on user role
-        if (user.role === UserRole.DOCTOR) {
-          navigate('/dashboard/doctor');
-        } else if (user.role === UserRole.PATIENT) {
-          navigate('/dashboard/patient');
-        } else if (user.role === UserRole.RECEPTIONIST) {
-          navigate('/dashboard/receptionist');
-        } else {
-          navigate('/dashboard');
-        }
-      } else {
-        throw new Error('Login failed. Please check your credentials.');
+        setTimeout(() => {
+          const dashboard = 
+            result.role === 'doctor' ? '/dashboard/doctor' : 
+            result.role === 'receptionist' ? '/dashboard/receptionist' : 
+            '/dashboard/patient';
+          console.log(`Navigating to ${dashboard}`);
+          navigate(dashboard);
+        }, 500);
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setLoginErrors([error.message || 'Failed to login. Please check your credentials.']);
-      toast.error(error.message || 'Failed to login. Please check your credentials.');
+    } catch (error) {
+      console.error('Login failed:', error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  }, [email, password, login, navigate]);
+  };
 
-  const handleDemoLogin = useCallback((role: 'doctor' | 'patient' | 'receptionist') => {
-    setIsLoading(true);
+  // Use an effect to redirect after successful login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to dashboard');
+      const dashboard = 
+        user.role === 'doctor' ? '/dashboard/doctor' : 
+        user.role === 'receptionist' ? '/dashboard/receptionist' : 
+        '/dashboard/patient';
+      navigate(dashboard);
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const demoCredentials = {
-      doctor: { email: 'doctor@example.com', password: 'password123' },
-      patient: { email: 'patient@example.com', password: 'password123' },
-      receptionist: { email: 'receptionist@example.com', password: 'password123' }
-    };
+    if (!forgotEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
     
-    const credentials = demoCredentials[role];
-    setEmail(credentials.email);
-    setPassword(credentials.password);
+    setIsSubmitting(true);
+    try {
+      await forgotPassword(forgotEmail);
+      setShowForgotPassword(false);
+      toast.success('Password reset instructions sent to your email');
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      toast.error('Failed to send reset instructions. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    // Small timeout to ensure state updates before submission
-    setTimeout(async () => {
-      try {
-        const user = await login(credentials.email, credentials.password);
-        
-        if (user) {
-          const dashboardRoute = `/dashboard/${role}`;
-          navigate(dashboardRoute);
-        } else {
-          throw new Error('Demo login failed. Please try again.');
-        }
-      } catch (error: any) {
-        console.error('Demo login error:', error);
-        setLoginErrors([error.message || 'Failed to login with demo account.']);
-        toast.error(error.message || 'Failed to login with demo account.');
-      } finally {
-        setIsLoading(false);
+    if (!signupData.name || !signupData.email || !signupData.password) {
+      toast.error('Please fill out all required fields');
+      return;
+    }
+    
+    if (signupData.password !== signupData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await signup(signupData.email, signupData.password, signupData.name, userType);
+      setShowSignupDialog(false);
+      toast.success('Account created successfully! Please check your email for verification.');
+    } catch (error) {
+      console.error('Signup failed:', error);
+      toast.error('Failed to create account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: 'google') => {
+    try {
+      setIsSubmitting(true);
+      console.log(`Initiating ${provider} OAuth login flow for ${userType} role`);
+      toast.info(`Connecting to ${provider}...`, { duration: 3000 });
+      
+      // In a real app, we'd store the selected role in localStorage or pass it to the OAuth provider
+      localStorage.setItem('selectedRole', userType);
+      
+      await loginWithSocialProvider(provider);
+    } catch (error) {
+      console.error(`${provider} login initiation failed:`, error);
+      toast.error(`${provider} login failed. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    if (value === 'doctor' || value === 'patient' || value === 'receptionist') {
+      setUserType(value);
+      
+      // Set demo email placeholders based on selected role
+      if (value === 'doctor') {
+        setEmail('doctor@example.com');
+      } else if (value === 'patient') {
+        setEmail('patient@example.com');
+      } else if (value === 'receptionist') {
+        setEmail('receptionist@example.com');
       }
-    }, 100);
-  }, [login, navigate]);
+      
+      setPassword('password123'); // For demo purposes
+    }
+  };
+
+  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSignupData(prev => ({ ...prev, [name]: value }));
+  };
 
   return {
-    email,
-    password,
-    isLoading,
-    errors: loginErrors,
-    handleEmailChange,
-    handlePasswordChange,
+    email, setEmail,
+    password, setPassword,
+    isSubmitting, setIsSubmitting,
+    showForgotPassword, setShowForgotPassword,
+    forgotEmail, setForgotEmail,
+    userType, setUserType,
+    showSignupDialog, setShowSignupDialog,
+    signupData, setSignupData,
+    showDebug, setShowDebug,
     handleSubmit,
-    handleDemoLogin
+    handleForgotPassword,
+    handleSignup,
+    handleSocialLogin,
+    handleTabChange,
+    handleSignupInputChange
   };
 };

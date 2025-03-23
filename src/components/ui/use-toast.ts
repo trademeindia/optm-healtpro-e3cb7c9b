@@ -1,20 +1,7 @@
 
-import * as React from "react";
-import { toast as sonnerToast } from 'sonner';
+import { toast as toastFunction } from "sonner";
 
-// Re-export the internal toast implementation for components that need it
-export { useToast, toast, type ToastProps } from '@/hooks/use-toast';
+// Export the toast function from sonner directly
+export const toast = toastFunction;
 
-// Simple wrapper around sonner toast for backward compatibility
-export const useInternalToast = () => {
-  return {
-    toast: {
-      success: (message: string) => sonnerToast.success(message),
-      error: (message: string) => sonnerToast.error(message),
-      info: (message: string) => sonnerToast(message),
-      warning: (message: string) => sonnerToast(message, {
-        style: { backgroundColor: 'var(--warning)' }
-      })
-    }
-  };
-};
+// Since sonner doesn't export useToast, we don't need to import or re-export it

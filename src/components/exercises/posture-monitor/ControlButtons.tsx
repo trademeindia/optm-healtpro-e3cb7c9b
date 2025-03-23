@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Camera, CameraOff, RefreshCw, HelpCircle, Check } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Camera, CameraOff, Check, Info, RotateCcw } from 'lucide-react';
 
 interface ControlButtonsProps {
   cameraActive: boolean;
@@ -21,52 +21,56 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onFinish
 }) => {
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
-      <Button
+    <div className="flex flex-wrap gap-2 pt-2">
+      <Button 
+        onClick={onToggleCamera} 
         variant={cameraActive ? "destructive" : "default"}
-        onClick={onToggleCamera}
+        className="gap-2 flex-1 btn-responsive-text"
         disabled={isModelLoading}
-        className="flex items-center gap-2"
+        aria-label={cameraActive ? "Stop Camera" : "Start Camera"}
       >
         {cameraActive ? (
           <>
             <CameraOff className="h-4 w-4" />
-            <span>Stop Camera</span>
+            <span className="sm:inline">Stop Camera</span>
           </>
         ) : (
           <>
             <Camera className="h-4 w-4" />
-            <span>Start Camera</span>
+            <span className="sm:inline">{isModelLoading ? "Loading AI..." : "Start Camera"}</span>
           </>
         )}
       </Button>
-
-      <Button
-        variant="outline"
-        onClick={onReset}
-        disabled={isModelLoading || !cameraActive}
-        className="flex items-center gap-2"
+      
+      <Button 
+        onClick={onReset} 
+        variant="outline" 
+        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
+        disabled={!cameraActive}
+        aria-label="Reset"
       >
-        <RefreshCw className="h-4 w-4" />
+        <RotateCcw className="h-4 w-4" />
         <span>Reset</span>
       </Button>
-
-      <Button
-        variant="outline"
-        onClick={onShowTutorial}
-        className="flex items-center gap-2"
+      
+      <Button 
+        onClick={onShowTutorial} 
+        variant="outline" 
+        className="gap-2 btn-responsive-text btn-icon-only sm:btn-with-text"
+        aria-label="How To"
       >
-        <HelpCircle className="h-4 w-4" />
-        <span>Help</span>
+        <Info className="h-4 w-4" />
+        <span>How To</span>
       </Button>
-
-      <Button
-        variant="default"
-        onClick={onFinish}
-        className="flex items-center gap-2 ml-auto"
+      
+      <Button 
+        onClick={onFinish} 
+        variant="outline" 
+        className="gap-2 flex-1 btn-responsive-text"
+        aria-label="Finish Session"
       >
         <Check className="h-4 w-4" />
-        <span>Finish</span>
+        <span className="sm:inline">Finish Session</span>
       </Button>
     </div>
   );

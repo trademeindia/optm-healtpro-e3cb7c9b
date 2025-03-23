@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
-import { User, UserRole } from '../types';
+import { User } from '../types';
 
 type UseAuthLoginProps = {
   setIsLoading: (isLoading: boolean) => void;
@@ -28,7 +28,7 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
           id: isDemoDoctor ? 'demo-doctor-id' : isDemoPatient ? 'demo-patient-id' : 'demo-receptionist-id',
           email: email,
           name: isDemoDoctor ? 'Demo Doctor' : isDemoPatient ? 'Demo Patient' : 'Demo Receptionist',
-          role: isDemoDoctor ? UserRole.DOCTOR : isDemoPatient ? UserRole.PATIENT : UserRole.RECEPTIONIST,
+          role: isDemoDoctor ? 'doctor' : isDemoPatient ? 'patient' : 'receptionist',
           provider: 'email',
           picture: null
         };
@@ -71,8 +71,8 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
       toast.success('Login successful');
       
       // Navigate to the appropriate dashboard based on user role
-      const dashboard = formattedUser.role === UserRole.DOCTOR ? '/dashboard/doctor' : 
-                        formattedUser.role === UserRole.RECEPTIONIST ? '/dashboard/receptionist' : 
+      const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
+                        formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
                         '/dashboard/patient';
       
       setTimeout(() => navigate(dashboard), 100);

@@ -27,7 +27,6 @@ const CameraView: React.FC<CameraViewProps> = ({
   detectionStatus
 }) => {
   const videoInitializedRef = useRef(false);
-  const playAttemptRef = useRef(0);
   
   // Force video element update if camera is active
   useEffect(() => {
@@ -41,34 +40,19 @@ const CameraView: React.FC<CameraViewProps> = ({
         
         if (videoElement.paused && videoElement.readyState >= 2) {
           console.log("Video not playing but ready, attempting to play...");
-          playAttemptRef.current += 1;
-          
-          videoElement.play().catch(e => {
-            console.error("Failed to play video:", e);
-            // If we've tried too many times, we might need to reset
-            if (playAttemptRef.current > 3 && onRetryCamera) {
-              console.log("Too many play attempts, trying camera reset");
-              onRetryCamera();
-            }
-          });
+          videoElement.play().catch(e => console.error("Failed to play video:", e));
         }
       };
       
       // Initial check with delay to ensure DOM is ready
       const initialCheckTimer = setTimeout(checkVideoPlaying, 200);
       
-      // Regular check interval
-      const playbackCheckInterval = setInterval(checkVideoPlaying, 2000);
-      
       // Set up video event listeners
       const onError = (e: Event) => console.error("Video error event triggered", e);
       const onStalled = () => console.warn("Video stalled event triggered");
       const onSuspend = () => console.warn("Video suspend event triggered");
       const onWaiting = () => console.warn("Video waiting for data");
-      const onPlaying = () => {
-        console.log("Video playing event triggered");
-        playAttemptRef.current = 0; // Reset counter on successful play
-      };
+      const onPlaying = () => console.log("Video playing event triggered");
       const onLoadedMetadata = () => {
         console.log("Video metadata loaded");
         checkVideoPlaying();
@@ -83,7 +67,6 @@ const CameraView: React.FC<CameraViewProps> = ({
       
       return () => {
         clearTimeout(initialCheckTimer);
-        clearInterval(playbackCheckInterval);
         videoElement.removeEventListener('error', onError);
         videoElement.removeEventListener('stalled', onStalled);
         videoElement.removeEventListener('suspend', onSuspend);
@@ -92,7 +75,7 @@ const CameraView: React.FC<CameraViewProps> = ({
         videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
       };
     }
-  }, [cameraActive, videoRef, onRetryCamera]);
+  }, [cameraActive, videoRef]);
 
   return (
     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">

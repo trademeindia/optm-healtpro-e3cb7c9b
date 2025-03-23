@@ -48,21 +48,23 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       
       // Handle connection status and errors from URL parameters
       if (connected === 'true' && user) {
-        console.log("Google Fit connected successfully via URL parameter");
+        toast.success("Google Fit connected successfully!", {
+          description: "Your health data will now sync automatically."
+        });
         
         if (onConnected) {
           onConnected();
         }
         
-        // Clean URL parameters if we're not on the oauth-callback page
-        if (!window.location.pathname.includes('oauth-callback')) {
-          const cleanUrl = window.location.pathname;
-          window.history.replaceState({}, document.title, cleanUrl);
-        }
+        // Clean URL parameters
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
       }
       
-      if (error && !window.location.pathname.includes('oauth-callback')) {
-        console.error("Google Fit connection error:", error);
+      if (error) {
+        toast.error("Failed to connect Google Fit", {
+          description: decodeURIComponent(error)
+        });
         
         // Clean URL parameters
         const cleanUrl = window.location.pathname;
@@ -122,9 +124,8 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
         return;
       }
       
-      // Get the Supabase URL from environment variable or use the project ID
-      const projectId = 'evqbnxbeimcacqkgdola';
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${projectId}.supabase.co`;
+      // Get the Supabase URL from environment variable or use the default
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
       const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
       
       console.log(`Initiating Google Fit connection for user: ${user.id}`);
@@ -148,8 +149,7 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       // Wait 2 seconds and retry once automatically
       setTimeout(async () => {
         try {
-          const projectId = 'evqbnxbeimcacqkgdola';
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${projectId}.supabase.co`;
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
           const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
           
           toast.info("Retrying connection to Google Fit...");

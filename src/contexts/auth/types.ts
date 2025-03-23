@@ -1,40 +1,27 @@
 
-// Define the user roles as an enum
-export enum UserRole {
-  ADMIN = 'admin',
-  DOCTOR = 'doctor',
-  PATIENT = 'patient',
-  RECEPTIONIST = 'receptionist'
-}
+import { Provider } from '@supabase/supabase-js';
 
-// Define the authentication context state
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  isLoading: boolean;
-  error: string | null;
-}
+export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
+export type AuthProviderType = Provider | 'email';
 
-// Define the user object structure
-export interface User {
+export type User = {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  provider?: AuthProviderType;
   picture?: string | null;
-  provider?: string;
-  patientId?: string; // Added to fix errors
-}
+  patientId?: string; // Added to link patient users to their records
+};
 
-// Define the authentication context
-export interface AuthContextType {
+export type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User | null>;
-  loginWithSocialProvider?: (provider: string) => Promise<void>;
-  handleOAuthCallback?: (provider: string, code: string) => Promise<void>;
+  loginWithSocialProvider: (provider: Provider) => Promise<void>;
+  handleOAuthCallback: (provider: string, code: string) => Promise<void>;
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
   logout: () => Promise<void>;
-  forgotPassword?: (email: string) => Promise<void>;
-}
+  forgotPassword: (email: string) => Promise<void>;
+};

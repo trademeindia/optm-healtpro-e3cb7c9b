@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginForm from '@/components/auth/LoginForm';
 import UserTypeSelector from '@/components/auth/UserTypeSelector';
@@ -11,114 +11,33 @@ import MarketingPanel from '@/components/auth/MarketingPanel';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import DebugSection from '@/components/auth/DebugSection';
 import { motion } from 'framer-motion';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import ErrorBoundary from '@/pages/dashboard/components/ErrorBoundary';
 
 const LoginPage: React.FC = () => {
-  const loginState = useLoginState();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  // Set up additional state variables
-  const [userType, setUserType] = useState<'doctor' | 'patient' | 'receptionist'>('doctor');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [showSignupDialog, setShowSignupDialog] = useState(false);
-  const [signupData, setSignupData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [showDebug, setShowDebug] = useState(false);
-  
-  // Check if user is already authenticated
-  useEffect(() => {
-    // Redirect authenticated users
-    if (isAuthenticated && !isLoading) {
-      console.log('User already authenticated, redirecting to dashboard');
-      const from = location.state?.from?.pathname || '/';
-      navigate(from);
-      toast.info('You are already logged in');
-    }
-  }, [isAuthenticated, isLoading, navigate, location]);
-  
-  // Handle user type selection (doctor/patient/receptionist)
-  const handleTabChange = (value: 'doctor' | 'patient' | 'receptionist'): void => {
-    setUserType(value);
-    // Auto-fill the email field with the demo account for the selected user type
-    loginState.handleEmailChange({ target: { value: `${value}@example.com` } } as any);
-  };
-  
-  // Helper functions
-  const handleForgotPassword = async (): Promise<void> => {
-    console.log('Handling forgot password for:', forgotEmail);
-    if (!forgotEmail) {
-      toast.error('Please enter your email address');
-      return Promise.resolve();
-    }
-    
-    try {
-      toast.success('Password reset email sent!');
-      setShowForgotPassword(false);
-    } catch (error) {
-      console.error('Error sending password reset:', error);
-      toast.error('Failed to send password reset email');
-    }
-    return Promise.resolve();
-  };
-  
-  const handleSignup = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    console.log('Signing up with:', signupData);
-    
-    if (!signupData.email || !signupData.password || !signupData.name) {
-      toast.error('Please fill in all required fields');
-      return Promise.resolve();
-    }
-    
-    if (signupData.password !== signupData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return Promise.resolve();
-    }
-    
-    try {
-      toast.success('Account created successfully!');
-      setShowSignupDialog(false);
-      // Prefill login form with the new account credentials
-      loginState.handleEmailChange({ target: { value: signupData.email } } as any);
-    } catch (error) {
-      console.error('Error creating account:', error);
-      toast.error('Failed to create account');
-    }
-    return Promise.resolve();
-  };
-  
-  const handleSocialLogin = async (provider: string): Promise<void> => {
-    console.log(`Logging in with ${provider}`);
-    toast.info(`Redirecting to ${provider} login...`);
-    return Promise.resolve();
-  };
-  
-  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setSignupData(prev => ({ ...prev, [name]: value }));
-  };
+  const {
+    email, setEmail,
+    password, setPassword,
+    isSubmitting,
+    showForgotPassword, setShowForgotPassword,
+    forgotEmail, setForgotEmail,
+    userType, setUserType,
+    showSignupDialog, setShowSignupDialog,
+    signupData, setSignupData,
+    showDebug, setShowDebug,
+    handleSubmit,
+    handleForgotPassword,
+    handleSignup,
+    handleSocialLogin,
+    handleTabChange,
+    handleSignupInputChange
+  } = useLoginState();
 
-  const toggleDebugMode = (): void => {
+  const toggleDebugMode = () => {
     setShowDebug(!showDebug);
   };
 
-  const toggleSignUpDialog = async (): Promise<void> => {
+  const toggleSignUpDialog = () => {
     setShowSignupDialog(!showSignupDialog);
-    return Promise.resolve();
-  };
-  
-  const handleBackToLogin = async (): Promise<void> => {
-    setShowForgotPassword(false);
-    return Promise.resolve();
   };
 
   return (
@@ -162,26 +81,26 @@ const LoginPage: React.FC = () => {
                     forgotEmail={forgotEmail} 
                     setForgotEmail={setForgotEmail} 
                     onSubmit={handleForgotPassword}
-                    onBackToLogin={handleBackToLogin}
-                    isSubmitting={loginState.isLoading}
+                    onBackToLogin={() => setShowForgotPassword(false)}
+                    isSubmitting={isSubmitting}
                   />
                 ) : (
                   <>
                     {/* Social Login Options - Now only Google */}
                     <SocialLoginButtons 
-                      onGoogleLogin={handleSocialLogin}
-                      isSubmitting={loginState.isLoading}
+                      onGoogleLogin={() => handleSocialLogin('google')}
+                      isSubmitting={isSubmitting}
                     />
                     
                     {/* Login Form */}
                     <LoginForm
-                      email={loginState.email}
-                      setEmail={(email) => loginState.handleEmailChange({ target: { value: email } } as any)}
-                      password={loginState.password}
-                      setPassword={(password) => loginState.handlePasswordChange({ target: { value: password } } as any)}
+                      email={email}
+                      setEmail={setEmail}
+                      password={password}
+                      setPassword={setPassword}
                       userType={userType}
-                      isSubmitting={loginState.isLoading}
-                      onSubmit={loginState.handleSubmit}
+                      isSubmitting={isSubmitting}
+                      onSubmit={handleSubmit}
                       onForgotPassword={() => setShowForgotPassword(true)}
                     />
                     
@@ -196,7 +115,7 @@ const LoginPage: React.FC = () => {
                         Don't have an account?{' '}
                         <button
                           type="button"
-                          onClick={() => toggleSignUpDialog()}
+                          onClick={toggleSignUpDialog}
                           className="text-primary hover:underline font-medium transition-colors"
                         >
                           Sign up
@@ -230,7 +149,7 @@ const LoginPage: React.FC = () => {
             signupData={signupData}
             handleSignupInputChange={handleSignupInputChange}
             handleSignup={handleSignup}
-            isSubmitting={loginState.isLoading}
+            isSubmitting={isSubmitting}
             userType={userType === 'receptionist' ? 'patient' : userType}
           />
         </div>

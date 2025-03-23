@@ -51,36 +51,6 @@ export type Database = {
         }
         Relationships: []
       }
-      exercise_sessions: {
-        Row: {
-          angles: Json
-          created_at: string
-          exercise_type: string
-          id: string
-          notes: string | null
-          patient_id: string
-          timestamp: string
-        }
-        Insert: {
-          angles: Json
-          created_at?: string
-          exercise_type: string
-          id?: string
-          notes?: string | null
-          patient_id: string
-          timestamp?: string
-        }
-        Update: {
-          angles?: Json
-          created_at?: string
-          exercise_type?: string
-          id?: string
-          notes?: string | null
-          patient_id?: string
-          timestamp?: string
-        }
-        Relationships: []
-      }
       fitness_connections: {
         Row: {
           access_token: string

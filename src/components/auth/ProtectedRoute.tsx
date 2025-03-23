@@ -6,6 +6,7 @@ import { hasMinimumRoleLevel, hasPermission } from '@/utils/rbac';
 import { UserRole } from '@/contexts/auth/types';
 import AccessDenied from '@/components/ui/access-denied';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -29,38 +30,41 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-  const [authCheckComplete, setAuthCheckComplete] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [authCheckCompleted, setAuthCheckCompleted] = useState(false);
 
   // Add a timeout to prevent infinite loading
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
     
     // Set a timeout to force-complete the auth check
     const timer = setTimeout(() => {
-      if (mounted) {
-        setAuthCheckComplete(true);
+      if (isMounted) {
+        setIsCheckingAuth(false);
+        setAuthCheckCompleted(true);
         console.log("Auth check timeout reached");
       }
-    }, 2000);
+    }, 2000); // Reduced from 3000 to 2000ms
     
-    // If auth is not loading, we can complete check earlier
+    // If auth is not loading, we can clear the timer
     if (!isLoading) {
-      setAuthCheckComplete(true);
+      setIsCheckingAuth(false);
+      setAuthCheckCompleted(true);
       clearTimeout(timer);
     }
     
     return () => {
-      mounted = false;
+      isMounted = false;
       clearTimeout(timer);
     };
   }, [isLoading]);
 
-  // Show loading state during check
-  if (isLoading && !authCheckComplete) {
+  // Show loading state, but with a timeout
+  if (isLoading && isCheckingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700 text-center max-w-md w-full">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+          <Spinner className="w-12 h-12 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Checking authentication</h2>
           <p className="text-muted-foreground">Please wait while we verify your access</p>
         </div>
@@ -68,8 +72,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isLoading && (!isAuthenticated || !user)) {
+  // Redirect to login if not authenticated - only do this after we've completed auth check
+  if (authCheckCompleted && (!isAuthenticated || !user)) {
     // Show a notification about the redirect
     toast.error("Authentication required", {
       description: "Please log in to access this page",
@@ -99,7 +103,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         );
       }
     } else {
-      // Single role check
+      // Single role check (original behavior)
       if (!hasMinimumRoleLevel(user.role, requiredRole)) {
         return (
           <AccessDenied 

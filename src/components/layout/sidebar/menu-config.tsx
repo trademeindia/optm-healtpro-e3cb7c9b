@@ -16,8 +16,7 @@ import {
   PackageCheck,
   PhoneCall,
   ClipboardList,
-  LineChart,
-  Camera
+  LineChart
 } from 'lucide-react';
 import { MenuItem } from './types';
 
@@ -27,16 +26,6 @@ export const getDashboardItem = (role: 'doctor' | 'patient' | 'receptionist'): M
   label: 'Dashboard', 
   path: `/dashboard/${role}`,
   description: 'Overview of dashboard and key metrics'
-});
-
-// Common OpenSim menu item for all roles
-export const getOpenSimItem = (): MenuItem => ({
-  icon: Activity, 
-  label: 'OpenSim', 
-  path: '/opensim',
-  description: 'Manage OpenSim biomechanical analysis settings',
-  badge: 'New',
-  badgeColor: 'blue'
 });
 
 // Doctor specific menu items
@@ -60,21 +49,12 @@ export const getDoctorMenuItems = (): MenuItem[] => [
     path: '/analytics',
     description: 'Visualize clinical data and treatment outcomes'
   },
-  {
-    icon: Camera,
-    label: 'Motion Analysis',
-    path: '/dashboard/doctor/motion-analysis',
-    description: 'Analyze patient movements with AI-assisted motion tracking',
-    badge: 'New',
-    badgeColor: 'green'
-  },
   { 
     icon: Calendar, 
     label: 'Appointments', 
     path: '/appointments',
     description: 'View and manage your appointment schedule'
   },
-  getOpenSimItem(),
 ];
 
 // Patient specific menu items
@@ -134,7 +114,6 @@ export const getPatientMenuItems = (): MenuItem[] => [
     badge: '3',
     badgeColor: 'green'
   },
-  getOpenSimItem(), // Add OpenSim to patient menu
 ];
 
 // Receptionist specific menu items
@@ -178,7 +157,6 @@ export const getReceptionistMenuItems = (): MenuItem[] => [
     path: '/forms',
     description: 'Manage patient intake and consent forms'
   },
-  getOpenSimItem(), // Add OpenSim to receptionist menu
 ];
 
 // Bottom menu items used for all roles

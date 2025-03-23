@@ -38,9 +38,9 @@ import './styles/responsive/metric-cards.css';
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
-// Fix the error handler to match the expected signature in ErrorBoundary
-const handleError = (error: Error) => {
+const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
   console.error('Root level error caught:', error);
+  console.error('Component stack:', errorInfo.componentStack);
 };
 
 try {

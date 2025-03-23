@@ -88,7 +88,7 @@ serve(async (req) => {
   }
 
   // Helper function to redirect back to frontend with error message
-  function redirectToFrontend(message: string, isError = false) {
+  function redirectToFrontend(message, isError = false) {
     const redirectUrl = new URL(`${FRONTEND_URL}/health-apps`);
     if (isError) {
       redirectUrl.searchParams.append("error", encodeURIComponent(message));
