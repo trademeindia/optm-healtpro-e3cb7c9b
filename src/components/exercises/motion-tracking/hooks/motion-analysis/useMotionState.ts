@@ -1,32 +1,26 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { MotionState } from '@/components/exercises/posture-monitor/types';
+import { UseMotionStateReturn } from './types';
 
-export interface UseMotionStateReturn {
-  currentMotionState: MotionState;
-  prevMotionState: MotionState;
-  updateMotionState: (newState: MotionState) => void;
-  resetMotionState: () => void;
-}
-
-export function useMotionState(): UseMotionStateReturn {
-  const [currentMotionState, setCurrentMotionState] = useState<MotionState>(MotionState.STANDING);
+export const useMotionState = (): UseMotionStateReturn => {
+  const [motionState, setMotionState] = useState<MotionState>(MotionState.STANDING);
   const [prevMotionState, setPrevMotionState] = useState<MotionState>(MotionState.STANDING);
-
-  const updateMotionState = (newState: MotionState) => {
-    setPrevMotionState(currentMotionState);
-    setCurrentMotionState(newState);
-  };
-
-  const resetMotionState = () => {
-    setCurrentMotionState(MotionState.STANDING);
+  
+  const updateMotionState = useCallback((newState: MotionState) => {
+    setPrevMotionState(motionState);
+    setMotionState(newState);
+  }, [motionState]);
+  
+  const resetMotionState = useCallback(() => {
+    setMotionState(MotionState.STANDING);
     setPrevMotionState(MotionState.STANDING);
-  };
-
+  }, []);
+  
   return {
-    currentMotionState,
+    motionState,
     prevMotionState,
     updateMotionState,
     resetMotionState
   };
-}
+};

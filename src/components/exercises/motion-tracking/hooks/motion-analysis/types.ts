@@ -1,9 +1,9 @@
 
-import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
-import { DetectionResult } from '../types';
+import * as Human from '@vladmandic/human';
+import { BodyAngles, FeedbackMessage, MotionState } from '@/components/exercises/posture-monitor/types';
 
 export interface MotionAnalysisState {
-  result: any | null;
+  result: Human.Result | null;
   angles: BodyAngles;
   biomarkers: Record<string, any>;
   currentMotionState: MotionState;
@@ -11,26 +11,37 @@ export interface MotionAnalysisState {
   feedback: FeedbackMessage;
 }
 
-export interface UseMotionStateReturn {
-  currentMotionState: MotionState;
+export interface MotionAnalysisResult {
+  repCompleted: boolean;
+  isGoodForm: boolean;
+}
+
+export interface UseMotionAnalysisReturn {
+  // State
+  result: Human.Result | null;
+  angles: BodyAngles;
+  biomarkers: Record<string, any>;
+  motionState: MotionState;
   prevMotionState: MotionState;
-  updateMotionState: (newMotionState: MotionState) => void;
+  feedback: FeedbackMessage;
+  
+  // Actions
+  processMotionData: (
+    detectionResult: Human.Result | null,
+    angles: BodyAngles,
+    biomarkers: Record<string, any>
+  ) => MotionAnalysisResult;
+  resetMotionState: () => void;
+}
+
+export interface UseMotionStateReturn {
+  motionState: MotionState;
+  prevMotionState: MotionState;
+  updateMotionState: (newState: MotionState) => void;
   resetMotionState: () => void;
 }
 
 export interface UseFeedbackReturn {
   feedback: FeedbackMessage;
-  updateFeedback: (message: string | null, type: FeedbackType) => void;
-  resetFeedback: () => void;
-}
-
-export interface UseMotionAnalysisReturn {
-  result: any | null;
-  angles: BodyAngles;
-  biomarkers: Record<string, any>;
-  currentMotionState: MotionState;
-  prevMotionState: MotionState;
-  feedback: FeedbackMessage;
-  processDetectionResult: (detectionResult: DetectionResult, onRepComplete?: (isGoodForm: boolean) => void) => void;
-  resetAnalysis: () => void;
+  updateFeedback: (message: string | null, type: string) => void;
 }

@@ -1,69 +1,82 @@
 
-import { useDetectionResults } from './useDetectionResults';
+import { useCallback, useRef } from 'react';
+import * as Human from '@vladmandic/human';
+import { BodyAngles, MotionState } from '@/components/exercises/posture-monitor/types';
+import { generateFeedback } from '../../utils/feedbackUtils';
+import { determineMotionState } from '../../utils/motionStateUtils';
 import { useMotionState } from './useMotionState';
 import { useFeedback } from './useFeedback';
-import { evaluateRepQuality } from './repDetection';
-import { BodyAngles, MotionState } from '@/components/exercises/posture-monitor/types';
+import { useDetectionResults } from './useDetectionResults';
+import { detectRep } from './repDetection';
+import { UseMotionAnalysisReturn } from './types';
 
-export const useMotionAnalysis = () => {
-  const detectionResults = useDetectionResults();
-  const motionState = useMotionState();
-  const feedbackSystem = useFeedback();
-
-  const processMotionData = (
-    detectionResult: any,
-    angles: BodyAngles,
-    biomarkers: Record<string, any>
+export const useMotionAnalysis = (): UseMotionAnalysisReturn => {
+  const {
+    result,
+    angles,
+    biomarkers,
+    updateDetectionResults
+  } = useDetectionResults();
+  
+  const {
+    motionState,
+    prevMotionState,
+    updateMotionState,
+    resetMotionState
+  } = useMotionState();
+  
+  const {
+    feedback,
+    updateFeedback
+  } = useFeedback();
+  
+  // Store a reference to the state before the previous state (for rep detection)
+  const beforePrevMotionState = useRef<MotionState>(MotionState.STANDING);
+  
+  const processMotionData = useCallback((
+    detectionResult: Human.Result | null,
+    newAngles: BodyAngles,
+    newBiomarkers: Record<string, any>
   ) => {
     // Update detection results
-    detectionResults.updateResults(detectionResult, angles, biomarkers);
-
-    // Determine motion state based on knee angle
-    const kneeAngle = angles.kneeAngle;
-    let newMotionState = MotionState.STANDING;
+    updateDetectionResults(detectionResult, newAngles, newBiomarkers);
     
-    if (kneeAngle && kneeAngle < 130) {
-      newMotionState = MotionState.FULL_MOTION;
-    } else if (kneeAngle && kneeAngle < 160) {
-      newMotionState = MotionState.MID_MOTION;
-    }
-
-    // Check if a rep was completed (full motion to standing transition)
-    if (motionState.currentMotionState === MotionState.FULL_MOTION && 
-        newMotionState === MotionState.MID_MOTION &&
-        motionState.prevMotionState === MotionState.FULL_MOTION) {
-      
-      // Evaluate rep quality
-      const evaluation = evaluateRepQuality(angles);
-      
-      if (evaluation) {
-        return {
-          repCompleted: true,
-          isGoodForm: evaluation.isGoodForm,
-          feedback: evaluation.feedback,
-          feedbackType: evaluation.feedbackType
-        };
-      }
-    }
-
-    // Update motion state
-    motionState.updateMotionState(newMotionState);
+    // Determine the new motion state based on the angles
+    const newMotionState = determineMotionState(newAngles, motionState);
     
-    // Update feedback if no rep was completed
-    const feedback = feedbackSystem.generateFeedback(newMotionState, angles);
-    feedbackSystem.updateFeedback(feedback);
+    // Update motion state references
+    beforePrevMotionState.current = prevMotionState;
     
-    return { repCompleted: false };
-  };
-
+    // Update the motion state
+    updateMotionState(newMotionState);
+    
+    // Generate feedback based on the new state
+    const newFeedback = generateFeedback(newMotionState, newAngles);
+    updateFeedback(newFeedback.message, newFeedback.type);
+    
+    // Check if a rep was completed
+    return detectRep(
+      newAngles,
+      newMotionState,
+      prevMotionState,
+      beforePrevMotionState.current
+    );
+  }, [
+    updateDetectionResults,
+    motionState,
+    prevMotionState,
+    updateMotionState,
+    updateFeedback
+  ]);
+  
   return {
+    result,
+    angles,
+    biomarkers,
+    motionState,
+    prevMotionState,
+    feedback,
     processMotionData,
-    ...detectionResults,
-    motionState: motionState.currentMotionState,
-    prevMotionState: motionState.prevMotionState,
-    feedback: feedbackSystem.feedback,
-    updateMotionState: motionState.updateMotionState,
-    resetMotionState: motionState.resetMotionState,
-    updateFeedback: feedbackSystem.updateFeedback
+    resetMotionState
   };
 };

@@ -1,9 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import * as Human from '@vladmandic/human';
 import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
-export function useDetectionResults() {
-  const [result, setResult] = useState<any>(null);
+export const useDetectionResults = () => {
+  const [result, setResult] = useState<Human.Result | null>(null);
   const [angles, setAngles] = useState<BodyAngles>({
     kneeAngle: null,
     hipAngle: null,
@@ -13,35 +14,21 @@ export function useDetectionResults() {
     neckAngle: null
   });
   const [biomarkers, setBiomarkers] = useState<Record<string, any>>({});
-
-  const updateResults = (
-    newResult: any, 
-    newAngles: BodyAngles, 
+  
+  const updateDetectionResults = useCallback((
+    detectionResult: Human.Result | null,
+    newAngles: BodyAngles,
     newBiomarkers: Record<string, any>
   ) => {
-    setResult(newResult);
+    setResult(detectionResult);
     setAngles(newAngles);
     setBiomarkers(newBiomarkers);
-  };
-
-  const resetResults = () => {
-    setResult(null);
-    setAngles({
-      kneeAngle: null,
-      hipAngle: null,
-      shoulderAngle: null,
-      elbowAngle: null,
-      ankleAngle: null,
-      neckAngle: null
-    });
-    setBiomarkers({});
-  };
-
+  }, []);
+  
   return {
     result,
     angles,
     biomarkers,
-    updateResults,
-    resetResults
+    updateDetectionResults
   };
-}
+};

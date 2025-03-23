@@ -3,8 +3,8 @@ import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
 import { useDetectionService } from './useDetectionService';
-import { useMotionAnalysis } from './motion-analysis/useMotionAnalysis';
-import { useSessionManagement } from './useSessionManagement';
+import { useMotionAnalysis } from './motion-analysis';
+import { useSessionManagement } from './session-management';
 import { UseHumanDetectionReturn } from './types';
 import { DetectionError } from '@/lib/human/types';
 
