@@ -1,55 +1,52 @@
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { DetectionErrorType, DetectionError } from '@/lib/human/types';
+import React, { ErrorInfo } from 'react';
+import { DetectionErrorType } from '@/lib/human/types';
 import DetectionErrorDisplay from './DetectionErrorDisplay';
 
-interface Props {
-  children: ReactNode;
-  onError?: (error: Error) => void;
-  onRetry: () => void;
+interface MotionDetectionErrorBoundaryProps {
+  children: React.ReactNode;
+  onReset: () => void;
 }
 
-interface State {
+interface MotionDetectionErrorBoundaryState {
   hasError: boolean;
-  error: DetectionError | null;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
-class MotionDetectionErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+class MotionDetectionErrorBoundary extends React.Component<
+  MotionDetectionErrorBoundaryProps,
+  MotionDetectionErrorBoundaryState
+> {
+  constructor(props: MotionDetectionErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,
-      error: null
+      error: null,
+      errorInfo: null
     };
   }
 
-  static getDerivedStateFromError(error: any): State {
-    // Format the error for our detection error system
-    const detectionError: DetectionError = {
-      type: error.type || DetectionErrorType.UNKNOWN,
-      message: error.message || 'An unexpected error occurred',
-      retryable: true
-    };
-    
-    return {
-      hasError: true,
-      error: detectionError
-    };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Motion detection error boundary caught an error:', error, errorInfo);
-    if (this.props.onError) {
-      this.props.onError(error);
-    }
+    console.error('Error in Motion Detection Component:', error, errorInfo);
+    this.setState({ errorInfo });
   }
 
   render() {
-    if (this.state.hasError && this.state.error) {
+    if (this.state.hasError) {
+      // Map the React error to our detection error types
       return (
-        <DetectionErrorDisplay 
-          error={this.state.error} 
-          onRetry={this.props.onRetry} 
+        <DetectionErrorDisplay
+          errorType={DetectionErrorType.UNKNOWN}
+          errorMessage={this.state.error?.message || 'An unexpected error occurred in the motion detection component'}
+          onRetry={() => {
+            this.setState({ hasError: false, error: null, errorInfo: null });
+            this.props.onReset();
+          }}
         />
       );
     }

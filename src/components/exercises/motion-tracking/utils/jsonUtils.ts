@@ -1,57 +1,32 @@
 
-/**
- * Safely stringifies JSON objects with circular references
- */
-export const safeStringify = (obj: any, indent: number = 2): string => {
-  const cache = new Set();
-  return JSON.stringify(
-    obj,
-    (key, value) => {
-      if (typeof value === 'object' && value !== null) {
-        if (cache.has(value)) {
-          return '[Circular Reference]';
-        }
-        cache.add(value);
-      }
-      return value;
-    },
-    indent
-  );
-};
+import { Json } from '@/integrations/supabase/types';
+import { isJsonObject, safeGetFromJson } from '@/types/human';
 
 /**
- * Converts a potentially complex object to a simplified version
- * suitable for display or logging
+ * Helper function to convert any object to a JSON-compatible format for Supabase
  */
-export const simplifyObject = (obj: any, maxDepth: number = 2): any => {
-  if (maxDepth <= 0) {
-    if (Array.isArray(obj)) {
-      return `Array(${obj.length})`;
-    }
-    if (obj === null) {
-      return null;
-    }
-    if (typeof obj === 'object') {
-      return `Object(${Object.keys(obj).length} props)`;
-    }
+export const toJsonObject = (obj: any): Json => {
+  if (obj === null || obj === undefined) return null;
+  
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
     return obj;
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => simplifyObject(item, maxDepth - 1));
+    return obj.map(item => toJsonObject(item));
   }
   
-  if (obj === null) {
-    return null;
-  }
-  
-  if (typeof obj === 'object') {
-    const result: Record<string, any> = {};
-    for (const key of Object.keys(obj)) {
-      result[key] = simplifyObject(obj[key], maxDepth - 1);
+  // Convert to plain object with no methods
+  const result: Record<string, Json> = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (typeof value !== 'function' && key !== '__proto__') {
+        result[key] = toJsonObject(value);
+      }
     }
-    return result;
   }
   
-  return obj;
+  return result;
 };
+

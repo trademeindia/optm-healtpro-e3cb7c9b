@@ -3,10 +3,9 @@ import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
 import { useDetectionService } from './useDetectionService';
-import { useMotionAnalysis } from './motion-analysis';
-import { useSessionManagement } from './session-management';
+import { useMotionAnalysis } from './useMotionAnalysis';
+import { useSessionManagement } from './useSessionManagement';
 import { UseHumanDetectionReturn } from './types';
-import { DetectionError } from '@/lib/human/types';
 
 export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>,
@@ -25,11 +24,10 @@ export const useHumanDetection = (
     result,
     angles,
     biomarkers,
-    motionState,
-    prevMotionState,
+    currentMotionState,
     feedback,
-    processMotionData,
-    resetMotionState
+    processDetectionResult,
+    resetAnalysis
   } = useMotionAnalysis();
   
   const {
@@ -63,14 +61,8 @@ export const useHumanDetection = (
   
   // Detection result handler
   const handleDetectionResult = useCallback((detectionResult: any) => {
-    const result = processMotionData(
-      detectionResult.result,
-      detectionResult.angles,
-      detectionResult.biomarkers
-    );
-    
-    if (result.repCompleted) {
-      if (result.isGoodForm) {
+    processDetectionResult(detectionResult, isGoodForm => {
+      if (isGoodForm) {
         handleGoodRep();
       } else {
         handleBadRep();
@@ -83,8 +75,8 @@ export const useHumanDetection = (
         detectionResult.biomarkers,
         detectionResult.newMotionState
       );
-    }
-  }, [processMotionData, handleGoodRep, handleBadRep, saveSessionData]);
+    });
+  }, [processDetectionResult, handleGoodRep, handleBadRep, saveSessionData]);
   
   // Start detection
   const startDetection = useCallback(() => {
@@ -99,8 +91,8 @@ export const useHumanDetection = (
   // Reset session
   const resetSession = useCallback(() => {
     resetSessionData();
-    resetMotionState();
-  }, [resetSessionData, resetMotionState]);
+    resetAnalysis();
+  }, [resetSessionData, resetAnalysis]);
   
   return {
     // Detection state
@@ -114,8 +106,8 @@ export const useHumanDetection = (
     detectionResult: result,
     angles,
     biomarkers,
-    currentMotionState: motionState,
-    motionState,
+    currentMotionState,
+    motionState: currentMotionState,
     feedback,
     
     // Session data

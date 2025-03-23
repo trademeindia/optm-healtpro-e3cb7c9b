@@ -6,7 +6,6 @@ import {
   MotionState, 
   MotionStats 
 } from '@/components/exercises/posture-monitor/types';
-import { DetectionError } from '@/lib/human/types';
 
 export interface DetectionResult {
   result: Human.Result | null;
@@ -20,7 +19,7 @@ export interface UseHumanDetectionReturn {
   isDetecting: boolean;
   detectionFps: number | null;
   isModelLoaded: boolean;
-  detectionError: DetectionError | null;
+  detectionError: string | null;
   
   // Motion analysis
   result: Human.Result | null;
@@ -45,8 +44,7 @@ export interface DetectionState {
   isDetecting: boolean;
   detectionFps: number | null;
   isModelLoaded: boolean;
-  isModelLoading?: boolean;
-  detectionError: DetectionError | null;
+  detectionError: string | null;
 }
 
 export interface MotionAnalysisState {

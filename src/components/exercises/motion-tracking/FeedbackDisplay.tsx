@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FeedbackMessage, FeedbackType, MotionStats } from '@/components/exercises/posture-monitor/types';
+import { FeedbackMessage, FeedbackType, MotionStats } from '../posture-monitor/types';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, AlertCircle, Info, AlertTriangle, Award, TrendingUp } from 'lucide-react';
 
