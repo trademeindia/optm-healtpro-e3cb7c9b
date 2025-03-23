@@ -1,12 +1,18 @@
 
 import { MotionStats } from '@/lib/human/types';
 
+/**
+ * Create a new exercise session
+ */
 export const createSession = async (exerciseType: string): Promise<string> => {
   console.log('Creating session for:', exerciseType);
   // In a real implementation, this would connect to a database
   return `session-${Date.now()}`;
 };
 
+/**
+ * Save detection data for a session
+ */
 export const saveDetectionData = async (
   sessionId: string | undefined,
   detectionResult: any,
@@ -21,6 +27,9 @@ export const saveDetectionData = async (
   return true;
 };
 
+/**
+ * Mark a session as completed
+ */
 export const completeSession = (
   sessionId: string | undefined,
   stats: MotionStats,

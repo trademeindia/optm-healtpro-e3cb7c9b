@@ -1,6 +1,9 @@
 
 import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/lib/human/types';
 
+/**
+ * Generate user feedback based on motion state
+ */
 export const generateFeedback = (motionState: MotionState, angles: BodyAngles): FeedbackMessage => {
   switch (motionState) {
     case MotionState.STANDING:
@@ -26,6 +29,9 @@ export const generateFeedback = (motionState: MotionState, angles: BodyAngles): 
   }
 };
 
+/**
+ * Evaluate the quality of a completed rep
+ */
 export const evaluateRepQuality = (angles: BodyAngles) => {
   // Simple evaluation logic
   const kneeAngle = angles.kneeAngle || 180;
