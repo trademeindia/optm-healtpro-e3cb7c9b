@@ -18,8 +18,11 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
   metrics,
   refreshMetrics
 }) => {
+  // Add debug logging to help diagnose issues
+  console.log("Rendering PerformancePanel with metrics:", metrics);
+  
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 visible-content">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Performance Metrics</h2>
@@ -38,6 +41,7 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        className="ensure-visible"
       >
         <PerformanceMetricsCards metrics={metrics} />
       </motion.div>
@@ -47,6 +51,7 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
+          className="ensure-visible"
         >
           <BuildTimeChart buildTimes={metrics.buildTimeHistory} />
         </motion.div>
@@ -55,6 +60,7 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
+          className="ensure-visible"
         >
           <BundleSizeChart bundleSizes={metrics.bundleSizeHistory} />
         </motion.div>
@@ -64,6 +70,7 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.3 }}
+        className="ensure-visible"
       >
         <ResourceUsageChart 
           cpuUsage={metrics.resourceUsage.cpuHistory}

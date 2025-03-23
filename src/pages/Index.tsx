@@ -17,8 +17,9 @@ const Index: React.FC = () => {
         console.log(`Navigating to ${dashboard}`);
         navigate(dashboard);
       } else {
-        console.log('Index page: User not authenticated, redirecting to login');
-        navigate('/login');
+        // During development, go to dev dashboard instead of login
+        console.log('Index page: User not authenticated, redirecting to dev dashboard');
+        navigate('/dev-dashboard');
       }
     }
   }, [isAuthenticated, isLoading, navigate, user]);
@@ -42,10 +43,10 @@ const Index: React.FC = () => {
         <h2 className="text-xl font-medium">Welcome to Medical Dashboard</h2>
         <p className="mt-2 text-muted-foreground">Initializing application...</p>
         <button 
-          onClick={() => navigate('/login')} 
+          onClick={() => navigate('/dev-dashboard')} 
           className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
         >
-          Go to Login
+          Go to Dev Dashboard
         </button>
       </div>
     </div>

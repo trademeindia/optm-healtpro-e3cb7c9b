@@ -18,6 +18,8 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
   memoryUsage,
   diskUsage
 }) => {
+  console.log("ResourceUsageChart rendering with data:", { cpuUsage, memoryUsage, diskUsage });
+  
   const chartConfig = {
     cpu: { color: '#f97316' },
     memory: { color: '#60a5fa' },
@@ -33,7 +35,7 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
   }));
   
   return (
-    <Card>
+    <Card className="visible-card">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center">
           <Server className="h-5 w-5 mr-2 text-emerald-500" />
@@ -41,7 +43,7 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[300px] force-visible">
           <ChartContainer config={chartConfig} className="h-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart

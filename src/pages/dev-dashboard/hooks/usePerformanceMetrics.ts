@@ -62,17 +62,35 @@ export function usePerformanceMetrics() {
     }
   });
 
+  // Add logging to help debug
+  useEffect(() => {
+    console.log("Initial performance metrics:", performanceMetrics);
+  }, []);
+
   const refreshMetrics = () => {
+    console.log("Refreshing metrics...");
     // In a real implementation, this would fetch actual performance metrics
     // For demo purposes, we'll just pretend to refresh the data
     
-    setPerformanceMetrics({
+    const updatedMetrics = {
       ...performanceMetrics,
       latestBuildTime: performanceMetrics.latestBuildTime * (1 - Math.random() * 0.1),
       buildTimeChange: performanceMetrics.buildTimeChange - 2,
       performanceScore: Math.min(100, performanceMetrics.performanceScore + 1),
-      performanceScoreChange: performanceMetrics.performanceScoreChange + 1
-    });
+      performanceScoreChange: performanceMetrics.performanceScoreChange + 1,
+      // Update the timestamp on the last entry to show fresh data
+      resourceUsage: {
+        ...performanceMetrics.resourceUsage,
+        cpuHistory: performanceMetrics.resourceUsage.cpuHistory.map((item, idx) => 
+          idx === performanceMetrics.resourceUsage.cpuHistory.length - 1 
+            ? { ...item, timestamp: new Date().toISOString() }
+            : item
+        )
+      }
+    };
+    
+    console.log("Updated metrics:", updatedMetrics);
+    setPerformanceMetrics(updatedMetrics);
   };
 
   return {
