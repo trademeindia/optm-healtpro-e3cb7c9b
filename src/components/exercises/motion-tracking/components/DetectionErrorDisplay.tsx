@@ -48,7 +48,7 @@ const DetectionErrorDisplay: React.FC<DetectionErrorDisplayProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center z-10">
       <AlertCircle className="h-10 w-10 text-destructive mb-4" />
       <h3 className="text-lg font-semibold mb-2">{getErrorTitle()}</h3>
       <p className="mb-2 text-muted-foreground">{errorMessage}</p>

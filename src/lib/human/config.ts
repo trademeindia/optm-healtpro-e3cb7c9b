@@ -4,7 +4,7 @@ import * as Human from '@vladmandic/human';
 // Configuration for the Human.js library
 export const humanConfig: Human.Config = {
   // Required core configuration
-  backend: 'webgl' as Human.BackendEnum,
+  backend: 'webgl',
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // Use CDN for faster model loading
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,

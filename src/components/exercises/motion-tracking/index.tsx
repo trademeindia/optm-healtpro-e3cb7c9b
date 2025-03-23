@@ -12,6 +12,8 @@ import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import ExerciseInstructions from './components/ExerciseInstructions';
 import { Spinner } from '@/components/ui/spinner';
+import MotionDetectionErrorBoundary from './components/MotionDetectionErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface MotionTrackerProps {
   exerciseId: string;
@@ -241,61 +243,65 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
   );
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden shadow-md">
-        <CardHeader className="bg-muted/30 p-4">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <Camera className="h-5 w-5 text-primary" />
-            <span>{exerciseName} - Motion Analysis</span>
-          </CardTitle>
-        </CardHeader>
+    <ErrorBoundary>
+      <div className="space-y-4">
+        <Card className="overflow-hidden shadow-md">
+          <CardHeader className="bg-muted/30 p-4">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Camera className="h-5 w-5 text-primary" />
+              <span>{exerciseName} - Motion Analysis</span>
+            </CardTitle>
+          </CardHeader>
+          
+          {isModelLoading ? (
+            renderLoadingState()
+          ) : loadingError ? (
+            renderErrorState()
+          ) : (
+            <MotionDetectionErrorBoundary onReset={handleReset}>
+              <CameraView
+                videoRef={videoRef}
+                canvasRef={canvasRef}
+                isModelLoading={false}
+                cameraActive={cameraActive}
+                isTracking={isTracking}
+                detectionResult={detectionResult}
+                angles={angles}
+                onStartCamera={startCamera}
+                onToggleTracking={toggleTracking}
+                onReset={handleReset}
+                onFinish={handleFinish}
+              />
+            </MotionDetectionErrorBoundary>
+          )}
+          
+          <CardFooter className="p-0">
+            <ControlPanel
+              cameraActive={cameraActive}
+              isTracking={isTracking}
+              onToggleTracking={toggleTracking}
+              onReset={handleReset}
+              onFinish={handleFinish}
+            />
+          </CardFooter>
+        </Card>
         
-        {isModelLoading ? (
-          renderLoadingState()
-        ) : loadingError ? (
-          renderErrorState()
-        ) : (
-          <CameraView
-            videoRef={videoRef}
-            canvasRef={canvasRef}
-            isModelLoading={false}
-            cameraActive={cameraActive}
-            isTracking={isTracking}
-            detectionResult={detectionResult}
-            angles={angles}
-            onStartCamera={startCamera}
-            onToggleTracking={toggleTracking}
-            onReset={handleReset}
-            onFinish={handleFinish}
-          />
-        )}
+        {/* Feedback and stats display */}
+        <FeedbackDisplay 
+          feedback={feedback || { message: "Prepare to start exercise", type: FeedbackType.INFO }} 
+          stats={stats} 
+        />
         
-        <CardFooter className="p-0">
-          <ControlPanel
-            cameraActive={cameraActive}
-            isTracking={isTracking}
-            onToggleTracking={toggleTracking}
-            onReset={handleReset}
-            onFinish={handleFinish}
-          />
-        </CardFooter>
-      </Card>
-      
-      {/* Feedback and stats display */}
-      <FeedbackDisplay 
-        feedback={feedback || { message: "Prepare to start exercise", type: FeedbackType.INFO }} 
-        stats={stats} 
-      />
-      
-      {/* Biomarkers display */}
-      <BiomarkersDisplay 
-        biomarkers={biomarkers} 
-        angles={angles} 
-      />
-      
-      {/* Instructions card */}
-      <ExerciseInstructions />
-    </div>
+        {/* Biomarkers display */}
+        <BiomarkersDisplay 
+          biomarkers={biomarkers} 
+          angles={angles} 
+        />
+        
+        {/* Instructions card */}
+        <ExerciseInstructions />
+      </div>
+    </ErrorBoundary>
   );
 };
 

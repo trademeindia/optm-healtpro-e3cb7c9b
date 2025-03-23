@@ -6,6 +6,7 @@ import { extractBodyAngles } from '@/lib/human/angles';
 import { extractBiomarkers } from '@/lib/human/biomarkers';
 import { determineMotionState } from './motionStateUtils';
 import { MotionState } from '@/components/exercises/posture-monitor/types';
+import { DetectionErrorType } from '@/lib/human/types';
 
 // Default empty angles object for when detection fails
 const emptyAngles = {
@@ -24,7 +25,7 @@ const emptyAngles = {
 export const performDetection = async (
   videoElement: HTMLVideoElement
 ): Promise<DetectionResult> => {
-  if (!videoElement || !videoElement.readyState || videoElement.readyState < 2) {
+  if (!videoElement || videoElement.readyState < 2) {
     console.warn('Video element is not ready for detection');
     return {
       result: null,
@@ -36,28 +37,37 @@ export const performDetection = async (
 
   try {
     // Check if model is loaded first
-    if (!human.models.loaded()) {
+    if (!human.models?.loaded?.()) {
       console.warn('Human model not loaded, attempting to load now');
       try {
-        const loaded = await warmupModel();
-        if (!loaded) {
-          console.warn('Failed to load Human model completely');
-        } else {
-          console.log('Human model loaded successfully');
-        }
+        await warmupModel();
       } catch (e) {
         console.error('Failed to load Human model:', e);
+        throw {
+          type: DetectionErrorType.MODEL_LOADING,
+          message: 'Failed to load detection model'
+        };
       }
     }
     
-    // Run detection with longer timeout (15 seconds for first detection, 10s for subsequent)
-    console.log(`Starting detection with 15000ms timeout`);
+    // Run detection with proper error handling
+    console.log(`Starting detection`);
     if (human.tf) {
       console.log(`Current tensor count: ${human.tf.engine().state.numTensors}`);
     }
     
-    // Direct detection without Promise.race to avoid timeout issues
-    const result = await human.detect(videoElement);
+    // Perform the detection
+    let result: Human.Result;
+    try {
+      // Using await directly without Promise.race to avoid queue issues
+      result = await human.detect(videoElement);
+    } catch (err) {
+      console.error('Error during human.detect():', err);
+      throw {
+        type: DetectionErrorType.DETECTION_TIMEOUT,
+        message: 'Detection process failed'
+      };
+    }
 
     if (!result || !result.body || result.body.length === 0) {
       console.log('No body detected in frame');
@@ -112,12 +122,14 @@ export const performDetection = async (
       console.error('Error cleaning up tensors:', e);
     }
     
-    // Return a valid result even on error to prevent crashes
-    return {
-      result: null,
-      angles: emptyAngles,
-      biomarkers: {},
-      newMotionState: null
+    // Determine error type
+    const errorType = error.type || DetectionErrorType.UNKNOWN;
+    
+    // Rethrow with proper error type for component handling
+    throw {
+      type: errorType,
+      message: error.message || 'An error occurred during detection',
+      retryable: true
     };
   }
 };

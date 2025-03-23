@@ -30,3 +30,10 @@ export interface DetectionError {
   message: string;
   retryable: boolean;
 }
+
+// Define queue state to avoid React errors
+export interface DetectionQueueState {
+  isLoading: boolean;
+  isError: boolean;
+  error: DetectionError | null;
+}
