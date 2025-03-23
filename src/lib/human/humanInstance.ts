@@ -14,3 +14,16 @@ console.log('Human.js instance created with config:', {
     modelPath: humanConfig.body.modelPath
   }
 });
+
+// Ensure segmentation is disabled (this is critical to avoid errors)
+if (human.config.segmentation) {
+  human.config.segmentation.enabled = false;
+  console.log('Explicitly disabled segmentation in instance');
+}
+
+// Force lite model for better performance
+if (human.config.body) {
+  human.config.body.modelPath = 'blazepose-lite.json';
+  human.config.body.skipFrames = 4;
+  console.log('Set body model to lite version for better performance');
+}

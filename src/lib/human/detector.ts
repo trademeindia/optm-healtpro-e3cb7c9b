@@ -5,8 +5,8 @@ import { warmupModel, resetModel } from './modelLoader';
 
 // Track tensor cleanup
 let detectionCount = 0;
-const CLEANUP_INTERVAL = 3; // Clean up every 3 detections (reduced from 5)
-const TENSOR_THRESHOLD = 50; // Reduced threshold for earlier cleanup (from 100)
+const CLEANUP_INTERVAL = 3; // Clean up every 3 detections
+const TENSOR_THRESHOLD = 50; // Reduced threshold for earlier cleanup
 
 /**
  * Clean up tensors periodically to prevent memory leaks
@@ -70,7 +70,7 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
   }
   
   // Check if models are loaded
-  if (!human.models.loaded()) {
+  if (!human.models || !human.models.loaded()) {
     console.warn('Models not loaded. Loading now...');
     try {
       await warmupModel();
@@ -92,9 +92,9 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
       segmentation: { enabled: false } // Always ensure segmentation is disabled
     });
     
-    // Add a timeout to prevent hanging (shorter timeout for better UX)
+    // Add a timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), 1000); // Reduced from 3000ms
+      setTimeout(() => reject(new Error('Detection timeout')), 1000); // Shorter timeout
     });
     
     // Race the detection against the timeout

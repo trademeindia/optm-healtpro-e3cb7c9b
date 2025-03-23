@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,8 +32,33 @@ const CameraView: React.FC<CameraViewProps> = ({
   onReset,
   onFinish
 }) => {
+  // Track if video element has loaded
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  
+  // Ensure video dimensions match container
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (videoRef.current && canvasRef.current && videoRef.current.videoWidth > 0) {
+        const containerWidth = videoRef.current.parentElement?.offsetWidth || 640;
+        const containerHeight = videoRef.current.parentElement?.offsetHeight || 480;
+        
+        // Update canvas dimensions to match container
+        canvasRef.current.width = containerWidth;
+        canvasRef.current.height = containerHeight;
+        
+        setVideoLoaded(true);
+      }
+    };
+    
+    // Update dimensions initially and on resize
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [videoRef, canvasRef, cameraActive]);
+
   return (
-    <div className="relative aspect-video bg-black flex items-center justify-center">
+    <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
       {/* Hidden video for capture */}
       <video 
         ref={videoRef}
@@ -41,9 +66,13 @@ const CameraView: React.FC<CameraViewProps> = ({
         playsInline
         muted
         className="absolute inset-0 w-full h-full object-cover" 
-        style={{ display: cameraActive ? 'block' : 'none' }}
+        style={{ 
+          display: cameraActive ? 'block' : 'none',
+          transform: 'scaleX(-1)' // Mirror the video for more intuitive interaction
+        }}
         onLoadedData={() => {
           if (videoRef.current?.readyState === 4) {
+            setVideoLoaded(true);
             toast.success("Camera feed ready");
           }
         }}
@@ -53,11 +82,14 @@ const CameraView: React.FC<CameraViewProps> = ({
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full z-10"
-        style={{ display: cameraActive ? 'block' : 'none' }}
+        style={{ 
+          display: cameraActive ? 'block' : 'none',
+          transform: 'scaleX(-1)' // Mirror the canvas to match video
+        }}
       />
       
       {/* Motion renderer component for processing detection results */}
-      {cameraActive && detectionResult && (
+      {cameraActive && videoLoaded && detectionResult && (
         <MotionRenderer 
           result={detectionResult}
           canvasRef={canvasRef}

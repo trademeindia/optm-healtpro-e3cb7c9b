@@ -29,6 +29,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
   const [isTracking, setIsTracking] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasVideoError, setHasVideoError] = useState(false);
 
   // Human pose detection hook
   const { 
@@ -78,21 +79,38 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
       });
       
       videoRef.current.srcObject = stream;
+      
+      // Set up error handling
+      videoRef.current.onerror = (e) => {
+        console.error("Video error:", e);
+        setHasVideoError(true);
+        toast.error("Error with video stream");
+      };
+      
       videoRef.current.onloadedmetadata = () => {
         if (videoRef.current) {
           videoRef.current.play()
             .then(() => {
               setCameraActive(true);
+              setHasVideoError(false);
               toast.success("Camera activated");
+              
+              // Set explicit dimensions to ensure rendering
+              if (canvasRef.current && videoRef.current.videoWidth > 0) {
+                canvasRef.current.width = videoRef.current.videoWidth;
+                canvasRef.current.height = videoRef.current.videoHeight;
+              }
             })
             .catch(err => {
               console.error("Error playing video:", err);
+              setHasVideoError(true);
               toast.error("Could not start video stream");
             });
         }
       };
     } catch (error) {
       console.error("Error accessing camera:", error);
+      setHasVideoError(true);
       toast.error("Could not access camera", {
         description: "Please ensure camera permissions are granted to this site",
         duration: 5000
@@ -168,6 +186,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
               isModelLoading={isModelLoading} 
               loadError={detectionError}
               onRetry={handleRetryLoading}
+              loadProgress={loadProgress}
             />
           </CardContent>
         ) : detectionError && !isModelLoaded ? (
@@ -182,7 +201,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
           <CameraView
             videoRef={videoRef}
             canvasRef={canvasRef}
-            isModelLoading={false}
+            isModelLoading={isModelLoading}
             cameraActive={cameraActive}
             isTracking={isTracking}
             detectionResult={detectionResult}
@@ -207,16 +226,20 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
       </Card>
       
       {/* Feedback and stats display */}
-      <FeedbackDisplay 
-        feedback={feedback || { message: "Prepare to start exercise", type: FeedbackType.INFO }} 
-        stats={stats} 
-      />
+      {cameraActive && (
+        <FeedbackDisplay 
+          feedback={feedback || { message: "Prepare to start exercise", type: FeedbackType.INFO }} 
+          stats={stats} 
+        />
+      )}
       
       {/* Biomarkers display */}
-      <BiomarkersDisplay 
-        biomarkers={biomarkers} 
-        angles={angles} 
-      />
+      {cameraActive && (
+        <BiomarkersDisplay 
+          biomarkers={biomarkers} 
+          angles={angles} 
+        />
+      )}
       
       {/* Instructions card */}
       <ExerciseInstructions />

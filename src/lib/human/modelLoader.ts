@@ -4,8 +4,6 @@ import { humanConfig } from './config';
 
 // Track loading progress
 let modelLoadProgress = 0;
-
-// Track failed attempts
 let loadAttempts = 0;
 const MAX_LOAD_ATTEMPTS = 3;
 
@@ -37,9 +35,8 @@ export const warmupModel = async () => {
       human.config.segmentation.enabled = false;
     }
     
-    // Verify the model path is set correctly
-    if (human.config.body.modelPath !== 'blazepose-lite.json') {
-      console.log('Correcting model path to blazepose-lite.json');
+    // Ensure correct model path
+    if (human.config.body) {
       human.config.body.modelPath = 'blazepose-lite.json';
     }
     
@@ -53,9 +50,9 @@ export const warmupModel = async () => {
       console.log('Tensor count before model load:', beforeTensors);
     }
     
-    // Use a timeout to prevent hanging
+    // Add a timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Model load timeout')), 20000);
+      setTimeout(() => reject(new Error('Model load timeout')), 15000);
     });
     
     // Race the model load against the timeout
@@ -73,7 +70,7 @@ export const warmupModel = async () => {
                  'Difference:', afterTensors - beforeTensors);
       
       // Clean up tensors immediately
-      if (afterTensors > 50) { // Lower threshold for cleanup
+      if (afterTensors > 50) {
         console.log('Cleaning up tensors after model load');
         human.tf.engine().disposeVariables();
         console.log('Tensors after cleanup:', human.tf.engine().state.numTensors);
@@ -83,27 +80,22 @@ export const warmupModel = async () => {
     modelLoadProgress = 70;
     
     // Check if models are actually loaded
-    const modelsLoaded = Object.keys(human.models).length > 0;
+    const modelsLoaded = human.models && Object.keys(human.models).length > 0;
     console.log('Human.js models loaded:', modelsLoaded);
     
     modelLoadProgress = 100;
-    
-    // Reset tracking variables on successful load
     loadAttempts = 0;
     
     return Boolean(loaded) && modelsLoaded;
   } catch (error) {
     console.error('Error warming up model:', error);
-    
-    // Track failed attempts
     loadAttempts++;
     
-    // If we've tried enough times, reset tracking vars
     if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
       resetTrackingVars();
     }
     
-    // Perform aggressive cleanup after error
+    // Clean up after error
     if (human.tf) {
       console.log('Performing aggressive cleanup after error');
       human.tf.engine().disposeVariables();
@@ -117,12 +109,10 @@ export const warmupModel = async () => {
  * Reset the model and clean up resources
  */
 export const resetModel = async () => {
-  // Track tensor count before reset for debugging
   if (human.tf) {
     const tensors = human.tf.engine().state.numTensors;
     console.log(`Current tensor count before reset: ${tensors}`);
     
-    // Always dispose variables before reset
     try {
       console.log('Disposing variables');
       human.tf.engine().disposeVariables();
@@ -140,6 +130,5 @@ export const resetModel = async () => {
     console.error('Error resetting model:', error);
   }
   
-  // Reset tracking variables
   resetTrackingVars();
 };

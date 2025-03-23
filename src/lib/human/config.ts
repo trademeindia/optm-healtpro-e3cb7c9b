@@ -5,43 +5,42 @@ import * as Human from '@vladmandic/human';
 export const humanConfig: Human.Config = {
   // Required core configuration
   backend: 'webgl' as Human.BackendEnum,
-  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // Use CDN for faster model loading
+  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,
   async: true,
-  warmup: 'none', // Changed from 'full' to avoid blocking the UI during initial load
+  warmup: 'none', // Skip warmup to avoid UI blocking
   cacheModels: true,
   cacheSensitivity: 0.7,
-  skipAllowed: true, // Allow skipping frames for better performance
-  deallocate: true, // Better memory management
+  skipAllowed: true,
+  deallocate: true,
   
   // Additional required configs to satisfy TypeScript
   wasmPlatformFetch: false,
-  validateModels: false, // Skip validation for faster loading
+  validateModels: false,
   
   flags: {
-    useWorker: false // Disable worker for more reliable operation
+    useWorker: false, // Disable worker threads to avoid compatibility issues
   }, 
   
-  softwareKernels: true, // Fallback to software implementation if needed
+  softwareKernels: true,
   
   // Filter configuration
   filter: { 
-    enabled: false, // Disable filtering for better performance
+    enabled: false, // Disable filtering
     equalization: false 
   },
   
-  // Detection modules configuration
+  // Only enable what we absolutely need
   face: { 
     enabled: false 
   },
   body: { 
     enabled: true,
-    // Use lite model for better performance
-    modelPath: 'blazepose-lite.json', // Lighter model for better performance
+    modelPath: 'blazepose-lite.json', // Use lite model for better performance
     minConfidence: 0.2,
-    skipFrames: 5, // Skip more frames to improve performance significantly
-    maxDetected: 1, // Only detect one person to improve performance
+    skipFrames: 4, // Skip frames for better performance
+    maxDetected: 1, // Only track one person
   },
   hand: { 
     enabled: false 
@@ -52,8 +51,7 @@ export const humanConfig: Human.Config = {
   gesture: { 
     enabled: false 
   },
-  // Important: Completely disable segmentation which was causing errors
   segmentation: { 
-    enabled: false
+    enabled: false // Disable segmentation which was causing errors
   },
 };
