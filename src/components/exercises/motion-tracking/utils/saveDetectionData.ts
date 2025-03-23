@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { MotionStats } from '../../posture-monitor/types';
 import { toJsonObject } from './jsonUtils';
-import { addToOfflineQueue, processOfflineQueue } from './offlineQueueManager';
+import { addToOfflineQueue, processOfflineQueue, getOfflineQueueStatus } from './offlineQueueManager';
 
 /**
  * Save detection data to database with offline support
