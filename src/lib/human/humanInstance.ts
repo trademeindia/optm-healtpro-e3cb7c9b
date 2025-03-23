@@ -21,8 +21,17 @@ if (human.config.segmentation) {
   console.log('Explicitly disabled segmentation in instance');
 }
 
-// Force standard model since lite version isn't found in the CDN
+// Set multiple potential model paths to try in sequence if loading fails
+const possibleModels = [
+  'blazepose.json',
+  'blazepose-lite.json',
+  'blazepose-heavy.json'
+];
+
+// Choose the best model based on device performance
+// This will be checked during the warmup process
 if (human.config.body) {
-  human.config.body.modelPath = 'blazepose.json';
-  console.log('Set body model to standard version for better compatibility');
+  // Default to the first option, the warmup process will try others if needed
+  human.config.body.modelPath = possibleModels[0];
+  console.log('Set initial body model to:', human.config.body.modelPath);
 }

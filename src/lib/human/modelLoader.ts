@@ -50,18 +50,29 @@ const validateModelPath = async (): Promise<boolean> => {
  * Get an alternative model path if the primary one fails
  */
 const getAlternativeModelPath = (attempt: number): { basePath: string, modelPath: string } => {
-  // Try different CDN paths and model versions based on the attempt number
-  if (attempt === 1) {
-    return {
-      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@latest/dist/models/',
-      modelPath: 'blazepose.json'
-    };
-  } else {
-    return {
+  // Different model paths to try in sequence
+  const alternatives = [
+    {
       basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.0.0/dist/models/',
       modelPath: 'blazepose.json'
-    };
-  }
+    },
+    {
+      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@latest/dist/models/',
+      modelPath: 'blazepose.json'
+    },
+    {
+      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.0.0/dist/models/',
+      modelPath: 'blazepose-lite.json'
+    },
+    {
+      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@2.3.0/dist/models/',
+      modelPath: 'blazepose.json'
+    }
+  ];
+  
+  // Use modulo to cycle through alternatives if we have more attempts than alternatives
+  const index = (attempt - 1) % alternatives.length;
+  return alternatives[index];
 };
 
 /**
@@ -102,7 +113,7 @@ export const warmupModel = async () => {
     
     // Add a timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Model load timeout')), 20000); // Increased timeout
+      setTimeout(() => reject(new Error('Model load timeout')), 30000); // Increased timeout
     });
     
     // Race the model load against the timeout
@@ -160,7 +171,7 @@ export const warmupModel = async () => {
     modelLoadProgress = 100;
     loadAttempts = 0;
     
-    return Boolean(loaded) && (modelsLoaded || Boolean(loaded));
+    return Boolean(loaded) || modelsLoaded;
   } catch (error) {
     console.error('Error warming up model:', error);
     loadAttempts++;

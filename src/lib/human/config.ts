@@ -5,7 +5,7 @@ import * as Human from '@vladmandic/human';
 export const humanConfig: Human.Config = {
   // Core configuration
   backend: 'webgl', // Use WebGL for hardware acceleration
-  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/models/',
+  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.0.0/dist/models/',
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,
   async: true,
@@ -53,7 +53,7 @@ export const humanConfig: Human.Config = {
   // Enable and optimize body pose detection
   body: { 
     enabled: true,
-    modelPath: 'blazepose.json', // Use the correct model name that exists in the CDN
+    modelPath: 'blazepose-heavy.json', // Use the heavy model for better detection
     minConfidence: 0.3, // Lower threshold for better detection
     skipFrames: 1, // Skip fewer frames for smoother tracking
     maxDetected: 1, // Only track one person
