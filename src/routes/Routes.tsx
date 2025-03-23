@@ -9,6 +9,7 @@ import { ReceptionistRoutes } from './dashboard/ReceptionistRoutes';
 import { CommonRoutes } from './common/CommonRoutes';
 import { toast } from 'sonner';
 import { logRoutingState } from '@/utils/debugUtils';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const AppRoutes: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +30,7 @@ const AppRoutes: React.FC = () => {
     return <LoadingScreen />;
   }
   
-  // Use error handling for suspense fallback
+  // Handle suspense error via ErrorBoundary instead of directly on Suspense
   const handleSuspenseError = (error: Error) => {
     console.error("Error loading route:", error);
     toast.error("Failed to load page", {
@@ -38,27 +39,26 @@ const AppRoutes: React.FC = () => {
   };
   
   return (
-    <Suspense 
-      fallback={<LoadingScreen />}
-      onError={handleSuspenseError}
-    >
-      <RouterRoutes>
-        {/* Auth Routes */}
-        <AuthRoutes />
-        
-        {/* Doctor Routes */}
-        <DoctorRoutes />
-        
-        {/* Patient Routes */}
-        <PatientRoutes />
-        
-        {/* Receptionist Routes */}
-        <ReceptionistRoutes />
-        
-        {/* Common Routes */}
-        <CommonRoutes />
-      </RouterRoutes>
-    </Suspense>
+    <ErrorBoundary onError={handleSuspenseError}>
+      <Suspense fallback={<LoadingScreen />}>
+        <RouterRoutes>
+          {/* Auth Routes */}
+          <AuthRoutes />
+          
+          {/* Doctor Routes */}
+          <DoctorRoutes />
+          
+          {/* Patient Routes */}
+          <PatientRoutes />
+          
+          {/* Receptionist Routes */}
+          <ReceptionistRoutes />
+          
+          {/* Common Routes */}
+          <CommonRoutes />
+        </RouterRoutes>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 
