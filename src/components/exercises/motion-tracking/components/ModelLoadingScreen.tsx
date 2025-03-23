@@ -1,199 +1,94 @@
 
-import React, { useEffect, useState } from 'react';
-import { Loader2, AlertTriangle, RefreshCw, Info } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { getModelLoadProgress } from '@/lib/human';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ModelLoadingScreenProps {
-  isModelLoading: boolean;
-  loadError: string | null;
+  isLoading: boolean;
   onRetry: () => void;
-  loadProgress?: number;
+  error: string | null;
 }
 
 const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
-  isModelLoading,
-  loadError,
+  isLoading,
   onRetry,
-  loadProgress: externalProgress
+  error
 }) => {
   const [progress, setProgress] = useState(0);
-  const [loadingMessage, setLoadingMessage] = useState('Initializing AI models...');
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [networkStatus, setNetworkStatus] = useState<'checking' | 'good' | 'slow' | 'offline'>('checking');
+  const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>('online');
 
-  // Update progress periodically
   useEffect(() => {
-    if (!isModelLoading) return;
+    const interval = setInterval(() => {
+      const currentProgress = getModelLoadProgress();
+      setProgress(currentProgress);
+    }, 300);
 
-    // Track elapsed time for better user feedback
-    const timeTracker = setInterval(() => {
-      setElapsedTime(prev => prev + 1);
-      
-      // Check network status after a few seconds
-      if (prev === 3) {
-        checkNetworkStatus();
-      }
-    }, 1000);
+    // Check and monitor network status
+    const updateNetworkStatus = () => {
+      setNetworkStatus(navigator.onLine ? 'online' : 'offline');
+    };
+    
+    updateNetworkStatus();
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
 
-    // Use external progress if provided, otherwise poll for it
-    if (typeof externalProgress === 'number') {
-      setProgress(externalProgress);
-    } else {
-      const messages = [
-        'Initializing AI models...',
-        'Loading pose detection model...',
-        'Preparing motion tracking engine...',
-        'Configuring tracking parameters...',
-        'Almost ready...'
-      ];
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('online', updateNetworkStatus);
+      window.removeEventListener('offline', updateNetworkStatus);
+    };
+  }, []);
 
-      // Update progress every 300ms
-      const interval = setInterval(() => {
-        const currentProgress = getModelLoadProgress();
-        setProgress(currentProgress);
-        
-        // Update message based on progress
-        const messageIndex = Math.min(
-          Math.floor(currentProgress / 20),
-          messages.length - 1
-        );
-        setLoadingMessage(messages[messageIndex]);
-      }, 300);
-
-      return () => {
-        clearInterval(interval);
-        clearInterval(timeTracker);
-      };
-    }
-
-    return () => clearInterval(timeTracker);
-  }, [isModelLoading, externalProgress]);
-
-  // Check network status
-  const checkNetworkStatus = async () => {
-    try {
-      const start = Date.now();
-      const response = await fetch('https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/models/blazepose.json', { 
-        method: 'HEAD',
-        cache: 'no-store'
-      });
-      const duration = Date.now() - start;
-      
-      if (!response.ok) {
-        console.error('Model file not accessible:', response.status);
-        setNetworkStatus('offline');
-        return;
-      }
-      
-      // Check response time
-      if (duration > 1000) {
-        setNetworkStatus('slow');
-      } else {
-        setNetworkStatus('good');
-      }
-      
-      console.log(`Network check: ${duration}ms, status: ${response.status}`);
-    } catch (error) {
-      console.error('Network check failed:', error);
-      setNetworkStatus('offline');
-    }
-  };
-
-  // Add a "taking longer than expected" message after 15 seconds
-  const showExtendedMessage = elapsedTime > 15;
-
-  // Show network status message
-  const getNetworkMessage = () => {
-    switch (networkStatus) {
-      case 'good':
-        return "Network connection is good";
-      case 'slow':
-        return "Network connection is slow, loading may take longer";
-      case 'offline':
-        return "Network connection issue detected. Check your internet connection";
-      default:
-        return "Checking network status...";
-    }
-  };
-
-  // If there's an error, show error screen
-  if (loadError) {
+  if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 space-y-4 bg-destructive/10 rounded-md">
-        <div className="p-3 bg-destructive/20 rounded-full">
-          <AlertTriangle className="h-10 w-10 text-destructive" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center bg-background rounded-lg border border-gray-200 shadow-sm">
+        <div className="text-red-500 mb-4 text-4xl">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
         </div>
-        <h3 className="text-lg font-semibold">Loading Failed</h3>
-        <p className="text-sm text-center text-muted-foreground max-w-md">
-          {loadError}
+        <h2 className="text-xl font-semibold mb-2">Model Loading Failed</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          {error}
         </p>
-        <div className="bg-background/80 p-4 rounded-md mt-2 text-sm max-w-md">
-          <p className="font-medium mb-2">Troubleshooting tips:</p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>Check your internet connection</li>
-            <li>Try using Chrome or Edge for best compatibility</li>
-            <li>Disable any browser extensions that might be blocking resources</li>
-            <li>If on mobile, try a desktop browser instead</li>
-          </ul>
+        <div className="flex flex-col gap-3">
+          <div className={`text-sm px-3 py-1 rounded-full ${networkStatus === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            Network: {networkStatus === 'online' ? 'Connected' : 'Disconnected'}
+          </div>
+          <button
+            onClick={onRetry}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
-        <Button variant="outline" onClick={onRetry} className="mt-4 flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Try Again
-        </Button>
       </div>
     );
   }
 
-  // Show loading screen with progress
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-6">
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          {/* Animated percentage */}
-          <span className="text-lg font-medium">{progress}%</span>
-        </div>
-        <Loader2 className="h-16 w-16 animate-spin text-primary opacity-30" />
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center bg-background rounded-lg border border-gray-200 shadow-sm">
+      <Spinner className="h-12 w-12 mb-4" />
+      <h2 className="text-xl font-semibold mb-2">Loading Movement Analysis</h2>
+      <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5 mb-4">
+        <div 
+          className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+          style={{ width: `${Math.max(5, Math.min(progress, 100))}%` }}
+        ></div>
       </div>
-      
-      <div className="text-center space-y-2 max-w-md">
-        <h3 className="text-lg font-semibold">Loading Motion Analysis</h3>
-        <p className="text-sm text-muted-foreground">{loadingMessage}</p>
-        
-        {showExtendedMessage && (
-          <p className="text-xs text-amber-500 mt-2">
-            Loading is taking longer than expected. Please be patient...
-          </p>
-        )}
-        
-        {elapsedTime > 3 && (
-          <div className="mt-2 text-xs flex items-center gap-1.5 justify-center">
-            <Info className="h-3 w-3" />
-            <span className={networkStatus === 'offline' ? 'text-destructive' : 
-                           networkStatus === 'slow' ? 'text-amber-500' : 'text-muted-foreground'}>
-              {getNetworkMessage()}
-            </span>
+      <p className="text-muted-foreground">
+        {progress < 30 && "Initializing model..."}
+        {progress >= 30 && progress < 70 && "Loading movement analysis capabilities..."}
+        {progress >= 70 && progress < 100 && "Almost ready..."}
+        {progress >= 100 && "Starting movement tracking..."}
+      </p>
+      <div className="mt-4 text-sm text-gray-500">
+        {networkStatus === 'offline' && (
+          <div className="text-red-500 mt-2">
+            You appear to be offline. Please check your internet connection.
           </div>
         )}
       </div>
-      
-      <div className="w-full max-w-md">
-        <Progress value={progress} className="h-2" />
-      </div>
-      
-      {progress < 20 && (
-        <p className="text-xs text-muted-foreground">
-          The first load may take 20-30 seconds. It'll be faster next time!
-        </p>
-      )}
-      
-      {elapsedTime > 30 && (
-        <Button variant="outline" onClick={onRetry} className="mt-2 flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Restart Loading
-        </Button>
-      )}
     </div>
   );
 };
