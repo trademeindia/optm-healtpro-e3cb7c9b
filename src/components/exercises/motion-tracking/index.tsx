@@ -1,22 +1,24 @@
-
-import React, { useEffect, useState } from 'react';
-import { AlertCircle, Camera, Headphones, RefreshCw } from 'lucide-react';
-import CameraView from './components/CameraView';
-import ModelLoadingState from './components/ModelLoadingState';
-import ModelErrorState from './components/ModelErrorState';
-import ControlPanel from './components/ControlPanel';
-import FeedbackDisplay from './FeedbackDisplay';
-import MotionRenderer from './MotionRenderer';
-import BiomarkersDisplay from './BiomarkersDisplay';
-import DetectionErrorDisplay from './components/DetectionErrorDisplay';
-import MotionDetectionErrorBoundary from './components/MotionDetectionErrorBoundary';
+import React, { useRef, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { ExerciseInstructions } from './components/ExerciseInstructions';
+import { CameraView } from './components/CameraView';
+import { MotionRenderer } from './components/MotionRenderer';
+import { FeedbackDisplay } from './components/FeedbackDisplay';
+import { ControlPanel } from './components/ControlPanel';
+import { BiomarkersDisplay } from './components/BiomarkersDisplay';
+import { ModelLoadingState } from './components/ModelLoadingState';
+import { ModelErrorState } from './components/ModelErrorState';
 import { useHumanDetection } from './hooks/useHumanDetection';
 import { useCameraManager } from './hooks/useCameraManager';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { DetectionError, DetectionErrorType } from '@/lib/human/types';
+import { BodyAngles, MotionState, MotionStats } from '@/components/exercises/posture-monitor/types';
+import * as Human from '@vladmandic/human';
 
-// Check the props for all components to make sure they match what we're providing
 interface ModelLoadingStateProps {
   loadingProgress?: number;
 }
@@ -24,45 +26,41 @@ interface ModelLoadingStateProps {
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  showFullscreen?: boolean;
   onToggleFullscreen?: () => void;
 }
 
 interface MotionRendererProps {
-  result?: any;
-  detectionResult?: any;
-  angles: any;
+  result: Human.Result | null;
+  angles: BodyAngles;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  motionState: any;
 }
 
 interface FeedbackDisplayProps {
   feedback: any;
-  stats: any;
+  stats: MotionStats;
 }
 
 interface ControlPanelProps {
   cameraActive: boolean;
   detectionFps: number | null;
   isModelLoaded: boolean;
-  isDetecting?: boolean;
-  motionState: any;
-  stats: any;
+  isDetecting: boolean;
+  motionState: MotionState;
+  stats: MotionStats;
   onCameraToggle: () => void;
   onReset: () => void;
 }
 
 interface BiomarkersDisplayProps {
   biomarkers: Record<string, any>;
-  angles: any;
+  angles: BodyAngles;
 }
 
 const MotionTracking: React.FC = () => {
   const { cameraActive, videoRef, startCamera, stopCamera } = useCameraManager();
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showFullscreen, setShowFullscreen] = useState(false);
   
-  // Initialize human detection
   const {
     isDetecting,
     detectionFps,
@@ -79,7 +77,6 @@ const MotionTracking: React.FC = () => {
     resetSession
   } = useHumanDetection(videoRef, canvasRef);
 
-  // Handle camera start/stop
   const handleCameraToggle = async () => {
     if (cameraActive) {
       stopCamera();
@@ -92,12 +89,10 @@ const MotionTracking: React.FC = () => {
     }
   };
 
-  // Handle session reset
   const handleReset = () => {
     resetSession();
   };
 
-  // Handle retry after error
   const handleRetry = () => {
     if (detectionError) {
       toast.info("Retrying detection...");
@@ -105,7 +100,6 @@ const MotionTracking: React.FC = () => {
     }
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopDetection();
@@ -113,12 +107,10 @@ const MotionTracking: React.FC = () => {
     };
   }, [stopDetection, stopCamera]);
 
-  // Render loading state
   if (!isModelLoaded) {
     return <ModelLoadingState loadingProgress={0} />;
   }
 
-  // Render error state for model loading errors
   if (detectionError && detectionError.type === 'MODEL_LOADING' && !isModelLoaded) {
     return <ModelErrorState loadingError={detectionError} />;
   }
@@ -127,17 +119,14 @@ const MotionTracking: React.FC = () => {
     <MotionDetectionErrorBoundary onRetry={handleRetry}>
       <div className="relative w-full max-w-screen-xl mx-auto p-4">
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* Camera view */}
           <div className={`relative ${showFullscreen ? 'fixed inset-0 z-50 p-4 bg-background' : 'w-full lg:w-2/3'}`}>
             <div className="relative rounded-lg overflow-hidden aspect-video bg-muted border">
               <CameraView
                 videoRef={videoRef}
                 canvasRef={canvasRef}
-                showFullscreen={showFullscreen}
                 onToggleFullscreen={() => setShowFullscreen(!showFullscreen)}
               />
               
-              {/* Detection overlay */}
               {cameraActive && result && (
                 <MotionRenderer
                   result={result}
@@ -147,7 +136,6 @@ const MotionTracking: React.FC = () => {
                 />
               )}
               
-              {/* Error display */}
               {detectionError && detectionError.type !== 'MODEL_LOADING' && (
                 <DetectionErrorDisplay
                   error={detectionError}
@@ -155,7 +143,6 @@ const MotionTracking: React.FC = () => {
                 />
               )}
               
-              {/* Camera inactive state */}
               {!cameraActive && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
                   <Camera className="h-16 w-16 text-muted-foreground mb-4" />
@@ -173,7 +160,6 @@ const MotionTracking: React.FC = () => {
               )}
             </div>
             
-            {/* Feedback display */}
             {cameraActive && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -185,7 +171,6 @@ const MotionTracking: React.FC = () => {
             )}
           </div>
           
-          {/* Controls and stats */}
           {!showFullscreen && (
             <div className="w-full lg:w-1/3 space-y-4">
               <ControlPanel
@@ -199,7 +184,6 @@ const MotionTracking: React.FC = () => {
                 onReset={handleReset}
               />
               
-              {/* Biomarkers display */}
               {cameraActive && Object.keys(biomarkers).length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}

@@ -9,3 +9,4 @@ export * from './useDetectionLoop';
 export * from './useDetectionError';
 export * from './detectionServiceUtils';
 export * from './motion-analysis';
+export * from './session-management';
