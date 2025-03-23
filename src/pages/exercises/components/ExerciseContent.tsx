@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Exercise } from '@/types/exercise.types'; 
@@ -8,10 +7,26 @@ import { Play } from 'lucide-react';
 import MotionTracker from '@/components/exercises/motion-tracking';
 
 interface ExerciseContentProps {
-  exercise: Exercise;
+  filteredExercises: Exercise[];
+  selectedExercise: Exercise;
+  activeCategory: string;
+  onCategoryFilter: (category: string) => void;
+  onStartExercise: (exerciseId: string) => void;
+  onFinishExercise: () => void;
+  showMonitor: boolean;
+  setShowMonitor: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ExerciseContent: React.FC<ExerciseContentProps> = ({ exercise }) => {
+const ExerciseContent: React.FC<ExerciseContentProps> = ({ 
+  filteredExercises, 
+  selectedExercise, 
+  activeCategory, 
+  onCategoryFilter, 
+  onStartExercise, 
+  onFinishExercise, 
+  showMonitor, 
+  setShowMonitor 
+}) => {
   const navigate = useNavigate();
   const [showMotionTracker, setShowMotionTracker] = React.useState(false);
   
@@ -28,21 +43,21 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({ exercise }) => {
     <div className="space-y-8">
       <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
         <div className="p-6">
-          <h1 className="text-2xl font-bold">{exercise.title}</h1>
+          <h1 className="text-2xl font-bold">{selectedExercise.title}</h1>
           <div className="flex flex-wrap gap-2 mt-2">
             <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-              {exercise.difficulty}
+              {selectedExercise.difficulty}
             </span>
             <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-              {exercise.duration}
+              {selectedExercise.duration}
             </span>
-            {exercise.muscleGroups.map((group) => (
+            {selectedExercise.muscleGroups.map((group) => (
               <span key={group} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
                 {group}
               </span>
             ))}
           </div>
-          <p className="mt-4 text-muted-foreground">{exercise.description}</p>
+          <p className="mt-4 text-muted-foreground">{selectedExercise.description}</p>
           
           {!showMotionTracker && (
             <Button 
@@ -58,12 +73,12 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({ exercise }) => {
       
       {showMotionTracker ? (
         <MotionTracker
-          exerciseId={exercise.id}
-          exerciseName={exercise.title}
+          exerciseId={selectedExercise.id}
+          exerciseName={selectedExercise.title}
           onFinish={handleFinishExercise}
         />
       ) : (
-        <ExerciseVideo exercise={exercise} />
+        <ExerciseVideo exercise={selectedExercise} />
       )}
       
       <div className="bg-card rounded-lg p-6 shadow-sm border">

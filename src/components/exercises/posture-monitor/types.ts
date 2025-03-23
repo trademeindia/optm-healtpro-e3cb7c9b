@@ -1,4 +1,3 @@
-
 // Definition of shared types for posture monitoring
 
 export enum FeedbackType {
@@ -39,14 +38,13 @@ export interface BodyAngles {
 
 export interface DetectionStatus {
   isDetecting: boolean;
-  fps: number | null;
+  fps: number;
   confidence: number | null;
-  detectedKeypoints: number;
-  lastDetectionTime: number;
+  detectedKeypoints?: number;
+  lastDetectionTime?: number;
 }
 
 export interface FeedbackMessage {
   message: string | null;
   type: FeedbackType;
 }
-
