@@ -7,6 +7,10 @@
 @import './responsive/layout.css';
 @import './responsive/cards.css';
 @import './responsive/exercise-page.css';
+@import './responsive/motion-layout.css';
+@import './responsive/motion-cards.css';
+@import './responsive/motion-metrics.css';
+@import './responsive/camera-styles.css';
 
 /* Import utility styles */
 @import './utilities.css';
