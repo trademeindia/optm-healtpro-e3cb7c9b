@@ -52,17 +52,14 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       console.log("PoseNet model loaded successfully");
       setModel(loadedModel);
       
-      toast({
-        description: "Pose detection model loaded successfully. You can start exercising now."
-      });
+      // Using Sonner toast which takes a simple string
+      toast("Pose detection model loaded successfully. You can start exercising now.");
     } catch (error) {
       console.error('Error loading PoseNet model:', error);
       setError("Failed to load pose detection model");
       
-      toast({
-        description: "Failed to load pose detection model. Please try refreshing the page.",
-        variant: "destructive"
-      });
+      // Using Sonner toast with error styling
+      toast.error("Failed to load pose detection model. Please try refreshing the page.");
     } finally {
       setIsModelLoading(false);
     }
