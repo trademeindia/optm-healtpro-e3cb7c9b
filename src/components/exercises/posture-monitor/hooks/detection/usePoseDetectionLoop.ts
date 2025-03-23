@@ -39,8 +39,8 @@ export const usePoseDetectionLoop = ({
 
   // Use our utility hooks
   const { frameInterval, updateFrameRate } = useAdaptiveFrameRate(status, config);
-  const { handleDetectionFailure } = useDetectionFailureHandler(stateRef, setFeedback);
-  const { isVideoElementReady } = useVideoReadyCheck(videoRef);
+  const { handleDetectionFailure } = useDetectionFailureHandler(setFeedback, stateRef);
+  const { isVideoElementReady } = useVideoReadyCheck({ videoRef, videoReady });
 
   // Function to store session data in Supabase
   const storeSessionData = useCallback(async (pose: posenet.Pose) => {
@@ -156,7 +156,7 @@ export const usePoseDetectionLoop = ({
       
     } catch (error) {
       console.error('Error detecting pose:', error);
-      handleDetectionFailure();
+      handleDetectionFailure(error);
       setStatus(prev => ({ ...prev, isDetecting: false }));
     }
 

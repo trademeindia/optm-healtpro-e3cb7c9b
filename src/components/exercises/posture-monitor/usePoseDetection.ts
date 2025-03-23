@@ -8,7 +8,7 @@ import { usePoseHandler } from './hooks/usePoseHandler';
 import { useSquatState } from './hooks/useSquatState';
 import { usePerformanceMetrics } from './hooks/usePerformanceMetrics';
 import { usePoseAnalysis } from './hooks/usePoseAnalysis';
-import { usePoseDetectionLoop } from './hooks/detection';
+import { usePoseDetectionLoop, DetectionStatus } from './hooks/detection';
 
 interface UsePoseDetectionProps {
   cameraActive: boolean;
@@ -121,7 +121,7 @@ export const usePoseDetection = ({ cameraActive, videoRef, videoReady }: UsePose
   }, []);
   
   // Use pose detection loop
-  const { detectionStatus } = usePoseDetectionLoop({
+  const detectionStatus = usePoseDetectionLoop({
     model,
     cameraActive,
     videoRef,

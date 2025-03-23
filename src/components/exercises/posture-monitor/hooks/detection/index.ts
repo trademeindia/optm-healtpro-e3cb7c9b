@@ -7,3 +7,4 @@ export { useVideoReadyCheck } from './useVideoReadyCheck';
 export { usePoseEstimation } from './usePoseEstimation';
 export { useDetectionStatus } from './useDetectionStatus';
 export { useDetectionStatusHandler } from './useDetectionStatusHandler';
+export { useDetectionLoop } from './useDetectionLoop';

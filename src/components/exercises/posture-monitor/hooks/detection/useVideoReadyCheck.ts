@@ -23,5 +23,20 @@ export const useVideoReadyCheck = ({ videoRef, videoReady }: UseVideoReadyCheckP
     );
   }, [videoRef, videoReady]);
   
-  return { isVideoReady };
+  // Added for backward compatibility
+  const isVideoElementReady = useCallback((video: HTMLVideoElement) => {
+    if (!video) return false;
+    
+    return (
+      video.readyState >= 2 &&
+      video.width > 0 &&
+      video.height > 0 &&
+      !video.paused
+    );
+  }, []);
+  
+  return { 
+    isVideoReady,
+    isVideoElementReady
+  };
 };

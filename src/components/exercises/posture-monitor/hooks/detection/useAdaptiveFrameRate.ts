@@ -1,7 +1,22 @@
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import type { DetectionStatus } from './types';
 
-export const useAdaptiveFrameRate = () => {
+export const useAdaptiveFrameRate = (status?: DetectionStatus, config?: any) => {
+  const [frameInterval, setFrameInterval] = useState<number>(0);
+  
+  // Update frame rate based on detection performance
+  const updateFrameRate = useCallback((confidence: number | null, config?: any) => {
+    // If detection is performing well (high confidence), increase frame rate
+    if (confidence && confidence > 0.7) {
+      setFrameInterval(0); // No delay, run at full speed
+    } else if (confidence && confidence > 0.5) {
+      setFrameInterval(50); // Small delay for medium confidence
+    } else {
+      setFrameInterval(100); // Larger delay for low confidence or null
+    }
+  }, []);
+  
   // Calculate delay based on performance
   const calculateFrameDelay = useCallback((lastDetectionTime: number) => {
     const detectionTime = performance.now() - lastDetectionTime;
@@ -16,5 +31,9 @@ export const useAdaptiveFrameRate = () => {
     return 0;
   }, []);
   
-  return { calculateFrameDelay };
+  return { 
+    frameInterval, 
+    updateFrameRate,
+    calculateFrameDelay 
+  };
 };

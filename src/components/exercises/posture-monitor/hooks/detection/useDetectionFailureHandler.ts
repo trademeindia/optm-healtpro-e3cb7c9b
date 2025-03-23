@@ -8,7 +8,7 @@ export const useDetectionFailureHandler = (
   detectionStateRef: React.MutableRefObject<DetectionStateRef>
 ) => {
   // Handle detection failures
-  const handleDetectionFailure = useCallback((error: any) => {
+  const handleDetectionFailure = useCallback((error?: any) => {
     detectionStateRef.current.detectionFailureCount++;
     detectionStateRef.current.consecutiveFailures++;
     
