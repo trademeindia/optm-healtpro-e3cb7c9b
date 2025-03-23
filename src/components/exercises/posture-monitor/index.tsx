@@ -1,173 +1,180 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info } from 'lucide-react';
-import { FeedbackType } from './types';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCamera } from './camera';
 import { usePoseDetection } from './usePoseDetection';
-import { usePermissionMonitor } from './hooks/usePermissionMonitor';
-import { useVideoStatusMonitor } from './hooks/useVideoStatusMonitor';
-import { useAutoStartCamera } from './hooks/useAutoStartCamera';
-import FeedbackDisplay from './FeedbackDisplay';
-import StatsDisplay from './StatsDisplay';
-import TutorialDialog from './TutorialDialog';
-import PoseRenderer from './PoseRenderer';
+import { usePoseModel } from './usePoseModel';
+import { DEFAULT_POSE_CONFIG } from './utils';
+import { diagnoseDetectionIssues } from './utils/debug';
 import CameraView from './CameraView';
-import ControlButtons from './ControlButtons';
-import ExerciseSelectionView from './ExerciseSelectionView';
-import type { CustomFeedback } from './hooks/types';
+import PoseRenderer from './PoseRenderer';
+import FeedbackDisplay from './FeedbackDisplay';
+import PoseDetectionStats from './PoseDetectionStats';
+import PoseDetectionController from './PoseDetectionController';
+import { Button } from '@/components/ui/button';
+import { Play, Camera, RefreshCw } from 'lucide-react';
 
 interface PostureMonitorProps {
   exerciseId: string | null;
   exerciseName: string | null;
-  onFinish: () => void;
+  onFinish?: () => void;
 }
 
-const PostureMonitor: React.FC<PostureMonitorProps> = ({
-  exerciseId,
-  exerciseName,
-  onFinish,
+const PostureMonitor: React.FC<PostureMonitorProps> = ({ 
+  exerciseId, 
+  exerciseName, 
+  onFinish 
 }) => {
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
+  // Setup camera
   const { 
     cameraActive, 
-    permission, 
     videoRef, 
-    canvasRef, 
-    streamRef, 
+    streamRef,
     toggleCamera, 
     stopCamera,
     cameraError,
     retryCamera,
-    videoStatus
-  } = useCamera({
-    onCameraStart: () => {
-      setCustomFeedback({
-        message: "Starting pose analysis... Stand in a clear space where your full body is visible.",
-        type: FeedbackType.INFO
-      });
-    }
+    videoStatus 
+  } = useCamera({ 
+    onCameraStart: () => setVideoReady(true) 
   });
   
+  // Setup pose detection
   const {
     model,
     isModelLoading,
+    config,
     pose,
     analysis,
     stats,
     feedback,
     resetSession,
-    config,
     detectionStatus
   } = usePoseDetection({
     cameraActive,
     videoRef,
-    videoReady: videoStatus.isReady
+    videoReady: videoReady && videoStatus.isReady
   });
   
-  const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
+  // Clean up on component unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
   
-  usePermissionMonitor({
-    permission,
-    setCustomFeedback
-  });
+  // Log diagnostics for debugging
+  useEffect(() => {
+    if (cameraActive && videoRef.current) {
+      const diagnosisInterval = setInterval(() => {
+        const issues = diagnoseDetectionIssues(videoRef.current);
+        if (issues) {
+          console.warn('Detection issues:', issues);
+        }
+      }, 5000);
+      
+      return () => clearInterval(diagnosisInterval);
+    }
+  }, [cameraActive, videoRef]);
   
-  useVideoStatusMonitor({
-    cameraActive,
-    videoStatus,
-    setCustomFeedback
-  });
-  
-  useAutoStartCamera({
-    cameraActive,
-    permission,
-    toggleCamera,
-    setCustomFeedback
-  });
-  
-  const handleFinish = () => {
+  // Handle exercise completion
+  const handleFinishExercise = () => {
     stopCamera();
-    onFinish();
+    resetSession();
+    if (onFinish) onFinish();
   };
   
-  const displayFeedback = customFeedback || feedback;
-  
-  if (!exerciseId || !exerciseName) {
-    return <ExerciseSelectionView />;
-  }
-
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Squat Analyzer: {exerciseName}</CardTitle>
-          <CardDescription>
-            AI-powered squat analysis with real-time feedback
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <CameraView 
+    <div className="space-y-4">
+      <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
+        <div className="relative aspect-video">
+          <CameraView
             cameraActive={cameraActive}
             isModelLoading={isModelLoading}
             videoRef={videoRef}
             canvasRef={canvasRef}
             cameraError={cameraError}
             onRetryCamera={retryCamera}
-            detectionStatus={{
-              isDetecting: detectionStatus?.isDetecting || false,
-              fps: detectionStatus?.fps || null,
-              confidence: pose?.score || null
-            }}
+            detectionStatus={detectionStatus}
           />
           
-          {pose && (
-            <PoseRenderer
-              pose={pose}
-              canvasRef={canvasRef}
-              kneeAngle={analysis.kneeAngle}
-              hipAngle={analysis.hipAngle}
-              currentSquatState={analysis.currentSquatState}
-              config={config}
-            />
-          )}
-          
-          {displayFeedback?.message && (
-            <FeedbackDisplay 
-              feedback={displayFeedback.message}
-              feedbackType={displayFeedback.type}
-            />
-          )}
-          
-          <StatsDisplay 
-            accuracy={stats.accuracy}
-            reps={stats.reps}
-            incorrectReps={stats.incorrectReps}
+          <PoseRenderer
+            pose={pose}
+            canvasRef={canvasRef}
+            kneeAngle={analysis.kneeAngle}
+            hipAngle={analysis.hipAngle}
+            currentSquatState={analysis.currentSquatState}
+            config={config}
           />
-          
-          <ControlButtons 
-            cameraActive={cameraActive}
-            isModelLoading={isModelLoading}
-            onToggleCamera={toggleCamera}
-            onReset={resetSession}
-            onShowTutorial={() => setShowTutorial(true)}
-            onFinish={handleFinish}
-          />
-          
-          <div className="text-xs text-muted-foreground mt-2">
-            <p className="flex items-center gap-1">
-              <Info className="h-3 w-3" />
-              <span>Your camera feed is processed locally and not stored or sent to any server.</span>
-            </p>
+        </div>
+        
+        <div className="p-4 bg-card">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="text-lg font-medium">
+              {exerciseName || 'Posture Monitor'}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                size="sm" 
+                variant={cameraActive ? "outline" : "default"}
+                onClick={() => toggleCamera()}
+                className="gap-2"
+              >
+                <Camera className="h-4 w-4" />
+                {cameraActive ? 'Stop Camera' : 'Start Camera'}
+              </Button>
+              
+              {cameraActive && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={retryCamera}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Reset
+                </Button>
+              )}
+              
+              {cameraActive && onFinish && (
+                <Button 
+                  size="sm" 
+                  variant="default" 
+                  onClick={handleFinishExercise}
+                  className="gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  Finish Exercise
+                </Button>
+              )}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       
-      <TutorialDialog 
-        open={showTutorial} 
-        onOpenChange={setShowTutorial} 
+      <PoseDetectionController
+        isModelLoading={isModelLoading}
+        modelError={cameraError || null}
+        cameraActive={cameraActive}
+        feedback={feedback}
+        detectionStatus={detectionStatus}
       />
-    </>
+      
+      <FeedbackDisplay 
+        feedback={feedback} 
+        stats={stats}
+      />
+      
+      {cameraActive && detectionStatus && (
+        <PoseDetectionStats 
+          stats={stats}
+          detectionStatus={detectionStatus}
+        />
+      )}
+    </div>
   );
 };
 

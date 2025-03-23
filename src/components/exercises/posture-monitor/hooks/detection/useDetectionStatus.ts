@@ -1,46 +1,39 @@
 
-import { useRef, useCallback } from 'react';
-import { useDetectionStatusHandler } from './useDetectionStatusHandler';
-import type { DetectionStatus } from './types';
-
-export { type DetectionStatus } from './types';
+import { useState, useCallback, useRef } from 'react';
+import { DetectionStatus, DetectionStateRef } from './types';
 
 export const useDetectionStatus = () => {
-  const {
-    detectionStatus,
-    setDetectionStatus,
-    updateDetectionStatus
-  } = useDetectionStatusHandler();
-  
-  // Track frame times for FPS calculation
-  const fpsTracker = useRef({
-    frames: 0,
-    lastFpsUpdate: 0,
-    frameTimes: [] as number[]
+  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
+    isDetecting: false,
+    fps: null,
+    confidence: null,
+    detectedKeypoints: 0,
+    lastDetectionTime: 0
   });
   
-  // Update FPS calculation
-  const updateFpsStats = useCallback((detectionTime: number, detectionStateRef: any) => {
-    const now = performance.now();
+  const lastFpsUpdateTime = useRef<number>(0);
+  const frameCount = useRef<number>(0);
+  
+  // Update detection status
+  const updateDetectionStatus = useCallback((updates: Partial<DetectionStatus>) => {
+    setDetectionStatus(prev => ({
+      ...prev,
+      ...updates
+    }));
+  }, []);
+  
+  // Update FPS calculations
+  const updateFpsStats = useCallback((currentTime: number, stateRef: React.MutableRefObject<DetectionStateRef>) => {
+    frameCount.current++;
     
-    // Add current frame to tracker
-    fpsTracker.current.frames++;
-    fpsTracker.current.frameTimes.push(now);
-    
-    // Remove old frames outside of our 1-second window
-    const oneSecondAgo = now - 1000;
-    fpsTracker.current.frameTimes = fpsTracker.current.frameTimes.filter(time => time > oneSecondAgo);
-    
-    // Update FPS if it's been more than 500ms since last update
-    if (now - fpsTracker.current.lastFpsUpdate > 500) {
-      const fps = fpsTracker.current.frameTimes.length;
+    // Calculate FPS every second
+    if (currentTime - lastFpsUpdateTime.current >= 1000) {
+      updateDetectionStatus({
+        fps: frameCount.current
+      });
       
-      // Only update FPS value if we have meaningful data
-      if (fps > 0) {
-        updateDetectionStatus({ fps });
-      }
-      
-      fpsTracker.current.lastFpsUpdate = now;
+      frameCount.current = 0;
+      lastFpsUpdateTime.current = currentTime;
     }
   }, [updateDetectionStatus]);
   

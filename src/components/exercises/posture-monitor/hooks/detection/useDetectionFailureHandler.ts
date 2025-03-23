@@ -12,37 +12,27 @@ export const useDetectionFailureHandler = (
     detectionStateRef.current.detectionFailureCount++;
     detectionStateRef.current.consecutiveFailures++;
     
-    console.warn(`Pose detection failure #${detectionStateRef.current.consecutiveFailures}:`, error);
+    console.error("Detection failure:", error);
     
-    // After multiple consecutive failures, provide feedback to the user
-    if (detectionStateRef.current.consecutiveFailures === 5) {
+    // If too many consecutive failures, show feedback
+    if (detectionStateRef.current.consecutiveFailures > 5) {
       setFeedback(
         "Having trouble detecting your pose. Please ensure you're fully visible in the camera.",
         FeedbackType.WARNING
       );
-    } else if (detectionStateRef.current.consecutiveFailures === 10) {
-      setFeedback(
-        "Pose detection is challenging. Try standing further from the camera or improving lighting.",
-        FeedbackType.WARNING
-      );
-    } else if (detectionStateRef.current.consecutiveFailures >= 20) {
-      setFeedback(
-        "Cannot detect your pose. Please check your camera or try in a different location.",
-        FeedbackType.WARNING
-      );
     }
-  }, [setFeedback, detectionStateRef]);
-  
-  // Reset failure counter on successful detections
+  }, [detectionStateRef, setFeedback]);
+
+  // Reset failure counter
   const resetFailureCounter = useCallback(() => {
     detectionStateRef.current.consecutiveFailures = 0;
   }, [detectionStateRef]);
-  
+
   // Update last detection time
   const updateDetectionTime = useCallback(() => {
     detectionStateRef.current.lastDetectionTime = performance.now();
   }, [detectionStateRef]);
-  
+
   return {
     handleDetectionFailure,
     resetFailureCounter,

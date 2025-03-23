@@ -1,38 +1,17 @@
 
-import { useState, useCallback } from 'react';
-import type { DetectionStatus } from './types';
+import { useEffect } from 'react';
+import { DetectionStatus, UseDetectionStatusHandlerProps } from './types';
 
-export const useDetectionStatusHandler = () => {
-  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
-    isDetecting: false,
-    fps: null,
-    confidence: null,
-    detectedKeypoints: 0,
-    lastDetectionTime: 0
-  });
+export const useDetectionStatusHandler = ({
+  status,
+  onStatusChange
+}: UseDetectionStatusHandlerProps) => {
+  // Trigger status change callback when detection status changes
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(status);
+    }
+  }, [status, onStatusChange]);
   
-  // Update detection status with new values
-  const updateDetectionStatus = useCallback((updates: Partial<DetectionStatus>) => {
-    setDetectionStatus(prev => ({ ...prev, ...updates }));
-  }, []);
-  
-  // Reset detection status
-  const resetDetectionStatus = useCallback(() => {
-    setDetectionStatus({
-      isDetecting: false,
-      fps: null,
-      confidence: null,
-      detectedKeypoints: 0,
-      lastDetectionTime: 0
-    });
-  }, []);
-  
-  return {
-    detectionStatus,
-    setDetectionStatus,
-    updateDetectionStatus,
-    resetDetectionStatus
-  };
+  return null;
 };
-
-export type { DetectionStatus };
