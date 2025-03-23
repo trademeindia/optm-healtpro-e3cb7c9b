@@ -11,6 +11,7 @@ import {
   MotionState, 
   MotionStats 
 } from '@/components/exercises/posture-monitor/types';
+import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './utils/statsUtils';
 
 // Utility functions for detection and feedback
 const performDetection = async (video: HTMLVideoElement) => {
@@ -91,37 +92,6 @@ const evaluateRepQuality = (angles: BodyAngles) => {
   };
 };
 
-const getInitialStats = (): MotionStats => ({
-  totalReps: 0,
-  goodReps: 0,
-  badReps: 0,
-  accuracy: 0
-});
-
-const updateStatsForGoodRep = (prev: MotionStats): MotionStats => {
-  const totalReps = prev.totalReps + 1;
-  const goodReps = prev.goodReps + 1;
-  
-  return {
-    totalReps,
-    goodReps,
-    badReps: prev.badReps,
-    accuracy: Math.round((goodReps / totalReps) * 100)
-  };
-};
-
-const updateStatsForBadRep = (prev: MotionStats): MotionStats => {
-  const totalReps = prev.totalReps + 1;
-  const badReps = prev.badReps + 1;
-  
-  return {
-    totalReps,
-    goodReps: prev.goodReps,
-    badReps,
-    accuracy: Math.round((prev.goodReps / totalReps) * 100)
-  };
-};
-
 // Mock functions for session management
 const createSession = async (exerciseType: string) => {
   console.log('Creating session for:', exerciseType);
@@ -152,23 +122,9 @@ const completeSession = (
   // In a real implementation, this would update the session status
 };
 
-interface UseHumanDetectionProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  exerciseType: string;
-  sessionId?: string;
-  onSessionStart?: (sessionId: string) => void;
-  videoReady: boolean;
-}
-
 export { MotionState, FeedbackType } from '@/components/exercises/posture-monitor/types';
 
-export const useHumanDetection = ({
-  videoRef,
-  exerciseType,
-  sessionId: providedSessionId,
-  onSessionStart,
-  videoReady
-}: UseHumanDetectionProps) => {
+export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, canvasRef: React.RefObject<HTMLCanvasElement>) => {
   // Detection state
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionFps, setDetectionFps] = useState<number | null>(null);
@@ -197,14 +153,15 @@ export const useHumanDetection = ({
   const [stats, setStats] = useState<MotionStats>(getInitialStats());
   
   // Session tracking
-  const [sessionId, setSessionId] = useState<string | undefined>(providedSessionId);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   
   // Detection loop references
   const requestRef = useRef<number>();
   const lastFrameTime = useRef<number>(0);
   const frameCount = useRef<number>(0);
   const lastFpsUpdateTime = useRef<number>(0);
-  
+  const exerciseType = useRef<string>("squat");
+
   // Ensure model is loaded
   useEffect(() => {
     const loadModel = async () => {
@@ -235,24 +192,20 @@ export const useHumanDetection = ({
   useEffect(() => {
     const initSession = async () => {
       if (!sessionId && isModelLoaded) {
-        const newSessionId = await createSession(exerciseType);
+        const newSessionId = await createSession(exerciseType.current);
         
         if (newSessionId) {
           setSessionId(newSessionId);
-          
-          if (onSessionStart) {
-            onSessionStart(newSessionId);
-          }
         }
       }
     };
     
     initSession();
-  }, [exerciseType, isModelLoaded, onSessionStart, sessionId]);
+  }, [isModelLoaded, sessionId]);
   
   // Human.js detection loop
   const detectFrame = useCallback(async (time: number) => {
-    if (!videoRef.current || !isModelLoaded || !videoReady) {
+    if (!videoRef.current || !isModelLoaded) {
       requestRef.current = requestAnimationFrame(detectFrame);
       return;
     }
@@ -312,14 +265,14 @@ export const useHumanDetection = ({
             setStats(prev => updateStatsForBadRep(prev));
           }
           
-          // Save data to Supabase after completing a rep
+          // Save data to database after completing a rep
           await saveDetectionData(
             sessionId, 
             detectionResult, 
             extractedAngles, 
             extractedBiomarkers, 
             newMotionState, 
-            exerciseType, 
+            exerciseType.current, 
             stats
           );
         }
@@ -344,33 +297,29 @@ export const useHumanDetection = ({
   }, [
     videoRef, 
     isModelLoaded, 
-    videoReady, 
     currentMotionState, 
     prevMotionState,
-    exerciseType,
     sessionId,
     stats
   ]);
-  
-  // Start/stop detection loop
-  useEffect(() => {
-    if (isModelLoaded && videoReady) {
+
+  // Start detection
+  const startDetection = useCallback(() => {
+    if (!isDetecting && isModelLoaded) {
       requestRef.current = requestAnimationFrame(detectFrame);
-      
-      return () => {
-        if (requestRef.current) {
-          cancelAnimationFrame(requestRef.current);
-        }
-      };
+      setIsDetecting(true);
+      console.log('Starting detection loop');
     }
-  }, [isModelLoaded, videoReady, detectFrame]);
-  
-  // Complete session when component unmounts
-  useEffect(() => {
-    return () => {
-      completeSession(sessionId, stats, biomarkers);
-    };
-  }, [sessionId, stats, biomarkers]);
+  }, [detectFrame, isDetecting, isModelLoaded]);
+
+  // Stop detection
+  const stopDetection = useCallback(() => {
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      setIsDetecting(false);
+      console.log('Stopping detection loop');
+    }
+  }, []);
   
   // Reset session
   const resetSession = useCallback(() => {
@@ -396,9 +345,11 @@ export const useHumanDetection = ({
     
     // Motion analysis
     result,
+    detectionResult: result,
     angles,
     biomarkers,
     currentMotionState,
+    motionState: currentMotionState,
     feedback,
     
     // Session data
@@ -406,6 +357,8 @@ export const useHumanDetection = ({
     sessionId,
     
     // Actions
+    startDetection,
+    stopDetection,
     resetSession
   };
 };

@@ -61,7 +61,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
       stopCamera();
       stopDetection();
     };
-  }, []);
+  }, [stopDetection]);
 
   // Handle camera activation
   const startCamera = async () => {

@@ -14,7 +14,6 @@ export const humanConfig: Human.Config = {
   cacheSensitivity: 0.7,
   skipAllowed: false,
   deallocate: false,
-  hint: {},
   
   // Filter configuration
   filter: { 
