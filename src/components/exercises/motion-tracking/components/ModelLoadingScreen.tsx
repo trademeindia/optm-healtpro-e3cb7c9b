@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { getModelLoadProgress } from '@/lib/human';
@@ -21,6 +21,7 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('Initializing AI models...');
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [networkStatus, setNetworkStatus] = useState<'checking' | 'good' | 'slow' | 'offline'>('checking');
 
   // Update progress periodically
   useEffect(() => {
@@ -29,6 +30,11 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
     // Track elapsed time for better user feedback
     const timeTracker = setInterval(() => {
       setElapsedTime(prev => prev + 1);
+      
+      // Check network status after a few seconds
+      if (prev === 3) {
+        checkNetworkStatus();
+      }
     }, 1000);
 
     // Use external progress if provided, otherwise poll for it
@@ -65,8 +71,52 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
     return () => clearInterval(timeTracker);
   }, [isModelLoading, externalProgress]);
 
+  // Check network status
+  const checkNetworkStatus = async () => {
+    try {
+      const start = Date.now();
+      const response = await fetch('https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/models/blazepose.json', { 
+        method: 'HEAD',
+        cache: 'no-store'
+      });
+      const duration = Date.now() - start;
+      
+      if (!response.ok) {
+        console.error('Model file not accessible:', response.status);
+        setNetworkStatus('offline');
+        return;
+      }
+      
+      // Check response time
+      if (duration > 1000) {
+        setNetworkStatus('slow');
+      } else {
+        setNetworkStatus('good');
+      }
+      
+      console.log(`Network check: ${duration}ms, status: ${response.status}`);
+    } catch (error) {
+      console.error('Network check failed:', error);
+      setNetworkStatus('offline');
+    }
+  };
+
   // Add a "taking longer than expected" message after 15 seconds
   const showExtendedMessage = elapsedTime > 15;
+
+  // Show network status message
+  const getNetworkMessage = () => {
+    switch (networkStatus) {
+      case 'good':
+        return "Network connection is good";
+      case 'slow':
+        return "Network connection is slow, loading may take longer";
+      case 'offline':
+        return "Network connection issue detected. Check your internet connection";
+      default:
+        return "Checking network status...";
+    }
+  };
 
   // If there's an error, show error screen
   if (loadError) {
@@ -79,9 +129,15 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
         <p className="text-sm text-center text-muted-foreground max-w-md">
           {loadError}
         </p>
-        <p className="text-sm text-center text-muted-foreground max-w-md">
-          This could be due to a slow connection, incompatible browser, or limited device capabilities.
-        </p>
+        <div className="bg-background/80 p-4 rounded-md mt-2 text-sm max-w-md">
+          <p className="font-medium mb-2">Troubleshooting tips:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Check your internet connection</li>
+            <li>Try using Chrome or Edge for best compatibility</li>
+            <li>Disable any browser extensions that might be blocking resources</li>
+            <li>If on mobile, try a desktop browser instead</li>
+          </ul>
+        </div>
         <Button variant="outline" onClick={onRetry} className="mt-4 flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
           Try Again
@@ -109,6 +165,16 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
           <p className="text-xs text-amber-500 mt-2">
             Loading is taking longer than expected. Please be patient...
           </p>
+        )}
+        
+        {elapsedTime > 3 && (
+          <div className="mt-2 text-xs flex items-center gap-1.5 justify-center">
+            <Info className="h-3 w-3" />
+            <span className={networkStatus === 'offline' ? 'text-destructive' : 
+                           networkStatus === 'slow' ? 'text-amber-500' : 'text-muted-foreground'}>
+              {getNetworkMessage()}
+            </span>
+          </div>
         )}
       </div>
       

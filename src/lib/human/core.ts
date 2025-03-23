@@ -16,14 +16,15 @@ export const initHuman = () => {
       human.config.segmentation.enabled = false;
     }
     
-    // Make sure we're using the lite model for better performance
+    // Make sure we're using the correct model for better compatibility
     if (human.config.body) {
-      human.config.body.modelPath = 'blazepose-lite.json';
-      human.config.body.skipFrames = 5; // Increase frame skipping for better performance
+      human.config.body.modelPath = 'blazepose.json';
+      human.config.body.skipFrames = 2; // Balance between performance and smoothness
     }
     
     // Log the model path being used
     console.log('Using body model path:', human.config.body.modelPath);
+    console.log('Using model base path:', human.config.modelBasePath);
     
     return true;
   } catch (error) {
@@ -61,6 +62,10 @@ export const warmupModel = async (): Promise<boolean> => {
     
     // Check for segmentation issue
     checkForSegmentationIssue();
+
+    // Log important paths before loading
+    console.log('Model base path:', human.config.modelBasePath);
+    console.log('Body model path:', human.config.body.modelPath);
     
     // Load only what we need to reduce memory usage and speed up loading
     const modelLoaded = await human.load();
@@ -121,15 +126,21 @@ export const warmupModel = async (): Promise<boolean> => {
     // Handle segmentation error specifically
     if (error instanceof Error && 
         (error.message.includes('activation_segmentation') || 
-         error.message.includes('not found in the graph'))) {
-      console.warn('Segmentation error during warm-up, resetting model with segmentation disabled');
+         error.message.includes('not found in the graph') ||
+         error.message.includes('404'))) {
+      console.warn('Error during warm-up, trying again with different model configuration');
       
-      // Reset and try again with segmentation explicitly disabled
+      // Reset and try again with explicitly different model path
       await resetModel();
-      human.config.segmentation = { enabled: false };
+      
+      // Try with a different model path
+      human.config.modelBasePath = 'https://cdn.jsdelivr.net/npm/@vladmandic/human@latest/dist/models/';
+      human.config.body.modelPath = 'blazepose.json';
       
       // Try once more
       try {
+        console.log('Retrying with updated model path:', 
+                    human.config.modelBasePath + human.config.body.modelPath);
         const result = await human.load();
         return Boolean(result);
       } catch (secondError) {

@@ -23,6 +23,48 @@ const resetTrackingVars = () => {
 };
 
 /**
+ * Validate model exists at the expected path
+ */
+const validateModelPath = async (): Promise<boolean> => {
+  try {
+    // Check if model file is accessible
+    const modelUrl = `${humanConfig.modelBasePath}${humanConfig.body.modelPath}`;
+    console.log('Validating model path:', modelUrl);
+    
+    const response = await fetch(modelUrl, { method: 'HEAD', cache: 'no-store' });
+    
+    if (!response.ok) {
+      console.error(`Model file not found: ${modelUrl} (Status: ${response.status})`);
+      return false;
+    }
+    
+    console.log('Model file accessible:', modelUrl);
+    return true;
+  } catch (error) {
+    console.error('Error validating model path:', error);
+    return false;
+  }
+};
+
+/**
+ * Get an alternative model path if the primary one fails
+ */
+const getAlternativeModelPath = (attempt: number): { basePath: string, modelPath: string } => {
+  // Try different CDN paths and model versions based on the attempt number
+  if (attempt === 1) {
+    return {
+      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@latest/dist/models/',
+      modelPath: 'blazepose.json'
+    };
+  } else {
+    return {
+      basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.0.0/dist/models/',
+      modelPath: 'blazepose.json'
+    };
+  }
+};
+
+/**
  * Warm up the model to ensure it's ready for detection
  */
 export const warmupModel = async () => {
@@ -35,12 +77,20 @@ export const warmupModel = async () => {
       human.config.segmentation.enabled = false;
     }
     
-    // Ensure correct model path
-    if (human.config.body) {
-      human.config.body.modelPath = 'blazepose-lite.json';
+    // Validate original model path
+    const isValidPath = await validateModelPath();
+    
+    if (!isValidPath) {
+      console.warn('Original model path not valid, trying alternative paths');
+      // Try alternative model path
+      const altPath = getAlternativeModelPath(loadAttempts);
+      human.config.modelBasePath = altPath.basePath;
+      human.config.body.modelPath = altPath.modelPath;
+      
+      console.log('Using alternative model path:', 
+                 human.config.modelBasePath + human.config.body.modelPath);
     }
     
-    // Load the model
     modelLoadProgress = 30;
     
     // Check tensor count before loading
@@ -52,7 +102,7 @@ export const warmupModel = async () => {
     
     // Add a timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Model load timeout')), 15000);
+      setTimeout(() => reject(new Error('Model load timeout')), 20000); // Increased timeout
     });
     
     // Race the model load against the timeout
@@ -83,16 +133,44 @@ export const warmupModel = async () => {
     const modelsLoaded = human.models && Object.keys(human.models).length > 0;
     console.log('Human.js models loaded:', modelsLoaded);
     
+    // If models not loaded, verify by trying a simple detection
+    if (!modelsLoaded) {
+      console.warn('Models object empty, verifying by running detection');
+      
+      // Create a dummy canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Try detection on dummy image
+        try {
+          const result = await human.detect(canvas);
+          console.log('Test detection result:', result ? 'Success' : 'Failed');
+        } catch (e) {
+          console.error('Test detection failed:', e);
+          throw new Error('Model verification failed');
+        }
+      }
+    }
+    
     modelLoadProgress = 100;
     loadAttempts = 0;
     
-    return Boolean(loaded) && modelsLoaded;
+    return Boolean(loaded) && (modelsLoaded || Boolean(loaded));
   } catch (error) {
     console.error('Error warming up model:', error);
     loadAttempts++;
     
     if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
       resetTrackingVars();
+      throw error;
+    } else {
+      // Try again with a different model path on next attempt
+      console.log(`Model load attempt ${loadAttempts} failed, will try different path next`);
     }
     
     // Clean up after error
