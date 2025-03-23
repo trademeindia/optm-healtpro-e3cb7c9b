@@ -96,11 +96,18 @@ export interface BundleSize {
   assets: number;
 }
 
+export interface TimeSeriesDataPoint {
+  timestamp: string;
+  value: number;
+}
+
 export interface ResourceUsage {
   cpu: number;
   memory: number;
   disk: number;
-  [key: string]: any;
+  cpuHistory: TimeSeriesDataPoint[];
+  memoryHistory: TimeSeriesDataPoint[];
+  diskHistory: TimeSeriesDataPoint[];
 }
 
 export interface PerformanceMetrics {

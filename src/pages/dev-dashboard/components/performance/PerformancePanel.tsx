@@ -66,9 +66,9 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({
         transition={{ duration: 0.3, delay: 0.3 }}
       >
         <ResourceUsageChart 
-          cpuUsage={metrics.resourceUsage.cpu}
-          memoryUsage={metrics.resourceUsage.memory}
-          diskUsage={metrics.resourceUsage.disk}
+          cpuUsage={metrics.resourceUsage.cpuHistory}
+          memoryUsage={metrics.resourceUsage.memoryHistory}
+          diskUsage={metrics.resourceUsage.diskHistory}
         />
       </motion.div>
     </div>
