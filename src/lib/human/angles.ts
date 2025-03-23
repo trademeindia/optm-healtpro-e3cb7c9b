@@ -1,6 +1,6 @@
 
 import * as Human from '@vladmandic/human';
-import { BodyAngles } from '../components/exercises/posture-monitor/types';
+import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
 /**
  * Calculate the angle between three points in 2D space
