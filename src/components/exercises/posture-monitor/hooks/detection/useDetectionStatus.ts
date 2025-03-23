@@ -1,17 +1,16 @@
 
-import { useState, useRef, useCallback } from 'react';
-import type { DetectionStatus } from './useDetectionStatusHandler';
+import { useRef, useCallback } from 'react';
+import { useDetectionStatusHandler } from './useDetectionStatusHandler';
+import type { DetectionStatus } from './types';
 
-export { type DetectionStatus } from './useDetectionStatusHandler';
+export { type DetectionStatus } from './types';
 
 export const useDetectionStatus = () => {
-  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
-    isDetecting: false,
-    fps: null,
-    confidence: null,
-    detectedKeypoints: 0,
-    lastDetectionTime: 0
-  });
+  const {
+    detectionStatus,
+    setDetectionStatus,
+    updateDetectionStatus
+  } = useDetectionStatusHandler();
   
   // Track frame times for FPS calculation
   const fpsTracker = useRef({
@@ -38,16 +37,17 @@ export const useDetectionStatus = () => {
       
       // Only update FPS value if we have meaningful data
       if (fps > 0) {
-        setDetectionStatus(prev => ({ ...prev, fps }));
+        updateDetectionStatus({ fps });
       }
       
       fpsTracker.current.lastFpsUpdate = now;
     }
-  }, []);
+  }, [updateDetectionStatus]);
   
   return {
     detectionStatus,
     setDetectionStatus,
-    updateFpsStats
+    updateFpsStats,
+    updateDetectionStatus
   };
 };

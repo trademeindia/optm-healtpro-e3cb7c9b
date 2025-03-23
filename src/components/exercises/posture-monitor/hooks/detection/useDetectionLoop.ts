@@ -1,6 +1,7 @@
+
 import { useRef, useCallback, useEffect } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
-import { UsePoseDetectionLoopProps } from './types';
+import { UsePoseDetectionLoopProps, DetectionStateRef } from './types';
 import { useDetectionFailureHandler } from './useDetectionFailureHandler';
 import { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
 import { useDetectionStatus } from './useDetectionStatus';
@@ -19,19 +20,24 @@ export const useDetectionLoop = ({
 }: UsePoseDetectionLoopProps) => {
   const requestAnimationRef = useRef<number | null>(null);
   const isDetectingRef = useRef(false);
+  const detectionStateRef = useRef<DetectionStateRef>({
+    lastDetectionTime: 0,
+    detectionFailureCount: 0,
+    consecutiveFailures: 0
+  });
   
   const {
     detectionStatus,
     setDetectionStatus,
-    updateFpsStats
+    updateFpsStats,
+    updateDetectionStatus
   } = useDetectionStatus();
   
   const {
-    detectionStateRef,
     handleDetectionFailure,
     resetFailureCounter,
     updateDetectionTime
-  } = useDetectionFailureHandler(setFeedback);
+  } = useDetectionFailureHandler(setFeedback, detectionStateRef);
   
   const { calculateFrameDelay } = useAdaptiveFrameRate();
   
@@ -43,13 +49,12 @@ export const useDetectionLoop = ({
     
     const visibleKeypoints = detectedPose.keypoints.filter(kp => kp.score > config.minPartConfidence).length;
     
-    setDetectionStatus(prevStatus => ({
-      ...prevStatus,
+    updateDetectionStatus({
       isDetecting: true,
       confidence: detectedPose.score,
       detectedKeypoints: visibleKeypoints,
       lastDetectionTime: performance.now()
-    }));
+    });
     
     resetFailureCounter();
     
@@ -61,7 +66,7 @@ export const useDetectionLoop = ({
     detectionStateRef, 
     updateDetectionTime, 
     config, 
-    setDetectionStatus, 
+    updateDetectionStatus, 
     resetFailureCounter, 
     onPoseDetected
   ]);
@@ -83,10 +88,7 @@ export const useDetectionLoop = ({
       if (!videoRef.current) console.log("Cannot detect pose: missing video element");
       if (!cameraActive) console.log("Cannot detect pose: camera inactive");
       
-      setDetectionStatus(prevStatus => ({
-        ...prevStatus,
-        isDetecting: false
-      }));
+      updateDetectionStatus({ isDetecting: false });
       
       requestAnimationRef.current = requestAnimationFrame(detectPose);
       return;
@@ -94,10 +96,7 @@ export const useDetectionLoop = ({
     
     try {
       if (!isVideoReady()) {
-        setDetectionStatus(prevStatus => ({
-          ...prevStatus,
-          isDetecting: false
-        }));
+        updateDetectionStatus({ isDetecting: false });
         
         requestAnimationRef.current = requestAnimationFrame(detectPose);
         return;
@@ -106,10 +105,7 @@ export const useDetectionLoop = ({
       isDetectingRef.current = true;
       await estimatePose();
     } catch (error) {
-      setDetectionStatus(prevStatus => ({
-        ...prevStatus,
-        isDetecting: false
-      }));
+      updateDetectionStatus({ isDetecting: false });
     } finally {
       isDetectingRef.current = false;
     }
@@ -124,7 +120,7 @@ export const useDetectionLoop = ({
     videoRef, 
     isVideoReady, 
     estimatePose,
-    setDetectionStatus,
+    updateDetectionStatus,
     calculateFrameDelay,
     detectionStateRef
   ]);
@@ -149,18 +145,12 @@ export const useDetectionLoop = ({
           requestAnimationRef.current = null;
         }
         
-        setDetectionStatus(prevStatus => ({
-          ...prevStatus,
-          isDetecting: false
-        }));
+        updateDetectionStatus({ isDetecting: false });
       };
     } else {
-      setDetectionStatus(prevStatus => ({
-        ...prevStatus,
-        isDetecting: false
-      }));
+      updateDetectionStatus({ isDetecting: false });
     }
-  }, [cameraActive, model, detectPose, setDetectionStatus]);
+  }, [cameraActive, model, detectPose, updateDetectionStatus]);
   
   useEffect(() => {
     return () => {

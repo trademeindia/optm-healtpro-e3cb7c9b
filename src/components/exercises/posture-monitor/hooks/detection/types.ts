@@ -27,3 +27,14 @@ export interface DetectionStatus {
   detectedKeypoints: number;
   lastDetectionTime: number;
 }
+
+export interface DetectionStateRef {
+  lastDetectionTime: number;
+  detectionFailureCount: number;
+  consecutiveFailures: number;
+}
+
+export interface CustomFeedback {
+  message: string | null;
+  type: FeedbackType;
+}

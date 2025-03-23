@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
 import { PoseDetectionConfig } from './poseDetectionTypes';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface UsePoseModelResult {
   model: posenet.PoseNet | null;

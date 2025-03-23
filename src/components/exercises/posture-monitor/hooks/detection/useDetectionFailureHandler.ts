@@ -1,55 +1,49 @@
 
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { FeedbackType } from '../../types';
-
-interface DetectionState {
-  failedDetections: number;
-  consecutiveFailures: number;
-  lastDetectionTime: number;
-}
+import { DetectionStateRef } from './types';
 
 export const useDetectionFailureHandler = (
-  setFeedback: (message: string, type: FeedbackType) => void
+  setFeedback: (message: string, type: FeedbackType) => void,
+  detectionStateRef: React.MutableRefObject<DetectionStateRef>
 ) => {
-  const detectionStateRef = useRef<DetectionState>({
-    failedDetections: 0,
-    consecutiveFailures: 0,
-    lastDetectionTime: 0
-  });
-  
+  // Handle detection failures
   const handleDetectionFailure = useCallback((error: any) => {
-    detectionStateRef.current.failedDetections++;
+    detectionStateRef.current.detectionFailureCount++;
     detectionStateRef.current.consecutiveFailures++;
     
-    // Log error but don't overwhelm the console
-    if (detectionStateRef.current.consecutiveFailures <= 3 || detectionStateRef.current.consecutiveFailures % 10 === 0) {
-      console.error('Pose detection error:', error);
-    }
+    console.warn(`Pose detection failure #${detectionStateRef.current.consecutiveFailures}:`, error);
     
-    // Only show feedback for persistent failures
+    // After multiple consecutive failures, provide feedback to the user
     if (detectionStateRef.current.consecutiveFailures === 5) {
       setFeedback(
-        "Having trouble detecting your pose. Make sure your whole body is visible.",
+        "Having trouble detecting your pose. Please ensure you're fully visible in the camera.",
         FeedbackType.WARNING
       );
-    } else if (detectionStateRef.current.consecutiveFailures === 20) {
+    } else if (detectionStateRef.current.consecutiveFailures === 10) {
       setFeedback(
-        "Detection issues persist. Try adjusting lighting or camera position.",
+        "Pose detection is challenging. Try standing further from the camera or improving lighting.",
+        FeedbackType.WARNING
+      );
+    } else if (detectionStateRef.current.consecutiveFailures >= 20) {
+      setFeedback(
+        "Cannot detect your pose. Please check your camera or try in a different location.",
         FeedbackType.WARNING
       );
     }
-  }, [setFeedback]);
+  }, [setFeedback, detectionStateRef]);
   
+  // Reset failure counter on successful detections
   const resetFailureCounter = useCallback(() => {
     detectionStateRef.current.consecutiveFailures = 0;
-  }, []);
+  }, [detectionStateRef]);
   
+  // Update last detection time
   const updateDetectionTime = useCallback(() => {
     detectionStateRef.current.lastDetectionTime = performance.now();
-  }, []);
+  }, [detectionStateRef]);
   
   return {
-    detectionStateRef,
     handleDetectionFailure,
     resetFailureCounter,
     updateDetectionTime
