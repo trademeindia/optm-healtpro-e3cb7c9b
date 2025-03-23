@@ -1,4 +1,3 @@
-
 import { MotionStats } from '../../posture-monitor/types';
 
 /**

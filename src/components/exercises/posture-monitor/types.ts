@@ -22,6 +22,15 @@ export enum SquatState {
   ASCENDING = 'ASCENDING'
 }
 
+// Detection status for monitoring detection performance
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
+  detectedKeypoints: number;
+  lastDetectionTime: number;
+}
+
 // Posture check result
 export interface PostureCheckResult {
   isGoodPosture: boolean;
@@ -34,6 +43,9 @@ export interface MotionStats {
   goodReps: number;
   badReps: number;
   accuracy: number;
+  currentStreak: number;
+  bestStreak: number;
+  lastUpdated?: number;
 }
 
 // Body angle measurements
