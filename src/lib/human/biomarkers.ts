@@ -3,7 +3,7 @@ import * as Human from '@vladmandic/human';
 import { EnhancedResult } from './types';
 
 // Additional biomarkers extracted from pose data
-export const extractBiomarkers = (result: Human.Result, angles: any): Record<string, any> => {
+export const extractBiomarkers = (result: EnhancedResult, angles: any): Record<string, any> => {
   const biomarkers: Record<string, any> = {};
   
   if (!result.body || result.body.length === 0) {
@@ -28,7 +28,7 @@ export const extractBiomarkers = (result: Human.Result, angles: any): Record<str
     if (leftShoulder && rightShoulder) {
       const shoulderHeightDifference = Math.abs(leftShoulder.y - rightShoulder.y);
       // Use canvas dimensions as a fallback if result.source is not available
-      const heightNormalizer = (result as EnhancedResult).source?.height || 480;
+      const heightNormalizer = result.source?.height || 480;
       const shoulderHeightNormalized = shoulderHeightDifference / heightNormalizer;
       const shoulderSymmetryScore = 100 - (shoulderHeightNormalized * 1000);
       biomarkers.shoulderSymmetry = Math.max(0, Math.min(100, shoulderSymmetryScore));
@@ -47,7 +47,7 @@ export const extractBiomarkers = (result: Human.Result, angles: any): Record<str
       const hipsY = (leftHip.y + rightHip.y) / 2;
       
       // Use canvas dimensions as a fallback if result.source is not available
-      const widthNormalizer = (result as EnhancedResult).source?.width || 640;
+      const widthNormalizer = result.source?.width || 640;
       const horizontalDeviation = Math.abs(nose.x - hipsX) / widthNormalizer;
       const balanceScore = 100 - (horizontalDeviation * 200);
       biomarkers.balanceScore = Math.max(0, Math.min(100, balanceScore));

@@ -24,5 +24,4 @@ export const humanConfig: Partial<Human.Config> = {
   backend: 'webgl',
   cacheSensitivity: 0,
   deallocate: true,
-  // Remove the 'profile' property as it doesn't exist in Config type
 };
