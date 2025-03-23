@@ -12,8 +12,10 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ onRetry, error }) => {
   // Extract helpful error message
   let errorMessage = "We encountered a problem loading your dashboard";
   if (error) {
-    if (error.message.includes('Failed to fetch dynamically imported module')) {
-      errorMessage = "Failed to load required dashboard components. This might be due to network issues or a temporary problem.";
+    if (error.message.includes('Failed to fetch dynamically imported module') || 
+        error.message.includes('ChunkLoadError') || 
+        error.message.includes('Loading chunk')) {
+      errorMessage = "Failed to load required dashboard components. This might be due to network issues or a cached version of the application.";
     } else if (error.message) {
       errorMessage = error.message;
     }
@@ -21,6 +23,23 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ onRetry, error }) => {
 
   const handleGoHome = () => {
     window.location.href = '/';
+  };
+
+  const handleClearCache = () => {
+    // Clear application cache and reload
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    
+    // Clear local storage items related to app state
+    localStorage.removeItem('lastRoute');
+    
+    // Perform a hard reload
+    window.location.reload(true);
   };
 
   return (
@@ -37,6 +56,9 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ onRetry, error }) => {
           <Button variant="outline" onClick={handleGoHome}>
             <Home className="mr-2 h-4 w-4" />
             Go Home
+          </Button>
+          <Button variant="secondary" onClick={handleClearCache} className="mt-2 sm:mt-0">
+            Clear Cache & Reload
           </Button>
         </div>
       </div>

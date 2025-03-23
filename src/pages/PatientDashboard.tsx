@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SymptomProvider } from '@/contexts/SymptomContext';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { Appointment, AppointmentWithProvider } from '@/types/appointments';
+import { AppointmentWithProvider } from '@/types/appointments';
 import DashboardHeader from '@/components/patient-dashboard/dashboard/DashboardHeader';
 import DashboardContent from '@/components/patient-dashboard/dashboard/DashboardContent';
 import DashboardLoading from '@/components/patient-dashboard/dashboard/DashboardLoading';
@@ -32,6 +32,7 @@ const defaultFitnessData = {
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const [hasError, setHasError] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   
   const {
@@ -71,6 +72,7 @@ const PatientDashboard: React.FC = () => {
     if (error) {
       console.error("Dashboard error detected:", error);
       setHasError(true);
+      setErrorDetails(error);
     }
   }, [error]);
 
@@ -78,7 +80,25 @@ const PatientDashboard: React.FC = () => {
     // Log when dashboard is mounted to debug
     console.log("PatientDashboard mounted, user:", user?.id);
     
+    // Handle potential dynamic import errors
+    const handleError = (event: ErrorEvent) => {
+      if (
+        event.error && 
+        (event.error.message.includes('Failed to fetch dynamically imported module') || 
+         event.error.message.includes('ChunkLoadError') ||
+         event.error.message.includes('Loading chunk'))
+      ) {
+        console.error("Caught dynamic import error:", event.error);
+        setHasError(true);
+        setErrorDetails(event.error);
+      }
+    };
+
+    // Add global error handler
+    window.addEventListener('error', handleError);
+    
     return () => {
+      window.removeEventListener('error', handleError);
       console.log("PatientDashboard unmounted");
     };
   }, [user]);
@@ -86,7 +106,10 @@ const PatientDashboard: React.FC = () => {
   const handleRetry = () => {
     console.log("Retrying dashboard load...");
     setHasError(false);
+    setErrorDetails(null);
     setRetryCount(prev => prev + 1);
+    
+    // Perform a soft reload
     window.location.reload();
   };
 
@@ -97,7 +120,7 @@ const PatientDashboard: React.FC = () => {
   }
 
   if (hasError) {
-    return <DashboardError onRetry={handleRetry} />;
+    return <DashboardError onRetry={handleRetry} error={errorDetails} />;
   }
 
   return (
@@ -114,6 +137,7 @@ const PatientDashboard: React.FC = () => {
             onError={(error) => {
               console.error("Error boundary caught in PatientDashboard:", error);
               setHasError(true);
+              setErrorDetails(error);
             }}
           >
             <SymptomProvider>

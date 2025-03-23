@@ -28,14 +28,25 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     
-    // Check if it's a chunk loading error
-    const isChunkLoadError = 
+    // Check if it's a chunk loading error or dynamic import error
+    const isLoadingError = 
       error.message.includes('Failed to fetch dynamically imported module') ||
       error.message.includes('Loading chunk') ||
-      error.message.includes('Loading CSS chunk');
+      error.message.includes('Loading CSS chunk') ||
+      error.message.includes('ChunkLoadError');
     
-    if (isChunkLoadError) {
-      console.warn('Detected chunk loading error, attempting to recover...');
+    if (isLoadingError) {
+      console.warn('Detected module loading error, attempting to recover...');
+      
+      // Clear the application cache if browser supports it
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.delete(cacheName);
+            console.log(`Cache ${cacheName} deleted`);
+          });
+        });
+      }
     }
     
     if (this.props.onError) {
@@ -45,7 +56,35 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   handleRefresh = () => {
     console.log('Refreshing the page to recover from error');
-    window.location.reload();
+    
+    // Clear any potentially problematic state storage
+    sessionStorage.removeItem('lastRoute');
+    localStorage.removeItem('lastPath');
+    
+    // Hard reload the page to ensure fresh assets
+    window.location.reload(true);
+  }
+
+  handleClearCache = () => {
+    console.log('Clearing cache and reloading the page');
+    
+    // Clear application cache
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach(name => {
+          caches.delete(name).then(() => {
+            console.log(`Cache ${name} deleted`);
+          });
+        });
+      });
+    }
+    
+    // Clear local storage and session storage items
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Force reload from server, not from cache
+    window.location.reload(true);
   }
 
   handleReturn = () => {
@@ -62,9 +101,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
       // Extract helpful error message
       let errorMessage = "An unexpected error occurred";
+      let isChunkError = false;
+      
       if (this.state.error) {
-        if (this.state.error.message.includes('Failed to fetch dynamically imported module')) {
-          errorMessage = "Failed to load required module. This might be due to network issues or a temporary problem.";
+        isChunkError = this.state.error.message.includes('Failed to fetch dynamically imported module') || 
+                      this.state.error.message.includes('ChunkLoadError') ||
+                      this.state.error.message.includes('Loading chunk');
+        
+        if (isChunkError) {
+          errorMessage = "Failed to load required module. This might be due to network issues or a cached version of the application.";
         } else {
           errorMessage = this.state.error.message;
         }
@@ -86,6 +131,17 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               >
                 Try Again
               </Button>
+              
+              {isChunkError && (
+                <Button 
+                  variant="secondary"
+                  onClick={this.handleClearCache}
+                  className="mb-2 sm:mb-0"
+                >
+                  Clear Cache & Reload
+                </Button>
+              )}
+              
               <Button 
                 variant="outline"
                 onClick={this.handleReturn}

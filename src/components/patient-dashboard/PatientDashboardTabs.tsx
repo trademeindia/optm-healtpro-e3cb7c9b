@@ -7,7 +7,7 @@ import PatientAppointments from './PatientAppointments';
 import SecureMessaging from './SecureMessaging';
 import { useDoctors } from '@/hooks/patient-dashboard/useDoctors';
 import { useAppointments } from '@/hooks/dashboard/useAppointments';
-import { Appointment, AppointmentWithProvider } from '@/types/appointments';
+import { AppointmentWithProvider } from '@/types/appointments';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface PatientDashboardTabsProps {
