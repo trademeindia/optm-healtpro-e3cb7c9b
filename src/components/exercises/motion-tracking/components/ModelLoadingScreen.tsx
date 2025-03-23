@@ -3,18 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { getModelLoadProgress } from '@/lib/human/core';
+import { getModelLoadProgress } from '@/lib/human';
 
 interface ModelLoadingScreenProps {
   isModelLoading: boolean;
   loadError: string | null;
   onRetry: () => void;
+  loadProgress?: number;
 }
 
 const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
   isModelLoading,
   loadError,
-  onRetry
+  onRetry,
+  loadProgress: externalProgress
 }) => {
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('Initializing AI models...');
@@ -23,29 +25,34 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
   useEffect(() => {
     if (!isModelLoading) return;
 
-    const messages = [
-      'Initializing AI models...',
-      'Loading pose detection model...',
-      'Preparing motion tracking engine...',
-      'Configuring tracking parameters...',
-      'Almost ready...'
-    ];
+    // Use external progress if provided, otherwise poll for it
+    if (typeof externalProgress === 'number') {
+      setProgress(externalProgress);
+    } else {
+      const messages = [
+        'Initializing AI models...',
+        'Loading pose detection model...',
+        'Preparing motion tracking engine...',
+        'Configuring tracking parameters...',
+        'Almost ready...'
+      ];
 
-    // Update progress every 300ms
-    const interval = setInterval(() => {
-      const currentProgress = getModelLoadProgress();
-      setProgress(currentProgress);
-      
-      // Update message based on progress
-      const messageIndex = Math.min(
-        Math.floor(currentProgress / 20),
-        messages.length - 1
-      );
-      setLoadingMessage(messages[messageIndex]);
-    }, 300);
+      // Update progress every 300ms
+      const interval = setInterval(() => {
+        const currentProgress = getModelLoadProgress();
+        setProgress(currentProgress);
+        
+        // Update message based on progress
+        const messageIndex = Math.min(
+          Math.floor(currentProgress / 20),
+          messages.length - 1
+        );
+        setLoadingMessage(messages[messageIndex]);
+      }, 300);
 
-    return () => clearInterval(interval);
-  }, [isModelLoading]);
+      return () => clearInterval(interval);
+    }
+  }, [isModelLoading, externalProgress]);
 
   // If there's an error, show error screen
   if (loadError) {
@@ -59,7 +66,7 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
           {loadError}
         </p>
         <p className="text-sm text-center text-muted-foreground max-w-md">
-          This could be due to a slow connection or incompatible browser.
+          This could be due to a slow connection, incompatible browser, or limited device capabilities.
         </p>
         <Button variant="outline" onClick={onRetry} className="mt-4 flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
@@ -89,7 +96,7 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
         <Progress value={progress} className="h-2" />
       </div>
       
-      {progress < 20 && progress > 0 && (
+      {progress < 20 && (
         <p className="text-xs text-muted-foreground">
           The first load may take 20-30 seconds. It'll be faster next time!
         </p>

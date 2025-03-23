@@ -17,9 +17,13 @@ const emptyAngles = {
   neckAngle: null
 };
 
+// Track detection performance metrics for adaptive frame skipping
+let consecutiveFailures = 0;
+let lastSuccessfulDetection = 0;
+
 /**
  * Performs pose detection on a video frame and returns processed results
- * with improved error handling
+ * with improved error handling and adaptive frame skipping
  */
 export const performDetection = async (
   videoElement: HTMLVideoElement
@@ -50,27 +54,40 @@ export const performDetection = async (
       }
     }
     
-    // Run detection with longer timeout (10 seconds)
+    // Use adaptive timeout based on past performance
+    const timeoutDuration = consecutiveFailures === 0 ? 5000 : 3000; // Shorter timeout after failures
+    
+    // Run detection with appropriate timeout
     const detectionPromise = human.detect(videoElement);
     
-    // Add a longer timeout for initial detections, then reduce for subsequent ones
-    const timeoutDuration = 10000; // 10 seconds
-    
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), timeoutDuration);
-    });
-    
-    // Log more details about the detection process
     console.log(`Starting detection with ${timeoutDuration}ms timeout`);
     if (human.tf) {
       console.log(`Current tensor count: ${human.tf.engine().state.numTensors}`);
     }
     
     // Race the detection against the timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Detection timeout')), timeoutDuration);
+    });
+    
+    // Race the detection against the timeout
     const result = await Promise.race([
       detectionPromise,
       timeoutPromise
     ]) as Human.Result;
+
+    // Clean up tensors after successful detection (regardless of body detection)
+    if (human.tf) {
+      const tensorCount = human.tf.engine().state.numTensors;
+      if (tensorCount > 200) { // Lower threshold for cleanup
+        console.log(`Cleaning up tensors (count: ${tensorCount})`);
+        human.tf.engine().disposeVariables();
+      }
+    }
+
+    // Reset failure tracking on successful API call
+    consecutiveFailures = 0;
+    lastSuccessfulDetection = Date.now();
 
     if (!result || !result.body || result.body.length === 0) {
       console.log('No body detected in frame');
@@ -112,11 +129,14 @@ export const performDetection = async (
   } catch (error) {
     console.error('Error in detection:', error);
     
+    // Track consecutive failures for adaptive performance
+    consecutiveFailures++;
+    
     // Clean up any lingering tensors to prevent memory leaks
     try {
       if (human.tf && human.tf.engine) {
         const tensors = human.tf.engine().state.numTensors;
-        if (tensors > 500) {
+        if (tensors > 100) { // Lower threshold for cleanup on error
           console.warn(`High tensor count: ${tensors}, cleaning up`);
           human.tf.engine().disposeVariables();
         }

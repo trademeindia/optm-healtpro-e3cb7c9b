@@ -1,36 +1,42 @@
 
-// Definition of shared types for posture monitoring
-
-export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
-
-export enum SquatState {
-  STANDING = 'standing',
-  DESCENDING = 'descending',
-  BOTTOM = 'bottom',
-  ASCENDING = 'ascending'
-}
-
+// Enum for motion state
 export enum MotionState {
-  STANDING = 'standing',
-  MID_MOTION = 'mid_motion',
-  FULL_MOTION = 'full_motion'
+  STANDING = 'STANDING',
+  MID_MOTION = 'MID_MOTION',
+  FULL_MOTION = 'FULL_MOTION'
 }
 
+// Enum for feedback type
+export enum FeedbackType {
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR'
+}
+
+// Enum for squat state (legacy)
+export enum SquatState {
+  STANDING = 'STANDING',
+  DESCENDING = 'DESCENDING',
+  BOTTOM = 'BOTTOM',
+  ASCENDING = 'ASCENDING'
+}
+
+// Posture check result
+export interface PostureCheckResult {
+  isGoodPosture: boolean;
+  message: string;
+}
+
+// Motion stats
 export interface MotionStats {
   totalReps: number;
   goodReps: number;
   badReps: number;
   accuracy: number;
-  currentStreak: number;
-  bestStreak: number;
-  lastUpdated?: number;
 }
 
+// Body angle measurements
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;
@@ -40,14 +46,7 @@ export interface BodyAngles {
   neckAngle: number | null;
 }
 
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number;
-  confidence: number | null;
-  detectedKeypoints?: number;
-  lastDetectionTime?: number;
-}
-
+// Feedback message
 export interface FeedbackMessage {
   message: string | null;
   type: FeedbackType;

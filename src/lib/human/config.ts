@@ -36,9 +36,9 @@ export const humanConfig: Human.Config = {
   },
   body: { 
     enabled: true,
-    modelPath: 'blazepose.json',
+    modelPath: 'blazepose-lite.json', // Use lite model for better performance
     minConfidence: 0.2,
-    skipFrames: 1, // Skip every other frame to improve performance
+    skipFrames: 2, // Skip more frames to improve performance
     maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 
@@ -51,6 +51,6 @@ export const humanConfig: Human.Config = {
     enabled: false 
   },
   segmentation: { 
-    enabled: false 
+    enabled: false // Disable segmentation which was causing errors
   },
 };
