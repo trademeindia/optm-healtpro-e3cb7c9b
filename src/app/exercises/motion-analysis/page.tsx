@@ -1,6 +1,7 @@
 
 import React from 'react';
 import MotionTracker from '@/components/exercises/motion-tracking';
+import '@/styles/responsive/motion-tracker.css';
 
 export default function MotionAnalysisPage() {
   return (

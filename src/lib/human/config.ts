@@ -1,27 +1,32 @@
 
-import * as Human from '@vladmandic/human';
-
 /**
- * Configuration for Human.js
+ * Configuration for Human.js library
  */
-export const humanConfig: Partial<Human.Config> = {
-  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/',
-  filter: { enabled: true, equalization: false, width: 0 },
-  face: { enabled: false },
-  hand: { enabled: false },
-  object: { enabled: false },
-  gesture: { enabled: false },
+export const humanConfig = {
+  // Use backend based on user's device capabilities
+  backend: 'webgl',
+  
+  // Path for models
+  modelBasePath: '/',
+  
+  // Skip warmup for better startup performance
+  warmup: 'none',
+  
+  // Enable body pose detection
   body: {
     enabled: true,
-    modelPath: 'blazepose-heavy.json',
-    minConfidence: 0.5,
+    modelPath: 'blazepose.json',
+    minConfidence: 0.2,
     maxDetected: 1,
   },
+  
+  // Disable components we don't need
+  face: { enabled: false },
+  hand: { enabled: false },
+  gesture: { enabled: false },
+  object: { enabled: false },
+  
+  // Performance settings
+  filter: { enabled: true },
   segmentation: { enabled: false },
-  debug: false,
-  async: true,
-  warmup: 'none',
-  backend: 'webgl',
-  cacheSensitivity: 0,
-  deallocate: true,
 };

@@ -24,10 +24,10 @@ export const useDetectionState = () => {
         // Configure human.js to use a lite model that's more reliable
         human.config = {
           ...human.config,
-          modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/',
+          modelBasePath: '/',
           body: {
             enabled: true,
-            modelPath: 'blazepose-lite.json', // Use lite model instead of heavy
+            modelPath: 'blazepose.json', // Use standard model instead of lite
           },
           // Improve performance
           backend: 'webgl',

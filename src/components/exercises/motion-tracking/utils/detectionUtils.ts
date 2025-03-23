@@ -1,24 +1,23 @@
 
 import * as Human from '@vladmandic/human';
 import { human } from '@/lib/human';
-import { BodyAngles, MotionState } from '@/lib/human/types';
-import { determineMotionState } from './motionStateUtils';
+import { MotionState, BodyAngles } from '@/lib/human/types';
 
-/**
- * Performs pose detection on a video element
- */
+// Perform detection on video and extract relevant data
 export const performDetection = async (video: HTMLVideoElement) => {
   try {
+    // Run human detection on the video frame
     const detectionResult = await human.detect(video);
     
-    // Extract angles from detection result
-    const extractedAngles = calculateBodyAngles(detectionResult);
+    // Extract body angles
+    const extractedAngles = extractAngles(detectionResult);
     
-    // Calculate biomarkers based on pose data
-    const extractedBiomarkers = calculateBiomarkers(detectionResult);
+    // Extract biomarkers from detection result
+    const extractedBiomarkers = extractBiomarkers(detectionResult);
     
-    // Determine motion state based on body angles
-    const newMotionState = determineMotionState(extractedAngles);
+    // Determine motion state based on knee angle
+    const kneeAngle = extractedAngles.kneeAngle || 180;
+    let newMotionState = determineMotionState(kneeAngle);
     
     return {
       result: detectionResult,
@@ -27,76 +26,110 @@ export const performDetection = async (video: HTMLVideoElement) => {
       newMotionState
     };
   } catch (error) {
-    console.error('Error during detection:', error);
-    // Return default values on error
+    console.error('Error during pose detection:', error);
+    // Return dummy data for error case
     return {
       result: null,
-      angles: getDefaultAngles(),
-      biomarkers: getDefaultBiomarkers(),
+      angles: {
+        kneeAngle: null,
+        hipAngle: null,
+        shoulderAngle: null,
+        elbowAngle: null,
+        ankleAngle: null,
+        neckAngle: null
+      },
+      biomarkers: {},
       newMotionState: MotionState.STANDING
     };
   }
 };
 
-/**
- * Calculate body angles from detection result
- */
-const calculateBodyAngles = (result: Human.Result): BodyAngles => {
+// Extract angles from detection result
+const extractAngles = (result: Human.Result | null): BodyAngles => {
   if (!result || !result.body || result.body.length === 0) {
-    return getDefaultAngles();
+    return {
+      kneeAngle: null,
+      hipAngle: null,
+      shoulderAngle: null,
+      elbowAngle: null,
+      ankleAngle: null,
+      neckAngle: null
+    };
   }
   
-  // Get the first detected body
-  const body = result.body[0];
-  
-  // For demonstration/testing, we're using simulated values
-  // In a real implementation, calculate these from keypoints
-  const kneeAngle = Math.random() > 0.7 ? 100 + Math.random() * 80 : 170;
-  const hipAngle = kneeAngle < 150 ? 120 + Math.random() * 50 : 170;
+  // For demo purposes, we're simulating angle calculation
+  // Real implementation would calculate these based on actual keypoints
+  const kneeAngle = calculateSimulatedAngle(result.body[0], 'knee');
+  const hipAngle = calculateSimulatedAngle(result.body[0], 'hip');
+  const shoulderAngle = calculateSimulatedAngle(result.body[0], 'shoulder');
+  const elbowAngle = calculateSimulatedAngle(result.body[0], 'elbow');
+  const ankleAngle = calculateSimulatedAngle(result.body[0], 'ankle');
+  const neckAngle = calculateSimulatedAngle(result.body[0], 'neck');
   
   return {
     kneeAngle,
     hipAngle,
-    shoulderAngle: 160 + Math.random() * 30,
-    elbowAngle: 150 + Math.random() * 40,
-    ankleAngle: 80 + Math.random() * 20,
-    neckAngle: 150 + Math.random() * 20
+    shoulderAngle,
+    elbowAngle,
+    ankleAngle,
+    neckAngle
   };
 };
 
-/**
- * Calculate biomarkers based on pose data
- */
-const calculateBiomarkers = (result: Human.Result) => {
-  // In a real implementation, calculate these from actual pose data
+// Calculate a simulated angle for demo purposes
+const calculateSimulatedAngle = (body: Human.BodyResult, jointType: string): number => {
+  // For demo - you'd normally compute these from relative positions of keypoints
+  const confidence = body.score || 0.5;
+  
+  switch (jointType) {
+    case 'knee':
+      // Simulate knee bending as the person squats
+      return 170 - (Math.random() * 70) * confidence;
+    case 'hip':
+      // Simulate hip angle changes
+      return 160 - (Math.random() * 50) * confidence;
+    case 'shoulder':
+      // Shoulders stay relatively stable
+      return 170 + (Math.random() * 20 - 10) * confidence;
+    case 'elbow':
+      // Elbow angle varies slightly
+      return 160 + (Math.random() * 30 - 15) * confidence;
+    case 'ankle':
+      // Ankle adjusts slightly
+      return 85 + (Math.random() * 10) * confidence;
+    case 'neck':
+      // Neck stays relatively upright
+      return 150 + (Math.random() * 20) * confidence;
+    default:
+      return 180;
+  }
+};
+
+// Extract biomarkers from detection result
+const extractBiomarkers = (result: Human.Result | null): Record<string, any> => {
+  if (!result || !result.body || result.body.length === 0) {
+    return {};
+  }
+  
+  // For demo purposes - real implementation would extract actual biomechanical data
+  const confidence = result.body[0].score || 0.5;
+  
   return {
-    balance: 0.7 + Math.random() * 0.3,
-    stability: 0.75 + Math.random() * 0.25,
-    symmetry: 0.8 + Math.random() * 0.2
+    balance: 0.7 + (Math.random() * 0.3) * confidence,
+    stability: 0.8 + (Math.random() * 0.2) * confidence,
+    symmetry: 0.75 + (Math.random() * 0.25) * confidence,
+    posture: 0.6 + (Math.random() * 0.4) * confidence,
+    range: 0.5 + (Math.random() * 0.5) * confidence
   };
 };
 
-/**
- * Get default angles when no detection is available
- */
-const getDefaultAngles = (): BodyAngles => {
-  return {
-    kneeAngle: 170,
-    hipAngle: 160,
-    shoulderAngle: 180,
-    elbowAngle: 170,
-    ankleAngle: 90,
-    neckAngle: 160
-  };
-};
-
-/**
- * Get default biomarkers when no detection is available
- */
-const getDefaultBiomarkers = () => {
-  return {
-    balance: 0.85,
-    stability: 0.9,
-    symmetry: 0.8
-  };
+// Determine motion state based on knee angle
+const determineMotionState = (kneeAngle: number): MotionState => {
+  if (kneeAngle < 130) {
+    return MotionState.FULL_MOTION;
+  } else if (kneeAngle < 160) {
+    return MotionState.MID_MOTION;
+  } else {
+    return MotionState.STANDING;
+  }
 };

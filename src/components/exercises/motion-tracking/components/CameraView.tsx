@@ -28,7 +28,8 @@ const CameraView: React.FC<CameraViewProps> = ({
           video: {
             facingMode: 'user',
             width: { ideal: 1280 },
-            height: { ideal: 720 }
+            height: { ideal: 720 },
+            aspectRatio: { ideal: 16/9 }
           }
         };
         
@@ -59,7 +60,7 @@ const CameraView: React.FC<CameraViewProps> = ({
         autoPlay
         playsInline
         muted
-        className={`absolute inset-0 h-full w-full object-cover ${detectionStatus.isDetecting ? 'opacity-100' : 'opacity-80'}`}
+        className={`absolute inset-0 h-full w-full object-contain ${detectionStatus.isDetecting ? 'opacity-100' : 'opacity-80'}`}
         style={{ transform: 'scaleX(-1)' }} // Mirror the camera feed
       />
       

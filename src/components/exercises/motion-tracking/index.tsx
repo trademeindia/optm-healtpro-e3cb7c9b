@@ -63,7 +63,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 relative exercise-camera-container">
-          <div className="exercise-tracking-wrapper">
+          <div className="full-body-view">
             <CameraView 
               videoRef={videoRef} 
               canvasRef={canvasRef}

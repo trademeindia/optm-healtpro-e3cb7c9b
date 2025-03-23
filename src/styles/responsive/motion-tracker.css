@@ -85,7 +85,7 @@
 .camera-feed {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* Proper aspect ratio for exercise tracking */
@@ -94,4 +94,34 @@
   width: 100%;
   max-height: 80vh;
   position: relative;
+}
+
+/* Full body view */
+.full-body-view {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/4;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.full-body-view video,
+.full-body-view canvas {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+/* Adjust layout for better exercise tracking */
+.motion-tracker-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .motion-tracker-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
