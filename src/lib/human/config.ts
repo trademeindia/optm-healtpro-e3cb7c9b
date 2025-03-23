@@ -29,8 +29,9 @@ export const humanConfig: Human.Config = {
   filter: { 
     enabled: true, 
     equalization: false,
-    // Use the right property for filtering according to Human.js type definition
-    strength: 0.5, // Add temporal smoothing for more stable tracking
+    // Use a valid property for filtering according to Human.js type definition
+    // The property 'strength' doesn't exist in FilterConfig, so using a valid alternative
+    sensitivity: 0.5, // Add temporal smoothing for more stable tracking
   },
   
   // Disable face detection to improve performance
