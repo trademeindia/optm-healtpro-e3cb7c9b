@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionState } from '@/lib/human/types';
+import { MotionState, FeedbackType } from '@/lib/human/types';
 import { useDetectionState } from './useDetectionState';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionStats } from './useSessionStats';
