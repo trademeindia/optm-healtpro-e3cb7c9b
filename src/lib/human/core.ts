@@ -34,11 +34,11 @@ export const warmupModel = async (): Promise<boolean> => {
   modelLoadingPromise = new Promise(async (resolve, reject) => {
     // Add timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      console.error('Human.js model loading timed out after 20s');
+      console.error('Human.js model loading timed out after 30s');
       isModelLoading = false;
       // Don't reject, instead try to continue with what we have
       resolve(false);
-    }, 20000);
+    }, 30000); // Increased timeout to 30s
     
     try {
       console.log('Loading Human.js model...');
@@ -77,8 +77,10 @@ export const warmupModel = async (): Promise<boolean> => {
       // Try one more time with minimal configuration
       try {
         console.log('Attempting fallback model load with minimal config...');
-        const minimalConfig = {...human.config};
-        minimalConfig.body = {enabled: true, modelPath: 'blazepose.json'};
+        const minimalConfig = {
+          backend: 'webgl',
+          body: {enabled: true, modelPath: 'blazepose.json'}
+        };
         await human.load(minimalConfig);
         console.log('Fallback model load succeeded');
         resolve(true);
@@ -110,9 +112,9 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
     // Run detection with a timeout
     const detectionPromise = human.detect(input);
     
-    // Add a timeout to prevent hanging - increase to 5 seconds for more reliable detection
+    // Add a timeout to prevent hanging - increase to 10 seconds for more reliable detection
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), 5000);
+      setTimeout(() => reject(new Error('Detection timeout')), 10000);
     });
     
     // Race the detection against the timeout
@@ -120,6 +122,11 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
       detectionPromise,
       timeoutPromise
     ]) as Human.Result;
+    
+    // Log successful detection
+    if (result && result.body && result.body.length > 0) {
+      console.log(`Detection successful: found ${result.body.length} bodies with ${result.body[0].keypoints.length} keypoints`);
+    }
     
     return result;
   } catch (error) {

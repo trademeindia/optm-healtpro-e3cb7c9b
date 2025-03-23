@@ -1,9 +1,11 @@
 
 import * as Human from '@vladmandic/human';
 import { DetectionResult } from '../hooks/types';
-import { human } from '@/lib/human';
+import { human, warmupModel } from '@/lib/human';
 import { extractBodyAngles } from '@/lib/human/angles';
 import { extractBiomarkers } from '@/lib/human/biomarkers';
+import { determineMotionState } from './motionStateUtils';
+import { MotionState } from '@/components/exercises/posture-monitor/types';
 
 // Default empty angles object for when detection fails
 const emptyAngles = {
@@ -37,25 +39,32 @@ export const performDetection = async (
     if (!human.models.loaded()) {
       console.warn('Human model not loaded, attempting to load now');
       try {
-        await human.load();
-        console.log('Human model loaded successfully');
+        const loaded = await warmupModel();
+        if (!loaded) {
+          console.warn('Failed to load Human model completely');
+        } else {
+          console.log('Human model loaded successfully');
+        }
       } catch (e) {
         console.error('Failed to load Human model:', e);
       }
     }
     
-    // Add a timeout for detection to prevent hanging
+    // Run detection with longer timeout (10 seconds)
     const detectionPromise = human.detect(videoElement);
     
-    // Increase timeout to 5 seconds for initial detections, then reduce to 3 seconds
-    const timeoutDuration = human.tf.engine().state.numTensors > 100 ? 5000 : 3000;
+    // Add a longer timeout for initial detections, then reduce for subsequent ones
+    const timeoutDuration = 10000; // 10 seconds
     
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Detection timeout')), timeoutDuration);
     });
     
     // Log more details about the detection process
-    console.log(`Starting detection with ${timeoutDuration}ms timeout, tensors: ${human.tf.engine().state.numTensors}`);
+    console.log(`Starting detection with ${timeoutDuration}ms timeout`);
+    if (human.tf) {
+      console.log(`Current tensor count: ${human.tf.engine().state.numTensors}`);
+    }
     
     // Race the detection against the timeout
     const result = await Promise.race([
@@ -91,11 +100,8 @@ export const performDetection = async (
       })
     );
 
-    // Determine motion state based on knee angle
-    let newMotionState = null;
-    
-    // We'll add proper motion state detection in a follow-up step
-    // This is handled elsewhere in the codebase
+    // Determine motion state based on angles and the current state
+    const newMotionState = determineMotionState(angles, MotionState.STANDING);
 
     return {
       result,

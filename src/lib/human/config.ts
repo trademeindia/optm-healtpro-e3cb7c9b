@@ -40,7 +40,7 @@ export const humanConfig: Human.Config = {
     enabled: true,
     modelPath: 'blazepose.json',
     minConfidence: 0.2,
-    skipFrames: 1, // Reduce frame skipping for more responsive detection
+    skipFrames: 0, // Reduce to 0 to prevent missed frames
     maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 
