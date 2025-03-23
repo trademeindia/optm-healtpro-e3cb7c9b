@@ -4,7 +4,7 @@ import * as Human from '@vladmandic/human';
 // Configuration for the Human.js library
 export const humanConfig: Human.Config = {
   // Required core configuration
-  backend: 'webgl',
+  backend: 'webgl' as Human.BackendEnum,
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // Use CDN for faster model loading
   wasmPath: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/',
   debug: false,
@@ -12,7 +12,7 @@ export const humanConfig: Human.Config = {
   warmup: 'none', // Changed from 'full' to avoid blocking the UI during initial load
   cacheModels: true,
   cacheSensitivity: 0.7,
-  skipAllowed: true, // Allow frame skipping to maintain performance
+  skipAllowed: false, // Set to false to ensure we don't miss frames
   deallocate: true, // Better memory management
   
   // Additional required configs to satisfy TypeScript

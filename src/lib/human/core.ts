@@ -50,7 +50,6 @@ export const warmupModel = async (): Promise<boolean> => {
       }
       
       // First check if models are already available in cache
-      // Removed the models.check() call since it doesn't exist in the API
       const modelsCached = human.models.loaded();
       console.log('Models cached status:', modelsCached);
       
@@ -77,8 +76,8 @@ export const warmupModel = async (): Promise<boolean> => {
       // Try one more time with minimal configuration
       try {
         console.log('Attempting fallback model load with minimal config...');
-        const minimalConfig = {
-          backend: 'webgl',
+        const minimalConfig: Partial<Human.Config> = {
+          backend: 'webgl' as Human.BackendEnum,
           body: {enabled: true, modelPath: 'blazepose.json'}
         };
         await human.load(minimalConfig);
