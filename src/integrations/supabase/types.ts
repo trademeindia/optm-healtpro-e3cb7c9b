@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analysis_sessions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          exercise_type: string
+          id: string
+          notes: string | null
+          patient_id: string
+          start_time: string
+          summary: Json | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          exercise_type: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          start_time?: string
+          summary?: Json | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          exercise_type?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          start_time?: string
+          summary?: Json | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_type: string
@@ -48,6 +81,42 @@ export type Database = {
           patient_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      body_analysis: {
+        Row: {
+          angles: Json
+          biomarkers: Json | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          patient_id: string
+          posture_score: number | null
+          session_id: string
+          timestamp: string
+        }
+        Insert: {
+          angles: Json
+          biomarkers?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          posture_score?: number | null
+          session_id: string
+          timestamp?: string
+        }
+        Update: {
+          angles?: Json
+          biomarkers?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          posture_score?: number | null
+          session_id?: string
+          timestamp?: string
         }
         Relationships: []
       }
