@@ -140,5 +140,38 @@
 
 /* Ensure dropdowns are always on top */
 [data-radix-popper-content-wrapper] {
-  @apply z-50 !important;
+  @apply z-[100] !important;
+}
+
+/* Additional fixes for dropdown visibility */
+.anatomy-dialog .select-dropdown,
+.anatomy-form .select-dropdown {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Force solid backgrounds for popups */
+.radix-dialog-content,
+.radix-sheet-content,
+.radix-alert-dialog-content {
+  @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 !important;
+}
+
+/* Style Radix portals to ensure they're properly visible */
+[data-radix-portal] {
+  @apply z-[100];
+}
+
+/* Enhanced visibility for dialog overlays */
+.radix-dialog-overlay,
+.radix-sheet-overlay,
+.radix-alert-dialog-overlay {
+  @apply bg-black/80 backdrop-blur-sm !important;
+}
+
+/* Force solid backgrounds for selects and dropdowns */
+[data-radix-select-content],
+[data-radix-dropdown-menu-content] {
+  @apply bg-white dark:bg-gray-800 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
