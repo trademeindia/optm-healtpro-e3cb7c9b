@@ -1,7 +1,7 @@
 
 import * as Human from '@vladmandic/human';
 import { DetectionResult } from '../hooks/types';
-import { human, warmupModel } from '@/lib/human';
+import { human, warmupModel, resetModel } from '@/lib/human';
 import { extractBodyAngles } from '@/lib/human/angles';
 import { extractBiomarkers } from '@/lib/human/biomarkers';
 import { determineMotionState } from './motionStateUtils';
@@ -20,6 +20,93 @@ const emptyAngles = {
 // Track detection performance metrics for adaptive frame skipping
 let consecutiveFailures = 0;
 let lastSuccessfulDetection = 0;
+let tensorCleanupCounter = 0;
+const MAX_CONSECUTIVE_FAILURES = 10;
+const TENSOR_CLEANUP_THRESHOLD = 150; // Reduced threshold for earlier cleanup
+const TENSOR_CLEANUP_INTERVAL = 5; // Clean up every 5 detections
+
+// Tracking performance metrics
+let totalDetectionAttempts = 0;
+let successfulDetections = 0;
+
+/**
+ * Check if video element is ready for detection
+ */
+const isVideoElementReady = (videoElement: HTMLVideoElement): boolean => {
+  if (!videoElement) return false;
+  
+  // Check for video readiness
+  const isReady = videoElement.readyState >= 2 && 
+                  !videoElement.paused && 
+                  videoElement.videoWidth > 0 && 
+                  videoElement.videoHeight > 0;
+  
+  if (!isReady) {
+    console.warn('Video not ready for detection:', {
+      readyState: videoElement.readyState,
+      paused: videoElement.paused,
+      width: videoElement.videoWidth,
+      height: videoElement.videoHeight
+    });
+  }
+  
+  return isReady;
+};
+
+/**
+ * Proactively clean up tensors to prevent memory issues
+ */
+const cleanupTensors = (force = false): void => {
+  if (!human.tf) return;
+  
+  tensorCleanupCounter++;
+  
+  const numTensors = human.tf.engine().state.numTensors;
+  
+  // Clean up if tensor count is above threshold or forced
+  if (numTensors > TENSOR_CLEANUP_THRESHOLD || 
+      (tensorCleanupCounter >= TENSOR_CLEANUP_INTERVAL) || 
+      force) {
+    
+    console.log(`Cleaning up tensors (count: ${numTensors})`);
+    human.tf.engine().disposeVariables();
+    tensorCleanupCounter = 0;
+    
+    // Log result of cleanup
+    console.log(`Tensors after cleanup: ${human.tf.engine().state.numTensors}`);
+  }
+};
+
+/**
+ * Reset model if too many consecutive failures
+ */
+const handleConsecutiveFailures = async (): Promise<boolean> => {
+  if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+    console.warn(`Too many consecutive detection failures (${consecutiveFailures}), resetting model`);
+    consecutiveFailures = 0;
+    
+    // Force tensor cleanup
+    cleanupTensors(true);
+    
+    // Reset and reload model
+    await resetModel();
+    return await warmupModel();
+  }
+  return true;
+};
+
+/**
+ * Calculate adaptive timeout based on past performance
+ */
+const getAdaptiveTimeout = (): number => {
+  // Lower timeout when there are failures to fail faster
+  if (consecutiveFailures > 0) {
+    return Math.max(1000, 3000 - (consecutiveFailures * 200));
+  }
+  
+  // Standard timeout
+  return 3000;
+};
 
 /**
  * Performs pose detection on a video frame and returns processed results
@@ -28,8 +115,14 @@ let lastSuccessfulDetection = 0;
 export const performDetection = async (
   videoElement: HTMLVideoElement
 ): Promise<DetectionResult> => {
-  if (!videoElement || !videoElement.readyState || videoElement.readyState < 2) {
-    console.warn('Video element is not ready for detection');
+  // Track attempts for analytics
+  totalDetectionAttempts++;
+  
+  // Check if video is ready for detection
+  if (!isVideoElementReady(videoElement)) {
+    consecutiveFailures++;
+    await handleConsecutiveFailures();
+    
     return {
       result: null,
       angles: emptyAngles,
@@ -46,12 +139,37 @@ export const performDetection = async (
         const loaded = await warmupModel();
         if (!loaded) {
           console.warn('Failed to load Human model completely');
+          consecutiveFailures++;
+          return {
+            result: null,
+            angles: emptyAngles,
+            biomarkers: {},
+            newMotionState: null
+          };
         } else {
           console.log('Human model loaded successfully');
         }
       } catch (e) {
         console.error('Failed to load Human model:', e);
+        consecutiveFailures++;
+        return {
+          result: null,
+          angles: emptyAngles,
+          biomarkers: {},
+          newMotionState: null
+        };
       }
+    }
+    
+    // Use adaptive frame skipping based on performance
+    if (consecutiveFailures === 0 && (Date.now() - lastSuccessfulDetection) < 100) {
+      // Skip this frame if we've had recent successful detections
+      return {
+        result: null,
+        angles: emptyAngles,
+        biomarkers: {},
+        newMotionState: null
+      };
     }
     
     // Log current configuration
@@ -62,10 +180,17 @@ export const performDetection = async (
     });
     
     // Use adaptive timeout based on past performance
-    const timeoutDuration = consecutiveFailures === 0 ? 5000 : 3000; // Shorter timeout after failures
+    const timeoutDuration = getAdaptiveTimeout();
     
     // Run detection with appropriate timeout
-    const detectionPromise = human.detect(videoElement);
+    const detectionPromise = human.detect(videoElement, {
+      body: { enabled: true },
+      face: { enabled: false },
+      hand: { enabled: false },
+      object: { enabled: false },
+      gesture: { enabled: false },
+      segmentation: { enabled: false }
+    });
     
     console.log(`Starting detection with ${timeoutDuration}ms timeout`);
     if (human.tf) {
@@ -83,18 +208,13 @@ export const performDetection = async (
       timeoutPromise
     ]) as Human.Result;
 
-    // Clean up tensors after successful detection (regardless of body detection)
-    if (human.tf) {
-      const tensorCount = human.tf.engine().state.numTensors;
-      if (tensorCount > 200) { // Lower threshold for cleanup
-        console.log(`Cleaning up tensors (count: ${tensorCount})`);
-        human.tf.engine().disposeVariables();
-      }
-    }
+    // Clean up tensors periodically or when tensor count is high
+    cleanupTensors();
 
     // Reset failure tracking on successful API call
     consecutiveFailures = 0;
     lastSuccessfulDetection = Date.now();
+    successfulDetections++;
 
     if (!result || !result.body || result.body.length === 0) {
       console.log('No body detected in frame');
@@ -127,6 +247,12 @@ export const performDetection = async (
     // Determine motion state based on angles and the current state
     const newMotionState = determineMotionState(angles, MotionState.STANDING);
 
+    // Log detection success rate
+    if (totalDetectionAttempts % 20 === 0) {
+      const successRate = (successfulDetections / totalDetectionAttempts) * 100;
+      console.log(`Detection success rate: ${successRate.toFixed(1)}% (${successfulDetections}/${totalDetectionAttempts})`);
+    }
+
     return {
       result,
       angles,
@@ -139,18 +265,27 @@ export const performDetection = async (
     // Track consecutive failures for adaptive performance
     consecutiveFailures++;
     
-    // Clean up any lingering tensors to prevent memory leaks
-    try {
-      if (human.tf && human.tf.engine) {
-        const tensors = human.tf.engine().state.numTensors;
-        if (tensors > 100) { // Lower threshold for cleanup on error
-          console.warn(`High tensor count: ${tensors}, cleaning up`);
-          human.tf.engine().disposeVariables();
-        }
+    // Check if we need to reset model due to too many failures
+    await handleConsecutiveFailures();
+    
+    // Handle the specific segmentation error
+    if (error instanceof Error && 
+        error.message.includes('activation_segmentation') || 
+        error.message.includes('not found in the graph')) {
+      console.warn('Encountered segmentation error, disabling segmentation');
+      
+      // Explicitly disable segmentation in case it got enabled somehow
+      if (human.config.segmentation) {
+        human.config.segmentation.enabled = false;
       }
-    } catch (e) {
-      console.error('Error cleaning up tensors:', e);
+      
+      // Force reset model to apply config changes
+      await resetModel();
+      await warmupModel();
     }
+    
+    // Clean up any lingering tensors to prevent memory leaks
+    cleanupTensors(true);
     
     // Return a valid result even on error to prevent crashes
     return {
@@ -160,4 +295,29 @@ export const performDetection = async (
       newMotionState: null
     };
   }
+};
+
+/**
+ * Public API to get detection statistics
+ */
+export const getDetectionStats = () => {
+  return {
+    totalAttempts: totalDetectionAttempts,
+    successfulDetections,
+    successRate: totalDetectionAttempts > 0 
+      ? (successfulDetections / totalDetectionAttempts) * 100 
+      : 0,
+    consecutiveFailures
+  };
+};
+
+/**
+ * Reset detection statistics
+ */
+export const resetDetectionStats = () => {
+  totalDetectionAttempts = 0;
+  successfulDetections = 0;
+  consecutiveFailures = 0;
+  lastSuccessfulDetection = 0;
+  tensorCleanupCounter = 0;
 };

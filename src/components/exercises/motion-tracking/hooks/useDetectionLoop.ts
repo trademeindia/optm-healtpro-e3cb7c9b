@@ -1,146 +1,202 @@
 
-import { useCallback, useRef, useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { DetectionResult } from './types';
-import { performDetection } from '../utils/detectionUtils';
+import { performDetection, getDetectionStats, resetDetectionStats } from '../utils/detectionUtils';
+import { toast } from 'sonner';
 
-/**
- * Hook for managing the detection animation loop with adaptive frame rate
- */
+interface DetectionState {
+  isDetecting: boolean;
+  detectionFps: number;
+  detectionError: string | null;
+  lastDetection: number;
+  successRate: number;
+}
+
 export const useDetectionLoop = (videoRef: React.RefObject<HTMLVideoElement>) => {
-  // Detection state
-  const [detectionState, setDetectionState] = useState({
+  const [detectionState, setDetectionState] = useState<DetectionState>({
     isDetecting: false,
-    detectionFps: null as number | null,
-    detectionError: null as string | null
+    detectionFps: 0,
+    detectionError: null,
+    lastDetection: 0,
+    successRate: 0
   });
   
-  // Detection loop references
-  const requestRef = useRef<number>();
-  const lastFrameTime = useRef<number>(0);
-  const frameCount = useRef<number>(0);
-  const lastFpsUpdateTime = useRef<number>(0);
-  const successfulDetectionCount = useRef<number>(0);
-  const framesToSkip = useRef<number>(1); // Adaptive frame skipping
-  const framesSinceLastDetection = useRef<number>(0);
+  const requestRef = useRef<number | null>(null);
+  const previousTimeRef = useRef<number>(0);
+  const frameCountRef = useRef<number>(0);
+  const lastFpsUpdateRef = useRef<number>(0);
+  const resultsCountRef = useRef<number>(0);
+  const lastInfoToastRef = useRef<number>(0);
+  const onDetectionResultRef = useRef<((result: DetectionResult) => void) | null>(null);
   
-  // Perform detection on a single frame with improved error handling and adaptive frame limiting
-  const detectFrame = useCallback(async (
-    time: number,
-    onDetectionResult: (result: DetectionResult) => void,
-    isModelLoaded: boolean
-  ) => {
-    if (!videoRef.current || !isModelLoaded) {
-      requestRef.current = requestAnimationFrame(
-        (newTime) => detectFrame(newTime, onDetectionResult, isModelLoaded)
-      );
-      return;
-    }
-    
-    // Calculate elapsed time since last frame
-    const elapsed = time - lastFrameTime.current;
-    
-    // Track frame rate
-    if (time - lastFpsUpdateTime.current >= 1000) {
+  // Track when detection is active
+  const isDetectingRef = useRef<boolean>(false);
+  
+  // FPS calculation
+  const calculateFps = useCallback((time: number) => {
+    // Update FPS every second
+    if (time - lastFpsUpdateRef.current >= 1000) {
+      const fps = Math.round(frameCountRef.current * 1000 / (time - lastFpsUpdateRef.current));
+      frameCountRef.current = 0;
+      lastFpsUpdateRef.current = time;
+      
+      // Update detection state with current fps and success rate
+      const stats = getDetectionStats();
       setDetectionState(prev => ({
         ...prev,
-        detectionFps: frameCount.current
+        detectionFps: fps,
+        successRate: stats.successRate
       }));
       
-      // Adjust frame skipping based on detection success rate
-      if (successfulDetectionCount.current < 5 && framesToSkip.current < 4) {
-        // If we're getting few successful detections, skip more frames
-        framesToSkip.current += 1;
-        console.log(`Performance optimization: Increasing frame skip to ${framesToSkip.current}`);
-      } else if (successfulDetectionCount.current > 10 && framesToSkip.current > 1) {
-        // If we're getting many successful detections, reduce frame skipping
-        framesToSkip.current -= 1;
-        console.log(`Performance optimization: Decreasing frame skip to ${framesToSkip.current}`);
+      // Show periodic info toast (but not too frequently)
+      if (time - lastInfoToastRef.current > 10000 && isDetectingRef.current) {
+        lastInfoToastRef.current = time;
+        console.log(`Motion tracking stats - FPS: ${fps}, Success rate: ${stats.successRate.toFixed(1)}%`);
       }
-      
-      frameCount.current = 0;
-      successfulDetectionCount.current = 0;
-      lastFpsUpdateTime.current = time;
+    } else {
+      frameCountRef.current++;
     }
-    
-    // Minimum time between frames (~15 FPS cap)
-    if (elapsed < 66) {
-      requestRef.current = requestAnimationFrame(
-        (newTime) => detectFrame(newTime, onDetectionResult, isModelLoaded)
-      );
+  }, []);
+  
+  // Run a single detection
+  const runDetection = useCallback(async () => {
+    if (!videoRef.current || !isDetectingRef.current || !onDetectionResultRef.current) {
       return;
     }
-    
-    // Adaptive frame skipping
-    framesSinceLastDetection.current += 1;
-    if (framesSinceLastDetection.current < framesToSkip.current) {
-      lastFrameTime.current = time;
-      frameCount.current++;
-      requestRef.current = requestAnimationFrame(
-        (newTime) => detectFrame(newTime, onDetectionResult, isModelLoaded)
-      );
-      return;
-    }
-    
-    framesSinceLastDetection.current = 0;
-    lastFrameTime.current = time;
-    frameCount.current++;
     
     try {
-      setDetectionState(prev => ({ ...prev, isDetecting: true }));
+      const result = await performDetection(videoRef.current);
       
-      // Perform detection
-      const detectionResult = await performDetection(videoRef.current);
-      
-      // Track successful detections with actual body poses
-      if (detectionResult.result && detectionResult.result.body && detectionResult.result.body.length > 0) {
-        successfulDetectionCount.current++;
+      // Track successful results
+      if (result.result) {
+        resultsCountRef.current++;
       }
       
-      // Pass detection result to callback
-      onDetectionResult(detectionResult);
+      // Call the callback with the result
+      if (onDetectionResultRef.current) {
+        onDetectionResultRef.current(result);
+      }
       
-      setDetectionState(prev => ({ ...prev, isDetecting: false, detectionError: null }));
+      // Reset error state if successful
+      if (detectionState.detectionError) {
+        setDetectionState(prev => ({ ...prev, detectionError: null }));
+      }
     } catch (error) {
-      console.error('Error in detection:', error);
-      setDetectionState(prev => ({ 
-        ...prev, 
-        isDetecting: false,
-        detectionError: 'Detection failed. The system will try to recover automatically.'
+      console.error('Error in runDetection:', error);
+      
+      setDetectionState(prev => ({
+        ...prev,
+        detectionError: error instanceof Error ? error.message : 'Unknown detection error'
       }));
+      
+      // Show error toast, but not too frequently
+      if (Date.now() - lastInfoToastRef.current > 10000) {
+        lastInfoToastRef.current = Date.now();
+        toast.error('Detection error. Trying to recover...');
+      }
+    }
+  }, [videoRef, detectionState.detectionError]);
+  
+  // Animation loop
+  const detectionLoop = useCallback(async (time: number) => {
+    // Skip first frame
+    if (previousTimeRef.current === 0) {
+      previousTimeRef.current = time;
+      requestRef.current = requestAnimationFrame(detectionLoop);
+      return;
     }
     
-    // Continue detection loop
-    requestRef.current = requestAnimationFrame(
-      (newTime) => detectFrame(newTime, onDetectionResult, isModelLoaded)
-    );
-  }, [videoRef]);
-
+    // Calculate FPS
+    calculateFps(time);
+    
+    // Run detection less frequently than animation frame for better performance
+    // Adaptive rate: slower when detection has been failing
+    const minDetectionInterval = detectionState.successRate < 90 ? 200 : 100;
+    const elapsed = time - detectionState.lastDetection;
+    
+    if (elapsed > minDetectionInterval) {
+      setDetectionState(prev => ({ ...prev, lastDetection: time }));
+      await runDetection();
+    }
+    
+    // Continue the loop
+    if (isDetectingRef.current) {
+      requestRef.current = requestAnimationFrame(detectionLoop);
+    }
+  }, [calculateFps, runDetection, detectionState.lastDetection, detectionState.successRate]);
+  
   // Start detection
   const startDetection = useCallback((
     onDetectionResult: (result: DetectionResult) => void,
     isModelLoaded: boolean
   ) => {
-    if (!detectionState.isDetecting && isModelLoaded) {
-      // Reset adaptation parameters
-      framesToSkip.current = 2;
-      framesSinceLastDetection.current = 0;
-      successfulDetectionCount.current = 0;
-      
-      requestRef.current = requestAnimationFrame(
-        (time) => detectFrame(time, onDetectionResult, isModelLoaded)
-      );
-      setDetectionState(prev => ({ ...prev, isDetecting: true }));
-      console.log('Starting detection loop with adaptive frame skipping');
+    // Don't restart if already detecting
+    if (isDetectingRef.current) {
+      return;
     }
-  }, [detectFrame, detectionState.isDetecting]);
-
+    
+    // Don't start if model not loaded
+    if (!isModelLoaded) {
+      setDetectionState(prev => ({
+        ...prev,
+        detectionError: 'Model not loaded. Please load the model first.'
+      }));
+      return;
+    }
+    
+    // Reset tracking values
+    resetDetectionStats();
+    frameCountRef.current = 0;
+    lastFpsUpdateRef.current = 0;
+    previousTimeRef.current = 0;
+    resultsCountRef.current = 0;
+    
+    // Store callback
+    onDetectionResultRef.current = onDetectionResult;
+    
+    // Update state
+    isDetectingRef.current = true;
+    setDetectionState(prev => ({
+      ...prev,
+      isDetecting: true,
+      detectionError: null,
+      lastDetection: performance.now()
+    }));
+    
+    // Start animation loop
+    requestRef.current = requestAnimationFrame(detectionLoop);
+    
+    console.log('Motion detection started');
+  }, [detectionLoop]);
+  
   // Stop detection
   const stopDetection = useCallback(() => {
+    // Cancel animation frame
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
-      setDetectionState(prev => ({ ...prev, isDetecting: false }));
-      console.log('Stopping detection loop');
+      requestRef.current = null;
     }
+    
+    // Clear detection callback
+    onDetectionResultRef.current = null;
+    
+    // Update state
+    isDetectingRef.current = false;
+    setDetectionState(prev => ({
+      ...prev,
+      isDetecting: false
+    }));
+    
+    console.log('Motion detection stopped');
+  }, []);
+  
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
   }, []);
   
   return {

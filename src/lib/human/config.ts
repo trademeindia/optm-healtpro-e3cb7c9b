@@ -19,8 +19,10 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
   
-  // Remove useWebGPU and useSimdWasm flags that were causing errors
-  flags: {}, // Empty flags object to avoid errors
+  // No useWebGPU and useSimdWasm flags that were causing errors
+  flags: {
+    useWorker: true // Use web worker when possible for better performance
+  }, 
   
   softwareKernels: true, // Fallback to software implementation if needed
   
@@ -36,10 +38,10 @@ export const humanConfig: Human.Config = {
   },
   body: { 
     enabled: true,
-    // Fix: Use the correct model name - "blazepose.json" instead of "blazepose-lite.json"
-    modelPath: 'blazepose.json', 
+    // Use lite model for better performance
+    modelPath: 'blazepose-lite.json', // Changed from blazepose.json to the lighter model
     minConfidence: 0.2,
-    skipFrames: 2, // Skip more frames to improve performance
+    skipFrames: 3, // Skip more frames to improve performance
     maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 
@@ -51,7 +53,8 @@ export const humanConfig: Human.Config = {
   gesture: { 
     enabled: false 
   },
+  // Important: Completely disable segmentation which was causing errors
   segmentation: { 
-    enabled: false // Disable segmentation which was causing errors
+    enabled: false
   },
 };
