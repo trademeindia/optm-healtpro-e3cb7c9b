@@ -110,27 +110,23 @@ export const saveDetectionData = async (
   // Don't save null results
   if (!detectionResult && !angles) return false;
   
-  // Prepare the data record
-  const dataRecord = {
-    session_id: sessionId,
-    angles: angles || {},
-    biomarkers: biomarkers || {},
-    metadata: {
-      motionState: motionState,
-      exerciseType: exerciseType,
-      stats: stats,
-      timestamp: new Date().toISOString()
-    }
-  };
-  
   try {
     // Try to get the authenticated user
     const { data: { user } } = await supabase.auth.getUser();
     
-    // If authenticated, add patient_id
-    if (user) {
-      dataRecord.patient_id = user.id;
-    }
+    // Prepare the data record with required patient_id field
+    const dataRecord = {
+      session_id: sessionId,
+      patient_id: user?.id || 'anonymous', // Ensure patient_id is always present
+      angles: angles || {},
+      biomarkers: biomarkers || {},
+      metadata: {
+        motionState: motionState,
+        exerciseType: exerciseType,
+        stats: stats,
+        timestamp: new Date().toISOString()
+      }
+    };
     
     // Try to save to Supabase
     const { error } = await supabase.from('body_analysis').insert(dataRecord);
@@ -154,8 +150,22 @@ export const saveDetectionData = async (
   } catch (error) {
     console.error('Error in saveDetectionData:', error);
     
-    // Add to offline queue
-    offlineQueue.push(dataRecord);
+    // Get the authenticated user for the offline queue item
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Add to offline queue with the patient_id
+    offlineQueue.push({
+      session_id: sessionId,
+      patient_id: user?.id || 'anonymous', // Ensure patient_id is always present
+      angles: angles || {},
+      biomarkers: biomarkers || {},
+      metadata: {
+        motionState: motionState,
+        exerciseType: exerciseType,
+        stats: stats,
+        timestamp: new Date().toISOString()
+      }
+    });
     
     return false;
   }
