@@ -61,7 +61,7 @@ export const useSessionManagement = () => {
         detectionResult,
         angles,
         biomarkers,
-        motionState.toString(),
+        motionState,
         exerciseType,
         stats
       );

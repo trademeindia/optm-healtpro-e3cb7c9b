@@ -1,6 +1,19 @@
 
 import { MotionState } from '@/lib/human/types';
 
+// Determine the current motion state based on joint angles
+export const determineMotionState = (kneeAngle: number | null): MotionState => {
+  if (kneeAngle === null) return MotionState.STANDING;
+  
+  if (kneeAngle < 100) {
+    return MotionState.FULL_MOTION;
+  } else if (kneeAngle < 150) {
+    return MotionState.MID_MOTION;
+  } else {
+    return MotionState.STANDING;
+  }
+};
+
 // Check if a repetition was completed
 export const isRepCompleted = (
   currentState: MotionState,
