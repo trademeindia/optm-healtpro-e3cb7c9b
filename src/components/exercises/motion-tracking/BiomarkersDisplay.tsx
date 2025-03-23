@@ -1,147 +1,133 @@
 
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BodyAngles } from '../posture-monitor/types';
-import { Card } from '@/components/ui/card';
-import { Activity, ChevronRight, BarChart, Target, ArrowRight } from 'lucide-react';
 
 interface BiomarkersDisplayProps {
   biomarkers: Record<string, any>;
   angles: BodyAngles;
 }
 
-const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ 
-  biomarkers, 
-  angles 
-}) => {
-  // Format angle value for display
-  const formatAngle = (angle: number | undefined) => {
-    if (angle === undefined) return "--";
-    return Math.round(angle) + "°";
+const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angles }) => {
+  const formatValue = (value: number | null): string => {
+    if (value === null || value === undefined) return 'N/A';
+    return value.toFixed(1);
   };
   
-  // Determine optimal range status
-  const getAngleStatus = (angle: number | undefined, min: number, max: number) => {
-    if (angle === undefined) return "neutral";
-    
-    if (angle >= min && angle <= max) {
-      return "optimal";
-    } else if (angle < min) {
-      return "below";
-    } else {
-      return "above";
-    }
+  const getScoreColor = (score: number | null): string => {
+    if (score === null || score === undefined) return 'text-gray-400';
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-yellow-500';
+    return 'text-red-500';
   };
   
-  // Get class name based on status
-  const getStatusClassname = (status: string) => {
-    switch(status) {
-      case "optimal": return "text-green-600 dark:text-green-400";
-      case "below": return "text-yellow-600 dark:text-yellow-400";
-      case "above": return "text-yellow-600 dark:text-yellow-400";
-      default: return "text-muted-foreground";
-    }
-  };
-  
-  // Get descriptive text based on knee angle
-  const getKneeRecommendation = () => {
-    if (!angles.kneeAngle) return "Position yourself so your knees are visible.";
-    
-    const status = getAngleStatus(angles.kneeAngle, 90, 140);
-    
-    switch(status) {
-      case "optimal": 
-        return "Great knee bend! Maintain this depth for best results.";
-      case "below": 
-        return "Your squat is very deep. Ensure your heels stay on the ground.";
-      case "above": 
-        return "Try to achieve deeper knee bend for better muscle engagement.";
-      default:
-        return "Adjust your position to get accurate knee measurements.";
-    }
-  };
-  
-  const kneeStatus = getAngleStatus(angles.kneeAngle, 90, 140);
-  const hipStatus = getAngleStatus(angles.hipAngle, 75, 120);
-  const shoulderStatus = getAngleStatus(angles.shoulderAngle, 160, 180);
-
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="p-4 border-b flex items-center justify-between">
-        <div className="flex items-center">
-          <Activity className="h-5 w-5 text-primary mr-2" />
-          <h3 className="text-lg font-medium">Biomechanical Analysis</h3>
-        </div>
-        <BarChart className="h-4 w-4 text-muted-foreground" />
-      </div>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Biomechanical Analysis</CardTitle>
+      </CardHeader>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        {/* Angles Display */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <Target className="h-4 w-4 mr-1" />
-            Body Angles
-          </h4>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Knee Angle:</span>
-              <span className={`font-medium ${getStatusClassname(kneeStatus)}`}>
-                {formatAngle(angles.kneeAngle)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Hip Angle:</span>
-              <span className={`font-medium ${getStatusClassname(hipStatus)}`}>
-                {formatAngle(angles.hipAngle)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Shoulder Angle:</span>
-              <span className={`font-medium ${getStatusClassname(shoulderStatus)}`}>
-                {formatAngle(angles.shoulderAngle)}
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Biomarkers Display */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <BarChart className="h-4 w-4 mr-1" />
-            Performance Metrics
-          </h4>
-          <div className="space-y-3">
-            {Object.entries(biomarkers).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between">
-                <span className="text-sm capitalize">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}:
-                </span>
-                <span className="font-medium">
-                  {typeof value === 'number' ? `${Math.round(value * 100)}%` : value}
-                </span>
+      <CardContent>
+        <Tabs defaultValue="angles">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="angles">Joint Angles</TabsTrigger>
+            <TabsTrigger value="biomarkers">Metrics</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="angles" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Knee Angle</h3>
+                <div className="text-xl font-semibold">
+                  {formatValue(angles.kneeAngle)}°
+                </div>
+                <p className="text-xs text-muted-foreground">Ideal: ~90° at bottom</p>
               </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Recommendations */}
-        <div className="bg-muted/10 p-3 rounded-md border">
-          <h4 className="font-medium text-sm text-muted-foreground flex items-center mb-3">
-            <ChevronRight className="h-4 w-4 mr-1" />
-            Real-time Analysis
-          </h4>
-          <p className="text-sm mb-3">
-            {getKneeRecommendation()}
-          </p>
-          {angles.kneeAngle && (
-            <div className="text-xs text-muted-foreground mt-2 pt-2 border-t flex items-center justify-between">
-              <span>Optimal knee angle: 90° - 140°</span>
-              <ArrowRight className="h-3 w-3" />
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Hip Angle</h3>
+                <div className="text-xl font-semibold">
+                  {formatValue(angles.hipAngle)}°
+                </div>
+                <p className="text-xs text-muted-foreground">Tracks torso alignment</p>
+              </div>
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Shoulder Angle</h3>
+                <div className="text-xl font-semibold">
+                  {formatValue(angles.shoulderAngle)}°
+                </div>
+                <p className="text-xs text-muted-foreground">Upper body position</p>
+              </div>
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Neck Angle</h3>
+                <div className="text-xl font-semibold">
+                  {formatValue(angles.neckAngle)}°
+                </div>
+                <p className="text-xs text-muted-foreground">Head alignment</p>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </TabsContent>
+          
+          <TabsContent value="biomarkers">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Posture Score</h3>
+                <div className={`text-xl font-semibold ${getScoreColor(biomarkers.postureScore)}`}>
+                  {formatValue(biomarkers.postureScore || null)}
+                </div>
+                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full" 
+                    style={{ width: `${biomarkers.postureScore || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Balance</h3>
+                <div className={`text-xl font-semibold ${getScoreColor(biomarkers.balanceScore)}`}>
+                  {formatValue(biomarkers.balanceScore || null)}
+                </div>
+                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full" 
+                    style={{ width: `${biomarkers.balanceScore || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Symmetry</h3>
+                <div className={`text-xl font-semibold ${getScoreColor(biomarkers.shoulderSymmetry)}`}>
+                  {formatValue(biomarkers.shoulderSymmetry || null)}
+                </div>
+                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full" 
+                    style={{ width: `${biomarkers.shoulderSymmetry || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="bg-muted rounded-md p-3">
+                <h3 className="text-sm font-medium mb-1">Knee Stability</h3>
+                <div className={`text-xl font-semibold ${getScoreColor(biomarkers.kneeStability)}`}>
+                  {formatValue(biomarkers.kneeStability || null)}
+                </div>
+                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full" 
+                    style={{ width: `${biomarkers.kneeStability || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
     </Card>
   );
 };

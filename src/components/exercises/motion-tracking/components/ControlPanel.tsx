@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Pause, Play, RefreshCw, X } from 'lucide-react';
+import { Play, Pause, RotateCcw, Check } from 'lucide-react';
 
 interface ControlPanelProps {
   cameraActive: boolean;
   isTracking: boolean;
+  onStartCamera?: () => void;
   onToggleTracking: () => void;
   onReset: () => void;
   onFinish: () => void;
@@ -14,47 +15,63 @@ interface ControlPanelProps {
 const ControlPanel: React.FC<ControlPanelProps> = ({
   cameraActive,
   isTracking,
+  onStartCamera,
   onToggleTracking,
   onReset,
   onFinish
 }) => {
   return (
-    <div className="flex justify-between p-4 bg-card border-t">
-      <div className="flex gap-2">
-        {cameraActive && (
-          <Button
-            variant={isTracking ? "outline" : "default"}
-            size="sm"
-            onClick={onToggleTracking}
-            disabled={!cameraActive}
-            className="gap-2"
-          >
-            {isTracking ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isTracking ? "Pause Tracking" : "Start Tracking"}
-          </Button>
-        )}
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onReset}
-          disabled={!cameraActive}
-          className="gap-2"
+    <div className="w-full p-4 flex flex-wrap gap-2 justify-center">
+      {onStartCamera && !cameraActive && (
+        <Button 
+          variant="default" 
+          onClick={onStartCamera}
+          className="flex items-center gap-2"
         >
-          <RefreshCw className="h-4 w-4" />
-          Reset
+          <Play className="h-4 w-4" />
+          Start Camera
         </Button>
-      </div>
+      )}
       
-      <Button 
-        variant="secondary" 
-        size="sm"
-        onClick={onFinish}
-        className="gap-2"
-      >
-        <X className="h-4 w-4" />
-        End Session
-      </Button>
+      {cameraActive && (
+        <>
+          <Button
+            variant={isTracking ? "secondary" : "default"}
+            onClick={onToggleTracking}
+            className="flex items-center gap-2"
+          >
+            {isTracking ? (
+              <>
+                <Pause className="h-4 w-4" />
+                Pause Tracking
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Start Tracking
+              </>
+            )}
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={onReset}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={onFinish}
+            className="flex items-center gap-2"
+          >
+            <Check className="h-4 w-4" />
+            Finish
+          </Button>
+        </>
+      )}
     </div>
   );
 };

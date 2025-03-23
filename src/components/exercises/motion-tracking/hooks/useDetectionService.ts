@@ -164,7 +164,9 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       const detectionResult = await performDetection(videoRef.current);
       
       // Pass detection result to callback
-      onDetectionResult(detectionResult);
+      if (detectionResult) {
+        onDetectionResult(detectionResult);
+      }
       
       setDetectionState(prev => ({ ...prev, isDetecting: false }));
     } catch (error) {
@@ -187,20 +189,20 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
     onDetectionResult: (result: DetectionResult) => void
   ) => {
     if (!detectionState.isDetecting && detectionState.isModelLoaded) {
+      console.log('Starting detection loop');
       requestRef.current = requestAnimationFrame(
         (time) => detectFrame(time, onDetectionResult)
       );
       setDetectionState(prev => ({ ...prev, isDetecting: true }));
-      console.log('Starting detection loop');
     } else if (!detectionState.isModelLoaded) {
       // Try to load the model and then start detection
       loadModel().then(success => {
         if (success) {
+          console.log('Starting detection loop after model load');
           requestRef.current = requestAnimationFrame(
             (time) => detectFrame(time, onDetectionResult)
           );
           setDetectionState(prev => ({ ...prev, isDetecting: true }));
-          console.log('Starting detection loop after model load');
         }
       });
     }

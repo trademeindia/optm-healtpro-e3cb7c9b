@@ -19,7 +19,7 @@ export const useMotionAnalysis = () => {
   const [currentMotionState, setCurrentMotionState] = useState(MotionState.STANDING);
   const [prevMotionState, setPrevMotionState] = useState(MotionState.STANDING);
   const [feedback, setFeedback] = useState<FeedbackMessage>({
-    message: null,
+    message: "Ready to start tracking. Position yourself in the camera view.",
     type: FeedbackType.INFO
   });
 
@@ -28,10 +28,15 @@ export const useMotionAnalysis = () => {
     detectionResult: DetectionResult,
     onRepComplete?: (isGoodForm: boolean) => void
   ) => {
+    if (!detectionResult) return;
+    
     // Update state with detection results
     setResult(detectionResult.result);
     setAngles(detectionResult.angles);
     setBiomarkers(detectionResult.biomarkers);
+    
+    // Skip motion state processing if no valid state
+    if (!detectionResult.newMotionState) return;
     
     // Check if a rep was completed (full motion to standing transition)
     if (currentMotionState === MotionState.FULL_MOTION && 

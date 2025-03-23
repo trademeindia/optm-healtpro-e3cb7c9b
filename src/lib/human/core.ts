@@ -41,12 +41,16 @@ export const warmupModel = async (): Promise<boolean> => {
       console.log('Loading Human.js model...');
       
       // Force cleanup any existing TensorFlow memory before loading
-      // @ts-ignore - TF internal API
-      if (window.tf && window.tf.engine) {
+      if (typeof window !== 'undefined' && (window as any).tf && (window as any).tf.engine) {
         console.log('Cleaning up TensorFlow memory...');
-        // @ts-ignore
-        window.tf.engine().disposeVariables();
+        (window as any).tf.engine().disposeVariables();
       }
+      
+      // Load the model without using flag that's causing errors
+      const configWithoutWebGPU = { ...humanConfig };
+      delete configWithoutWebGPU.useWebGPU; // Remove problematic flag
+      
+      human.config = configWithoutWebGPU;
       
       // Load the model with more specific error handling
       await human.load();

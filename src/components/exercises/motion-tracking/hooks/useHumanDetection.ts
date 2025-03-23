@@ -1,5 +1,5 @@
 
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
 import { useDetectionService } from './useDetectionService';
@@ -40,27 +40,30 @@ export const useHumanDetection = (
     resetSession: resetSessionData
   } = useSessionManagement();
   
-  // Load model on component mount
-  useEffect(() => {
-    loadModel();
-    
-    // Cleanup when component unmounts
-    return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [loadModel, requestRef]);
+  // Ensure model is loaded
+  const ensureModelLoaded = useCallback(async () => {
+    if (!detectionState.isModelLoaded) {
+      toast.info("Loading motion tracking model...");
+      const success = await loadModel();
+      return success;
+    }
+    return true;
+  }, [detectionState.isModelLoaded, loadModel]);
   
   // Create a new session if needed
-  useEffect(() => {
-    if (detectionState.isModelLoaded) {
-      initSession();
+  const setupSession = useCallback(async (exerciseType: string = 'general') => {
+    if (!sessionId) {
+      const newSessionId = await initSession(exerciseType);
+      console.log(`Created new session: ${newSessionId}`);
+      return !!newSessionId;
     }
-  }, [detectionState.isModelLoaded, initSession]);
+    return true;
+  }, [sessionId, initSession]);
   
   // Detection result handler
   const handleDetectionResult = useCallback((detectionResult: any) => {
+    if (!detectionResult) return;
+    
     processDetectionResult(detectionResult, isGoodForm => {
       if (isGoodForm) {
         handleGoodRep();
@@ -73,25 +76,48 @@ export const useHumanDetection = (
         detectionResult.result,
         detectionResult.angles,
         detectionResult.biomarkers,
-        detectionResult.newMotionState
+        detectionResult.newMotionState || MotionState.STANDING
       );
     });
   }, [processDetectionResult, handleGoodRep, handleBadRep, saveSessionData]);
   
-  // Start detection
-  const startDetection = useCallback(() => {
-    startDetectionService(handleDetectionResult);
-  }, [startDetectionService, handleDetectionResult]);
+  // Start detection with improved setup
+  const startDetection = useCallback(async () => {
+    try {
+      // Ensure model is loaded
+      const modelReady = await ensureModelLoaded();
+      if (!modelReady) {
+        toast.error("Could not load motion tracking model. Please refresh and try again.");
+        return;
+      }
+      
+      // Ensure session is set up
+      const sessionReady = await setupSession();
+      if (!sessionReady) {
+        toast.error("Could not initialize tracking session.");
+        return;
+      }
+      
+      // Start the detection service
+      startDetectionService(handleDetectionResult);
+      toast.success("Motion tracking started");
+    } catch (error) {
+      console.error("Failed to start detection:", error);
+      toast.error("Failed to start motion tracking");
+    }
+  }, [ensureModelLoaded, setupSession, startDetectionService, handleDetectionResult]);
   
   // Stop detection
   const stopDetection = useCallback(() => {
     stopDetectionService();
+    toast.info("Motion tracking paused");
   }, [stopDetectionService]);
   
   // Reset session
   const resetSession = useCallback(() => {
     resetSessionData();
     resetAnalysis();
+    toast.info("Session has been reset");
   }, [resetSessionData, resetAnalysis]);
   
   return {
