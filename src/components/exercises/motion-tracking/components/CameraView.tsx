@@ -34,6 +34,7 @@ const CameraView: React.FC<CameraViewProps> = ({
 }) => {
   // Track if video element has loaded
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [showCameraRetry, setShowCameraRetry] = useState(false);
   
   // Ensure video dimensions match container
   useEffect(() => {
@@ -54,8 +55,28 @@ const CameraView: React.FC<CameraViewProps> = ({
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, [videoRef, canvasRef, cameraActive]);
+    // Set a timer to suggest retry if camera doesn't activate
+    const retryTimer = setTimeout(() => {
+      if (!videoLoaded && cameraActive) {
+        setShowCameraRetry(true);
+      }
+    }, 5000);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+      clearTimeout(retryTimer);
+    };
+  }, [videoRef, canvasRef, cameraActive, videoLoaded]);
+  
+  // Handle camera retry
+  const handleRetryCamera = () => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setVideoLoaded(false);
+    setShowCameraRetry(false);
+    setTimeout(onStartCamera, 500);
+  };
 
   return (
     <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -71,7 +92,7 @@ const CameraView: React.FC<CameraViewProps> = ({
           transform: 'scaleX(-1)' // Mirror the video for more intuitive interaction
         }}
         onLoadedData={() => {
-          if (videoRef.current?.readyState === 4) {
+          if (videoRef.current?.readyState >= 2) {
             setVideoLoaded(true);
             toast.success("Camera feed ready");
           }
@@ -115,6 +136,29 @@ const CameraView: React.FC<CameraViewProps> = ({
             <Camera className="h-4 w-4" />
             Enable Camera
           </Button>
+        </div>
+      )}
+      
+      {/* Camera active but not loaded properly */}
+      {cameraActive && !videoLoaded && showCameraRetry && (
+        <div className="absolute inset-0 z-20 bg-black/70 flex flex-col items-center justify-center p-6 text-center">
+          <div className="h-16 w-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+            <Camera className="h-8 w-8 text-red-500" />
+          </div>
+          <h3 className="text-lg font-medium mb-2 text-white">Camera not responding</h3>
+          <p className="text-gray-300 text-sm mb-4 max-w-md">
+            Your camera seems to be enabled but not sending video data.
+          </p>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleRetryCamera} 
+              className="flex items-center gap-2"
+              variant="secondary"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry Camera
+            </Button>
+          </div>
         </div>
       )}
       

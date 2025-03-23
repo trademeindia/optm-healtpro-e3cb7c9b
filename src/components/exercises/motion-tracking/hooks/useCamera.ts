@@ -24,22 +24,12 @@ export const useCamera = (onCameraStop?: () => void): UseCameraReturn => {
       // Reset error state
       setHasVideoError(false);
       
-      // First check if camera permissions are granted
-      const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
-      
-      if (permissionStatus.state === 'denied') {
-        toast.error("Camera access denied", {
-          description: "Please enable camera permissions in your browser settings",
-          duration: 5000
-        });
-        setHasVideoError(true);
-        return;
-      }
-      
-      console.log("Requesting camera access...");
+      console.log("Attempting to start camera...");
+      toast.info("Activating camera...");
       
       // Try with specific constraints first
       try {
+        console.log("Requesting camera access with optimal settings...");
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             width: { ideal: 640 },
@@ -103,12 +93,17 @@ export const useCamera = (onCameraStop?: () => void): UseCameraReturn => {
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError') {
           toast.error("Camera access denied", {
-            description: "Please allow camera access when prompted",
+            description: "Please allow camera access when prompted by your browser",
             duration: 5000
           });
         } else if (error.name === 'NotFoundError') {
           toast.error("No camera found", {
             description: "Please connect a camera to your device",
+            duration: 5000
+          });
+        } else if (error.name === 'NotReadableError') {
+          toast.error("Camera in use by another application", {
+            description: "Please close other applications using your camera",
             duration: 5000
           });
         } else {
@@ -119,7 +114,7 @@ export const useCamera = (onCameraStop?: () => void): UseCameraReturn => {
         }
       } else {
         toast.error("Could not access camera", {
-          description: "Please ensure camera permissions are granted to this site",
+          description: "Please check browser permissions and try again",
           duration: 5000
         });
       }

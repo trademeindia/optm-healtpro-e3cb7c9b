@@ -53,8 +53,8 @@ export const humanConfig: Human.Config = {
   // Enable and optimize body pose detection
   body: { 
     enabled: true,
-    modelPath: 'blazepose-heavy.json', // Use the heavy model for better detection
-    minConfidence: 0.3, // Lower threshold for better detection
+    modelPath: 'blazepose.json', // Use the standard model for balance of accuracy and speed
+    minConfidence: 0.2, // Lower threshold for better detection in challenging conditions
     skipFrames: 1, // Skip fewer frames for smoother tracking
     maxDetected: 1, // Only track one person
   },

@@ -57,6 +57,10 @@ const getAlternativeModelPath = (attempt: number): { basePath: string, modelPath
       modelPath: 'blazepose.json'
     },
     {
+      basePath: 'https://unpkg.com/@vladmandic/human@3.0.0/dist/models/',
+      modelPath: 'blazepose.json'
+    },
+    {
       basePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@latest/dist/models/',
       modelPath: 'blazepose.json'
     },

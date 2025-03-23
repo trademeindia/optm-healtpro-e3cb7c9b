@@ -69,7 +69,7 @@ const drawSilhouetteGuide = (
   const startY = canvasHeight * 0.1;
   
   // Set translucent style
-  ctx.globalAlpha = 0.2;
+  ctx.globalAlpha = 0.3;
   ctx.strokeStyle = '#4ECDC4';
   ctx.lineWidth = 2;
   
@@ -102,7 +102,7 @@ const drawSilhouetteGuide = (
   
   // Draw a message
   ctx.globalAlpha = 1;
-  ctx.font = '14px Arial';
+  ctx.font = '16px Arial';
   ctx.fillStyle = 'white';
   ctx.textAlign = 'center';
   ctx.fillText('Stand in this position to begin', centerX, startY + height + 30);
@@ -163,6 +163,14 @@ const drawKeypoints = (
     ctx.arc(canvasX, canvasY, 12, 0, 2 * Math.PI);
     ctx.fillStyle = `rgba(0, 230, 255, ${alpha * 0.3})`;
     ctx.fill();
+    
+    // Label important keypoints
+    if (['leftShoulder', 'rightShoulder', 'leftHip', 'rightHip', 'leftKnee', 'rightKnee'].includes(keypoint.part)) {
+      ctx.font = '10px Arial';
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.fillText(keypoint.part, canvasX, canvasY - 15);
+    }
   });
 };
 
@@ -253,7 +261,7 @@ const drawAngles = (
   canvasHeight: number
 ) => {
   // Add a semi-transparent background
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
   ctx.fillRect(10, 10, 200, 150);
   
   ctx.font = '16px Arial';
@@ -264,7 +272,7 @@ const drawAngles = (
   let yOffset = 20;
   
   // Draw the angle values with better error handling
-  ctx.fillText('Angle Measurements:', 20, yOffset);
+  ctx.fillText('Real-time Angle Measurements:', 20, yOffset);
   yOffset += 30;
   
   if (angles.kneeAngle !== null && !isNaN(angles.kneeAngle)) {
