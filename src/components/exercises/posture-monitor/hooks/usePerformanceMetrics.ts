@@ -35,9 +35,10 @@ export const usePerformanceMetrics = () => {
   
   return {
     stats: {
-      accuracy,
-      reps,
-      incorrectReps
+      totalReps: reps,
+      goodReps: reps - incorrectReps,
+      badReps: incorrectReps,
+      accuracy
     },
     updateMetricsForGoodRep,
     updateMetricsForBadRep,

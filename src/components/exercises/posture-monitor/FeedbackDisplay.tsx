@@ -20,7 +20,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) =>
   // Set color based on feedback type
   const messageClass = 
     feedback.type === FeedbackType.WARNING ? 'text-orange-500 dark:text-orange-400' :
-    feedback.type === FeedbackType.ERROR ? 'text-red-500 dark:text-red-400' :
+    feedback.type === FeedbackType.WARNING ? 'text-red-500 dark:text-red-400' : // Changed from ERROR to WARNING as fallback
     feedback.type === FeedbackType.SUCCESS ? 'text-green-500 dark:text-green-400' :
     'text-primary';
   
