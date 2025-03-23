@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Info, DumbellIcon, ArrowRight } from 'lucide-react';
+import { Info, DumbbellIcon, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const ExerciseSelectionView: React.FC = () => {
@@ -18,7 +18,7 @@ const ExerciseSelectionView: React.FC = () => {
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center p-12 text-center">
         <div className="rounded-full bg-primary/10 p-6 mb-6">
-          <DumbellIcon className="h-12 w-12 text-primary" />
+          <DumbbellIcon className="h-12 w-12 text-primary" />
         </div>
         <h3 className="text-xl font-medium mb-2 high-contrast-text">Ready to Start</h3>
         <p className="text-muted-foreground mb-6 max-w-md">
