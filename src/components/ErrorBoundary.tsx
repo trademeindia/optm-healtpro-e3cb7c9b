@@ -25,9 +25,12 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
+    // Handle cases where the error might be null or undefined
+    const safeError = error || new Error("An unknown error occurred");
+    
     return {
       hasError: true,
-      error
+      error: safeError
     };
   }
 
@@ -39,9 +42,12 @@ class ErrorBoundary extends Component<Props, State> {
       this.props.onError(error);
     }
     
+    // Create a safe error message when the error message is empty
+    const errorMessage = error?.message || "The application encountered an unexpected problem";
+    
     // Show a toast notification
     toast.error('An error occurred', {
-      description: error.message || 'The application encountered an unexpected problem'
+      description: errorMessage
     });
   }
 
@@ -59,13 +65,16 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      // Create a safe error message when the error message is empty
+      const errorMessage = this.state.error?.message || "The application encountered an unexpected problem";
+
       // Default error UI
       return (
         <div className="flex flex-col items-center justify-center p-6 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800/30 max-w-md mx-auto my-8 text-center">
           <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
           <h2 className="text-xl font-medium text-red-800 dark:text-red-300 mb-2">Something went wrong</h2>
           <p className="text-red-600 dark:text-red-400 mb-4">
-            {this.state.error?.message || "The application encountered an unexpected problem"}
+            {errorMessage}
           </p>
           <Button 
             variant="outline" 

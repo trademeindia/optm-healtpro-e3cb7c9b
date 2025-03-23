@@ -23,6 +23,7 @@ const IndexContent = () => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [hasRedirected, setHasRedirected] = useState(false);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
+  const [initError, setInitError] = useState<Error | null>(null);
 
   const handleRedirect = useCallback((path: string) => {
     try {
@@ -30,7 +31,9 @@ const IndexContent = () => {
       setHasRedirected(true);
       navigate(path);
     } catch (error) {
-      console.error("Navigation error:", error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error("Navigation error:", err);
+      setInitError(err);
       toast.error("Navigation failed", { 
         description: "There was a problem redirecting you. Please try refreshing the page." 
       });
@@ -71,6 +74,28 @@ const IndexContent = () => {
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, isLoading, navigate, user, hasRedirected, handleRedirect, redirectAttempts]);
+
+  if (initError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full bg-background">
+        <div className="text-foreground p-6 text-center border border-red-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">
+          <div className="text-red-500 w-12 h-12 mb-4 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-medium">Application Error</h2>
+          <p className="mt-2 text-muted-foreground">{initError.message || "Failed to initialize the application"}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+          >
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <IndexLoader />;
