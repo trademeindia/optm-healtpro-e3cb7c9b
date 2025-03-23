@@ -57,7 +57,7 @@ export const useDetectionOperations = (
     if (time - lastInfoToastRef.current > 10000) {
       lastInfoToastRef.current = time;
       const stats = getDetectionStats();
-      console.log(`Motion tracking stats - FPS: ${stats.fps}, Success rate: ${stats.successRate.toFixed(1)}%`);
+      console.log(`Motion tracking stats - Success rate: ${stats.successRate.toFixed(1)}%, Attempts: ${stats.totalAttempts}`);
     }
   }, []);
   

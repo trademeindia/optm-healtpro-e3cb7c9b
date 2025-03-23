@@ -1,7 +1,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { DetectionResult } from '../types';
-import { resetDetectionStats } from '../../utils/detectionUtils';
+import { getDetectionStats, resetDetectionStats } from '../../utils/detectionUtils';
 import { useFpsCalculator } from './useFpsCalculator';
 import { useDetectionOperations } from './useDetectionOperations';
 import { DetectionState, UseDetectionLoopReturn } from './types';
@@ -169,11 +169,4 @@ export const useDetectionLoop = (
     stopDetection,
     requestRef
   };
-};
-
-// Helper function imported from the original file
-const getDetectionStats = () => {
-  // Import from detectionUtils to avoid circular dependencies
-  const stats = require('../../utils/detectionUtils').getDetectionStats();
-  return stats;
 };

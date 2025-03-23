@@ -4,6 +4,7 @@ import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
 /**
  * Extracts key biomarkers from Human.js detection results and angle calculations
+ * with improved accuracy and detailed metrics for healthcare applications
  */
 export const extractBiomarkers = (
   result: Human.Result | null,
@@ -21,25 +22,41 @@ export const extractBiomarkers = (
   }
   
   try {
-    // Create basic biomarkers based on available data
+    // Create comprehensive biomarkers with detailed health metrics
     const biomarkers: Record<string, any> = {
-      // Body position metrics
+      // Core body metrics
       bodyPosture: calculatePostureSymmetry(keypoints),
       balanceScore: calculateBalanceScore(keypoints),
+      stabilityIndex: calculateStabilityIndex(keypoints),
       
-      // Joint metrics based on angles
+      // Joint-specific metrics based on angles
       kneeFlexion: angles.kneeAngle !== null 
         ? calculateKneeFlexionQuality(angles.kneeAngle) 
         : null,
       hipHinge: angles.hipAngle !== null 
         ? calculateHipHingeQuality(angles.hipAngle) 
         : null,
-      shoulderStability: angles.shoulderAngle !== null 
+      shoulderMobility: angles.shoulderAngle !== null 
         ? calculateShoulderStability(angles.shoulderAngle) 
         : null,
+      elbowExtension: angles.elbowAngle !== null
+        ? calculateElbowExtensionQuality(angles.elbowAngle)
+        : null,
+      ankleRange: angles.ankleAngle !== null
+        ? calculateAnkleRangeQuality(angles.ankleAngle)
+        : null,
+      neckAlignment: angles.neckAngle !== null
+        ? calculateNeckAlignmentQuality(angles.neckAngle)
+        : null,
         
-      // Dynamic measures
+      // Movement dynamics metrics
       bodyAlignment: calculateBodyAlignment(keypoints),
+      weightDistribution: calculateWeightDistribution(keypoints),
+      movementSymmetry: calculateMovementSymmetry(keypoints, angles),
+      
+      // Healthcare-specific risk indicators
+      jointStressIndex: calculateJointStressIndex(angles),
+      injuryRiskScore: calculateInjuryRiskScore(angles, keypoints),
       
       // Additional metadata
       confidenceScore: body.score,
@@ -96,8 +113,9 @@ function calculateBalanceScore(keypoints: any[]): number | null {
     const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
     const leftHip = keypoints.find(kp => kp.part === 'leftHip');
     const rightHip = keypoints.find(kp => kp.part === 'rightHip');
+    const nose = keypoints.find(kp => kp.part === 'nose');
     
-    if (!leftAnkle || !rightAnkle || !leftHip || !rightHip) {
+    if (!leftAnkle || !rightAnkle || !leftHip || !rightHip || !nose) {
       return null;
     }
     
@@ -108,10 +126,46 @@ function calculateBalanceScore(keypoints: any[]): number | null {
     // Calculate horizontal offset (normalized)
     const horizontalOffset = Math.abs(ankleMidX - hipMidX);
     
+    // Calculate vertical alignment - nose should be aligned with ankles
+    const verticalOffset = Math.abs(nose.x - ankleMidX);
+    
+    // Combined score with more weight on vertical alignment
+    const combinedOffset = (horizontalOffset * 0.4) + (verticalOffset * 0.6);
+    
     // Convert to balance score (0-100)
-    const balanceScore = Math.max(0, 100 - (horizontalOffset * 1000));
+    const balanceScore = Math.max(0, 100 - (combinedOffset * 1000));
     
     return Math.min(100, balanceScore);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Calculate stability index (0-100)
+function calculateStabilityIndex(keypoints: any[]): number | null {
+  try {
+    const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle');
+    const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
+    const leftKnee = keypoints.find(kp => kp.part === 'leftKnee');
+    const rightKnee = keypoints.find(kp => kp.part === 'rightKnee');
+    const leftHip = keypoints.find(kp => kp.part === 'leftHip');
+    const rightHip = keypoints.find(kp => kp.part === 'rightHip');
+    
+    if (!leftAnkle || !rightAnkle || !leftKnee || !rightKnee || !leftHip || !rightHip) {
+      return null;
+    }
+    
+    // Calculate alignment of joints
+    const leftLegAlignment = Math.abs((leftAnkle.x - leftKnee.x) - (leftKnee.x - leftHip.x));
+    const rightLegAlignment = Math.abs((rightAnkle.x - rightKnee.x) - (rightKnee.x - rightHip.x));
+    
+    // Average alignment
+    const avgAlignment = (leftLegAlignment + rightLegAlignment) / 2;
+    
+    // Convert to stability score (0-100)
+    const stabilityScore = Math.max(0, 100 - (avgAlignment * 1000));
+    
+    return Math.min(100, stabilityScore);
   } catch (error) {
     return null;
   }
@@ -156,7 +210,42 @@ function calculateShoulderStability(shoulderAngle: number): number {
   return Math.max(0, 100 - (deviation / 30) * 100);
 }
 
-// Calculate overall body alignment (0-100%)
+// Evaluate elbow extension quality (0-100%)
+function calculateElbowExtensionQuality(elbowAngle: number): number {
+  // Optimal elbow angle depends on exercise
+  // For standing posture, closer to 180 is better (straight arm)
+  const deviation = Math.abs(180 - elbowAngle);
+  return Math.max(0, 100 - (deviation / 45) * 100);
+}
+
+// Evaluate ankle range quality (0-100%)
+function calculateAnkleRangeQuality(ankleAngle: number): number {
+  // Optimal ankle angle during squats is around 80-100 degrees
+  if (ankleAngle < 80) {
+    return Math.max(0, 50 + ((ankleAngle - 60) / 20) * 50);
+  } else if (ankleAngle > 100) {
+    return Math.max(0, 100 - ((ankleAngle - 100) / 20) * 50);
+  } else {
+    // Optimal range
+    const distanceFromOptimal = Math.abs(ankleAngle - 90);
+    return 100 - (distanceFromOptimal / 10) * 20;
+  }
+}
+
+// Evaluate neck alignment quality (0-100%)
+function calculateNeckAlignmentQuality(neckAngle: number): number {
+  // Optimal neck angle is typically around 160-180 degrees (neutral position)
+  if (neckAngle < 160) {
+    // Head too far forward
+    return Math.max(0, 50 + ((neckAngle - 140) / 20) * 50);
+  } else {
+    // Good to optimal range
+    const distanceFromOptimal = Math.abs(neckAngle - 170);
+    return 100 - (distanceFromOptimal / 10) * 20;
+  }
+}
+
+// Calculate body alignment (0-100%)
 function calculateBodyAlignment(keypoints: any[]): number | null {
   try {
     // Find key points for alignment
@@ -189,6 +278,168 @@ function calculateBodyAlignment(keypoints: any[]): number | null {
     const alignmentScore = Math.max(0, 100 - (totalDeviation * 1000));
     
     return Math.min(100, alignmentScore);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Calculate weight distribution across feet (0-100%, where 100% is perfectly balanced)
+function calculateWeightDistribution(keypoints: any[]): number | null {
+  try {
+    const leftAnkle = keypoints.find(kp => kp.part === 'leftAnkle');
+    const rightAnkle = keypoints.find(kp => kp.part === 'rightAnkle');
+    const nose = keypoints.find(kp => kp.part === 'nose');
+    
+    if (!leftAnkle || !rightAnkle || !nose) {
+      return null;
+    }
+    
+    // Calculate ankle midpoint
+    const ankleMidX = (leftAnkle.x + rightAnkle.x) / 2;
+    
+    // Calculate horizontal distance from nose to ankle midpoint
+    const deviation = Math.abs(nose.x - ankleMidX);
+    
+    // Calculate ankle width (distance between ankles)
+    const ankleWidth = Math.abs(rightAnkle.x - leftAnkle.x);
+    
+    // Normalize deviation by ankle width
+    const normalizedDeviation = ankleWidth > 0 ? deviation / ankleWidth : 0;
+    
+    // Convert to score (0-100)
+    const weightDistributionScore = Math.max(0, 100 - (normalizedDeviation * 200));
+    
+    return Math.min(100, weightDistributionScore);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Calculate movement symmetry between left and right sides (0-100%)
+function calculateMovementSymmetry(keypoints: any[], angles: BodyAngles): number | null {
+  try {
+    // If no keypoints or angles, return null
+    if (!keypoints || keypoints.length === 0 || !angles) {
+      return null;
+    }
+    
+    // Find key points for symmetry calculation
+    const leftKnee = keypoints.find(kp => kp.part === 'leftKnee');
+    const rightKnee = keypoints.find(kp => kp.part === 'rightKnee');
+    const leftHip = keypoints.find(kp => kp.part === 'leftHip');
+    const rightHip = keypoints.find(kp => kp.part === 'rightHip');
+    const leftShoulder = keypoints.find(kp => kp.part === 'leftShoulder');
+    const rightShoulder = keypoints.find(kp => kp.part === 'rightShoulder');
+    
+    if (!leftKnee || !rightKnee || !leftHip || !rightHip || !leftShoulder || !rightShoulder) {
+      return null;
+    }
+    
+    // Calculate vertical position differences
+    const kneeVerticalDiff = Math.abs(leftKnee.y - rightKnee.y);
+    const hipVerticalDiff = Math.abs(leftHip.y - rightHip.y);
+    const shoulderVerticalDiff = Math.abs(leftShoulder.y - rightShoulder.y);
+    
+    // Calculate average vertical difference
+    const avgVerticalDiff = (kneeVerticalDiff + hipVerticalDiff + shoulderVerticalDiff) / 3;
+    
+    // Convert to symmetry score (0-100)
+    const symmetryScore = Math.max(0, 100 - (avgVerticalDiff * 1000));
+    
+    return Math.min(100, symmetryScore);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Calculate joint stress index (0-100, where lower is better)
+function calculateJointStressIndex(angles: BodyAngles): number | null {
+  if (!angles) return null;
+  
+  try {
+    let stressFactors = [];
+    let weightFactors = [];
+    
+    // Knee stress factor (more stress at extreme angles)
+    if (angles.kneeAngle !== null) {
+      // Higher stress when knee is deeply bent or hyperextended
+      const kneeStress = angles.kneeAngle < 90 
+        ? 100 - (angles.kneeAngle - 40) * 2 
+        : angles.kneeAngle > 170 
+          ? (angles.kneeAngle - 170) * 3 
+          : 0;
+      stressFactors.push(Math.min(100, Math.max(0, kneeStress)));
+      weightFactors.push(0.35); // Knee stress is weighted highly
+    }
+    
+    // Hip stress factor
+    if (angles.hipAngle !== null) {
+      const hipStress = angles.hipAngle < 80 
+        ? 80 - angles.hipAngle 
+        : 0;
+      stressFactors.push(Math.min(100, Math.max(0, hipStress)));
+      weightFactors.push(0.25);
+    }
+    
+    // Shoulder stress factor
+    if (angles.shoulderAngle !== null) {
+      const shoulderStress = Math.abs(angles.shoulderAngle - 180) > 45 
+        ? Math.abs(angles.shoulderAngle - 180) - 45 
+        : 0;
+      stressFactors.push(Math.min(100, Math.max(0, shoulderStress)));
+      weightFactors.push(0.2);
+    }
+    
+    // Neck stress factor
+    if (angles.neckAngle !== null) {
+      const neckStress = Math.abs(angles.neckAngle - 170) > 15 
+        ? (Math.abs(angles.neckAngle - 170) - 15) * 3 
+        : 0;
+      stressFactors.push(Math.min(100, Math.max(0, neckStress)));
+      weightFactors.push(0.2);
+    }
+    
+    // If we don't have enough data points, return null
+    if (stressFactors.length === 0) return null;
+    
+    // Calculate weighted average stress
+    let totalWeight = 0;
+    let weightedSum = 0;
+    
+    for (let i = 0; i < stressFactors.length; i++) {
+      weightedSum += stressFactors[i] * weightFactors[i];
+      totalWeight += weightFactors[i];
+    }
+    
+    // Return overall stress index (0-100)
+    return Math.round(weightedSum / totalWeight);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Calculate injury risk score (0-100, where lower is better)
+function calculateInjuryRiskScore(angles: BodyAngles, keypoints: any[]): number | null {
+  if (!angles || !keypoints) return null;
+  
+  try {
+    // Start with joint stress as a base factor
+    const jointStress = calculateJointStressIndex(angles);
+    if (jointStress === null) return null;
+    
+    // Calculate alignment factor
+    const alignment = calculateBodyAlignment(keypoints);
+    const alignmentFactor = alignment !== null ? (100 - alignment) * 0.5 : 30; // Default to medium risk if unknown
+    
+    // Calculate balance factor
+    const balance = calculateBalanceScore(keypoints);
+    const balanceFactor = balance !== null ? (100 - balance) * 0.3 : 20; // Default to medium risk if unknown
+    
+    // Weight the factors (joint stress is most important)
+    const weightedRisk = (jointStress * 0.6) + alignmentFactor + balanceFactor;
+    
+    // Return overall injury risk (0-100)
+    return Math.min(100, Math.max(0, Math.round(weightedRisk)));
   } catch (error) {
     return null;
   }

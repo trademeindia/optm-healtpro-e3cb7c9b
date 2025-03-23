@@ -1,25 +1,28 @@
 
 import { useCallback, useRef } from 'react';
 
-export const useFpsCalculator = (onFpsUpdate: (fps: number) => void) => {
-  const frameCountRef = useRef<number>(0);
+export const useFpsCalculator = (
+  onFpsUpdate: (fps: number) => void
+) => {
+  const framesRef = useRef<number>(0);
   const lastFpsUpdateRef = useRef<number>(0);
   
   const calculateFps = useCallback((time: number) => {
-    // Update FPS every second
-    if (time - lastFpsUpdateRef.current >= 1000) {
-      const fps = Math.round(frameCountRef.current * 1000 / (time - lastFpsUpdateRef.current));
-      frameCountRef.current = 0;
-      lastFpsUpdateRef.current = time;
-      
+    framesRef.current++;
+    
+    // Update FPS every 500ms
+    if (time - lastFpsUpdateRef.current >= 500) {
+      const fps = Math.round((framesRef.current * 1000) / (time - lastFpsUpdateRef.current));
       onFpsUpdate(fps);
-    } else {
-      frameCountRef.current++;
+      
+      // Reset counters
+      framesRef.current = 0;
+      lastFpsUpdateRef.current = time;
     }
   }, [onFpsUpdate]);
   
   const resetFpsCounter = useCallback(() => {
-    frameCountRef.current = 0;
+    framesRef.current = 0;
     lastFpsUpdateRef.current = 0;
   }, []);
   
