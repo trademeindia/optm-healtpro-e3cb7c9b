@@ -4,7 +4,7 @@ import { DetectionResult } from '../hooks/types';
 import { human } from '@/lib/human';
 import { extractBodyAngles } from '@/lib/human/angles';
 import { extractBiomarkers } from '@/lib/human/biomarkers';
-import { MotionState } from '@/components/exercises/posture-monitor/types';
+import { MotionState } from '@/lib/human/types';
 
 // Default empty angles object for when detection fails
 const emptyAngles = {

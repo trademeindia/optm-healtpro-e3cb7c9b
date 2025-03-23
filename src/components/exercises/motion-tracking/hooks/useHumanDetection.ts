@@ -1,7 +1,6 @@
-
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
+import { FeedbackType, MotionState } from '@/lib/human/types';
 import { useDetectionService } from './useDetectionService';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionManagement } from './useSessionManagement';

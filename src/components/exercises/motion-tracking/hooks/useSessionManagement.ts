@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { MotionState, MotionStats } from '@/components/exercises/posture-monitor/types';
+import { MotionState, MotionStats } from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from '../utils/statsUtils';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
 
@@ -71,7 +71,7 @@ export const useSessionManagement = () => {
   }, [sessionId, exerciseType, stats]);
   
   // Complete the current session
-  const completeCurrentSession = useCallback((biomarkers: any) => {
+  const completeCurrentSession = useCallback((biomarkers: any = {}) => {
     if (!sessionId) return;
     
     try {

@@ -1,5 +1,5 @@
 
-import { BodyAngles, FeedbackMessage, MotionState, MotionStats } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles, FeedbackMessage, MotionState, MotionStats } from '@/lib/human/types';
 import * as Human from '@vladmandic/human';
 
 export interface DetectionState {

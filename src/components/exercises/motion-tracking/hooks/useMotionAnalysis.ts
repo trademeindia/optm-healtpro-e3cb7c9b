@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/lib/human/types';
 import { generateFeedback, evaluateRepQuality } from '../utils/feedbackUtils';
 import { DetectionResult } from './types';
 

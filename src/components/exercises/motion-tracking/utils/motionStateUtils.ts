@@ -1,8 +1,8 @@
-import { MotionState, BodyAngles } from '../../posture-monitor/types';
+import { MotionState, BodyAngles } from '@/lib/human/types';
 
 export const determineMotionState = (angles: BodyAngles, prevState: MotionState): MotionState => {
   // If no knee angle is detected, keep the previous state
-  if (angles.kneeAngle === undefined) return prevState;
+  if (angles.kneeAngle === null) return prevState;
   
   const kneeAngle = angles.kneeAngle;
   
@@ -41,7 +41,7 @@ export const isRepCompleted = (
  */
 export const hasGoodForm = (angles: BodyAngles): boolean => {
   // Check if all required angles were detected
-  if (angles.kneeAngle === undefined) return false;
+  if (angles.kneeAngle === null) return false;
   
   // For squats, good form typically means:
   // - Knee angle between 90° and 130° at the bottom of the squat

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FeedbackType } from '../posture-monitor/types';
+import { FeedbackType } from '@/lib/human/types';
 
 interface FeedbackDisplayProps {
   feedback: { message: string | null; type: FeedbackType };
