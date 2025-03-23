@@ -36,8 +36,10 @@ const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        {/* Public Routes */}
+        {/* Index Route - redirects to login or dashboard based on auth state */}
         <Route path="/" element={<Index />} />
+        
+        {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         
@@ -145,21 +147,12 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* New Settings and Help Routes */}
+        {/* Receptionist Routes */}
         <Route 
-          path="/settings" 
+          path="/dashboard/receptionist" 
           element={
-            <ProtectedRoute>
-              <SettingsPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="/help" 
-          element={
-            <ProtectedRoute>
-              <HelpPage />
+            <ProtectedRoute requiredRole="receptionist">
+              <ReceptionistDashboard />
             </ProtectedRoute>
           } 
         />
@@ -174,12 +167,21 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Receptionist Routes */}
+        {/* Settings and Help Routes */}
         <Route 
-          path="/dashboard/receptionist" 
+          path="/settings" 
           element={
-            <ProtectedRoute requiredRole="receptionist">
-              <ReceptionistDashboard />
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/help" 
+          element={
+            <ProtectedRoute>
+              <HelpPage />
             </ProtectedRoute>
           } 
         />

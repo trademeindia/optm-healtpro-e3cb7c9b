@@ -105,7 +105,7 @@ export const useAuthSession = () => {
     setUser(newUser);
     
     // If this is a demo user, store in localStorage
-    if (newUser && ['admin@example.com', 'doctor@example.com', 'patient@example.com'].includes(newUser.email)) {
+    if (newUser && ['admin@example.com', 'doctor@example.com', 'patient@example.com', 'receptionist@example.com'].includes(newUser.email)) {
       localStorage.setItem('demoUser', JSON.stringify(newUser));
       console.log('Stored demo user in localStorage:', newUser.email);
     } else if (newUser === null) {

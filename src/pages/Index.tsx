@@ -13,7 +13,13 @@ const Index: React.FC = () => {
     if (!isLoading) {
       if (isAuthenticated && user) {
         console.log('Index page: User authenticated, role is', user.role);
-        const dashboard = user.role === 'doctor' ? '/dashboard' : '/patient-dashboard';
+        
+        // Redirect based on user role
+        const dashboard = 
+          user.role === 'doctor' ? '/dashboard/doctor' : 
+          user.role === 'receptionist' ? '/dashboard/receptionist' : 
+          '/dashboard/patient';
+          
         console.log(`Navigating to ${dashboard}`);
         navigate(dashboard);
       } else {
@@ -35,7 +41,7 @@ const Index: React.FC = () => {
     );
   }
 
-  // Fallback UI for any unexpected state
+  // This fallback should rarely be seen as we navigate away in the useEffect
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-background">
       <div className="text-foreground p-6 text-center border border-gray-200 rounded-lg shadow-sm max-w-md bg-white/50 dark:bg-gray-800/50">

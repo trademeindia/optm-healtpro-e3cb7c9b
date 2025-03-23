@@ -33,14 +33,6 @@ export const useLoginState = () => {
     
     setIsSubmitting(true);
     try {
-      // For demo purposes, handle different role demo accounts
-      if (email === 'receptionist@example.com' && password === 'password123') {
-        const demoUser = await login(email, password);
-        console.log('Receptionist login successful');
-        setTimeout(() => navigate('/dashboard/receptionist'), 500);
-        return;
-      }
-      
       const result = await login(email, password);
       
       if (result) {

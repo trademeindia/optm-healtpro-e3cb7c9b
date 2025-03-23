@@ -52,7 +52,7 @@ const HotspotForm: React.FC<HotspotFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">Add New Issue</DialogTitle>
         </DialogHeader>
@@ -91,10 +91,10 @@ const HotspotForm: React.FC<HotspotFormProps> = ({
               <SelectTrigger className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 h-10">
                 <SelectValue placeholder="Select severity" />
               </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <SelectItem value="normal" className="hover:bg-gray-100 dark:hover:bg-gray-700">Normal</SelectItem>
-                <SelectItem value="warning" className="hover:bg-gray-100 dark:hover:bg-gray-700">Warning</SelectItem>
-                <SelectItem value="critical" className="hover:bg-gray-100 dark:hover:bg-gray-700">Critical</SelectItem>
+              <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                <SelectItem value="normal" className="hover:bg-gray-100 dark:hover:bg-gray-800">Normal</SelectItem>
+                <SelectItem value="warning" className="hover:bg-gray-100 dark:hover:bg-gray-800">Warning</SelectItem>
+                <SelectItem value="critical" className="hover:bg-gray-100 dark:hover:bg-gray-800">Critical</SelectItem>
               </SelectContent>
             </Select>
           </div>
