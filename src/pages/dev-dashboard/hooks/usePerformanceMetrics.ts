@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { PerformanceMetrics } from '../types';
+import { PerformanceMetrics, TimeSeriesDataPoint } from '../types';
 
 export function usePerformanceMetrics() {
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
@@ -32,7 +32,7 @@ export function usePerformanceMetrics() {
       cpu: 32, // 32% usage
       memory: 512000000, // 512 MB
       disk: 1073741824, // 1 GB
-      cpu: [
+      cpuHistory: [
         { timestamp: '2023-07-07T09:30:00Z', value: 28 },
         { timestamp: '2023-07-07T09:35:00Z', value: 35 },
         { timestamp: '2023-07-07T09:40:00Z', value: 42 },
@@ -41,7 +41,7 @@ export function usePerformanceMetrics() {
         { timestamp: '2023-07-07T09:55:00Z', value: 30 },
         { timestamp: '2023-07-07T10:00:00Z', value: 32 }
       ],
-      memory: [
+      memoryHistory: [
         { timestamp: '2023-07-07T09:30:00Z', value: 495000000 },
         { timestamp: '2023-07-07T09:35:00Z', value: 510000000 },
         { timestamp: '2023-07-07T09:40:00Z', value: 540000000 },
@@ -50,7 +50,7 @@ export function usePerformanceMetrics() {
         { timestamp: '2023-07-07T09:55:00Z', value: 505000000 },
         { timestamp: '2023-07-07T10:00:00Z', value: 512000000 }
       ],
-      disk: [
+      diskHistory: [
         { timestamp: '2023-07-07T09:30:00Z', value: 950000000 },
         { timestamp: '2023-07-07T09:35:00Z', value: 980000000 },
         { timestamp: '2023-07-07T09:40:00Z', value: 1020000000 },

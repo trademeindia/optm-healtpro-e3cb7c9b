@@ -5,11 +5,12 @@ import { ChartContainer } from '@/components/ui/chart';
 import { Server } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatBytes } from '../../utils/formatters';
+import { TimeSeriesDataPoint } from '../../types';
 
 interface ResourceUsageChartProps {
-  cpuUsage: Array<{ timestamp: string; value: number }>;
-  memoryUsage: Array<{ timestamp: string; value: number }>;
-  diskUsage: Array<{ timestamp: string; value: number }>;
+  cpuUsage: TimeSeriesDataPoint[];
+  memoryUsage: TimeSeriesDataPoint[];
+  diskUsage: TimeSeriesDataPoint[];
 }
 
 const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
