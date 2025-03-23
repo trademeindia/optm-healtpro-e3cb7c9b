@@ -2,10 +2,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import CameraView from './CameraView';
 import { useCamera } from './camera';
-import { SquatState, FeedbackType } from './types';
+import { SquatState, FeedbackType, DetectionStatus } from './types';
 import { determineSquatState } from './utils';
 import useSquatCounter from './hooks/useSquatCounter';
-import { DetectionStatus } from '@/lib/human/types';
 
 // Placeholder for missing components
 const PoseRenderer = ({ canvasRef, detectedPose }: { canvasRef: React.RefObject<HTMLCanvasElement>, detectedPose: any }) => {
@@ -60,6 +59,14 @@ const PostureMonitor: React.FC = () => {
     }
   }, [kneeAngle, squatState, incrementSquatCount]);
   
+  const detectionStatus: DetectionStatus = {
+    isDetecting: cameraActive,
+    fps: 0,
+    confidence: null,
+    detectedKeypoints: 0,
+    lastDetectionTime: Date.now()
+  };
+  
   return (
     <div className="space-y-4">
       <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
@@ -71,13 +78,7 @@ const PostureMonitor: React.FC = () => {
             canvasRef={canvasRef}
             cameraError={cameraError}
             onRetryCamera={retryCamera}
-            detectionStatus={{
-              isDetecting: cameraActive,
-              fps: 0,
-              confidence: null,
-              detectedKeypoints: 0,
-              lastDetectionTime: Date.now()
-            }}
+            detectionStatus={detectionStatus}
           />
           
           <PoseRenderer

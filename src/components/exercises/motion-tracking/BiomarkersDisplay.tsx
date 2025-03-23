@@ -1,114 +1,69 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { BodyAngles } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles } from '../posture-monitor/types';
+import { Card } from '@/components/ui/card';
 
 interface BiomarkersDisplayProps {
   biomarkers: Record<string, any>;
   angles: BodyAngles;
 }
 
-const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angles }) => {
-  if (!biomarkers || Object.keys(biomarkers).length === 0) return null;
-  
-  // Helper function to determine the color class based on score
-  const getScoreColorClass = (score: number) => {
-    if (score > 85) return 'bg-green-500';
-    if (score > 70) return 'bg-yellow-500';
-    return 'bg-orange-500';
-  };
-  
+const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ 
+  biomarkers, 
+  angles 
+}) => {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Posture Analysis</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Posture Score */}
-          {biomarkers.postureScore !== undefined && (
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Posture Score</span>
-                <span className="text-sm font-medium">
-                  {Math.round(biomarkers.postureScore)}%
-                </span>
-              </div>
-              <Progress 
-                value={biomarkers.postureScore} 
-                className="h-2" 
-                indicatorClassName={getScoreColorClass(biomarkers.postureScore)} 
-              />
-            </div>
-          )}
-          
-          {/* Shoulder Symmetry */}
-          {biomarkers.shoulderSymmetry !== undefined && (
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Shoulder Balance</span>
-                <span className="text-sm font-medium">
-                  {Math.round(biomarkers.shoulderSymmetry)}%
-                </span>
-              </div>
-              <Progress 
-                value={biomarkers.shoulderSymmetry} 
-                className="h-2" 
-                indicatorClassName={getScoreColorClass(biomarkers.shoulderSymmetry)} 
-              />
-            </div>
-          )}
-          
-          {/* Balance Score */}
-          {biomarkers.balanceScore !== undefined && (
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Balance</span>
-                <span className="text-sm font-medium">
-                  {Math.round(biomarkers.balanceScore)}%
-                </span>
-              </div>
-              <Progress 
-                value={biomarkers.balanceScore} 
-                className="h-2" 
-                indicatorClassName={getScoreColorClass(biomarkers.balanceScore)} 
-              />
-            </div>
-          )}
-          
-          {/* Angles Display */}
-          <div className="grid grid-cols-3 gap-2 pt-2">
-            {angles.kneeAngle !== null && (
-              <div className="bg-muted p-2 rounded-md text-center">
-                <div className="text-xs">Knee Angle</div>
-                <div className="font-semibold">{Math.round(angles.kneeAngle)}°</div>
-              </div>
+    <Card className="p-4">
+      <h3 className="text-lg font-medium mb-3">Biomechanical Analysis</h3>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Angles Display */}
+        <div>
+          <h4 className="font-medium text-sm text-muted-foreground mb-2">Body Angles</h4>
+          <ul className="space-y-1">
+            {angles.kneeAngle && (
+              <li className="text-sm">
+                Knee: <span className="font-medium">{Math.round(angles.kneeAngle)}°</span>
+              </li>
             )}
-            
-            {angles.hipAngle !== null && (
-              <div className="bg-muted p-2 rounded-md text-center">
-                <div className="text-xs">Hip Angle</div>
-                <div className="font-semibold">{Math.round(angles.hipAngle)}°</div>
-              </div>
+            {angles.hipAngle && (
+              <li className="text-sm">
+                Hip: <span className="font-medium">{Math.round(angles.hipAngle)}°</span>
+              </li>
             )}
-            
-            {angles.shoulderAngle !== null && (
-              <div className="bg-muted p-2 rounded-md text-center">
-                <div className="text-xs">Shoulder Angle</div>
-                <div className="font-semibold">{Math.round(angles.shoulderAngle)}°</div>
-              </div>
+            {angles.shoulderAngle && (
+              <li className="text-sm">
+                Shoulder: <span className="font-medium">{Math.round(angles.shoulderAngle)}°</span>
+              </li>
             )}
-            
-            {angles.neckAngle !== null && (
-              <div className="bg-muted p-2 rounded-md text-center">
-                <div className="text-xs">Neck Angle</div>
-                <div className="font-semibold">{Math.round(angles.neckAngle)}°</div>
-              </div>
-            )}
-          </div>
+          </ul>
         </div>
-      </CardContent>
+        
+        {/* Biomarkers Display */}
+        <div>
+          <h4 className="font-medium text-sm text-muted-foreground mb-2">Performance Metrics</h4>
+          <ul className="space-y-1">
+            {Object.entries(biomarkers).map(([key, value]) => (
+              <li key={key} className="text-sm capitalize">
+                {key}: <span className="font-medium">
+                  {typeof value === 'number' ? Math.round(value * 100) : value}
+                  {typeof value === 'number' ? '%' : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        {/* Recommendations */}
+        <div className="col-span-2 md:col-span-1">
+          <h4 className="font-medium text-sm text-muted-foreground mb-2">Recommendations</h4>
+          <p className="text-sm">
+            {angles.kneeAngle && angles.kneeAngle < 140 
+              ? "Maintain this depth for optimal muscle engagement."
+              : "Try to achieve deeper knee bend for better results."}
+          </p>
+        </div>
+      </div>
     </Card>
   );
 };

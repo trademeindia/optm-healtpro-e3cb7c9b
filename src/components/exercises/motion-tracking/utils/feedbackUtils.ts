@@ -1,79 +1,43 @@
 
-import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '@/components/exercises/posture-monitor/types';
+import { BodyAngles, FeedbackMessage, FeedbackType, MotionState } from '../../posture-monitor/types';
 
-/**
- * Generate feedback based on motion state and body angles
- */
-export const generateFeedback = (currentMotionState: MotionState, angles: BodyAngles): FeedbackMessage => {
-  if (!angles.kneeAngle || !angles.hipAngle) {
-    return {
-      message: "Position yourself in the camera view",
-      type: FeedbackType.INFO
-    };
-  }
-  
-  if (currentMotionState === MotionState.STANDING) {
-    return {
-      message: "Start your exercise by bending your knees",
-      type: FeedbackType.INFO
-    };
-  } else if (currentMotionState === MotionState.MID_MOTION) {
-    if (angles.hipAngle < 70) {
+export const generateFeedback = (motionState: MotionState, angles: BodyAngles): FeedbackMessage => {
+  switch (motionState) {
+    case MotionState.STANDING:
       return {
-        message: "You're leaning too far forward",
-        type: FeedbackType.WARNING
+        message: "Ready for exercise. Maintain good posture.",
+        type: FeedbackType.INFO
       };
-    } else {
+    case MotionState.MID_MOTION:
       return {
-        message: "Good! Continue your movement",
+        message: "Good form, continue the movement.",
+        type: FeedbackType.INFO
+      };
+    case MotionState.FULL_MOTION:
+      return {
+        message: "Great depth! Now return to starting position.",
         type: FeedbackType.SUCCESS
       };
-    }
-  } else if (currentMotionState === MotionState.FULL_MOTION) {
-    return {
-      message: "Great depth! Now return to starting position",
-      type: FeedbackType.SUCCESS
-    };
+    default:
+      return {
+        message: null,
+        type: FeedbackType.INFO
+      };
   }
-  
-  return {
-    message: "Maintain good form during your exercise",
-    type: FeedbackType.INFO
-  };
 };
 
-/**
- * Evaluate the quality of a completed rep
- */
 export const evaluateRepQuality = (angles: BodyAngles) => {
-  if (!angles.kneeAngle || !angles.hipAngle) return null;
+  // Simple evaluation logic
+  const kneeAngle = angles.kneeAngle || 180;
+  const hipAngle = angles.hipAngle || 180;
   
-  let isGoodForm = true;
-  let feedback = '';
-  
-  // Check knee angle
-  if (angles.kneeAngle < 70) {
-    isGoodForm = false;
-    feedback = "Movement is too deep. Try not to overextend.";
-  } else if (angles.kneeAngle > 130) {
-    isGoodForm = false;
-    feedback = "You're not going deep enough. Try to lower more.";
-  }
-  
-  // Check hip angle
-  if (angles.hipAngle < 70) {
-    isGoodForm = false;
-    feedback = "You're leaning too far forward. Keep your back straighter.";
-  }
-  
-  if (isGoodForm) {
-    feedback = "Excellent form! Keep it up!";
-  }
+  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
   
   return {
     isGoodForm,
-    feedback,
+    feedback: isGoodForm 
+      ? "Great form on that rep!" 
+      : "Try to keep your back straight and go deeper",
     feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
   };
 };
-

@@ -9,9 +9,9 @@ import MotionTracker from '@/components/exercises/motion-tracking';
 
 interface ExerciseContentProps {
   filteredExercises: Exercise[];
-  selectedExercise: Exercise;
-  activeCategory: string;
-  onCategoryFilter: (category: string) => void;
+  selectedExercise: Exercise | null;
+  activeCategory: string | null;
+  onCategoryFilter: (category: string | null) => void;
   onStartExercise: (exerciseId: string) => void;
   onFinishExercise: () => void;
   showMonitor: boolean;
@@ -31,6 +31,42 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   const navigate = useNavigate();
   const [showMotionTracker, setShowMotionTracker] = React.useState(false);
   
+  // Check if selectedExercise is null and handle it
+  if (!selectedExercise) {
+    // Display a message or return a placeholder when no exercise is selected
+    return (
+      <div className="space-y-8">
+        <div className="bg-card rounded-lg overflow-hidden shadow-sm border">
+          <div className="p-6">
+            <h1 className="text-2xl font-bold">Select an Exercise</h1>
+            <p className="mt-4 text-muted-foreground">
+              Please select an exercise from the list to get started.
+            </p>
+            
+            {filteredExercises.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-lg font-medium mb-3">Available Exercises:</h2>
+                <ul className="space-y-2">
+                  {filteredExercises.slice(0, 5).map(exercise => (
+                    <li key={exercise.id}>
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => onStartExercise(exercise.id)}
+                        className="w-full justify-start text-left"
+                      >
+                        {exercise.title}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const handleStartExercise = () => {
     setShowMotionTracker(true);
   };
@@ -38,6 +74,7 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   const handleFinishExercise = () => {
     setShowMotionTracker(false);
     // Here you would typically update the completion status
+    onFinishExercise();
   };
   
   return (

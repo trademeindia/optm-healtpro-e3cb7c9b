@@ -1,3 +1,4 @@
+
 // Definition of shared types for posture monitoring
 
 export enum FeedbackType {

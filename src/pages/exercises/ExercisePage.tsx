@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import useExercises from '@/hooks/useExercises';
@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import ExerciseContent from './components/ExerciseContent';
 import ProgressTracking from './components/ProgressTracking';
+import { Exercise } from '@/types/exercise.types';
 
 const ExercisePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +25,13 @@ const ExercisePage: React.FC = () => {
     startExercise,
     filterExercisesByCategory
   } = useExercises();
+
+  // Set default selected exercise if none is selected
+  useEffect(() => {
+    if (exercises.length > 0 && !selectedExercise) {
+      setSelectedExercise(exercises[0]);
+    }
+  }, [exercises, selectedExercise, setSelectedExercise]);
 
   const filteredExercises = filterExercisesByCategory(activeCategory);
 
@@ -47,7 +55,6 @@ const ExercisePage: React.FC = () => {
       });
     }
     setShowMonitor(false);
-    setSelectedExercise(null);
   };
   
   return (
