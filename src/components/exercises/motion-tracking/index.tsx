@@ -183,8 +183,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
         {(isModelLoading || (!isModelLoaded && !detectionError)) ? (
           <CardContent className="p-6">
             <ModelLoadingScreen 
-              isModelLoading={isModelLoading} 
-              loadError={detectionError}
+              isLoading={isModelLoading} 
+              error={detectionError}
               onRetry={handleRetryLoading}
               loadProgress={loadProgress}
             />
@@ -192,8 +192,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
         ) : detectionError && !isModelLoaded ? (
           <CardContent className="p-6">
             <ModelLoadingScreen 
-              isModelLoading={false} 
-              loadError={detectionError}
+              isLoading={false} 
+              error={detectionError}
               onRetry={handleRetryLoading}
             />
           </CardContent>

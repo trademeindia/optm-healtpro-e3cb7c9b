@@ -7,17 +7,25 @@ interface ModelLoadingScreenProps {
   isLoading: boolean;
   onRetry: () => void;
   error: string | null;
+  loadProgress?: number;
 }
 
 const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
   isLoading,
   onRetry,
-  error
+  error,
+  loadProgress: externalProgress
 }) => {
   const [progress, setProgress] = useState(0);
   const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>('online');
 
   useEffect(() => {
+    // If an external progress value is provided, use it
+    if (externalProgress !== undefined) {
+      setProgress(externalProgress);
+      return;
+    }
+
     const interval = setInterval(() => {
       const currentProgress = getModelLoadProgress();
       setProgress(currentProgress);
@@ -37,7 +45,7 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
       window.removeEventListener('online', updateNetworkStatus);
       window.removeEventListener('offline', updateNetworkStatus);
     };
-  }, []);
+  }, [externalProgress]);
 
   if (error) {
     return (
