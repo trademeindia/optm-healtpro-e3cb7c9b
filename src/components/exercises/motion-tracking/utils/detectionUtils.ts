@@ -117,7 +117,7 @@ export const performDetection = async (
       if (human.tf && human.tf.engine) {
         const tensors = human.tf.engine().state.numTensors;
         if (tensors > 500) {
-          console.warn(`High tensor count (${tensors}), cleaning up`);
+          console.warn(`High tensor count: ${tensors}, cleaning up`);
           human.tf.engine().disposeVariables();
         }
       }
