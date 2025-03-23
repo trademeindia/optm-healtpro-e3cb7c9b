@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCamera } from './camera';
 import { usePoseDetection } from './usePoseDetection';
 import { usePoseModel } from './usePoseModel';
-import { DEFAULT_POSE_CONFIG } from './utils';
+import { DEFAULT_POSE_CONFIG } from './utils/poseDetectionConfig';
 import { diagnoseDetectionIssues } from './utils/debug';
 import CameraView from './CameraView';
 import PoseRenderer from './PoseRenderer';
