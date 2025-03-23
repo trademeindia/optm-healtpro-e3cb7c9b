@@ -6,7 +6,7 @@ export * from './useFeedback';
 export * from './useDetectionResults';
 export * from './repDetection';
 
-// We need to explicitly re-export the types to avoid ambiguity
+// We need to explicitly re-export the types to avoid isolatedModules error
 import { 
   MotionAnalysisState,
   UseMotionAnalysisReturn,
@@ -15,6 +15,7 @@ import {
   // UseFeedbackReturn
 } from './types';
 
+// Use 'export type' syntax for re-exporting types when isolatedModules is enabled
 export type { 
   MotionAnalysisState,
   UseMotionAnalysisReturn

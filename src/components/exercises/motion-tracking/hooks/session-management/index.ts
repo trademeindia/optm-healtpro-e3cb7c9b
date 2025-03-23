@@ -12,6 +12,7 @@ export {
   useSessionData,
 };
 
+// Use 'export type' syntax for re-exporting types when isolatedModules is enabled
 export type {
   SessionState,
   SessionActions,
