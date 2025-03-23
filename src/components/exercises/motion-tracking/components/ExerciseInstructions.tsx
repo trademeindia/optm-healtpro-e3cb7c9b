@@ -9,17 +9,17 @@ interface ExerciseInstructionsProps {
 
 const ExerciseInstructions: React.FC<ExerciseInstructionsProps> = ({ exerciseName }) => {
   return (
-    <Card className="border shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Exercise Instructions</CardTitle>
+    <Card className="border shadow-md hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="pb-2 border-b">
+        <CardTitle className="text-lg font-semibold text-primary">Exercise Instructions</CardTitle>
       </CardHeader>
-      <CardContent>
-        <h3 className="font-semibold mb-3">{exerciseName}</h3>
-        <div className="space-y-2.5">
+      <CardContent className="pt-4">
+        <h3 className="font-semibold mb-4 text-lg">{exerciseName}</h3>
+        <div className="space-y-3">
           {instructionSteps.map((step, index) => (
-            <div key={index} className="flex items-start gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm">{step}</p>
+            <div key={index} className="flex items-start gap-3 bg-secondary/20 rounded-md p-2.5 transition-colors hover:bg-secondary/30">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm leading-relaxed">{step}</p>
             </div>
           ))}
         </div>

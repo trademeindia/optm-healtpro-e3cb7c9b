@@ -16,12 +16,12 @@ const ProgressTracking: React.FC<ProgressTrackingProps> = ({
   progressData
 }) => {
   return (
-    <>
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Progress Overview</CardTitle>
+    <div className="space-y-5">
+      <Card className="border shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="pb-2 border-b">
+          <CardTitle className="text-lg font-semibold text-primary">Progress Overview</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <MuscleProgress 
             muscleGroups={muscleGroups}
             progressData={progressData}
@@ -29,24 +29,24 @@ const ProgressTracking: React.FC<ProgressTrackingProps> = ({
         </CardContent>
       </Card>
       
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Weekly Goals</CardTitle>
+      <Card className="border shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="pb-2 border-b">
+          <CardTitle className="text-lg font-semibold text-primary">Weekly Goals</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <WeeklyGoals />
         </CardContent>
       </Card>
       
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Recommendations</CardTitle>
+      <Card className="border shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="pb-2 border-b">
+          <CardTitle className="text-lg font-semibold text-primary">Recommendations</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <DoctorRecommendations />
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 };
 
