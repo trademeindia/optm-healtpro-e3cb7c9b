@@ -5,8 +5,8 @@ import { warmupModel, resetModel } from './modelLoader';
 
 // Track tensor cleanup
 let detectionCount = 0;
-const CLEANUP_INTERVAL = 5; // Clean up every 5 detections
-const TENSOR_THRESHOLD = 100; // Reduced threshold for earlier cleanup
+const CLEANUP_INTERVAL = 3; // Clean up every 3 detections (reduced from 5)
+const TENSOR_THRESHOLD = 50; // Reduced threshold for earlier cleanup (from 100)
 
 /**
  * Clean up tensors periodically to prevent memory leaks
@@ -89,12 +89,12 @@ export const detectPose = async (input: HTMLVideoElement | HTMLImageElement) => 
       hand: { enabled: false },
       object: { enabled: false },
       gesture: { enabled: false },
-      segmentation: { enabled: false }
+      segmentation: { enabled: false } // Always ensure segmentation is disabled
     });
     
     // Add a timeout to prevent hanging (shorter timeout for better UX)
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Detection timeout')), 3000);
+      setTimeout(() => reject(new Error('Detection timeout')), 1000); // Reduced from 3000ms
     });
     
     // Race the detection against the timeout

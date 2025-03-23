@@ -32,16 +32,15 @@ export const warmupModel = async () => {
     console.log('Warming up Human.js model...');
     modelLoadProgress = 10;
     
-    // Ensure model path is set correctly
-    if (human.config.body.modelPath !== humanConfig.body.modelPath) {
-      console.log('Updating model path configuration');
-      human.config.body.modelPath = humanConfig.body.modelPath;
+    // Force segmentation to be disabled
+    if (human.config.segmentation) {
+      human.config.segmentation.enabled = false;
     }
     
-    // Ensure segmentation is disabled to prevent errors
-    if (human.config.segmentation?.enabled) {
-      console.log('Disabling segmentation to prevent errors');
-      human.config.segmentation = { enabled: false };
+    // Verify the model path is set correctly
+    if (human.config.body.modelPath !== 'blazepose-lite.json') {
+      console.log('Correcting model path to blazepose-lite.json');
+      human.config.body.modelPath = 'blazepose-lite.json';
     }
     
     // Load the model
@@ -54,7 +53,17 @@ export const warmupModel = async () => {
       console.log('Tensor count before model load:', beforeTensors);
     }
     
-    const loaded = await human.load();
+    // Use a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Model load timeout')), 20000);
+    });
+    
+    // Race the model load against the timeout
+    const loaded = await Promise.race([
+      human.load(),
+      timeoutPromise
+    ]);
+    
     console.log('Human.js model load status:', loaded);
     
     // Check tensor count after loading
@@ -63,8 +72,8 @@ export const warmupModel = async () => {
       console.log('Tensor count after model load:', afterTensors, 
                  'Difference:', afterTensors - beforeTensors);
       
-      // Clean up tensors immediately if there's a large increase
-      if (afterTensors > 100) {
+      // Clean up tensors immediately
+      if (afterTensors > 50) { // Lower threshold for cleanup
         console.log('Cleaning up tensors after model load');
         human.tf.engine().disposeVariables();
         console.log('Tensors after cleanup:', human.tf.engine().state.numTensors);

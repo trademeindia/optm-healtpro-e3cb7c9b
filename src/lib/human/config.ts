@@ -19,9 +19,8 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false, // Skip validation for faster loading
   
-  // No useWebGPU and useSimdWasm flags that were causing errors
   flags: {
-    useWorker: true // Use web worker when possible for better performance
+    useWorker: false // Disable worker for more reliable operation
   }, 
   
   softwareKernels: true, // Fallback to software implementation if needed
@@ -39,9 +38,9 @@ export const humanConfig: Human.Config = {
   body: { 
     enabled: true,
     // Use lite model for better performance
-    modelPath: 'blazepose-lite.json', // Changed from blazepose.json to the lighter model
+    modelPath: 'blazepose-lite.json', // Lighter model for better performance
     minConfidence: 0.2,
-    skipFrames: 3, // Skip more frames to improve performance
+    skipFrames: 5, // Skip more frames to improve performance significantly
     maxDetected: 1, // Only detect one person to improve performance
   },
   hand: { 

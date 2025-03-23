@@ -16,6 +16,12 @@ export const initHuman = () => {
       human.config.segmentation.enabled = false;
     }
     
+    // Make sure we're using the lite model for better performance
+    if (human.config.body) {
+      human.config.body.modelPath = 'blazepose-lite.json';
+      human.config.body.skipFrames = 5; // Increase frame skipping for better performance
+    }
+    
     // Log the model path being used
     console.log('Using body model path:', human.config.body.modelPath);
     
@@ -75,7 +81,7 @@ export const warmupModel = async (): Promise<boolean> => {
       console.log(`Current tensor count after warm-up: ${tensors}`);
       
       // Clean up if needed
-      if (tensors > 100) {
+      if (tensors > 50) { // Reduced threshold from 100
         console.log('Cleaning up tensors after model warm-up');
         human.tf.engine().disposeVariables();
         console.log(`Tensors after cleanup: ${human.tf.engine().state.numTensors}`);
@@ -84,8 +90,8 @@ export const warmupModel = async (): Promise<boolean> => {
     
     // Create a dummy canvas to run initial detection on
     const canvas = document.createElement('canvas');
-    canvas.width = 128; // Reduced size for faster processing
-    canvas.height = 128;
+    canvas.width = 64; // Reduced size for faster processing (from 128)
+    canvas.height = 64;
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.fillStyle = 'gray';
@@ -164,3 +170,4 @@ export const resetModel = async (): Promise<void> => {
 
 // Re-export for convenience
 export { human };
+export { getModelLoadProgress } from './modelLoader';

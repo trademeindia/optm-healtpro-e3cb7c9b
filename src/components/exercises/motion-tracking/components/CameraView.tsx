@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,32 +56,64 @@ const CameraView: React.FC<CameraViewProps> = ({
         style={{ display: cameraActive ? 'block' : 'none' }}
       />
       
-      {/* Renderer component */}
-      {detectionResult && (
+      {/* Motion renderer component for processing detection results */}
+      {cameraActive && detectionResult && (
         <MotionRenderer 
-          result={detectionResult} 
-          canvasRef={canvasRef} 
+          result={detectionResult}
+          canvasRef={canvasRef}
           angles={angles}
         />
       )}
       
       {/* Camera inactive state */}
       {!cameraActive && (
-        <div className="text-center p-8 max-w-md mx-auto">
-          <div className="inline-flex items-center justify-center p-4 mb-4 rounded-full bg-muted/20">
+        <div className="flex flex-col items-center justify-center p-6 text-center">
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Camera className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium mb-2">Camera Access Required</h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            To analyze your movement patterns, we need access to your camera. 
-            Your privacy is important - video is processed locally and not stored.
+          <h3 className="text-lg font-medium mb-2">Camera is offline</h3>
+          <p className="text-muted-foreground text-sm mb-4 max-w-md">
+            Enable camera access to begin motion tracking analysis
           </p>
           <Button 
             onClick={onStartCamera} 
-            className="w-full"
+            className="flex items-center gap-2"
             disabled={isModelLoading}
           >
-            {isModelLoading ? "Loading motion analysis model..." : "Start Camera"}
+            <Camera className="h-4 w-4" />
+            Enable Camera
+          </Button>
+        </div>
+      )}
+      
+      {/* Overlay controls when camera is active */}
+      {cameraActive && (
+        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-background/80 backdrop-blur-sm"
+            onClick={onToggleTracking}
+          >
+            {isTracking ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-background/80 backdrop-blur-sm"
+            onClick={onReset}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-destructive/20 backdrop-blur-sm hover:bg-destructive/30"
+            onClick={onFinish}
+          >
+            <X className="h-4 w-4" />
           </Button>
         </div>
       )}

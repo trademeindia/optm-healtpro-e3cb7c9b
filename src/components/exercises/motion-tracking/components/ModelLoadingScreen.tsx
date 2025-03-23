@@ -20,10 +20,16 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
 }) => {
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('Initializing AI models...');
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Update progress periodically
   useEffect(() => {
     if (!isModelLoading) return;
+
+    // Track elapsed time for better user feedback
+    const timeTracker = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
 
     // Use external progress if provided, otherwise poll for it
     if (typeof externalProgress === 'number') {
@@ -50,9 +56,17 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
         setLoadingMessage(messages[messageIndex]);
       }, 300);
 
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(interval);
+        clearInterval(timeTracker);
+      };
     }
+
+    return () => clearInterval(timeTracker);
   }, [isModelLoading, externalProgress]);
+
+  // Add a "taking longer than expected" message after 15 seconds
+  const showExtendedMessage = elapsedTime > 15;
 
   // If there's an error, show error screen
   if (loadError) {
@@ -90,6 +104,12 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
       <div className="text-center space-y-2 max-w-md">
         <h3 className="text-lg font-semibold">Loading Motion Analysis</h3>
         <p className="text-sm text-muted-foreground">{loadingMessage}</p>
+        
+        {showExtendedMessage && (
+          <p className="text-xs text-amber-500 mt-2">
+            Loading is taking longer than expected. Please be patient...
+          </p>
+        )}
       </div>
       
       <div className="w-full max-w-md">
@@ -100,6 +120,13 @@ const ModelLoadingScreen: React.FC<ModelLoadingScreenProps> = ({
         <p className="text-xs text-muted-foreground">
           The first load may take 20-30 seconds. It'll be faster next time!
         </p>
+      )}
+      
+      {elapsedTime > 30 && (
+        <Button variant="outline" onClick={onRetry} className="mt-2 flex items-center gap-2">
+          <RefreshCw className="h-4 w-4" />
+          Restart Loading
+        </Button>
       )}
     </div>
   );
