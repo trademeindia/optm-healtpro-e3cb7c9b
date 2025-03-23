@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Camera } from 'lucide-react';
+import { DetectionError } from '@/lib/human/types';
 
 interface ModelErrorStateProps {
-  loadingError: string | null;
+  loadingError: DetectionError | null;
 }
 
 const ModelErrorState: React.FC<ModelErrorStateProps> = ({ loadingError }) => {
@@ -14,7 +15,7 @@ const ModelErrorState: React.FC<ModelErrorStateProps> = ({ loadingError }) => {
       </div>
       <h3 className="text-lg font-medium mb-2">Model Loading Failed</h3>
       <p className="text-muted-foreground text-sm mb-4">
-        {loadingError || "There was a problem loading the motion analysis model."}
+        {loadingError?.message || "There was a problem loading the motion analysis model."}
       </p>
       <button 
         onClick={() => window.location.reload()}

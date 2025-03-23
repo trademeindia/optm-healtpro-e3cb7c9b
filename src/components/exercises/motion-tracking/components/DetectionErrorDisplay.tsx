@@ -2,22 +2,20 @@
 import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DetectionErrorType } from '@/lib/human/types';
+import { DetectionErrorType, DetectionError } from '@/lib/human/types';
 
 interface DetectionErrorDisplayProps {
-  errorType: DetectionErrorType;
-  errorMessage: string;
+  error: DetectionError;
   onRetry: () => void;
 }
 
 const DetectionErrorDisplay: React.FC<DetectionErrorDisplayProps> = ({
-  errorType,
-  errorMessage,
+  error,
   onRetry
 }) => {
   // Get appropriate error title based on error type
   const getErrorTitle = () => {
-    switch (errorType) {
+    switch (error.type) {
       case DetectionErrorType.MODEL_LOADING:
         return 'Model Loading Error';
       case DetectionErrorType.CAMERA_ACCESS:
@@ -33,7 +31,7 @@ const DetectionErrorDisplay: React.FC<DetectionErrorDisplayProps> = ({
 
   // Get appropriate fix suggestion based on error type
   const getFixSuggestion = () => {
-    switch (errorType) {
+    switch (error.type) {
       case DetectionErrorType.MODEL_LOADING:
         return 'Try refreshing the page or check your internet connection.';
       case DetectionErrorType.CAMERA_ACCESS:
@@ -51,7 +49,7 @@ const DetectionErrorDisplay: React.FC<DetectionErrorDisplayProps> = ({
     <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center z-10">
       <AlertCircle className="h-10 w-10 text-destructive mb-4" />
       <h3 className="text-lg font-semibold mb-2">{getErrorTitle()}</h3>
-      <p className="mb-2 text-muted-foreground">{errorMessage}</p>
+      <p className="mb-2 text-muted-foreground">{error.message}</p>
       <p className="mb-4 text-sm text-muted-foreground">{getFixSuggestion()}</p>
       <Button onClick={onRetry} className="flex items-center gap-2">
         <RefreshCw className="h-4 w-4" />

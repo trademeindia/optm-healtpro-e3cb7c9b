@@ -20,7 +20,7 @@ export interface UseHumanDetectionReturn {
   isDetecting: boolean;
   detectionFps: number | null;
   isModelLoaded: boolean;
-  detectionError: string | null;
+  detectionError: DetectionError | null;
   
   // Motion analysis
   result: Human.Result | null;

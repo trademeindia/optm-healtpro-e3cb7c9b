@@ -6,6 +6,7 @@ import { useDetectionService } from './useDetectionService';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionManagement } from './useSessionManagement';
 import { UseHumanDetectionReturn } from './types';
+import { DetectionError } from '@/lib/human/types';
 
 export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>,
