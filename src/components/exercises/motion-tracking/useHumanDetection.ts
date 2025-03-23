@@ -10,7 +10,7 @@ import {
   FeedbackType, 
   MotionState, 
   MotionStats 
-} from '@/components/exercises/posture-monitor/types';
+} from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './utils/statsUtils';
 
 // Utility functions for detection and feedback
@@ -122,7 +122,7 @@ const completeSession = (
   // In a real implementation, this would update the session status
 };
 
-export { MotionState, FeedbackType } from '@/components/exercises/posture-monitor/types';
+export { MotionState, FeedbackType } from '@/lib/human/types';
 
 export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, canvasRef: React.RefObject<HTMLCanvasElement>) => {
   // Detection state
@@ -260,9 +260,19 @@ export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, c
           });
           
           if (evaluation.isGoodForm) {
-            setStats(prev => updateStatsForGoodRep(prev));
+            // Create a new stats object with the lastUpdated property to satisfy the MotionStats type
+            const newStats = updateStatsForGoodRep({
+              ...stats,
+              lastUpdated: stats.lastUpdated || Date.now()
+            });
+            setStats(newStats);
           } else {
-            setStats(prev => updateStatsForBadRep(prev));
+            // Create a new stats object with the lastUpdated property to satisfy the MotionStats type
+            const newStats = updateStatsForBadRep({
+              ...stats,
+              lastUpdated: stats.lastUpdated || Date.now()
+            });
+            setStats(newStats);
           }
           
           // Save data to database after completing a rep
@@ -323,6 +333,7 @@ export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, c
   
   // Reset session
   const resetSession = useCallback(() => {
+    // Ensure the new initial stats has the required lastUpdated property
     setStats(getInitialStats());
     
     setFeedback({
