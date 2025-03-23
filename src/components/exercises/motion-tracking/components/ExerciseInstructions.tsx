@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Video, UserStanding, MessageSquare } from 'lucide-react';
+import { Video, PersonStanding, MessageSquare } from 'lucide-react';
 
 const ExerciseInstructions: React.FC = () => {
   return (
@@ -29,7 +29,7 @@ const ExerciseInstructions: React.FC = () => {
         
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <UserStanding className="h-4 w-4" />
+            <PersonStanding className="h-4 w-4" />
           </div>
           <div>
             <h4 className="font-medium">Perform the Exercise</h4>
