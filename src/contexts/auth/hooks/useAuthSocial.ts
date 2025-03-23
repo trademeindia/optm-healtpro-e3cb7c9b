@@ -1,19 +1,40 @@
 
-import { useSocialProviderAuth } from './social/useSocialProviderAuth';
-import { useOAuthCallbackHandler } from './social/useOAuthCallbackHandler';
-import { Provider } from '@supabase/supabase-js';
+import { useState } from 'react';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Provider } from '../types';
 
-type UseAuthSocialProps = {
-  setIsLoading: (isLoading: boolean) => void;
-  navigate: (path: string) => void;
-};
+export const useAuthSocial = (supabase: SupabaseClient) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-export const useAuthSocial = ({ setIsLoading, navigate }: UseAuthSocialProps) => {
-  const { loginWithSocialProvider } = useSocialProviderAuth({ setIsLoading });
-  const { handleOAuthCallback } = useOAuthCallbackHandler({ setIsLoading, navigate });
+  const socialAuth = async (provider: Provider) => {
+    setIsLoading(true);
+    setError(null);
 
-  return { 
-    loginWithSocialProvider, 
-    handleOAuthCallback 
+    try {
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: provider as any,
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
+    } catch (err) {
+      console.error('Social auth error:', err);
+      setError(err instanceof Error ? err : new Error('An error occurred during social authentication'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    socialAuth,
+    isLoading,
+    error,
   };
 };

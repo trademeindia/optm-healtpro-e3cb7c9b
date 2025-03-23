@@ -1,54 +1,50 @@
 
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { formatUser } from '../utils';
-import { User, UserRole } from '../types';
+import { useState } from 'react';
+import { SupabaseClient, AuthResponse } from '@supabase/supabase-js';
+import { AuthSignupCredentials } from '../utils/types';
 
-type UseAuthSignupProps = {
-  setIsLoading: (isLoading: boolean) => void;
-  navigate: (path: string) => void;
-};
+export const useAuthSignup = (supabase: SupabaseClient) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-export const useAuthSignup = ({ setIsLoading, navigate }: UseAuthSignupProps) => {
-  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<User | null> => {
+  const signUp = async (credentials: AuthSignupCredentials): Promise<AuthResponse> => {
     setIsLoading(true);
+    setError(null);
+
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success('Account created successfully. Please check your email for verification.', {
-        duration: 5000
-      });
-      
-      if (data.user && !data.user.email_confirmed_at) {
-        navigate('/login');
-        return null;
-      } else {
-        const formattedUser = await formatUser(data.user);
-        if (formattedUser) {
-          navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
-        }
-        return formattedUser;
+      // Validate input
+      if (!credentials.email || !credentials.password) {
+        throw new Error('Email and password are required');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Signup failed', {
-        duration: 5000
+
+      // Sign up the user
+      const response = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: credentials.metadata || {},
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
-      throw error;
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      return response;
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError(err instanceof Error ? err : new Error('An unknown error occurred during signup'));
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { signup };
+  return {
+    signUp,
+    isLoading,
+    error,
+    setError,
+  };
 };

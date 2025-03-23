@@ -1,29 +1,46 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { getUserSession } from './userProfile';
-import { UserSession } from './types';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { AuthSession } from './types';
 
-/**
- * Gets the current authenticated user session 
- */
-export const getCurrentSession = async (): Promise<UserSession | null> => {
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      console.error('Error getting current session:', error);
-      return null;
-    }
-    
-    if (!session) {
-      console.log('No active session found');
-      return null;
-    }
-    
-    const userId = session.user.id;
-    return await getUserSession(userId);
-  } catch (error) {
-    console.error('Error in getCurrentSession:', error);
-    return null;
+export class AuthStateManager {
+  private supabase: SupabaseClient;
+
+  constructor(supabase: SupabaseClient) {
+    this.supabase = supabase;
   }
+
+  async getSession(): Promise<AuthSession> {
+    try {
+      const { data, error } = await this.supabase.auth.getSession();
+      
+      if (error) {
+        throw error;
+      }
+
+      return {
+        user: data.session?.user || null,
+        session: data.session,
+      };
+    } catch (error) {
+      console.error('Error getting session:', error);
+      return { user: null, session: null };
+    }
+  }
+
+  subscribeToAuthChanges(callback: (session: AuthSession) => void): () => void {
+    const { data } = this.supabase.auth.onAuthStateChange((event, session) => {
+      callback({
+        user: session?.user || null,
+        session,
+      });
+    });
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
+  }
+}
+
+export const createAuthStateManager = (supabase: SupabaseClient): AuthStateManager => {
+  return new AuthStateManager(supabase);
 };

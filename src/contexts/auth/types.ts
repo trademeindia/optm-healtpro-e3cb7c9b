@@ -1,27 +1,31 @@
 
-import { Provider } from '@supabase/supabase-js';
+import { User, Session, SupabaseClient, AuthResponse } from '@supabase/supabase-js';
 
-export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
-export type AuthProviderType = Provider | 'email';
+// Update the Provider type to use string instead of relying on the exported Provider
+export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'discord' | 'gitlab';
 
-export type User = {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  provider?: AuthProviderType;
-  picture?: string | null;
-  patientId?: string; // Added to link patient users to their records
-};
+export interface AuthUser extends User {
+  // Any additional user properties your app needs
+  displayName?: string;
+  avatarUrl?: string;
+}
 
-export type AuthContextType = {
-  user: User | null;
-  isAuthenticated: boolean;
+export interface AuthContextType {
+  user: AuthUser | null;
+  session: Session | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<User | null>;
-  loginWithSocialProvider: (provider: Provider) => Promise<void>;
-  handleOAuthCallback: (provider: string, code: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
+  isAuthenticated: boolean;
+  isError: boolean;
+  error: Error | null;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<AuthResponse>;
+  resetPassword: (email: string) => Promise<{ data: {}; error: Error | null }>;
+  socialLogin: (provider: Provider) => Promise<void>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-};
+  clearError: () => void;
+}
+
+export interface AuthProviderProps {
+  children: React.ReactNode;
+  supabase: SupabaseClient;
+}

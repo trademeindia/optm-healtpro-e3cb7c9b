@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Chart, ChartData, ChartOptions } from 'chart.js/auto';
+import { Line, Bar } from 'react-chartjs-2';
+import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import PostureAnalyticsCard from '@/components/patient-dashboard/PostureAnalyticsCard';
-import { Progress } from '@/components/ui/progress';
-import { isJsonObject, safeGetFromJson } from '@/types/human';
+
+interface SessionData {
+  date: string;
+  accuracy: number;
+  reps: number;
+  duration: number;
+}
 
 interface PatientAnalyticsPageProps {
   patientId?: string;
@@ -14,329 +19,346 @@ interface PatientAnalyticsPageProps {
 
 const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [exerciseData, setExerciseData] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState('overview');
-  
+  const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchSessionData = async () => {
       try {
         setIsLoading(true);
         
-        // Get current user if patientId not provided
-        const userId = patientId || (await supabase.auth.getUser()).data.user?.id;
+        // If we have a specific patient ID, use it
+        // Otherwise get the current user
+        let userId = patientId;
         
-        // Fetch all sessions for this patient
-        const { data: sessionData, error: sessionError } = await supabase
-          .from('analysis_sessions')
-          .select('*')
-          .eq('patient_id', userId)
-          .order('start_time', { ascending: false });
+        if (!userId) {
+          const { data: sessionData } = await supabase.auth.getSession();
+          userId = sessionData?.session?.user?.id;
+        }
         
-        if (sessionError) throw sessionError;
+        if (!userId) {
+          setIsLoading(false);
+          return;
+        }
         
-        setSessions(sessionData || []);
-        
-        // Process exercise data
-        const exerciseTypes = sessionData
-          ? [...new Set(sessionData.map(session => session.exercise_type))]
-          : [];
-        
-        const exerciseStats = exerciseTypes.map(type => {
-          const sessionsOfType = sessionData.filter(s => s.exercise_type === type);
+        // Fetch the session data from the database
+        const { data, error } = await supabase
+          .from('posture_sessions')
+          .select('created_at, accuracy, total_reps, duration_sec')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(30); // Last 30 sessions
           
-          // Safely access nested properties with our helper functions
-          const totalReps = sessionsOfType.reduce((sum, s) => {
-            return sum + safeGetFromJson(s.summary, 'stats.totalReps', 0);
-          }, 0);
-          
-          const goodReps = sessionsOfType.reduce((sum, s) => {
-            return sum + safeGetFromJson(s.summary, 'stats.goodReps', 0);
-          }, 0);
-          
-          const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
-          
-          return {
-            name: type,
-            sessions: sessionsOfType.length,
-            totalReps,
-            goodReps,
-            accuracy
-          };
-        });
+        if (error) {
+          console.error('Error fetching session data:', error);
+          setIsLoading(false);
+          return;
+        }
         
-        setExerciseData(exerciseStats);
+        // Format the data for the charts
+        const formattedData = data?.map(session => ({
+          date: new Date(session.created_at).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric'
+          }),
+          accuracy: session.accuracy,
+          reps: session.total_reps,
+          duration: Math.round(session.duration_sec / 60) // Convert to minutes
+        })) || [];
         
-      } catch (err) {
-        console.error('Error fetching analytics:', err);
-        setError('Failed to load analytics data');
+        // Sort chronologically for the charts
+        formattedData.reverse();
+        
+        setSessions(formattedData);
+      } catch (error) {
+        console.error('Error in PatientAnalyticsPage:', error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchAnalytics();
+    fetchSessionData();
   }, [patientId]);
   
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="w-full h-[300px]" />
-        <Skeleton className="w-full h-[400px]" />
-      </div>
-    );
-  }
+  // Create chart configurations
+  const accuracyData: ChartData = {
+    labels: sessions.map(s => s.date),
+    datasets: [
+      {
+        label: 'Form Accuracy (%)',
+        data: sessions.map(s => s.accuracy),
+        fill: true,
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: 'rgba(59, 130, 246, 0.8)',
+        tension: 0.4,
+      },
+    ],
+  };
   
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="py-10">
-          <div className="text-center text-muted-foreground">
-            {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const repsData: ChartData = {
+    labels: sessions.map(s => s.date),
+    datasets: [
+      {
+        label: 'Repetitions',
+        data: sessions.map(s => s.reps),
+        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
   
-  const totalSessionsCount = sessions.length;
-  const lastWeekSessions = sessions.filter(
-    s => new Date(s.start_time) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  ).length;
+  const durationData: ChartData = {
+    labels: sessions.map(s => s.date),
+    datasets: [
+      {
+        label: 'Session Duration (minutes)',
+        data: sessions.map(s => s.duration),
+        backgroundColor: 'rgba(249, 115, 22, 0.7)',
+        borderColor: 'rgba(249, 115, 22, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
   
-  const totalRepsByDate = sessions.reduce((acc, session) => {
-    const date = new Date(session.start_time).toLocaleDateString();
-    const reps = safeGetFromJson(session.summary, 'stats.totalReps', 0);
-    
-    if (!acc[date]) {
-      acc[date] = 0;
-    }
-    
-    acc[date] += reps;
-    return acc;
-  }, {} as Record<string, number>);
-  
-  const dailyRepData = Object.keys(totalRepsByDate).map(date => ({
-    date,
-    reps: totalRepsByDate[date]
-  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  const chartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+    },
+  };
   
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="container py-6">
+      <h1 className="text-2xl font-bold mb-4">Motion Tracking Analytics</h1>
+      
+      <div className="mb-6 flex justify-between items-center">
+        <p className="text-muted-foreground">
+          Track your progress and form accuracy over time
+        </p>
+        
+        <div className="flex items-center space-x-2">
+          <button 
+            className={`px-3 py-1 rounded text-sm ${chartType === 'line' ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}
+            onClick={() => setChartType('line')}
+          >
+            Line
+          </button>
+          <button 
+            className={`px-3 py-1 rounded text-sm ${chartType === 'bar' ? 'bg-primary text-white' : 'bg-secondary text-secondary-foreground'}`}
+            onClick={() => setChartType('bar')}
+          >
+            Bar
+          </button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Total Sessions</CardTitle>
+            <CardTitle className="text-lg">Form Accuracy</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalSessionsCount}</div>
-            <p className="text-sm text-muted-foreground">
-              {lastWeekSessions} in the last 7 days
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-[200px] w-full" />
+            ) : sessions.length === 0 ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <p className="text-muted-foreground text-sm">No data available</p>
+              </div>
+            ) : (
+              <div className="h-[200px]">
+                {chartType === 'line' ? (
+                  <Line data={accuracyData} options={chartOptions} />
+                ) : (
+                  <Bar data={accuracyData} options={chartOptions} />
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Exercises Tracked</CardTitle>
+            <CardTitle className="text-lg">Repetitions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{exerciseData.length}</div>
-            <p className="text-sm text-muted-foreground">
-              {exerciseData.reduce((sum, ex) => sum + ex.totalReps, 0)} total repetitions
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-[200px] w-full" />
+            ) : sessions.length === 0 ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <p className="text-muted-foreground text-sm">No data available</p>
+              </div>
+            ) : (
+              <div className="h-[200px]">
+                {chartType === 'line' ? (
+                  <Line data={repsData} options={chartOptions} />
+                ) : (
+                  <Bar data={repsData} options={chartOptions} />
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Average Accuracy</CardTitle>
+            <CardTitle className="text-lg">Session Duration</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
-              {exerciseData.length > 0 
-                ? Math.round(exerciseData.reduce((sum, ex) => sum + ex.accuracy, 0) / exerciseData.length)
-                : 0}%
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Across all exercise types
-            </p>
+            {isLoading ? (
+              <Skeleton className="h-[200px] w-full" />
+            ) : sessions.length === 0 ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <p className="text-muted-foreground text-sm">No data available</p>
+              </div>
+            ) : (
+              <div className="h-[200px]">
+                {chartType === 'line' ? (
+                  <Line data={durationData} options={chartOptions} />
+                ) : (
+                  <Bar data={durationData} options={chartOptions} />
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
       
-      <PostureAnalyticsCard patientId={patientId} />
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Exercise Analytics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="detail">Details</TabsTrigger>
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="overview">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Exercise Completion Pie Chart */}
-                <div className="h-[300px] flex items-center justify-center">
-                  {exerciseData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={exerciseData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="totalReps"
-                          nameKey="name"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {exerciseData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="text-center text-muted-foreground">
-                      No exercise data available
-                    </div>
-                  )}
+      <Tabs defaultValue="accuracy" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="accuracy">Accuracy Analysis</TabsTrigger>
+          <TabsTrigger value="progression">Progression</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="accuracy" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Form Accuracy Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-5/6" />
                 </div>
-                
-                {/* Daily Reps Chart */}
-                <div className="h-[300px]">
-                  {dailyRepData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={dailyRepData}
-                        margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Area type="monotone" dataKey="reps" name="Repetitions" stroke="#8884d8" fill="#8884d8" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="text-center text-muted-foreground">
-                      Not enough data to display timeline
-                    </div>
-                  )}
+              ) : sessions.length === 0 ? (
+                <p className="text-muted-foreground">No accuracy data available yet. Complete motion tracking sessions to see analysis.</p>
+              ) : (
+                <div className="space-y-4">
+                  <p>Your average form accuracy across all sessions is <strong>{Math.round(sessions.reduce((sum, s) => sum + s.accuracy, 0) / sessions.length)}%</strong>.</p>
+                  
+                  <div className="bg-muted p-4 rounded-md">
+                    <h4 className="font-medium mb-2">Form Tips:</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Maintain proper alignment during movements</li>
+                      <li>Focus on slow, controlled repetitions</li>
+                      <li>Keep your core engaged throughout exercises</li>
+                      <li>Use the real-time feedback to adjust your form</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="detail">
-              <div className="space-y-6">
-                {exerciseData.map((exercise, index) => (
-                  <div key={index} className="space-y-2 border rounded-md p-4">
-                    <h3 className="font-medium">{exercise.name}</h3>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
-                      <div>
-                        <div className="text-sm text-muted-foreground">Sessions</div>
-                        <div className="text-xl font-semibold">{exercise.sessions}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Total Reps</div>
-                        <div className="text-xl font-semibold">{exercise.totalReps}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Good Form</div>
-                        <div className="text-xl font-semibold">{exercise.goodReps}</div>
-                      </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="progression" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Progression Over Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-muted-foreground">No progression data available yet. Complete more motion tracking sessions to see your improvement.</p>
+              ) : (
+                <div className="space-y-4">
+                  <p>You've completed <strong>{sessions.length}</strong> sessions with a total of <strong>{sessions.reduce((sum, s) => sum + s.reps, 0)}</strong> repetitions.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-muted p-4 rounded-md">
+                      <p className="text-sm text-muted-foreground">Average Accuracy</p>
+                      <p className="text-2xl font-bold">{Math.round(sessions.reduce((sum, s) => sum + s.accuracy, 0) / sessions.length)}%</p>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm mt-2 mb-1">
-                        <span>Form Accuracy</span>
-                        <span>{exercise.accuracy}%</span>
-                      </div>
-                      <Progress
-                        value={exercise.accuracy}
-                        className="h-2"
-                        indicatorClassName={
-                          exercise.accuracy > 85 ? 'bg-green-500' : 
-                          exercise.accuracy > 70 ? 'bg-yellow-500' : 
-                          'bg-orange-500'
-                        }
-                      />
+                    
+                    <div className="bg-muted p-4 rounded-md">
+                      <p className="text-sm text-muted-foreground">Average Reps/Session</p>
+                      <p className="text-2xl font-bold">{Math.round(sessions.reduce((sum, s) => sum + s.reps, 0) / sessions.length)}</p>
+                    </div>
+                    
+                    <div className="bg-muted p-4 rounded-md">
+                      <p className="text-sm text-muted-foreground">Average Duration</p>
+                      <p className="text-2xl font-bold">{Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length)} min</p>
                     </div>
                   </div>
-                ))}
-                
-                {exerciseData.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    No exercise data available
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="timeline">
-              <div className="space-y-4">
-                <div className="h-[300px]">
-                  {sessions.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={sessions.map(s => ({
-                          date: new Date(s.start_time).toLocaleDateString(),
-                          exercise: s.exercise_type,
-                          duration: s.end_time 
-                            ? (new Date(s.end_time).getTime() - new Date(s.start_time).getTime()) / 60000 
-                            : 0
-                        }))}
-                        margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Area type="monotone" dataKey="duration" name="Duration (min)" stroke="#82ca9d" fill="#82ca9d" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      Not enough data to display timeline
-                    </div>
-                  )}
+                  
+                  <p className="text-sm text-muted-foreground">Keep up the good work! Consistent practice will lead to improved form and better results.</p>
                 </div>
-                
-                <div className="border rounded-md">
-                  <div className="flex font-medium text-sm px-4 py-2 border-b">
-                    <div className="w-1/4">Date</div>
-                    <div className="w-1/4">Exercise</div>
-                    <div className="w-1/4">Duration</div>
-                    <div className="w-1/4">Reps</div>
-                  </div>
-                  {sessions.slice(0, 10).map((session, index) => (
-                    <div key={index} className="flex text-sm px-4 py-2 border-b last:border-b-0">
-                      <div className="w-1/4">{new Date(session.start_time).toLocaleDateString()}</div>
-                      <div className="w-1/4">{session.exercise_type}</div>
-                      <div className="w-1/4">
-                        {session.end_time 
-                          ? Math.round((new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / 60000) 
-                          : 'In progress'} min
-                      </div>
-                      <div className="w-1/4">{session.summary?.stats?.totalReps || 0}</div>
-                    </div>
-                  ))}
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="recommendations" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalized Recommendations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-5/6" />
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              ) : sessions.length === 0 ? (
+                <p className="text-muted-foreground">Complete more motion tracking sessions to receive personalized recommendations.</p>
+              ) : (
+                <div className="space-y-4">
+                  <p>Based on your tracking data, here are some personalized recommendations:</p>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-muted p-3 rounded-md">
+                      <h4 className="font-medium">Session Frequency</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Aim for 3-4 tracking sessions per week for optimal improvement.</p>
+                    </div>
+                    
+                    <div className="bg-muted p-3 rounded-md">
+                      <h4 className="font-medium">Form Improvement</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {sessions[sessions.length - 1].accuracy < 70 
+                          ? "Focus on quality over quantity. Slow down your movements and follow the form guides carefully."
+                          : "Your form is looking good! Consider increasing repetitions while maintaining good technique."}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-muted p-3 rounded-md">
+                      <h4 className="font-medium">Next Steps</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Schedule a follow-up with your physical therapist to review your progress and adjust your program as needed.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
