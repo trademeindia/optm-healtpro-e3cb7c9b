@@ -26,6 +26,9 @@ export interface MotionStats {
   goodReps: number;
   badReps: number;
   accuracy: number;
+  currentStreak: number;
+  bestStreak: number;
+  lastUpdated?: number;
 }
 
 export interface BodyAngles {
