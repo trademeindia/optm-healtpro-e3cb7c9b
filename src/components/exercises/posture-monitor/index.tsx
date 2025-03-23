@@ -1,9 +1,11 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import CameraView from './CameraView';
 import { useCamera } from './camera';
-import { SquatState, DetectionStatus, FeedbackType } from './types';
+import { SquatState, FeedbackType } from './types';
 import { determineSquatState } from './utils';
 import useSquatCounter from './hooks/useSquatCounter';
+import { DetectionStatus } from '@/lib/human/types';
 
 // Placeholder for missing components
 const PoseRenderer = ({ canvasRef, detectedPose }: { canvasRef: React.RefObject<HTMLCanvasElement>, detectedPose: any }) => {
@@ -75,7 +77,7 @@ const PostureMonitor: React.FC = () => {
               confidence: null,
               detectedKeypoints: 0,
               lastDetectionTime: Date.now()
-            }}
+            } as DetectionStatus}
           />
           
           <PoseRenderer

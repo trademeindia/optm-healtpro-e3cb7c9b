@@ -9,3 +9,4 @@ export * from './core';
 export * from './angles';
 export * from './biomarkers';
 export * from './config';
+export * from './types';

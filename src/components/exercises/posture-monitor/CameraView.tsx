@@ -1,20 +1,17 @@
 
-import React, { useEffect, useRef } from 'react';
-import { Camera, AlertCircle, RefreshCw, Wifi, WifiOff, EyeOff, Eye } from 'lucide-react';
+import React from 'react';
+import { AlertCircle, Camera, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DetectionStatus } from '@/lib/human/types';
 
 interface CameraViewProps {
   cameraActive: boolean;
   isModelLoading: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  cameraError?: string | null;
-  onRetryCamera?: () => void;
-  detectionStatus?: {
-    isDetecting: boolean;
-    fps: number | null;
-    confidence: number | null;
-  };
+  cameraError: string | null;
+  onRetryCamera: () => void;
+  detectionStatus: DetectionStatus;
 }
 
 const CameraView: React.FC<CameraViewProps> = ({
@@ -26,149 +23,73 @@ const CameraView: React.FC<CameraViewProps> = ({
   onRetryCamera,
   detectionStatus
 }) => {
-  const videoInitializedRef = useRef(false);
-  
-  // Force video element update if camera is active
-  useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      const videoElement = videoRef.current;
-      videoInitializedRef.current = true;
-      
-      // This helps with some browser rendering issues
-      const checkVideoPlaying = () => {
-        console.log("Checking video playback...");
-        
-        if (videoElement.paused && videoElement.readyState >= 2) {
-          console.log("Video not playing but ready, attempting to play...");
-          videoElement.play().catch(e => console.error("Failed to play video:", e));
-        }
-      };
-      
-      // Initial check with delay to ensure DOM is ready
-      const initialCheckTimer = setTimeout(checkVideoPlaying, 200);
-      
-      // Set up video event listeners
-      const onError = (e: Event) => console.error("Video error event triggered", e);
-      const onStalled = () => console.warn("Video stalled event triggered");
-      const onSuspend = () => console.warn("Video suspend event triggered");
-      const onWaiting = () => console.warn("Video waiting for data");
-      const onPlaying = () => console.log("Video playing event triggered");
-      const onLoadedMetadata = () => {
-        console.log("Video metadata loaded");
-        checkVideoPlaying();
-      };
-      
-      videoElement.addEventListener('error', onError);
-      videoElement.addEventListener('stalled', onStalled);
-      videoElement.addEventListener('suspend', onSuspend);
-      videoElement.addEventListener('waiting', onWaiting);
-      videoElement.addEventListener('playing', onPlaying);
-      videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
-      
-      return () => {
-        clearTimeout(initialCheckTimer);
-        videoElement.removeEventListener('error', onError);
-        videoElement.removeEventListener('stalled', onStalled);
-        videoElement.removeEventListener('suspend', onSuspend);
-        videoElement.removeEventListener('waiting', onWaiting);
-        videoElement.removeEventListener('playing', onPlaying);
-        videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
-      };
-    }
-  }, [cameraActive, videoRef]);
-
   return (
-    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-      {/* Always render the video element, but visually hide it when inactive */}
+    <div className="relative w-full h-full bg-black">
+      {/* Video element */}
       <video
         ref={videoRef}
+        className={`absolute inset-0 w-full h-full object-contain ${
+          cameraActive ? 'opacity-100' : 'opacity-0'
+        }`}
         autoPlay
         playsInline
-        muted
-        className={`w-full h-full object-cover absolute inset-0 ${!cameraActive && 'opacity-0'}`}
-        style={{ transform: 'scaleX(-1)' }}
       />
       
-      <canvas 
+      {/* Canvas overlay */}
+      <canvas
         ref={canvasRef}
-        className={`w-full h-full absolute inset-0 z-10 ${!cameraActive && 'opacity-0'}`}
-        style={{ transform: 'scaleX(-1)' }}
+        className="absolute inset-0 w-full h-full"
       />
       
-      {cameraActive && (
-        <>
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-            {detectionStatus?.isDetecting ? (
-              <>
-                <Eye className="h-3 w-3" />
-                <span>
-                  AI Active {detectionStatus.fps ? `(${Math.round(detectionStatus.fps)} FPS)` : ''}
-                </span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="h-3 w-3" />
-                <span>Monitoring inactive</span>
-              </>
-            )}
-          </div>
-          
-          {detectionStatus?.confidence !== null && (
-            <div 
-              className={`absolute bottom-2 left-2 px-2 py-1 rounded text-xs ${
-                detectionStatus.confidence > 0.5 
-                  ? 'bg-green-500/70 text-white' 
-                  : detectionStatus.confidence > 0.3 
-                    ? 'bg-yellow-500/70 text-white' 
-                    : 'bg-red-500/70 text-white'
-              }`}
-            >
-              Pose Confidence: {Math.round(detectionStatus.confidence * 100)}%
-            </div>
-          )}
-          
-          {cameraError && (
-            <div className="absolute top-2 left-2 right-2 bg-red-500/80 text-white text-sm px-3 py-2 rounded flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span className="flex-1">{cameraError}</span>
-              {onRetryCamera && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 px-2 text-xs bg-white/20 hover:bg-white/30 text-white"
-                  onClick={onRetryCamera}
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Retry
-                </Button>
-              )}
-            </div>
-          )}
-          
-          <div className="absolute top-2 right-2 bg-black/40 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-            {videoRef.current?.srcObject ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-          </div>
-        </>
+      {/* Camera error state */}
+      {cameraError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
+          <AlertCircle className="h-10 w-10 text-destructive mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Camera Error</h3>
+          <p className="mb-4 text-muted-foreground">{cameraError}</p>
+          <Button onClick={onRetryCamera} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Retry Camera
+          </Button>
+        </div>
       )}
       
-      {!cameraActive && (
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-          <div className="text-center p-4">
-            <Camera className="mx-auto h-12 w-12 mb-2 text-muted-foreground/50" />
-            <p className="text-sm">Camera is currently inactive</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">
-              Enable camera access to receive real-time squat analysis
-            </p>
-            {isModelLoading && (
-              <p className="mt-2 text-sm text-primary">Loading AI model, please wait...</p>
-            )}
-            {cameraError && (
-              <div className="mt-4 p-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-md text-xs flex items-center gap-1">
-                <AlertCircle className="h-3 w-3 flex-shrink-0" />
-                <span>{cameraError}</span>
-              </div>
-            )}
+      {/* Inactive camera state */}
+      {!cameraActive && !cameraError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
+          <Camera className="h-10 w-10 text-primary mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Camera Not Active</h3>
+          <p className="mb-4 text-muted-foreground">Click the button below to start your camera and begin tracking your exercise form.</p>
+        </div>
+      )}
+      
+      {/* Loading state */}
+      {isModelLoading && (
+        <div className="absolute bottom-4 left-4 bg-background/80 rounded-md px-3 py-2 flex items-center gap-2">
+          <div className="h-4 w-4 border-2 border-primary border-t-transparent animate-spin rounded-full"></div>
+          <span className="text-sm font-medium">Loading AI model...</span>
+        </div>
+      )}
+      
+      {/* Detection status indicators */}
+      {cameraActive && detectionStatus.isDetecting && (
+        <div className="absolute top-4 right-4 bg-background/80 rounded-md px-3 py-2 flex flex-col gap-1">
+          <div className="flex justify-between">
+            <span className="text-xs text-muted-foreground">FPS:</span>
+            <span className="text-xs font-medium">{detectionStatus.fps?.toFixed(1)}</span>
           </div>
+          {detectionStatus.confidence !== null && (
+            <div className="flex justify-between">
+              <span className="text-xs text-muted-foreground">Confidence:</span>
+              <span className="text-xs font-medium">{Math.round(detectionStatus.confidence * 100)}%</span>
+            </div>
+          )}
+          {detectionStatus.detectedKeypoints !== undefined && (
+            <div className="flex justify-between">
+              <span className="text-xs text-muted-foreground">Keypoints:</span>
+              <span className="text-xs font-medium">{detectionStatus.detectedKeypoints}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
