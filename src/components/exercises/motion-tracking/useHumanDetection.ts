@@ -1,30 +1,20 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import * as Human from '@vladmandic/human';
-import { human, extractBodyAngles, extractBiomarkers } from '@/lib/human';
 import { toast } from 'sonner';
-import { Json } from '@/integrations/supabase/types';
-
-export enum MotionState {
-  STANDING = 'standing',
-  MID_MOTION = 'mid_motion',
-  FULL_MOTION = 'full_motion'
-}
-
-export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
-
-interface MotionStats {
-  totalReps: number;
-  goodReps: number;
-  badReps: number;
-  accuracy: number;
-}
+import * as Human from '@vladmandic/human';
+import { human } from '@/lib/human';
+import { 
+  BodyAngles, 
+  DetectionStatus, 
+  FeedbackMessage,
+  FeedbackType, 
+  MotionState, 
+  MotionStats 
+} from '@/components/exercises/posture-monitor/types';
+import { performDetection } from './utils/detectionUtils';
+import { generateFeedback, evaluateRepQuality } from './utils/feedbackUtils';
+import { updateStatsForGoodRep, updateStatsForBadRep, getInitialStats } from './utils/statsUtils';
+import { saveDetectionData, createSession, completeSession } from './utils/sessionUtils';
 
 interface UseHumanDetectionProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -34,44 +24,7 @@ interface UseHumanDetectionProps {
   videoReady: boolean;
 }
 
-// Function to determine motion state based on the knee angle
-const determineMotionState = (kneeAngle: number | null): MotionState => {
-  if (!kneeAngle) return MotionState.STANDING;
-  
-  if (kneeAngle > 160) {
-    return MotionState.STANDING;
-  } else if (kneeAngle < 100) {
-    return MotionState.FULL_MOTION;
-  } else {
-    return MotionState.MID_MOTION;
-  }
-};
-
-// Helper function to convert any object to a JSON-compatible format for Supabase
-const toJsonObject = (obj: any): Json => {
-  if (obj === null || obj === undefined) return null;
-  
-  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
-    return obj;
-  }
-  
-  if (Array.isArray(obj)) {
-    return obj.map(item => toJsonObject(item));
-  }
-  
-  // Convert to plain object with no methods
-  const result: Record<string, Json> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const value = obj[key];
-      if (typeof value !== 'function' && key !== '__proto__') {
-        result[key] = toJsonObject(value);
-      }
-    }
-  }
-  
-  return result;
-};
+export { MotionState, FeedbackType } from '@/components/exercises/posture-monitor/types';
 
 export const useHumanDetection = ({
   videoRef,
@@ -88,14 +41,7 @@ export const useHumanDetection = ({
   
   // Motion analysis state
   const [result, setResult] = useState<Human.Result | null>(null);
-  const [angles, setAngles] = useState<{
-    kneeAngle: number | null;
-    hipAngle: number | null;
-    shoulderAngle: number | null;
-    elbowAngle: number | null;
-    ankleAngle: number | null;
-    neckAngle: number | null;
-  }>({
+  const [angles, setAngles] = useState<BodyAngles>({
     kneeAngle: null,
     hipAngle: null,
     shoulderAngle: null,
@@ -106,18 +52,13 @@ export const useHumanDetection = ({
   const [biomarkers, setBiomarkers] = useState<Record<string, any>>({});
   const [currentMotionState, setCurrentMotionState] = useState(MotionState.STANDING);
   const [prevMotionState, setPrevMotionState] = useState(MotionState.STANDING);
-  const [feedback, setFeedback] = useState<{message: string | null; type: FeedbackType}>({
+  const [feedback, setFeedback] = useState<FeedbackMessage>({
     message: null,
     type: FeedbackType.INFO
   });
   
   // Exercise stats
-  const [stats, setStats] = useState<MotionStats>({
-    totalReps: 0,
-    goodReps: 0,
-    badReps: 0,
-    accuracy: 75 // Start with a default accuracy
-  });
+  const [stats, setStats] = useState<MotionStats>(getInitialStats());
   
   // Session tracking
   const [sessionId, setSessionId] = useState<string | undefined>(providedSessionId);
@@ -156,170 +97,22 @@ export const useHumanDetection = ({
   
   // Create a new session if needed
   useEffect(() => {
-    const createSession = async () => {
+    const initSession = async () => {
       if (!sessionId && isModelLoaded) {
-        try {
-          const { data, error } = await supabase
-            .from('analysis_sessions')
-            .insert({
-              patient_id: (await supabase.auth.getUser()).data.user?.id,
-              exercise_type: exerciseType,
-              start_time: new Date().toISOString(),
-              notes: 'Session created with Human.js detection'
-            })
-            .select('id')
-            .single();
-            
-          if (error) throw error;
-          
-          setSessionId(data.id);
+        const newSessionId = await createSession(exerciseType);
+        
+        if (newSessionId) {
+          setSessionId(newSessionId);
           
           if (onSessionStart) {
-            onSessionStart(data.id);
+            onSessionStart(newSessionId);
           }
-          
-        } catch (error) {
-          console.error('Error creating session:', error);
-          toast.error('Failed to create tracking session');
         }
       }
     };
     
-    createSession();
+    initSession();
   }, [exerciseType, isModelLoaded, onSessionStart, sessionId]);
-  
-  // Generate feedback based on motion state and angles
-  const generateFeedback = useCallback(() => {
-    if (!angles.kneeAngle || !angles.hipAngle) {
-      return {
-        message: "Position yourself in the camera view",
-        type: FeedbackType.INFO
-      };
-    }
-    
-    if (currentMotionState === MotionState.STANDING) {
-      return {
-        message: "Start your exercise by bending your knees",
-        type: FeedbackType.INFO
-      };
-    } else if (currentMotionState === MotionState.MID_MOTION) {
-      if (angles.hipAngle < 70) {
-        return {
-          message: "You're leaning too far forward",
-          type: FeedbackType.WARNING
-        };
-      } else {
-        return {
-          message: "Good! Continue your movement",
-          type: FeedbackType.SUCCESS
-        };
-      }
-    } else if (currentMotionState === MotionState.FULL_MOTION) {
-      return {
-        message: "Great depth! Now return to starting position",
-        type: FeedbackType.SUCCESS
-      };
-    }
-    
-    return {
-      message: "Maintain good form during your exercise",
-      type: FeedbackType.INFO
-    };
-  }, [angles, currentMotionState]);
-  
-  // Evaluate rep quality when a rep is completed
-  const evaluateRepQuality = useCallback(() => {
-    if (!angles.kneeAngle || !angles.hipAngle) return null;
-    
-    let isGoodForm = true;
-    let feedback = '';
-    
-    // Check knee angle
-    if (angles.kneeAngle < 70) {
-      isGoodForm = false;
-      feedback = "Movement is too deep. Try not to overextend.";
-    } else if (angles.kneeAngle > 130) {
-      isGoodForm = false;
-      feedback = "You're not going deep enough. Try to lower more.";
-    }
-    
-    // Check hip angle
-    if (angles.hipAngle < 70) {
-      isGoodForm = false;
-      feedback = "You're leaning too far forward. Keep your back straighter.";
-    }
-    
-    if (isGoodForm) {
-      feedback = "Excellent form! Keep it up!";
-    }
-    
-    return {
-      isGoodForm,
-      feedback,
-      feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
-    };
-  }, [angles]);
-  
-  // Update stats when a rep is completed
-  const updateStatsForGoodRep = useCallback(() => {
-    setStats(prev => ({
-      totalReps: prev.totalReps + 1,
-      goodReps: prev.goodReps + 1,
-      badReps: prev.badReps,
-      accuracy: Math.min(prev.accuracy + 2, 100)
-    }));
-    
-    toast.success("Rep Completed", {
-      description: "Great form! Keep going!",
-      duration: 3000
-    });
-  }, []);
-  
-  const updateStatsForBadRep = useCallback(() => {
-    setStats(prev => ({
-      totalReps: prev.totalReps + 1,
-      goodReps: prev.goodReps,
-      badReps: prev.badReps + 1,
-      accuracy: Math.max(prev.accuracy - 5, 50)
-    }));
-    
-    toast.warning("Rep Needs Improvement", {
-      description: "Watch your form. Check feedback for tips.",
-      duration: 3000
-    });
-  }, []);
-  
-  // Save data to Supabase
-  const saveDetectionData = useCallback(async () => {
-    if (!sessionId || !result) return;
-    
-    try {
-      // Convert complex objects to plain objects for JSON serialization
-      const serializedAngles = angles ? toJsonObject(angles) : null;
-      const serializedBiomarkers = biomarkers ? toJsonObject(biomarkers) : null;
-      const serializedMetadata = toJsonObject({
-        exerciseType: exerciseType,
-        motionState: currentMotionState,
-        stats: {
-          totalReps: stats.totalReps,
-          goodReps: stats.goodReps,
-          badReps: stats.badReps,
-          accuracy: stats.accuracy
-        }
-      });
-      
-      await supabase.from('body_analysis').insert({
-        patient_id: (await supabase.auth.getUser()).data.user?.id,
-        session_id: sessionId,
-        angles: serializedAngles,
-        posture_score: biomarkers.postureScore || null,
-        biomarkers: serializedBiomarkers,
-        metadata: serializedMetadata
-      });
-    } catch (error) {
-      console.error('Error saving detection data:', error);
-    }
-  }, [sessionId, result, angles, biomarkers, currentMotionState, exerciseType, stats]);
   
   // Human.js detection loop
   const detectFrame = useCallback(async (time: number) => {
@@ -351,54 +144,57 @@ export const useHumanDetection = ({
       setIsDetecting(true);
       
       // Perform detection
-      const detectionResult = await human.detect(videoRef.current);
+      const {
+        result: detectionResult,
+        angles: extractedAngles,
+        biomarkers: extractedBiomarkers,
+        newMotionState
+      } = await performDetection(videoRef.current);
       
       // Update state with detection results
       setResult(detectionResult);
+      setAngles(extractedAngles);
+      setBiomarkers(extractedBiomarkers);
       
-      // Extract angles and biomarkers
-      if (detectionResult.body && detectionResult.body.length > 0) {
-        const extractedAngles = extractBodyAngles(detectionResult);
-        setAngles(extractedAngles);
+      // Check if a rep was completed (full motion to standing transition)
+      if (currentMotionState === MotionState.FULL_MOTION && 
+          newMotionState === MotionState.MID_MOTION &&
+          prevMotionState === MotionState.FULL_MOTION) {
         
-        const extractedBiomarkers = extractBiomarkers(detectionResult, extractedAngles);
-        setBiomarkers(extractedBiomarkers);
+        // Evaluate rep quality
+        const evaluation = evaluateRepQuality(extractedAngles);
         
-        // Determine motion state
-        const newMotionState = determineMotionState(extractedAngles.kneeAngle);
-        
-        // Check if a rep was completed (full motion to standing transition)
-        if (currentMotionState === MotionState.FULL_MOTION && 
-            newMotionState === MotionState.MID_MOTION &&
-            prevMotionState === MotionState.FULL_MOTION) {
+        if (evaluation) {
+          setFeedback({
+            message: evaluation.feedback,
+            type: evaluation.feedbackType
+          });
           
-          // Evaluate rep quality
-          const evaluation = evaluateRepQuality();
-          
-          if (evaluation) {
-            setFeedback({
-              message: evaluation.feedback,
-              type: evaluation.feedbackType
-            });
-            
-            if (evaluation.isGoodForm) {
-              updateStatsForGoodRep();
-            } else {
-              updateStatsForBadRep();
-            }
-            
-            // Save data to Supabase after completing a rep
-            await saveDetectionData();
+          if (evaluation.isGoodForm) {
+            setStats(prev => updateStatsForGoodRep(prev));
+          } else {
+            setStats(prev => updateStatsForBadRep(prev));
           }
-        } else {
-          // Update feedback based on current state
-          setFeedback(generateFeedback());
+          
+          // Save data to Supabase after completing a rep
+          await saveDetectionData(
+            sessionId, 
+            detectionResult, 
+            extractedAngles, 
+            extractedBiomarkers, 
+            newMotionState, 
+            exerciseType, 
+            stats
+          );
         }
-        
-        // Update motion state
-        setPrevMotionState(currentMotionState);
-        setCurrentMotionState(newMotionState);
+      } else {
+        // Update feedback based on current state
+        setFeedback(generateFeedback(newMotionState, extractedAngles));
       }
+      
+      // Update motion state
+      setPrevMotionState(currentMotionState);
+      setCurrentMotionState(newMotionState);
       
       setIsDetecting(false);
     } catch (error) {
@@ -414,12 +210,10 @@ export const useHumanDetection = ({
     isModelLoaded, 
     videoReady, 
     currentMotionState, 
-    prevMotionState, 
-    evaluateRepQuality, 
-    generateFeedback, 
-    updateStatsForGoodRep, 
-    updateStatsForBadRep, 
-    saveDetectionData
+    prevMotionState,
+    exerciseType,
+    sessionId,
+    stats
   ]);
   
   // Start/stop detection loop
@@ -438,45 +232,13 @@ export const useHumanDetection = ({
   // Complete session when component unmounts
   useEffect(() => {
     return () => {
-      const completeSession = async () => {
-        if (sessionId) {
-          try {
-            // Convert complex objects to plain objects for JSON serialization
-            const summaryData = toJsonObject({
-              stats: {
-                totalReps: stats.totalReps,
-                goodReps: stats.goodReps,
-                badReps: stats.badReps,
-                accuracy: stats.accuracy
-              },
-              lastBiomarkers: biomarkers
-            });
-            
-            await supabase
-              .from('analysis_sessions')
-              .update({
-                end_time: new Date().toISOString(),
-                summary: summaryData
-              })
-              .eq('id', sessionId);
-          } catch (error) {
-            console.error('Error completing session:', error);
-          }
-        }
-      };
-      
-      completeSession();
+      completeSession(sessionId, stats, biomarkers);
     };
   }, [sessionId, stats, biomarkers]);
   
   // Reset session
   const resetSession = useCallback(() => {
-    setStats({
-      totalReps: 0,
-      goodReps: 0,
-      badReps: 0,
-      accuracy: 75
-    });
+    setStats(getInitialStats());
     
     setFeedback({
       message: "Session reset. Ready for new exercises.",

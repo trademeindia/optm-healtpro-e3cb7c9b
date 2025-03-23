@@ -1,16 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FeedbackType } from './useHumanDetection';
+import { FeedbackType, MotionStats, FeedbackMessage } from '@/components/exercises/posture-monitor/types';
 
 interface FeedbackDisplayProps {
-  feedback: { message: string | null; type: FeedbackType };
-  stats: {
-    totalReps: number;
-    goodReps: number;
-    badReps: number;
-    accuracy: number;
-  };
+  feedback: FeedbackMessage;
+  stats: MotionStats;
 }
 
 const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) => {

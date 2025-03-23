@@ -1,4 +1,3 @@
-
 import * as posenet from '@tensorflow-models/posenet';
 import { SquatState } from '../types';
 
@@ -194,4 +193,18 @@ const drawStateIndicator = (
     25
   );
   ctx.textAlign = 'start'; // Reset text alignment
+};
+
+const getStateColor = (state: SquatState): string => {
+  switch (state) {
+    case SquatState.DESCENDING:
+      return '#FFC107'; // Yellow
+    case SquatState.BOTTOM:
+      return '#4CAF50'; // Green
+    case SquatState.ASCENDING:
+      return '#2196F3'; // Blue
+    case SquatState.STANDING:
+    default:
+      return '#E0E0E0'; // Light gray
+  }
 };

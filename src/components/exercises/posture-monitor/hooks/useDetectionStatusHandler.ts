@@ -1,13 +1,6 @@
 
 import { useState } from 'react';
-
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number | null;
-  confidence: number | null;
-  detectedKeypoints: number;
-  lastDetectionTime: number;
-}
+import { DetectionStatus } from '../types';
 
 export const useDetectionStatusHandler = () => {
   const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
@@ -23,3 +16,4 @@ export const useDetectionStatusHandler = () => {
     setDetectionStatus
   };
 };
+

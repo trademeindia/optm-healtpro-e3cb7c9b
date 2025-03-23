@@ -9,6 +9,7 @@ import BiomarkersDisplay from './BiomarkersDisplay';
 import { Button } from '@/components/ui/button';
 import { Play, Camera, RefreshCw } from 'lucide-react';
 import { human, warmupModel } from '@/lib/human';
+import { DetectionStatus } from '../posture-monitor/types';
 
 interface MotionTrackerProps {
   exerciseId: string | null;
@@ -92,7 +93,7 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
               confidence: result?.body?.[0]?.score || null,
               detectedKeypoints: result?.body?.[0]?.keypoints?.length || 0,
               lastDetectionTime: Date.now()
-            }}
+            } as DetectionStatus}
           />
           
           <MotionRenderer

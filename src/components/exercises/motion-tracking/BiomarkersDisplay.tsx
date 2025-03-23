@@ -2,17 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { BodyAngles } from '@/components/exercises/posture-monitor/types';
 
 interface BiomarkersDisplayProps {
   biomarkers: Record<string, any>;
-  angles: {
-    kneeAngle: number | null;
-    hipAngle: number | null;
-    shoulderAngle: number | null;
-    elbowAngle: number | null;
-    ankleAngle: number | null;
-    neckAngle: number | null;
-  };
+  angles: BodyAngles;
 }
 
 const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angles }) => {
