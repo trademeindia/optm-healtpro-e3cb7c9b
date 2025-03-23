@@ -1,10 +1,14 @@
 
-/**
- * Types for posture monitoring and motion tracking
- */
+// Definition of shared types for posture monitoring
+
+export enum FeedbackType {
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error'
+}
 
 export enum SquatState {
-  UNKNOWN = 'unknown',
   STANDING = 'standing',
   DESCENDING = 'descending',
   BOTTOM = 'bottom',
@@ -17,16 +21,14 @@ export enum MotionState {
   FULL_MOTION = 'full_motion'
 }
 
-export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
-
-export interface FeedbackMessage {
-  message: string | null;
-  type: FeedbackType;
+export interface MotionStats {
+  totalReps: number;
+  goodReps: number;
+  badReps: number;
+  accuracy: number;
+  currentStreak: number;
+  bestStreak: number;
+  lastUpdated?: number;
 }
 
 export interface BodyAngles {
@@ -40,38 +42,13 @@ export interface BodyAngles {
 
 export interface DetectionStatus {
   isDetecting: boolean;
-  fps: number | null;
+  fps: number;
   confidence: number | null;
-  detectedKeypoints: number;
-  lastDetectionTime: number;
+  detectedKeypoints?: number;
+  lastDetectionTime?: number;
 }
 
-export interface AngleDisplayProps {
-  pose: any;
-  angle: number | null;
-  label: string;
-  keypoint: string;
-  scaleX: number;
-  scaleY: number;
-  minPartConfidence: number;
-  offsetX?: number;
-  offsetY?: number;
-}
-
-export interface MotionStats {
-  totalReps: number;
-  goodReps: number;
-  badReps: number;
-  accuracy: number;
-}
-
-export interface VideoStatus {
-  isReady: boolean;
-  hasStream: boolean;
-  resolution: {
-    width: number;
-    height: number;
-  } | null;
-  lastCheckTime: number;
-  errorCount: number;
+export interface FeedbackMessage {
+  message: string | null;
+  type: FeedbackType;
 }

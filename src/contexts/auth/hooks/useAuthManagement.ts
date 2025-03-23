@@ -1,66 +1,70 @@
 
-import { useState } from 'react';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-export const useAuthManagement = (supabase: SupabaseClient) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+type UseAuthManagementProps = {
+  navigate: (path: string) => void;
+};
 
+export const useAuthManagement = ({ navigate }: UseAuthManagementProps) => {
   const logout = async (): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const { error: signOutError } = await supabase.auth.signOut();
+      // First check if we have a demo user in localStorage
+      const demoUserData = localStorage.getItem('demoUser');
       
-      if (signOutError) {
-        throw signOutError;
+      // Clear any user data from localStorage
+      if (demoUserData) {
+        localStorage.removeItem('demoUser');
       }
-
-      // Optional: Clear any local auth state or cached user data
-      localStorage.removeItem('supabase.auth.token');
       
-    } catch (err) {
-      console.error('Logout error:', err);
-      setError(err instanceof Error ? err : new Error('An error occurred during logout'));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resetPassword = async (email: string): Promise<{ data: {}; error: Error | null }> => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      if (!email) {
-        throw new Error('Email is required');
-      }
-
-      const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      // Always attempt to sign out from Supabase regardless of demo user
+      // This ensures we clean up any lingering sessions
+      await supabase.auth.signOut();
+      
+      // Show logout notification
+      toast.info('You have been logged out', {
+        duration: 3000
       });
-
-      if (resetError) {
-        throw resetError;
-      }
-
-      return { data, error: null };
-    } catch (err) {
-      console.error('Reset password error:', err);
-      setError(err instanceof Error ? err : new Error('An error occurred during password reset'));
-      return { data: {}, error: err instanceof Error ? err : new Error('Unknown error') };
-    } finally {
-      setIsLoading(false);
+      
+      // Navigate to login page after all cleanup is complete
+      setTimeout(() => {
+        navigate('/login');
+      }, 100); // Short timeout to ensure state updates complete
+      
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast.error('Failed to log out', {
+        duration: 4000
+      });
     }
   };
 
-  return {
-    logout,
-    resetPassword,
-    isLoading,
-    error,
-    setError,
+  const forgotPassword = async (email: string): Promise<void> => {
+    try {
+      // Special case for demo accounts
+      if (email === 'doctor@example.com' || email === 'patient@example.com') {
+        toast.success('Demo account password is "password123"', {
+          duration: 5000
+        });
+        return;
+      }
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Password reset link sent to your email', {
+        duration: 5000
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset link', {
+        duration: 5000
+      });
+      throw error;
+    }
   };
+
+  return { logout, forgotPassword };
 };

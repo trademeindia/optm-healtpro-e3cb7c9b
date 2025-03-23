@@ -114,8 +114,8 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       localStorage.setItem('googleFitConnectTime', Date.now().toString());
       
       // Check if the current user has a session
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
         toast.error("Authentication session expired", {
           description: "Please sign in again to connect Google Fit."
         });
@@ -125,34 +125,68 @@ export const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       }
       
       // Get the Supabase URL from environment variable or use the default
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-supabase-url.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
+      const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
       
-      // Redirect to the Google Fit OAuth endpoint
-      const redirectUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&access_type=offline&prompt=consent&scope=https://www.googleapis.com/auth/fitness.activity.read https://www.googleapis.com/auth/fitness.body.read https://www.googleapis.com/auth/fitness.heart_rate.read https://www.googleapis.com/auth/fitness.sleep.read&redirect_to=${encodeURIComponent(window.location.href + '?connected=true')}`;
+      console.log(`Initiating Google Fit connection for user: ${user.id}`);
       
-      window.location.href = redirectUrl;
-    } catch (error) {
-      console.error("Error connecting to Google Fit:", error);
-      toast.error("Connection Failed", {
-        description: "There was a problem connecting to Google Fit. Please try again."
+      // Show toast notification that we're redirecting
+      toast.info("Redirecting to Google login...", {
+        description: "You'll be taken to Google to authorize access to your fitness data."
       });
-      setIsConnecting(false);
-      setConnectStatus('idle');
+      
+      // For better UX, directly navigate to the OAuth URL
+      window.location.href = `${functionUrl}?userId=${user.id}`;
+      
+    } catch (error) {
+      console.error('Error connecting to Google Fit:', error);
+      setConnectStatus('retrying');
+      
+      toast.error("Failed to connect to Google Fit", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+      
+      // Wait 2 seconds and retry once automatically
+      setTimeout(async () => {
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evqbnxbeimcacqkgdola.supabase.co";
+          const functionUrl = `${supabaseUrl}/functions/v1/connect-google-fit`;
+          
+          toast.info("Retrying connection to Google Fit...");
+          window.location.href = `${functionUrl}?userId=${user.id}`;
+        } catch (retryError) {
+          console.error('Error retrying Google Fit connection:', retryError);
+          toast.error("Failed to connect to Google Fit. Please try again.", {
+            description: "There was a problem connecting to Google Fit. Check your network connection and try again."
+          });
+          setIsConnecting(false);
+          setConnectStatus('idle');
+        }
+      }, 2000);
     }
   };
 
   return (
     <Button
-      variant={variant}
-      size={size}
       onClick={handleConnectGoogleFit}
       disabled={isConnecting}
       className={className}
+      variant={variant}
+      size={size}
     >
       {isConnecting ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Connecting...
+          {connectStatus === 'connecting' ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting to Google Fit...
+            </>
+          ) : (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Retrying connection...
+            </>
+          )}
         </>
       ) : (
         <>

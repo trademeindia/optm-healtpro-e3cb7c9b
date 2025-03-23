@@ -1,70 +1,103 @@
 
-import { MotionStats } from '../hooks/types';
+import { MotionStats } from '../../posture-monitor/types';
 
-// Get initial stats object
-export const getInitialStats = (): MotionStats => {
-  return {
-    totalReps: 0,
-    goodReps: 0,
-    badReps: 0,
-    accuracy: 0,
-    timeStarted: Date.now()
-  };
-};
+/**
+ * Returns initial stats object
+ */
+export const getInitialStats = (): MotionStats => ({
+  totalReps: 0,
+  goodReps: 0,
+  badReps: 0,
+  accuracy: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  lastUpdated: Date.now()
+});
 
-// Update stats after completing a good rep
-export const updateStatsForGoodRep = (prevStats: MotionStats): MotionStats => {
-  const totalReps = prevStats.totalReps + 1;
-  const goodReps = prevStats.goodReps + 1;
+/**
+ * Updates stats when a good rep is completed
+ */
+export const updateStatsForGoodRep = (prev: MotionStats): MotionStats => {
+  const totalReps = prev.totalReps + 1;
+  const goodReps = prev.goodReps + 1;
+  const currentStreak = prev.currentStreak + 1;
+  const bestStreak = Math.max(currentStreak, prev.bestStreak);
   
   return {
-    ...prevStats,
     totalReps,
     goodReps,
-    accuracy: (goodReps / totalReps) * 100,
-    lastRepTime: Date.now()
+    badReps: prev.badReps,
+    accuracy: Math.round((goodReps / totalReps) * 100),
+    currentStreak,
+    bestStreak,
+    lastUpdated: Date.now()
   };
 };
 
-// Update stats after completing a bad rep
-export const updateStatsForBadRep = (prevStats: MotionStats): MotionStats => {
-  const totalReps = prevStats.totalReps + 1;
-  const badReps = prevStats.badReps + 1;
-  const goodReps = prevStats.goodReps;
+/**
+ * Updates stats when a bad rep is completed
+ */
+export const updateStatsForBadRep = (prev: MotionStats): MotionStats => {
+  const totalReps = prev.totalReps + 1;
+  const badReps = prev.badReps + 1;
   
   return {
-    ...prevStats,
     totalReps,
+    goodReps: prev.goodReps,
     badReps,
-    accuracy: (goodReps / totalReps) * 100,
-    lastRepTime: Date.now()
+    accuracy: Math.round((prev.goodReps / totalReps) * 100),
+    currentStreak: 0, // Reset streak on bad rep
+    bestStreak: prev.bestStreak,
+    lastUpdated: Date.now()
   };
 };
 
-// Calculate calories burned (very approximate)
-export const calculateCaloriesBurned = (
-  stats: MotionStats,
-  exerciseType: string,
-  userWeight: number = 70 // Default to 70kg if not provided
-): number => {
-  // MET values (Metabolic Equivalent of Task) for different exercises
-  const metValues: Record<string, number> = {
-    squat: 5.0,
-    pushup: 3.8,
-    plank: 3.5,
-    lunge: 4.0,
-    default: 4.0
-  };
+/**
+ * Calculates performance score based on stats
+ * Returns a value between 0-100
+ */
+export const calculatePerformanceScore = (stats: MotionStats): number => {
+  if (stats.totalReps === 0) return 0;
   
-  const met = metValues[exerciseType] || metValues.default;
+  // Base score is the accuracy percentage
+  let score = stats.accuracy;
   
-  // Duration in hours
-  const duration = stats.timeStarted 
-    ? (Date.now() - stats.timeStarted) / (1000 * 60 * 60)
-    : 0;
+  // Bonus for consecutive good reps (max 10 points)
+  const streakBonus = Math.min(stats.currentStreak * 2, 10);
   
-  // Calories = MET × weight (kg) × duration (hours)
-  const calories = met * userWeight * duration;
+  // Bonus for volume (max 10 points)
+  const volumeBonus = Math.min(stats.totalReps / 2, 10);
   
-  return Math.round(calories);
+  // Calculate final score, capped at 100
+  return Math.min(score + streakBonus + volumeBonus, 100);
+};
+
+/**
+ * Returns a difficulty rating based on the stats
+ */
+export const getDifficultyRating = (stats: MotionStats): string => {
+  const score = calculatePerformanceScore(stats);
+  
+  if (score < 20) return "Getting Started";
+  if (score < 40) return "Beginner";
+  if (score < 60) return "Intermediate";
+  if (score < 80) return "Advanced";
+  return "Expert";
+};
+
+/**
+ * Provides feedback based on stats
+ */
+export const getStatFeedback = (stats: MotionStats): string => {
+  if (stats.totalReps === 0) {
+    return "Complete your first rep to see performance stats";
+  }
+  
+  if (stats.accuracy < 50) {
+    return "Focus on proper form over speed or depth";
+  } else if (stats.accuracy < 80) {
+    return "Good progress! Keep practicing for better technique";
+  } else {
+    return "Excellent form! Try to maintain this quality";
+  }
 };

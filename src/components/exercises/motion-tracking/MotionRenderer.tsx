@@ -16,12 +16,8 @@ const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angl
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Get canvas dimensions
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    
     // Clear canvas
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // If no body detected, don't render anything
     if (!result.body || result.body.length === 0) return;
@@ -30,11 +26,11 @@ const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angl
     if (!body.keypoints || body.keypoints.length === 0) return;
     
     // Draw keypoints and skeleton
-    drawKeypoints(ctx, body.keypoints, canvasWidth, canvasHeight);
-    drawSkeleton(ctx, body.keypoints, canvasWidth, canvasHeight);
+    drawKeypoints(ctx, body.keypoints, canvas.width, canvas.height);
+    drawSkeleton(ctx, body.keypoints, canvas.width, canvas.height);
     
     // Draw angles if available
-    drawAngles(ctx, angles, canvasWidth, canvasHeight);
+    drawAngles(ctx, angles, canvas.width, canvas.height);
   }, [result, canvasRef, angles]);
   
   return null; // This component only handles canvas drawing, doesn't render anything
@@ -47,24 +43,19 @@ const drawKeypoints = (
   canvasWidth: number, 
   canvasHeight: number
 ) => {
-  const minConfidence = 0.3;
-  
   keypoints.forEach(keypoint => {
-    if (!keypoint || keypoint.score < minConfidence) return;
+    if (!keypoint.score || keypoint.score < 0.3) return;
     
     const { x, y } = keypoint;
-    const xPos = x * canvasWidth;
-    const yPos = y * canvasHeight;
     
-    // Draw main point
     ctx.beginPath();
-    ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
+    ctx.arc(x * canvasWidth, y * canvasHeight, 5, 0, 2 * Math.PI);
     ctx.fillStyle = 'rgba(0, 230, 255, 0.7)';
     ctx.fill();
     
-    // Draw glow effect
+    // Add a glow effect
     ctx.beginPath();
-    ctx.arc(xPos, yPos, 8, 0, 2 * Math.PI);
+    ctx.arc(x * canvasWidth, y * canvasHeight, 8, 0, 2 * Math.PI);
     ctx.fillStyle = 'rgba(0, 230, 255, 0.2)';
     ctx.fill();
   });
@@ -77,62 +68,45 @@ const drawSkeleton = (
   canvasWidth: number, 
   canvasHeight: number
 ) => {
-  const minConfidence = 0.3;
-  const colorGood = 'rgba(75, 200, 255, 0.8)';
-  const colorWarning = 'rgba(255, 165, 0, 0.8)';
-  
-  // Define connections between keypoints for BlazePose
-  // 0: nose, 1-2: eyes, 3-4: ears, 5-6: shoulders, 7-8: elbows, 9-10: wrists
-  // 11-12: hips, 13-14: knees, 15-16: ankles
+  // Define connections between keypoints
   const connections = [
-    // Face
-    [0, 1], [0, 2], [1, 3], [2, 4],
-    // Arms
-    [5, 7], [7, 9], [6, 8], [8, 10],
-    // Body
-    [5, 6], [5, 11], [6, 12], [11, 12],
-    // Legs
-    [11, 13], [13, 15], [12, 14], [14, 16]
+    [5, 7], [7, 9], // Left arm
+    [6, 8], [8, 10], // Right arm
+    [11, 13], [13, 15], // Left leg
+    [12, 14], [14, 16], // Right leg
+    [5, 6], [5, 11], [6, 12], [11, 12] // Torso
   ];
   
   // Set line style
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(75, 200, 255, 0.8)';
+  ctx.lineWidth = 3;
   
   // Draw connections
   connections.forEach(([i, j]) => {
-    if (i >= keypoints.length || j >= keypoints.length) return;
-    
     const kp1 = keypoints[i];
     const kp2 = keypoints[j];
     
-    if (!kp1 || !kp2 || kp1.score < minConfidence || kp2.score < minConfidence) return;
+    if (!kp1 || !kp2 || !kp1.score || !kp2.score || kp1.score < 0.3 || kp2.score < 0.3) return;
     
-    const x1 = kp1.x * canvasWidth;
-    const y1 = kp1.y * canvasHeight;
-    const x2 = kp2.x * canvasWidth;
-    const y2 = kp2.y * canvasHeight;
-    
-    // Determine if this is a leg connection (for potential highlighting during squats)
-    const isLegConnection = (
-      (i === 11 && j === 13) || (i === 13 && j === 15) || 
-      (i === 12 && j === 14) || (i === 14 && j === 16)
-    );
-    
-    // Draw glowing effect underneath
-    ctx.strokeStyle = 'rgba(75, 200, 255, 0.3)';
-    ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(kp1.x * canvasWidth, kp1.y * canvasHeight);
+    ctx.lineTo(kp2.x * canvasWidth, kp2.y * canvasHeight);
     ctx.stroke();
+  });
+  
+  // Draw an additional glow effect
+  ctx.strokeStyle = 'rgba(75, 200, 255, 0.3)';
+  ctx.lineWidth = 6;
+  
+  connections.forEach(([i, j]) => {
+    const kp1 = keypoints[i];
+    const kp2 = keypoints[j];
     
-    // Draw main line
-    ctx.strokeStyle = isLegConnection ? colorWarning : colorGood;
-    ctx.lineWidth = 3;
+    if (!kp1 || !kp2 || !kp1.score || !kp2.score || kp1.score < 0.3 || kp2.score < 0.3) return;
+    
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(kp1.x * canvasWidth, kp1.y * canvasHeight);
+    ctx.lineTo(kp2.x * canvasWidth, kp2.y * canvasHeight);
     ctx.stroke();
   });
 };
@@ -149,51 +123,27 @@ const drawAngles = (
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   
-  // Create a semi-transparent background for the angle display
+  // Add a semi-transparent background for better readability
   if (angles.kneeAngle || angles.hipAngle || angles.shoulderAngle) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 180, 100);
+    ctx.fillRect(10, 10, 150, 80);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
   }
   
-  // Draw title
-  ctx.font = 'bold 14px Arial';
-  ctx.fillText('Joint Angles', 20, 20);
-  ctx.font = '14px Arial';
+  let yOffset = 20;
   
-  let yOffset = 45;
-  
-  // Draw angles with color coding
-  if (angles.kneeAngle !== null) {
-    const color = getAngleColor(angles.kneeAngle, 90, 20);
-    ctx.fillStyle = color;
+  if (angles.kneeAngle) {
     ctx.fillText(`Knee: ${Math.round(angles.kneeAngle)}°`, 20, yOffset);
     yOffset += 20;
   }
   
-  if (angles.hipAngle !== null) {
-    const color = getAngleColor(angles.hipAngle, 90, 20);
-    ctx.fillStyle = color;
+  if (angles.hipAngle) {
     ctx.fillText(`Hip: ${Math.round(angles.hipAngle)}°`, 20, yOffset);
     yOffset += 20;
   }
   
-  if (angles.shoulderAngle !== null) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  if (angles.shoulderAngle) {
     ctx.fillText(`Shoulder: ${Math.round(angles.shoulderAngle)}°`, 20, yOffset);
-  }
-};
-
-// Helper to determine color based on how close angle is to ideal
-const getAngleColor = (angle: number, idealAngle: number, tolerance: number): string => {
-  const diff = Math.abs(angle - idealAngle);
-  
-  if (diff <= tolerance) {
-    return 'rgb(0, 255, 127)'; // Good (green)
-  } else if (diff <= tolerance * 2) {
-    return 'rgb(255, 165, 0)'; // Warning (orange)
-  } else {
-    return 'rgb(255, 105, 97)'; // Bad (red)
   }
 };
 

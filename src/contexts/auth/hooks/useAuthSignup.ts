@@ -1,50 +1,54 @@
 
-import { useState } from 'react';
-import { SupabaseClient, AuthResponse } from '@supabase/supabase-js';
-import { AuthSignupCredentials } from '../utils/types';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { formatUser } from '../utils';
+import { User, UserRole } from '../types';
 
-export const useAuthSignup = (supabase: SupabaseClient) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+type UseAuthSignupProps = {
+  setIsLoading: (isLoading: boolean) => void;
+  navigate: (path: string) => void;
+};
 
-  const signUp = async (credentials: AuthSignupCredentials): Promise<AuthResponse> => {
+export const useAuthSignup = ({ setIsLoading, navigate }: UseAuthSignupProps) => {
+  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<User | null> => {
     setIsLoading(true);
-    setError(null);
-
     try {
-      // Validate input
-      if (!credentials.email || !credentials.password) {
-        throw new Error('Email and password are required');
-      }
-
-      // Sign up the user
-      const response = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
         options: {
-          data: credentials.metadata || {},
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+          data: {
+            name,
+            role
+          }
+        }
       });
 
-      if (response.error) {
-        throw response.error;
-      }
+      if (error) throw error;
 
-      return response;
-    } catch (err) {
-      console.error('Signup error:', err);
-      setError(err instanceof Error ? err : new Error('An unknown error occurred during signup'));
-      throw err;
+      toast.success('Account created successfully. Please check your email for verification.', {
+        duration: 5000
+      });
+      
+      if (data.user && !data.user.email_confirmed_at) {
+        navigate('/login');
+        return null;
+      } else {
+        const formattedUser = await formatUser(data.user);
+        if (formattedUser) {
+          navigate(role === 'doctor' ? '/dashboard' : '/patient-dashboard');
+        }
+        return formattedUser;
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Signup failed', {
+        duration: 5000
+      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  return {
-    signUp,
-    isLoading,
-    error,
-    setError,
-  };
+  return { signup };
 };

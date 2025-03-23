@@ -1,60 +1,91 @@
 
-import { useState } from 'react';
-import { SupabaseClient, AuthResponse } from '@supabase/supabase-js';
-import { AuthLoginCredentials } from '../utils/types';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { formatUser } from '../utils';
+import { User } from '../types';
 
-export const useAuthLogin = (supabase: SupabaseClient) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+type UseAuthLoginProps = {
+  setIsLoading: (isLoading: boolean) => void;
+  navigate: (path: string) => void;
+};
 
-  const login = async (credentials: AuthLoginCredentials): Promise<AuthResponse> => {
+export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
+  const login = async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
-    setError(null);
-
     try {
-      // Validate input
-      if (!credentials.email || !credentials.password) {
-        throw new Error('Email and password are required');
+      console.log(`Attempting to log in with email: ${email}`);
+      
+      // Check if using demo credentials
+      const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
+      const isDemoPatient = email === 'patient@example.com' && password === 'password123';
+      const isDemoReceptionist = email === 'receptionist@example.com' && password === 'password123';
+      
+      if (isDemoDoctor || isDemoPatient || isDemoReceptionist) {
+        console.log('Using demo account login');
+        
+        // Create a demo user without actually authenticating
+        const demoUser: User = {
+          id: isDemoDoctor ? 'demo-doctor-id' : isDemoPatient ? 'demo-patient-id' : 'demo-receptionist-id',
+          email: email,
+          name: isDemoDoctor ? 'Demo Doctor' : isDemoPatient ? 'Demo Patient' : 'Demo Receptionist',
+          role: isDemoDoctor ? 'doctor' : isDemoPatient ? 'patient' : 'receptionist',
+          provider: 'email',
+          picture: null
+        };
+        
+        toast.success('Demo login successful');
+        
+        // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
+        setTimeout(() => {
+          const dashboard = isDemoDoctor ? '/dashboard/doctor' : 
+                           isDemoPatient ? '/dashboard/patient' : 
+                           '/dashboard/receptionist';
+          console.log(`Navigating to ${dashboard}`);
+          navigate(dashboard);
+        }, 100);
+        
+        return demoUser;
       }
-
-      if (!isValidEmail(credentials.email)) {
-        throw new Error('Invalid email format');
-      }
-
-      if (credentials.password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-      }
-
-      // Perform login
-      const response = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
+      
+      // Regular authentication flow for non-demo users
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (response.error) {
-        throw response.error;
+      if (error) {
+        console.error('Authentication error:', error);
+        toast.error(error.message || 'Login failed');
+        throw error;
       }
 
-      return response;
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err : new Error('An unknown error occurred during login'));
-      throw err;
+      if (!data.user) {
+        throw new Error('No user returned from authentication');
+      }
+
+      const formattedUser = await formatUser(data.user);
+      if (!formattedUser) {
+        throw new Error('User profile not found');
+      }
+      
+      toast.success('Login successful');
+      
+      // Navigate to the appropriate dashboard based on user role
+      const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
+                        formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
+                        '/dashboard/patient';
+      
+      setTimeout(() => navigate(dashboard), 100);
+      
+      return formattedUser;
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      toast.error(error.message || 'Login failed');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to validate email format
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  return {
-    login,
-    isLoading,
-    error,
-    setError,
-  };
+  return { login };
 };
