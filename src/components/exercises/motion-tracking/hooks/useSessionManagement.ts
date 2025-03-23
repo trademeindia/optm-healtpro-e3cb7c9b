@@ -1,35 +1,57 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionStats, FeedbackType } from '@/components/exercises/posture-monitor/types';
-import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from '../utils/statsUtils';
-import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
+import { MotionStats } from './types';
+import {
+  getInitialStats,
+  updateStatsForGoodRep,
+  updateStatsForBadRep
+} from '../utils/statsUtils';
+import {
+  createSession,
+  saveDetectionData,
+  completeSession
+} from '../utils/sessionUtils';
 
 export const useSessionManagement = () => {
-  // Exercise stats
-  const [stats, setStats] = useState<MotionStats>(getInitialStats());
-  
-  // Session tracking
+  // Session state
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const exerciseType = useRef<string>("squat");
+  const [stats, setStats] = useState<MotionStats>(getInitialStats());
+  const exerciseTypeRef = useRef<string>('squat'); // Default exercise type
+  const isSavingRef = useRef<boolean>(false);
   
   // Initialize session
-  const initSession = useCallback(async () => {
+  const initSession = useCallback(async (exerciseType?: string) => {
+    if (exerciseType) {
+      exerciseTypeRef.current = exerciseType;
+    }
+    
     if (!sessionId) {
-      const newSessionId = await createSession(exerciseType.current);
-      
-      if (newSessionId) {
+      try {
+        const newSessionId = await createSession(exerciseTypeRef.current);
         setSessionId(newSessionId);
+        
+        // Reset stats for new session
+        setStats(getInitialStats());
+        
         return newSessionId;
+      } catch (error) {
+        console.error('Error initializing session:', error);
+        toast.error('Failed to initialize exercise session');
+        return undefined;
       }
     }
+    
     return sessionId;
   }, [sessionId]);
   
   // Handle good rep
   const handleGoodRep = useCallback(() => {
     setStats(prev => updateStatsForGoodRep(prev));
-  }, []);
+    if (stats.goodReps % 5 === 0) { // Provide encouragement every 5 good reps
+      toast.success(`Great job! ${stats.goodReps + 1} good reps completed!`);
+    }
+  }, [stats.goodReps]);
   
   // Handle bad rep
   const handleBadRep = useCallback(() => {
@@ -41,45 +63,58 @@ export const useSessionManagement = () => {
     detectionResult: any,
     angles: any,
     biomarkers: any,
-    motionState: string
+    motionState: any
   ) => {
-    return await saveDetectionData(
-      sessionId, 
-      detectionResult, 
-      angles, 
-      biomarkers, 
-      motionState, 
-      exerciseType.current, 
-      stats
-    );
-  }, [sessionId, stats]);
-  
-  // Complete the session
-  const completeCurrentSession = useCallback(() => {
-    if (sessionId) {
-      completeSession(sessionId, stats, {});
+    // Prevent too frequent saves and overlapping save operations
+    if (isSavingRef.current) return;
+    
+    isSavingRef.current = true;
+    
+    try {
+      await saveDetectionData(
+        sessionId,
+        detectionResult,
+        angles,
+        biomarkers,
+        motionState,
+        exerciseTypeRef.current,
+        stats
+      );
+    } catch (error) {
+      console.error('Error saving session data:', error);
+    } finally {
+      isSavingRef.current = false;
     }
   }, [sessionId, stats]);
   
   // Reset session
-  const resetSession = useCallback(() => {
+  const resetSession = useCallback(async () => {
+    // Complete current session if it exists
+    if (sessionId) {
+      try {
+        await completeSession(sessionId, stats, {});
+      } catch (error) {
+        console.error('Error completing session:', error);
+      }
+    }
+    
+    // Create a new session
+    const newSessionId = await initSession();
+    setSessionId(newSessionId);
+    
+    // Reset stats
     setStats(getInitialStats());
     
-    toast.info("Session Reset", {
-      description: "Your workout session has been reset. Ready to start new exercises!",
-      duration: 3000
-    });
-  }, []);
+    toast.info('Session reset. Ready to start new exercises!');
+  }, [sessionId, stats, initSession]);
   
   return {
     stats,
     sessionId,
-    exerciseType: exerciseType.current,
     initSession,
     handleGoodRep,
     handleBadRep,
     saveSessionData,
-    completeCurrentSession,
     resetSession
   };
 };

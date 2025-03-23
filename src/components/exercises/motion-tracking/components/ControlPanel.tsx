@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Pause, Play, RefreshCw, X } from 'lucide-react';
+import { Play, Pause, RefreshCw, X } from 'lucide-react';
 
 interface ControlPanelProps {
   cameraActive: boolean;
@@ -19,41 +19,42 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onFinish
 }) => {
   return (
-    <div className="flex justify-between p-4 bg-card border-t">
-      <div className="flex gap-2">
-        {cameraActive && (
-          <Button
-            variant={isTracking ? "outline" : "default"}
-            size="sm"
-            onClick={onToggleTracking}
-            disabled={!cameraActive}
-            className="gap-2"
-          >
-            {isTracking ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isTracking ? "Pause Tracking" : "Start Tracking"}
-          </Button>
+    <div className="w-full p-3 bg-card border-t grid grid-cols-3 gap-2">
+      <Button
+        variant={isTracking ? "destructive" : "default"}
+        className="flex items-center gap-1"
+        onClick={onToggleTracking}
+        disabled={!cameraActive}
+      >
+        {isTracking ? (
+          <>
+            <Pause className="h-4 w-4" />
+            <span>Pause</span>
+          </>
+        ) : (
+          <>
+            <Play className="h-4 w-4" />
+            <span>Start Tracking</span>
+          </>
         )}
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onReset}
-          disabled={!cameraActive}
-          className="gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Reset
-        </Button>
-      </div>
+      </Button>
       
-      <Button 
-        variant="secondary" 
-        size="sm"
+      <Button
+        variant="outline"
+        className="flex items-center gap-1"
+        onClick={onReset}
+      >
+        <RefreshCw className="h-4 w-4" />
+        <span>Reset</span>
+      </Button>
+      
+      <Button
+        variant="secondary"
+        className="flex items-center gap-1"
         onClick={onFinish}
-        className="gap-2"
       >
         <X className="h-4 w-4" />
-        End Session
+        <span>Finish</span>
       </Button>
     </div>
   );

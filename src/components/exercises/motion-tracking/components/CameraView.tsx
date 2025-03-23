@@ -1,9 +1,10 @@
 
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import MotionRenderer from '../MotionRenderer';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -32,8 +33,20 @@ const CameraView: React.FC<CameraViewProps> = ({
   onReset,
   onFinish
 }) => {
+  // Set canvas dimensions to match video dimensions when video loads
+  const handleVideoLoad = () => {
+    if (videoRef.current && canvasRef.current) {
+      if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        console.log("Canvas dimensions set to:", canvasRef.current.width, "x", canvasRef.current.height);
+        toast.success("Camera feed ready");
+      }
+    }
+  };
+
   return (
-    <div className="relative aspect-video bg-black flex items-center justify-center">
+    <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
       {/* Hidden video for capture */}
       <video 
         ref={videoRef}
@@ -42,11 +55,7 @@ const CameraView: React.FC<CameraViewProps> = ({
         muted
         className="absolute inset-0 w-full h-full object-cover" 
         style={{ display: cameraActive ? 'block' : 'none' }}
-        onLoadedData={() => {
-          if (videoRef.current?.readyState === 4) {
-            toast.success("Camera feed ready");
-          }
-        }}
+        onLoadedData={handleVideoLoad}
       />
       
       {/* Canvas for rendering */}
@@ -56,6 +65,14 @@ const CameraView: React.FC<CameraViewProps> = ({
         style={{ display: cameraActive ? 'block' : 'none' }}
       />
       
+      {/* Tracking status indicator */}
+      {cameraActive && isTracking && (
+        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-20 flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+          <span>Tracking</span>
+        </div>
+      )}
+      
       {/* Renderer component */}
       {detectionResult && (
         <MotionRenderer 
@@ -63,6 +80,16 @@ const CameraView: React.FC<CameraViewProps> = ({
           canvasRef={canvasRef} 
           angles={angles}
         />
+      )}
+      
+      {/* Loading indicator */}
+      {isModelLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+          <div className="text-center p-4 bg-card rounded-lg shadow-lg">
+            <Spinner size="lg" className="mb-2" />
+            <p className="text-white">Loading model...</p>
+          </div>
+        </div>
       )}
       
       {/* Camera inactive state */}
@@ -82,6 +109,20 @@ const CameraView: React.FC<CameraViewProps> = ({
             disabled={isModelLoading}
           >
             {isModelLoading ? "Loading motion analysis model..." : "Start Camera"}
+          </Button>
+        </div>
+      )}
+      
+      {/* Camera control overlay when active but not tracking */}
+      {cameraActive && !isTracking && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
+          <Button 
+            onClick={onToggleTracking} 
+            size="lg"
+            className="gap-2"
+          >
+            <Play className="h-5 w-5" />
+            <span>Start Tracking</span>
           </Button>
         </div>
       )}
