@@ -3,7 +3,7 @@ import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { DetectionResult, DetectionState } from './types';
 import { useModelLoader } from './useModelLoader';
-import { useDetectionLoop } from './useDetectionLoop';
+import { useDetectionLoop } from './useDetectionLoop/useDetectionLoop';
 
 /**
  * Main detection service that coordinates model loading and detection
