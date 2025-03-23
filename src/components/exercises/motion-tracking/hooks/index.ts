@@ -8,3 +8,4 @@ export * from './useModelLoader';
 export * from './useDetectionLoop';
 export * from './useDetectionError';
 export * from './detectionServiceUtils';
+export * from './motion-analysis';
