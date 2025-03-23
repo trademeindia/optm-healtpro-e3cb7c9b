@@ -15,15 +15,16 @@ interface BiomarkersDisplayProps {
 
 const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angles }) => {
   return (
-    <Card className="border shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="border border-border/60 shadow-sm">
+      <CardHeader className="pb-2 border-b bg-card/60">
         <CardTitle className="text-lg flex items-center">
           <BarChart className="h-4 w-4 mr-2 text-primary" />
           Biomechanical Analysis
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <CardContent className="p-4">
+        {/* Angles Grid - 4 equal columns */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
           <MetricCard 
             title="Knee Angle" 
             value={angles.kneeAngle} 
@@ -50,8 +51,9 @@ const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers, angle
           />
         </div>
 
-        <div className="mt-4 pt-3 border-t border-border/40">
-          <h3 className="text-sm font-medium mb-2">Performance Metrics</h3>
+        {/* Performance Metrics - 2 equal columns */}
+        <div className="pt-3 border-t border-border/40">
+          <h3 className="text-sm font-medium mb-2 text-muted-foreground">Performance Metrics</h3>
           <div className="grid grid-cols-2 gap-3">
             <MetricCard
               title="Balance"
@@ -91,8 +93,8 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, status }) =
   };
 
   return (
-    <div className={`${statusColors[status]} rounded-lg p-3 text-center`}>
-      <div className="text-xs mb-1">{title}</div>
+    <div className={`${statusColors[status]} rounded-lg p-3 text-center flex flex-col items-center justify-center`}>
+      <div className="text-xs mb-1.5">{title}</div>
       <div className="text-lg font-semibold">
         {value !== null && value !== undefined ? `${value.toFixed(0)}${unit || ''}` : '--'}
       </div>

@@ -5,8 +5,8 @@ import '@/styles/responsive/motion-tracker.css';
 
 export default function MotionAnalysisPage() {
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl space-y-8">
-      <div className="space-y-3 bg-background/50 p-5 rounded-lg border shadow-sm">
+    <div className="container mx-auto py-6 px-4 max-w-7xl">
+      <div className="space-y-3 bg-background/50 rounded-lg border-border/60 shadow-sm border p-5 mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-primary">Motion Analysis</h1>
         <p className="text-muted-foreground text-base md:text-lg max-w-3xl">
           This exercise uses AI to track your movements and provide real-time feedback on your form.
@@ -14,7 +14,7 @@ export default function MotionAnalysisPage() {
         </p>
       </div>
       
-      <div className="motion-tracker-container w-full rounded-xl overflow-hidden bg-white dark:bg-gray-800 p-5 shadow-md">
+      <div className="motion-tracker-container w-full rounded-xl overflow-hidden bg-card p-5 shadow-md border border-border/60">
         <MotionTracker
           exerciseId="basic-squat"
           exerciseName="Basic Squat Technique"

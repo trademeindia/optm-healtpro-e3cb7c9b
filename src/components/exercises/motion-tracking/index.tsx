@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, BarChart } from 'lucide-react';
 import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import ExerciseInstructions from './components/ExerciseInstructions';
@@ -78,8 +78,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 w-full">
       {/* Left column - Camera view and controls */}
       <div className="lg:col-span-7 space-y-5">
-        <Card className="overflow-hidden border shadow-md hover:shadow-lg transition-shadow duration-300">
-          <CardHeader className="pb-2 px-4 pt-4 flex flex-row items-center justify-between border-b">
+        <Card className="overflow-hidden border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardHeader className="pb-2 px-4 pt-4 flex flex-row items-center justify-between border-b bg-card/60">
             <CardTitle className="text-lg font-semibold text-primary">{exerciseName} Tracking</CardTitle>
             {isModelLoaded && (
               <div className="flex items-center text-sm font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-full">

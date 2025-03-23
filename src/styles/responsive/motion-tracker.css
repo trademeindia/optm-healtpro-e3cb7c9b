@@ -7,49 +7,44 @@
   
   .feedback-stats-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .control-buttons {
-    flex-wrap: wrap;
     gap: 0.5rem;
   }
   
-  .control-button {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.5rem;
+  .control-buttons {
+    flex-direction: column;
+    width: 100%;
   }
   
-  .control-icon {
-    width: 0.75rem;
-    height: 0.75rem;
+  .control-button {
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
 }
 
 /* Better responsive layout on medium screens */
 @media (min-width: 769px) and (max-width: 1023px) {
   .motion-tracker-container {
-    max-width: 100%;
-    margin: 0 auto;
+    padding: 1rem;
   }
   
-  .feedback-stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .motion-tracker-grid {
+    gap: 1rem;
   }
 }
 
 /* Improve layout on large screens */
 @media (min-width: 1024px) {
   .motion-tracker-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 1.5rem;
   }
   
-  .feedback-stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .motion-tracker-grid {
+    grid-template-columns: 7fr 5fr;
+    gap: 1.5rem;
   }
 }
 
-/* Enhanced camera view styling */
+/* Camera container styling */
 .camera-container {
   aspect-ratio: 16/9;
   background-color: #000;
@@ -58,75 +53,60 @@
   border-radius: 0.5rem;
   width: 100%;
   height: auto;
-  max-height: 80vh;
 }
 
-/* Improve visibility of stats numbers */
+/* Stat cards improvements */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
 .stat-value {
   font-size: 1.25rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .stat-label {
   font-size: 0.75rem;
   color: var(--muted-foreground);
+  margin-top: 0.25rem;
 }
 
-/* Full height camera container for better body visibility */
-.exercise-camera-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  min-height: 480px;
-}
-
-/* Ensure camera feed fills available space */
-.camera-feed {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Proper aspect ratio for exercise tracking */
+/* Exercise tracking container */
 .exercise-tracking-wrapper {
   aspect-ratio: 16/9;
   width: 100%;
-  max-height: 80vh;
-  position: relative;
-}
-
-/* Full body view */
-.full-body-view {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16/9;
-  margin: 0 auto;
   position: relative;
   overflow: hidden;
-  background-color: #000;
 }
 
-.full-body-view video,
-.full-body-view canvas {
-  object-fit: contain;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* Adjust layout for better exercise tracking */
-.motion-tracker-grid {
+/* Improved grid layout for stats */
+.stats-grid-2 {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
-@media (min-width: 1024px) {
-  .motion-tracker-grid {
-    grid-template-columns: 1fr 1fr;
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -167,4 +147,107 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Improved card layout */
+.motion-analysis-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease-in-out;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.motion-analysis-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.motion-analysis-card-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--card-foreground-lighter, rgba(255, 255, 255, 0.05));
+}
+
+.motion-analysis-card-content {
+  padding: 1rem;
+  flex: 1;
+}
+
+/* Improved metric cards */
+.metric-card {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Card shadows and hover effects */
+.interactive-card {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid var(--border);
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Card separators */
+.card-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border);
+  margin: 0.75rem 0;
+}
+
+/* Better instruction cards */
+.instruction-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--secondary-light, rgba(240, 240, 250, 0.3));
+  margin-bottom: 0.5rem;
+}
+
+.instruction-card:last-child {
+  margin-bottom: 0;
+}
+
+.instruction-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.instruction-text {
+  font-size: 0.875rem;
+  line-height: 1.4;
 }

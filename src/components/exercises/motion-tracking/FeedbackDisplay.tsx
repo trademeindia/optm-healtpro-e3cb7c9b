@@ -49,46 +49,52 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) =>
   const { icon, colorClass } = getFeedbackDisplay();
   
   return (
-    <Card className="border shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="border border-border/60 shadow-sm">
+      <CardHeader className="pb-2 border-b bg-card/60">
         <CardTitle className="text-lg">Exercise Feedback</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
+      <CardContent className="p-4">
+        <div className="mb-5">
           <div className={`p-3 rounded-lg flex items-start gap-3 ${colorClass}`}>
             <span className="mt-0.5">{icon}</span>
             <span className="text-base font-medium">{displayMessage}</span>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Reps</div>
+        {/* Primary Stats - 4 columns layout */}
+        <div className="grid grid-cols-4 gap-3 text-center mb-3">
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Reps</div>
             <div className="font-semibold text-lg">{stats.totalReps}</div>
           </div>
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Good</div>
+          
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Good</div>
             <div className="font-semibold text-lg text-green-500">{stats.goodReps}</div>
           </div>
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Needs Work</div>
+          
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Needs Work</div>
             <div className="font-semibold text-lg text-orange-500">{stats.badReps}</div>
           </div>
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Accuracy</div>
+          
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Accuracy</div>
             <div className="font-semibold text-lg">{stats.accuracy}%</div>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-3 mt-3 text-center">
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Current Streak</div>
+        {/* Streak Stats - 2 columns layout */}
+        <div className="grid grid-cols-2 gap-3 text-center">
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Current Streak</div>
             <div className="font-semibold text-lg">
               {stats.currentStreak !== undefined ? stats.currentStreak : 0} reps
             </div>
           </div>
-          <div className="bg-muted p-3 rounded-md">
-            <div className="text-sm text-muted-foreground">Best Streak</div>
+          
+          <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+            <div className="text-xs text-muted-foreground mb-1">Best Streak</div>
             <div className="font-semibold text-lg">
               {stats.bestStreak !== undefined ? stats.bestStreak : 0} reps
             </div>

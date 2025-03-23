@@ -1,197 +1,118 @@
 
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Camera, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { Camera, Video, AlertCircle } from 'lucide-react';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   detectionStatus: { isDetecting: boolean };
-  onCameraStart?: () => void;
-  isTracking?: boolean;
+  onCameraStart: () => void;
+  isTracking: boolean;
 }
 
-const CameraView: React.FC<CameraViewProps> = ({ 
-  videoRef, 
+const CameraView: React.FC<CameraViewProps> = ({
+  videoRef,
   canvasRef,
   detectionStatus,
   onCameraStart,
-  isTracking 
+  isTracking
 }) => {
-  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraStarted, setCameraStarted] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
   
-  // Start camera stream
+  useEffect(() => {
+    if (cameraStarted) {
+      return () => {
+        // Stop camera on unmount
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+          videoRef.current.srcObject = null;
+        }
+      };
+    }
+  }, [cameraStarted, videoRef]);
+  
   const startCamera = async () => {
-    if (cameraActive || isInitializing) return;
-    
-    setIsInitializing(true);
-    setCameraError(null);
-    
     try {
-      // Request camera with specific constraints for better full-body view
+      setCameraError(null);
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Your browser does not support camera access');
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
-          facingMode: 'user',
-          aspectRatio: { ideal: 1.777 } // 16:9 aspect ratio
-        },
-        audio: false
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }
       });
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        
-        // Once video is loaded, set camera as active
         videoRef.current.onloadedmetadata = () => {
-          console.log('Camera stream loaded, dimensions:', {
-            width: videoRef.current?.videoWidth,
-            height: videoRef.current?.videoHeight
-          });
-          
-          setCameraActive(true);
-          setIsInitializing(false);
-          
-          // Set canvas dimensions to match video
-          if (canvasRef.current && videoRef.current) {
-            canvasRef.current.width = videoRef.current.videoWidth;
-            canvasRef.current.height = videoRef.current.videoHeight;
-          }
-          
-          // Notify parent component
-          if (onCameraStart) {
+          if (videoRef.current) {
+            videoRef.current.play();
+            setCameraStarted(true);
             onCameraStart();
           }
-          
-          toast.success('Camera started successfully');
         };
-        
-        // Handle errors during video playback
-        videoRef.current.onerror = () => {
-          setCameraError('Error playing video stream');
-          setIsInitializing(false);
-          stopCamera();
-        };
-        
-        // Start playing the video
-        videoRef.current.play().catch(err => {
-          console.error('Error playing video:', err);
-          setCameraError('Could not play video stream');
-          setIsInitializing(false);
-          stopCamera();
-        });
-      } else {
-        setCameraError('Video element not available');
-        setIsInitializing(false);
       }
-    } catch (err: any) {
-      console.error('Camera error:', err);
-      setCameraError(
-        err.name === 'NotAllowedError' 
-          ? 'Camera access denied. Please allow camera access and try again.'
-          : `Camera error: ${err.message || 'Could not access camera'}`
-      );
-      setIsInitializing(false);
+    } catch (error) {
+      console.error('Error starting camera:', error);
+      setCameraError(error instanceof Error ? error.message : 'Failed to access camera');
     }
   };
-  
-  // Stop camera stream
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      const tracks = stream.getTracks();
-      
-      tracks.forEach(track => {
-        track.stop();
-      });
-      
-      videoRef.current.srcObject = null;
-    }
-    
-    setCameraActive(false);
-  };
-  
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
   
   return (
-    <div className="relative w-full h-full bg-black">
-      {/* Video element */}
-      <video
-        ref={videoRef}
-        className={`absolute inset-0 w-full h-full object-contain ${
-          cameraActive ? 'opacity-100' : 'opacity-0'
-        }`}
-        autoPlay
-        playsInline
-        muted
-      />
-      
-      {/* Canvas overlay for drawing pose */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-contain"
-      />
-      
-      {/* Camera inactive state */}
-      {!cameraActive && !cameraError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
-          <Camera className="h-10 w-10 text-primary mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Camera Not Active</h3>
-          <p className="mb-4 text-muted-foreground">Click the button below to start your camera and begin tracking your exercise form.</p>
+    <div className="relative w-full h-full flex items-center justify-center bg-gray-900">
+      {!cameraStarted ? (
+        <div className="p-8 flex flex-col items-center">
+          <div className="text-center mb-6 text-white">
+            <Video className="h-12 w-12 mx-auto mb-2 text-primary/80" />
+            <h3 className="text-lg font-semibold mb-1">Camera Access Required</h3>
+            <p className="text-sm text-gray-300 max-w-md">
+              Position yourself so your full body is visible to track your 
+              exercise form.
+            </p>
+          </div>
+          
+          {cameraError && (
+            <div className="bg-red-900/40 text-red-300 p-3 rounded-lg mb-4 flex items-start gap-2 max-w-md">
+              <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+              <span>{cameraError}</span>
+            </div>
+          )}
+          
           <Button 
             onClick={startCamera} 
-            disabled={isInitializing}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            size="lg"
           >
-            {isInitializing ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                Starting Camera...
-              </>
-            ) : (
-              <>
-                <Zap className="h-4 w-4" />
-                Start Camera
-              </>
-            )}
+            <Camera className="h-5 w-5" />
+            Start Camera
           </Button>
         </div>
-      )}
-      
-      {/* Camera error state */}
-      {cameraError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{cameraError}</AlertDescription>
-          </Alert>
-          <Button 
-            onClick={() => {
-              setCameraError(null);
-              startCamera();
-            }} 
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Retry Camera
-          </Button>
-        </div>
-      )}
-      
-      {/* Active tracking indicator */}
-      {isTracking && cameraActive && (
-        <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/80 text-white rounded-md flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-white animate-ping" />
-          <span className="text-sm font-medium">Tracking Active</span>
+      ) : (
+        <div className="w-full h-full relative">
+          <video 
+            ref={videoRef} 
+            className="w-full h-full object-contain"
+            playsInline
+            muted
+          />
+          <canvas 
+            ref={canvasRef} 
+            className="absolute top-0 left-0 w-full h-full object-contain z-10"
+          />
+          {isTracking && (
+            <div className="absolute top-3 right-3 bg-green-600 text-white text-xs px-2 py-1 rounded-full z-20 flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
+              Tracking Active
+            </div>
+          )}
         </div>
       )}
     </div>
