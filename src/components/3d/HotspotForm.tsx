@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -51,56 +52,58 @@ const HotspotForm: React.FC<HotspotFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
         <DialogHeader>
-          <DialogTitle>Add New Issue</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">Add New Issue</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="label">Area/Muscle Name</Label>
+            <Label htmlFor="label" className="font-medium text-gray-800 dark:text-gray-200">Area/Muscle Name</Label>
             <Input 
               id="label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g., Deltoid Muscle"
               required
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 h-10"
             />
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="font-medium text-gray-800 dark:text-gray-200">Description</Label>
             <Textarea 
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the issue or condition"
               required
+              className="min-h-[100px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 resize-none"
             />
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="status">Severity</Label>
+            <Label htmlFor="status" className="font-medium text-gray-800 dark:text-gray-200">Severity</Label>
             <Select 
               value={status} 
               onValueChange={(value: 'normal' | 'warning' | 'critical') => setStatus(value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 h-10">
                 <SelectValue placeholder="Select severity" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="warning">Warning</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <SelectItem value="normal" className="hover:bg-gray-100 dark:hover:bg-gray-700">Normal</SelectItem>
+                <SelectItem value="warning" className="hover:bg-gray-100 dark:hover:bg-gray-700">Warning</SelectItem>
+                <SelectItem value="critical" className="hover:bg-gray-100 dark:hover:bg-gray-700">Critical</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <DialogFooter className="sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter className="sm:justify-end pt-4 mt-2 border-t dark:border-gray-700">
+            <Button type="button" variant="outline" onClick={onClose} className="border-gray-300 dark:border-gray-600 dark:text-gray-200">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
               Save
             </Button>
           </DialogFooter>
