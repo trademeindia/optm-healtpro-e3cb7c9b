@@ -1,5 +1,5 @@
 
-import { MotionStats } from '@/components/exercises/posture-monitor/types';
+import { MotionStats } from '@/lib/human/types';
 
 /**
  * Initialize motion stats with default values

@@ -1,88 +1,55 @@
 
-import React, { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Camera, Pause, Play, RefreshCw, X } from 'lucide-react';
-import { toast } from 'sonner';
-import MotionRenderer from '../MotionRenderer';
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  isModelLoading: boolean;
-  cameraActive: boolean;
-  isTracking: boolean;
-  detectionResult: any;
-  angles: any;
-  onStartCamera: () => void;
-  onToggleTracking: () => void;
-  onReset: () => void;
-  onFinish: () => void;
+  detectionStatus?: {
+    isDetecting?: boolean;
+  };
+  errorMessage?: string | null;
 }
 
-const CameraView: React.FC<CameraViewProps> = ({
-  videoRef,
+const CameraView: React.FC<CameraViewProps> = ({ 
+  videoRef, 
   canvasRef,
-  isModelLoading,
-  cameraActive,
-  isTracking,
-  detectionResult,
-  angles,
-  onStartCamera,
-  onToggleTracking,
-  onReset,
-  onFinish
+  detectionStatus = { isDetecting: false },
+  errorMessage
 }) => {
   return (
-    <div className="relative aspect-video bg-black flex items-center justify-center">
-      {/* Hidden video for capture */}
-      <video 
+    <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+      <video
         ref={videoRef}
-        autoPlay 
+        autoPlay
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover" 
-        style={{ display: cameraActive ? 'block' : 'none' }}
-        onLoadedData={() => {
-          if (videoRef.current?.readyState === 4) {
-            toast.success("Camera feed ready");
-          }
-        }}
+        className={`absolute inset-0 h-full w-full object-cover ${detectionStatus.isDetecting ? 'opacity-100' : 'opacity-80'}`}
+        style={{ transform: 'scaleX(-1)' }} // Mirror the camera feed
       />
       
-      {/* Canvas for rendering */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full z-10"
-        style={{ display: cameraActive ? 'block' : 'none' }}
+        className="absolute inset-0 w-full h-full"
+        style={{ transform: 'scaleX(-1)' }} // Mirror the canvas to match the video
       />
       
-      {/* Renderer component */}
-      {detectionResult && (
-        <MotionRenderer 
-          result={detectionResult} 
-          canvasRef={canvasRef} 
-          angles={angles}
-        />
+      {errorMessage && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
+          <div className="bg-card p-4 rounded-lg max-w-md text-center">
+            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <h3 className="text-lg font-semibold">Camera Error</h3>
+            <p className="text-muted-foreground">{errorMessage}</p>
+          </div>
+        </div>
       )}
       
-      {/* Camera inactive state */}
-      {!cameraActive && (
-        <div className="text-center p-8 max-w-md mx-auto">
-          <div className="inline-flex items-center justify-center p-4 mb-4 rounded-full bg-muted/20">
-            <Camera className="h-8 w-8 text-muted-foreground" />
+      {!detectionStatus.isDetecting && !errorMessage && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+          <div className="text-center text-white">
+            <p className="text-xl">Camera Ready</p>
+            <p className="text-sm text-gray-300 mt-2">Click "Start Tracking" to begin</p>
           </div>
-          <h3 className="text-lg font-medium mb-2">Camera Access Required</h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            To analyze your movement patterns, we need access to your camera. 
-            Your privacy is important - video is processed locally and not stored.
-          </p>
-          <Button 
-            onClick={onStartCamera} 
-            className="w-full"
-            disabled={isModelLoading}
-          >
-            {isModelLoading ? "Loading motion analysis model..." : "Start Camera"}
-          </Button>
         </div>
       )}
     </div>

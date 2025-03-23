@@ -1,32 +1,45 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Info } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
-const ExerciseInstructions: React.FC = () => {
+interface ExerciseInstructionsProps {
+  exerciseName: string;
+}
+
+const ExerciseInstructions: React.FC<ExerciseInstructionsProps> = ({ exerciseName }) => {
   return (
-    <Card>
-      <CardHeader className="pb-2 flex flex-row items-center space-x-2">
-        <Info className="h-5 w-5 text-primary" />
-        <CardTitle className="text-lg">Exercise Instructions</CardTitle>
-      </CardHeader>
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Follow these instructions for proper form:
+      </p>
       
-      <CardContent>
-        <ol className="space-y-2 list-decimal list-inside text-sm">
-          <li>Stand in front of the camera so your full body is visible</li>
-          <li>Ensure good lighting and a clear background</li>
-          <li>Maintain proper posture throughout the exercise</li>
-          <li>Follow the real-time feedback to improve your form</li>
-          <li>Complete your repetitions with controlled movements</li>
-          <li>Use the motion analysis metrics to track your progress</li>
-        </ol>
-        
-        <div className="mt-4 text-xs text-muted-foreground">
-          <p className="font-medium">Note:</p>
-          <p>The AI analysis is designed to provide guidance, but always listen to your body and avoid movements that cause pain.</p>
-        </div>
-      </CardContent>
-    </Card>
+      <ul className="space-y-2">
+        <li className="flex items-start">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>Position yourself so your full body is visible in the camera</span>
+        </li>
+        <li className="flex items-start">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>Keep your back straight and feet shoulder-width apart</span>
+        </li>
+        <li className="flex items-start">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>Bend your knees while keeping your heels on the ground</span>
+        </li>
+        <li className="flex items-start">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>Aim for controlled movements rather than speed</span>
+        </li>
+        <li className="flex items-start">
+          <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>Complete 10-15 repetitions with good form</span>
+        </li>
+      </ul>
+      
+      <p className="text-sm font-medium pt-2">
+        The AI will track your movements and provide feedback on your form.
+      </p>
+    </div>
   );
 };
 

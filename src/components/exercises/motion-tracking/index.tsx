@@ -14,9 +14,10 @@ import { useHumanDetection } from './hooks/useHumanDetection';
 interface MotionTrackerProps {
   exerciseId: string;
   exerciseName: string;
+  onFinish?: () => void;
 }
 
-const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName }) => {
+const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName, onFinish }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -33,6 +34,12 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName 
     stopDetection,
     resetSession
   } = useHumanDetection(videoRef, canvasRef);
+  
+  const handleFinish = () => {
+    if (onFinish) {
+      onFinish();
+    }
+  };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -59,8 +66,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName 
           <CameraView 
             videoRef={videoRef} 
             canvasRef={canvasRef}
-            isDetecting={isDetecting}
-            detectionError={detectionError}
+            detectionStatus={{ isDetecting }}
+            errorMessage={detectionError}
           />
           
           <MotionRenderer 
@@ -102,6 +109,12 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName 
                 Reset Session
               </Button>
               
+              {onFinish && (
+                <Button onClick={handleFinish} variant="secondary">
+                  Finish Exercise
+                </Button>
+              )}
+              
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -133,16 +146,18 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ExerciseInstructions exerciseId={exerciseId} />
+            <ExerciseInstructions exerciseName={exerciseId} />
           </CardContent>
         </Card>
         
         <ControlPanel 
-          isDetecting={isDetecting}
-          isModelLoaded={isModelLoaded}
-          onStartDetection={startDetection}
-          onStopDetection={stopDetection}
-          onReset={resetSession}
+          controls={{
+            isDetecting,
+            isModelLoaded,
+            onStartDetection: startDetection,
+            onStopDetection: stopDetection,
+            onReset: resetSession
+          }}
         />
       </div>
     </div>

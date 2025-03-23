@@ -1,5 +1,5 @@
 
-import { MotionStats } from '../../posture-monitor/types';
+import { MotionStats } from '@/lib/human/types';
 
 export const createSession = async (exerciseType: string): Promise<string> => {
   console.log('Creating session for:', exerciseType);
