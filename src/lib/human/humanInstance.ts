@@ -24,6 +24,5 @@ if (human.config.segmentation) {
 // Force lite model for better performance
 if (human.config.body) {
   human.config.body.modelPath = 'blazepose-lite.json';
-  human.config.body.skipFrames = 4;
   console.log('Set body model to lite version for better performance');
 }

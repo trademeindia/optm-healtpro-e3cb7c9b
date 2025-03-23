@@ -10,43 +10,48 @@ interface MotionRendererProps {
 
 const MotionRenderer: React.FC<MotionRendererProps> = ({ result, canvasRef, angles }) => {
   useEffect(() => {
-    if (!canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // If no result detected or no body, show a message to the user
-    if (!result || !result.body || result.body.length === 0) {
-      drawNoBodyMessage(ctx, canvas.width, canvas.height);
-      // Draw silhouette guide to help user position
-      drawSilhouetteGuide(ctx, canvas.width, canvas.height);
-      return;
-    }
-    
-    const body = result.body[0];
-    if (!body.keypoints || body.keypoints.length === 0) {
-      drawNoBodyMessage(ctx, canvas.width, canvas.height);
-      // Draw silhouette guide to help user position
-      drawSilhouetteGuide(ctx, canvas.width, canvas.height);
-      return;
-    }
-    
-    // Draw keypoints and skeleton
-    drawKeypoints(ctx, body.keypoints, canvas.width, canvas.height);
-    drawSkeleton(ctx, body.keypoints, canvas.width, canvas.height);
-    
-    // Draw angles if available
-    drawAngles(ctx, angles, canvas.width, canvas.height);
-    
-    // Add detailed form feedback based on angles
-    drawFormFeedback(ctx, angles, canvas.width, canvas.height);
+    renderMotion(result, canvasRef, angles);
   }, [result, canvasRef, angles]);
   
   return null; // This component only handles canvas drawing, doesn't render anything
+};
+
+// Main rendering function
+const renderMotion = (result: any, canvasRef: React.RefObject<HTMLCanvasElement>, angles: BodyAngles) => {
+  if (!canvasRef.current) return;
+  
+  const canvas = canvasRef.current;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // If no result detected or no body, show a message to the user
+  if (!result || !result.body || result.body.length === 0) {
+    drawNoBodyMessage(ctx, canvas.width, canvas.height);
+    // Draw silhouette guide to help user position
+    drawSilhouetteGuide(ctx, canvas.width, canvas.height);
+    return;
+  }
+  
+  const body = result.body[0];
+  if (!body.keypoints || body.keypoints.length === 0) {
+    drawNoBodyMessage(ctx, canvas.width, canvas.height);
+    // Draw silhouette guide to help user position
+    drawSilhouetteGuide(ctx, canvas.width, canvas.height);
+    return;
+  }
+  
+  // Draw keypoints and skeleton
+  drawKeypoints(ctx, body.keypoints, canvas.width, canvas.height);
+  drawSkeleton(ctx, body.keypoints, canvas.width, canvas.height);
+  
+  // Draw angles if available
+  drawAngles(ctx, angles, canvas.width, canvas.height);
+  
+  // Add detailed form feedback based on angles
+  drawFormFeedback(ctx, angles, canvas.width, canvas.height);
 };
 
 // Helper function to draw silhouette guide
@@ -158,15 +163,6 @@ const drawKeypoints = (
     ctx.arc(canvasX, canvasY, 12, 0, 2 * Math.PI);
     ctx.fillStyle = `rgba(0, 230, 255, ${alpha * 0.3})`;
     ctx.fill();
-    
-    // Debug specific important keypoints
-    if (keypoint.part) {
-      if (['leftKnee', 'rightKnee', 'leftHip', 'rightHip', 'leftShoulder', 'rightShoulder'].includes(keypoint.part)) {
-        ctx.font = '12px Arial';
-        ctx.fillStyle = 'white';
-        ctx.fillText(keypoint.part, canvasX + 15, canvasY);
-      }
-    }
   });
 };
 
@@ -302,10 +298,6 @@ const drawAngles = (
   } else {
     ctx.fillText(`Shoulder: --`, 20, yOffset);
     yOffset += 25;
-  }
-  
-  if (angles.elbowAngle !== null && !isNaN(angles.elbowAngle)) {
-    ctx.fillText(`Elbow: ${Math.round(angles.elbowAngle)}°`, 20, yOffset);
   }
 };
 

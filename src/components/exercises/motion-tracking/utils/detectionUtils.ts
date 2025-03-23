@@ -20,8 +20,8 @@ const emptyAngles = {
 let consecutiveFailures = 0;
 let lastSuccessfulDetection = 0;
 let tensorCleanupCounter = 0;
-const MAX_CONSECUTIVE_FAILURES = 10;
-const TENSOR_CLEANUP_THRESHOLD = 150; // Reduced threshold for earlier cleanup
+const MAX_CONSECUTIVE_FAILURES = 5; // Reduced to make recovery faster
+const TENSOR_CLEANUP_THRESHOLD = 100; // Reduced threshold for earlier cleanup
 const TENSOR_CLEANUP_INTERVAL = 5; // Clean up every 5 detections
 
 // Tracking performance metrics
@@ -153,9 +153,6 @@ const extractBiomarkers = (result: Human.Result | null, angles: any): Record<str
       biomarkers.hipHealthy = hipHealthy;
     }
     
-    // Calculate symmetry if both sides are detected
-    // This would require enhancements to extractBodyAngles to return both left and right angles
-    
     // Add overall posture score based on angles
     if (angles.kneeAngle !== null && angles.hipAngle !== null && angles.shoulderAngle !== null) {
       const kneeScore = angles.kneeAngle > 80 && angles.kneeAngle < 175 ? 100 : 50;
@@ -225,9 +222,8 @@ export const performDetection = async (
       }
     }
     
-    // Use adaptive frame skipping based on performance
+    // Skip this frame if we've had recent successful detections
     if (consecutiveFailures === 0 && (Date.now() - lastSuccessfulDetection) < 100) {
-      // Skip this frame if we've had recent successful detections
       return {
         result: null,
         angles: emptyAngles,
@@ -236,15 +232,8 @@ export const performDetection = async (
       };
     }
     
-    // Log current configuration
-    console.log("Current Human.js config:", {
-      modelPath: human.config.body.modelPath,
-      backend: human.config.backend,
-      warmup: human.config.warmup
-    });
-    
-    // Use adaptive timeout based on past performance
-    const timeoutDuration = getAdaptiveTimeout();
+    // Run detection with a shorter timeout
+    const timeoutDuration = 2000;
     
     // Run detection with appropriate timeout
     const detectionPromise = human.detect(videoElement, {
@@ -255,11 +244,6 @@ export const performDetection = async (
       gesture: { enabled: false },
       segmentation: { enabled: false }
     });
-    
-    console.log(`Starting detection with ${timeoutDuration}ms timeout`);
-    if (human.tf) {
-      console.log(`Current tensor count: ${human.tf.engine().state.numTensors}`);
-    }
     
     // Race the detection against the timeout
     const timeoutPromise = new Promise((_, reject) => {
@@ -299,19 +283,10 @@ export const performDetection = async (
     // Calculate biomarkers based on detection and angles
     const biomarkers = extractBiomarkers(result, angles);
 
-    // Log the calculated angles for debugging
-    console.log('Calculated angles:', 
-      JSON.stringify({
-        knee: angles.kneeAngle, 
-        hip: angles.hipAngle, 
-        shoulder: angles.shoulderAngle
-      })
-    );
-
     // Determine motion state based on angles and the current state
     const newMotionState = determineMotionState(angles, MotionState.STANDING);
 
-    // Log detection success rate
+    // Log detection success rate periodically
     if (totalDetectionAttempts % 20 === 0) {
       const successRate = (successfulDetections / totalDetectionAttempts) * 100;
       console.log(`Detection success rate: ${successRate.toFixed(1)}% (${successfulDetections}/${totalDetectionAttempts})`);
@@ -334,8 +309,8 @@ export const performDetection = async (
     
     // Handle the specific segmentation error
     if (error instanceof Error && 
-        error.message.includes('activation_segmentation') || 
-        error.message.includes('not found in the graph')) {
+        (error.message.includes('activation_segmentation') || 
+         error.message.includes('not found in the graph'))) {
       console.warn('Encountered segmentation error, disabling segmentation');
       
       // Explicitly disable segmentation in case it got enabled somehow

@@ -19,17 +19,26 @@ export const humanConfig: Human.Config = {
   wasmPlatformFetch: false,
   validateModels: false,
   
-  flags: {
-    useWorker: false, // Disable worker threads to prevent compatibility issues
-  }, 
-  
-  softwareKernels: true,
-  
-  // Filter configuration
-  filter: { 
-    enabled: true, 
+  // Use a proper filter configuration that won't cause errors
+  filter: {
+    enabled: true,
     equalization: false,
-    // Using only properties that exist in FilterConfig
+    width: 0,
+    height: 0,
+    return: false,
+    brightness: 0,
+    contrast: 0,
+    sharpness: 0,
+    blur: 0,
+    saturation: 0,
+    hue: 0,
+    negative: false,
+    sepia: false,
+    vintage: false,
+    kodachrome: false,
+    technicolor: false,
+    polaroid: false,
+    pixelate: 0
   },
   
   // Disable face detection to improve performance
@@ -42,7 +51,7 @@ export const humanConfig: Human.Config = {
     enabled: true,
     modelPath: 'blazepose-lite.json', // Use lite model for better performance
     minConfidence: 0.3, // Lower threshold for better detection
-    skipFrames: 2, // Skip fewer frames for smoother tracking
+    skipFrames: 1, // Skip fewer frames for smoother tracking
     maxDetected: 1, // Only track one person
   },
   

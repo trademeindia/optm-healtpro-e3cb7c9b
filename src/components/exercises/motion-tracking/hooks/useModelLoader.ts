@@ -1,152 +1,128 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { warmupModel, getModelLoadProgress } from '@/lib/human/modelLoader';
 import { toast } from 'sonner';
-import { warmupModel, getModelLoadProgress, resetModel } from '@/lib/human';
 
-/**
- * Hook for loading the Human.js model with progress tracking and error handling
- */
+interface ModelState {
+  isModelLoaded: boolean;
+  isModelLoading: boolean;
+  modelError: string | null;
+  loadProgress: number;
+}
+
 export const useModelLoader = () => {
-  // Model loading state
-  const [modelState, setModelState] = useState({
+  const [modelState, setModelState] = useState<ModelState>({
     isModelLoaded: false,
     isModelLoading: false,
-    modelError: null as string | null,
+    modelError: null,
     loadProgress: 0
   });
   
-  // Track loading timeouts and retries
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const progressInterval = useRef<NodeJS.Timeout | null>(null);
-  const retryCount = useRef<number>(0);
-  const maxRetries = 3;
-  
-  // Cleanup function for intervals and timeouts
-  useEffect(() => {
-    return () => {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-    };
-  }, []);
-  
-  // Setup progress tracking
-  const setupProgressTracking = useCallback(() => {
-    if (progressInterval.current) {
-      clearInterval(progressInterval.current);
-    }
-    
-    progressInterval.current = setInterval(() => {
-      const progress = getModelLoadProgress();
-      setModelState(prev => ({ 
-        ...prev, 
-        loadProgress: progress 
-      }));
-      
-      // If model is fully loaded, stop the interval
-      if (progress >= 100 || modelState.isModelLoaded) {
-        if (progressInterval.current) {
-          clearInterval(progressInterval.current);
-          progressInterval.current = null;
-        }
-      }
-    }, 300);
-  }, [modelState.isModelLoaded]);
-
-  // Load model with error handling and retry logic
+  // Function to load the model with progress tracking
   const loadModel = useCallback(async () => {
-    if (modelState.isModelLoaded) {
-      return true;
-    }
-    
-    // Cancel any existing loading timeout
-    if (loadingTimeoutRef.current) {
-      clearTimeout(loadingTimeoutRef.current);
+    // Don't reload if already loaded or loading
+    if (modelState.isModelLoaded || modelState.isModelLoading) {
+      return modelState.isModelLoaded;
     }
     
     try {
-      setModelState(prev => ({ 
-        ...prev, 
-        modelError: null,
+      // Start loading
+      setModelState(prev => ({
+        ...prev,
         isModelLoading: true,
+        modelError: null,
         loadProgress: 0
       }));
       
-      // Start progress tracking
-      setupProgressTracking();
-      
-      // Set a timeout to prevent UI from hanging
-      const loadingPromise = warmupModel();
-      
-      loadingTimeoutRef.current = setTimeout(() => {
-        if (!modelState.isModelLoaded) {
-          console.warn('Model loading is taking longer than expected');
-          toast.warning('Model loading is taking longer than expected. Please wait...');
-        }
-      }, 10000);
-      
-      await loadingPromise;
-      
-      // Clear the timeout since loading succeeded
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-        loadingTimeoutRef.current = null;
-      }
-      
-      setModelState(prev => ({ 
-        ...prev, 
-        isModelLoaded: true,
-        isModelLoading: false,
-        modelError: null,
-        loadProgress: 100
-      }));
-      
-      toast.success('Motion detection model loaded successfully');
-      retryCount.current = 0;
-      return true;
-    } catch (error) {
-      console.error('Error loading Human.js model:', error);
-      
-      // Clear the timeout since loading failed
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-        loadingTimeoutRef.current = null;
-      }
-      
-      // Implement retry logic
-      if (retryCount.current < maxRetries) {
-        retryCount.current += 1;
-        toast.error(`Failed to load model. Retrying (${retryCount.current}/${maxRetries})...`);
-        
-        // Reset the model before retrying
-        await resetModel();
-        
-        setModelState(prev => ({ 
-          ...prev, 
-          isModelLoading: false,
-          modelError: `Loading, retry ${retryCount.current}/${maxRetries}` 
+      // Set up progress tracking
+      const updateProgress = () => {
+        const progress = getModelLoadProgress();
+        setModelState(prev => ({
+          ...prev,
+          loadProgress: progress
         }));
         
-        // Retry after a short delay
-        setTimeout(() => loadModel(), 1500);
-        return false;
+        // Continue updating progress if still loading
+        if (progress < 100 && modelState.isModelLoading) {
+          setTimeout(updateProgress, 200);
+        }
+      };
+      
+      // Start progress tracking
+      updateProgress();
+      
+      // Load the model with automatic retry
+      let success = false;
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (!success && attempts < maxAttempts) {
+        attempts++;
+        console.log(`Loading Human.js model (attempt ${attempts}/${maxAttempts})`);
+        
+        try {
+          success = await warmupModel();
+        } catch (error) {
+          console.error(`Model load attempt ${attempts} failed:`, error);
+          
+          if (attempts < maxAttempts) {
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
       
-      setModelState(prev => ({ 
-        ...prev, 
+      // Update state based on load result
+      if (success) {
+        setModelState(prev => ({
+          ...prev,
+          isModelLoaded: true,
+          isModelLoading: false,
+          modelError: null,
+          loadProgress: 100
+        }));
+        
+        console.log('Model loaded successfully');
+        return true;
+      } else {
+        const errorMessage = `Failed to load model after ${maxAttempts} attempts`;
+        console.error(errorMessage);
+        
+        setModelState(prev => ({
+          ...prev,
+          isModelLoaded: false,
+          isModelLoading: false,
+          modelError: errorMessage,
+          loadProgress: 0
+        }));
+        
+        toast.error('Error loading motion detection model', {
+          description: 'Please try refreshing the page or check your internet connection'
+        });
+        
+        return false;
+      }
+    } catch (error) {
+      console.error('Error in model loading:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error loading model';
+      
+      setModelState(prev => ({
+        ...prev,
+        isModelLoaded: false,
         isModelLoading: false,
-        modelError: 'Failed to load motion detection model. Please try refreshing the page or check if your browser supports WebGL.',
+        modelError: errorMessage,
         loadProgress: 0
       }));
       
-      toast.error('Failed to load motion detection model. Please try refreshing the page.');
+      toast.error('Failed to load motion detection model', {
+        description: errorMessage
+      });
+      
       return false;
     }
-  }, [modelState.isModelLoaded, setupProgressTracking]);
-
+  }, [modelState.isModelLoaded, modelState.isModelLoading]);
+  
   return {
     modelState,
     loadModel

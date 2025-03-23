@@ -6,7 +6,7 @@ import { warmupModel, resetModel } from './modelLoader';
 // Track tensor cleanup
 let detectionCount = 0;
 const CLEANUP_INTERVAL = 3; // Clean up every 3 detections
-const TENSOR_THRESHOLD = 50; // Reduced threshold for earlier cleanup
+const TENSOR_THRESHOLD = 50; // Lower threshold for earlier cleanup
 
 /**
  * Clean up tensors periodically to prevent memory leaks

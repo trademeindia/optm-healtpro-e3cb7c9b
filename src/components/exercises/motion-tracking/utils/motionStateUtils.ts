@@ -54,12 +54,20 @@ export const isValidTransition = (
     return true;
   }
   
-  // Valid transitions
-  const validTransitions: Record<MotionState, MotionState[]> = {
-    [MotionState.STANDING]: [MotionState.MID_MOTION],
-    [MotionState.MID_MOTION]: [MotionState.STANDING, MotionState.FULL_MOTION],
-    [MotionState.FULL_MOTION]: [MotionState.MID_MOTION]
-  };
+  // Valid transitions for exercise movement
+  if (prevState === MotionState.STANDING && currentState === MotionState.MID_MOTION) {
+    return true;
+  }
   
-  return validTransitions[prevState]?.includes(currentState) || false;
+  if (prevState === MotionState.MID_MOTION && 
+     (currentState === MotionState.FULL_MOTION || currentState === MotionState.STANDING)) {
+    return true;
+  }
+  
+  if (prevState === MotionState.FULL_MOTION && currentState === MotionState.MID_MOTION) {
+    return true;
+  }
+  
+  // Invalid transition
+  return false;
 };
