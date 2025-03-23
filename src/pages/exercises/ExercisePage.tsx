@@ -7,6 +7,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import ExerciseContent from './components/ExerciseContent';
 import ProgressTracking from './components/ProgressTracking';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Activity, BarChart3, FolderHeart } from 'lucide-react';
 
 const ExercisePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -65,12 +67,19 @@ const ExercisePage: React.FC = () => {
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background content-visible">
           <div className="container mx-auto max-w-7xl">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold tracking-tight">Exercise Therapy</h1>
-              <p className="text-muted-foreground mt-1">
-                Personalized exercises with AI-powered posture monitoring
-              </p>
-            </div>
+            <Card className="mb-6 border-b-4 border-b-primary/40 shadow-sm">
+              <CardHeader className="pb-3 pt-4">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold tracking-tight">Exercise Therapy</CardTitle>
+                </div>
+                <p className="text-muted-foreground mt-1">
+                  Personalized exercises with AI-powered posture monitoring for your recovery journey
+                </p>
+              </CardHeader>
+            </Card>
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Main content area */}
@@ -90,6 +99,16 @@ const ExercisePage: React.FC = () => {
               {/* Right sidebar with progress tracking */}
               {!isMobile && !showMonitor && (
                 <div className="lg:col-span-4 space-y-6 visible-content">
+                  <Card className="border-b-4 border-b-blue-500/40 shadow-sm mb-6">
+                    <CardHeader className="pb-3 pt-4">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-blue-500/10 p-2 rounded-full">
+                          <BarChart3 className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <CardTitle className="text-lg">Progress Tracking</CardTitle>
+                      </div>
+                    </CardHeader>
+                  </Card>
                   <ProgressTracking 
                     muscleGroups={muscleGroups}
                     progressData={progressData}
@@ -100,6 +119,16 @@ const ExercisePage: React.FC = () => {
               {/* Responsive design - show progress below content on mobile */}
               {isMobile && !showMonitor && (
                 <div className="col-span-1 space-y-6 mt-6 visible-content">
+                  <Card className="border-b-4 border-b-blue-500/40 shadow-sm mb-6">
+                    <CardHeader className="pb-3 pt-4">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-blue-500/10 p-2 rounded-full">
+                          <BarChart3 className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <CardTitle className="text-lg">Progress Tracking</CardTitle>
+                      </div>
+                    </CardHeader>
+                  </Card>
                   <ProgressTracking 
                     muscleGroups={muscleGroups}
                     progressData={progressData}
