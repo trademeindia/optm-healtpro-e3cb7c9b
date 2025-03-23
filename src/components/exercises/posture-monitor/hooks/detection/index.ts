@@ -1,10 +1,3 @@
-
-export { usePoseDetectionLoop } from './usePoseDetectionLoop';
-export type { DetectionStatus } from './types';
-export { useAdaptiveFrameRate } from './useAdaptiveFrameRate';
-export { useDetectionFailureHandler } from './useDetectionFailureHandler';
-export { useVideoReadyCheck } from './useVideoReadyCheck';
-export { usePoseEstimation } from './usePoseEstimation';
-export { useDetectionStatus } from './useDetectionStatus';
-export { useDetectionStatusHandler } from './useDetectionStatusHandler';
-export { useDetectionLoop } from './useDetectionLoop';
+// This file is a placeholder to resolve import errors
+// The actual implementation has been replaced by the Human.js library
+export {};

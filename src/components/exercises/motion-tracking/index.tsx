@@ -90,7 +90,6 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
               isDetecting: cameraActive && isModelLoaded,
               fps: detectionFps || 0,
               confidence: result?.body?.[0]?.score || null,
-              detectedKeypoints: result?.body?.[0]?.keypoints?.length || 0,
               lastDetectionTime: Date.now()
             }}
           />

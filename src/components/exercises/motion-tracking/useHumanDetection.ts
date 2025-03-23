@@ -267,17 +267,27 @@ export const useHumanDetection = ({
     if (!sessionId || !result) return;
     
     try {
+      // Convert complex objects to plain objects for JSON serialization
+      const serializedAngles = angles ? { ...angles } : null;
+      const serializedBiomarkers = biomarkers ? { ...biomarkers } : null;
+      const metadata = {
+        exerciseType: exerciseType,
+        motionState: currentMotionState,
+        stats: {
+          totalReps: stats.totalReps,
+          goodReps: stats.goodReps,
+          badReps: stats.badReps,
+          accuracy: stats.accuracy
+        }
+      };
+      
       await supabase.from('body_analysis').insert({
         patient_id: (await supabase.auth.getUser()).data.user?.id,
         session_id: sessionId,
-        angles: angles,
+        angles: serializedAngles,
         posture_score: biomarkers.postureScore || null,
-        biomarkers: biomarkers,
-        metadata: {
-          exerciseType,
-          motionState: currentMotionState,
-          stats
-        }
+        biomarkers: serializedBiomarkers,
+        metadata: metadata
       });
     } catch (error) {
       console.error('Error saving detection data:', error);
@@ -404,14 +414,22 @@ export const useHumanDetection = ({
       const completeSession = async () => {
         if (sessionId) {
           try {
+            // Convert complex objects to plain objects for JSON serialization
+            const summaryData = {
+              stats: {
+                totalReps: stats.totalReps,
+                goodReps: stats.goodReps,
+                badReps: stats.badReps,
+                accuracy: stats.accuracy
+              },
+              lastBiomarkers: { ...biomarkers }
+            };
+            
             await supabase
               .from('analysis_sessions')
               .update({
                 end_time: new Date().toISOString(),
-                summary: {
-                  stats,
-                  lastBiomarkers: biomarkers
-                }
+                summary: summaryData
               })
               .eq('id', sessionId);
           } catch (error) {

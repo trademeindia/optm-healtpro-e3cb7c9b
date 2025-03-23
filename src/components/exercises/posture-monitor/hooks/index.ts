@@ -1,11 +1,3 @@
-
-export { useSquatState } from './useSquatState';
-export { usePerformanceMetrics } from './usePerformanceMetrics';
-export { useFeedbackState } from './useFeedbackState';
-export { usePoseAnalysis } from './usePoseAnalysis';
-export { usePermissionMonitor } from './usePermissionMonitor';
-export { useVideoStatusMonitor } from './useVideoStatusMonitor';
-export { useAutoStartCamera } from './useAutoStartCamera';
-export { usePoseHandler } from './usePoseHandler';
-export { useDetectionStatusHandler } from './useDetectionStatusHandler';
-export { useSessionReset } from './useSessionReset';
+// This file is a placeholder to resolve import errors
+// The actual implementation has been replaced by the Human.js library
+export {};

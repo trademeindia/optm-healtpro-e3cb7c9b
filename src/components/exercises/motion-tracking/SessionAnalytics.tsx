@@ -50,14 +50,28 @@ const SessionAnalytics: React.FC<SessionAnalyticsProps> = ({ sessionId, patientI
         
         if (error) throw error;
         
-        // Transform data for chart
-        const transformedData = data.map(item => ({
-          timestamp: new Date(item.timestamp).toLocaleTimeString(),
-          kneeAngle: item.angles?.kneeAngle || 0,
-          hipAngle: item.angles?.hipAngle || 0,
-          shoulderAngle: item.angles?.shoulderAngle || 0,
-          postureScore: item.posture_score || 0
-        }));
+        // Transform data for chart with safe type checking
+        const transformedData = data.map(item => {
+          // Safely extract angle values with type checking
+          let kneeAngle = 0;
+          let hipAngle = 0;
+          let shoulderAngle = 0;
+          
+          // Check if angles is an object before accessing properties
+          if (typeof item.angles === 'object' && item.angles) {
+            kneeAngle = item.angles.kneeAngle || 0;
+            hipAngle = item.angles.hipAngle || 0;
+            shoulderAngle = item.angles.shoulderAngle || 0;
+          }
+          
+          return {
+            timestamp: new Date(item.timestamp).toLocaleTimeString(),
+            kneeAngle,
+            hipAngle,
+            shoulderAngle,
+            postureScore: item.posture_score || 0
+          };
+        });
         
         setData(transformedData);
       } catch (err) {

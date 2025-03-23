@@ -45,8 +45,23 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
         
         const exerciseStats = exerciseTypes.map(type => {
           const sessionsOfType = sessionData.filter(s => s.exercise_type === type);
-          const totalReps = sessionsOfType.reduce((sum, s) => sum + (s.summary?.stats?.totalReps || 0), 0);
-          const goodReps = sessionsOfType.reduce((sum, s) => sum + (s.summary?.stats?.goodReps || 0), 0);
+          
+          // Safely access nested properties with optional chaining and type checking
+          const totalReps = sessionsOfType.reduce((sum, s) => {
+            // Check if summary and stats exist and are objects
+            if (typeof s.summary === 'object' && s.summary && typeof s.summary.stats === 'object' && s.summary.stats) {
+              return sum + (s.summary.stats.totalReps || 0);
+            }
+            return sum;
+          }, 0);
+          
+          const goodReps = sessionsOfType.reduce((sum, s) => {
+            if (typeof s.summary === 'object' && s.summary && typeof s.summary.stats === 'object' && s.summary.stats) {
+              return sum + (s.summary.stats.goodReps || 0);
+            }
+            return sum;
+          }, 0);
+          
           const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
           
           return {

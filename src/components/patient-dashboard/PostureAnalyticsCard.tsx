@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,7 +63,7 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
           return;
         }
         
-        // Calculate overall posture score from biomarkers
+        // Calculate overall posture score from biomarkers with safe type checking
         const postureScores = analysisData
           .filter(item => item.posture_score !== null)
           .map(item => item.posture_score);
@@ -75,9 +74,10 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
         
         setOverallScore(avgPostureScore);
         
-        // Generate metrics based on collected data
+        // Generate metrics based on collected data with safe type checking
         const shoulderScores = analysisData
-          .filter(item => item.biomarkers?.shoulderSymmetry !== undefined)
+          .filter(item => typeof item.biomarkers === 'object' && item.biomarkers && 
+                 'shoulderSymmetry' in item.biomarkers)
           .map(item => item.biomarkers.shoulderSymmetry);
         
         const avgShoulderScore = shoulderScores.length > 0
@@ -85,16 +85,18 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
           : 0;
         
         const balanceScores = analysisData
-          .filter(item => item.biomarkers?.balanceScore !== undefined)
+          .filter(item => typeof item.biomarkers === 'object' && item.biomarkers && 
+                 'balanceScore' in item.biomarkers)
           .map(item => item.biomarkers.balanceScore);
         
         const avgBalanceScore = balanceScores.length > 0
           ? Math.round(balanceScores.reduce((sum, score) => sum + score, 0) / balanceScores.length)
           : 0;
         
-        // Extract neck angles for posture analysis
+        // Extract neck angles for posture analysis with safe type checking
         const neckAngles = analysisData
-          .filter(item => item.angles?.neckAngle !== null)
+          .filter(item => typeof item.angles === 'object' && item.angles && 
+                 'neckAngle' in item.angles && item.angles.neckAngle !== null)
           .map(item => item.angles.neckAngle);
         
         const avgNeckAngle = neckAngles.length > 0
@@ -142,7 +144,7 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
         
         setMetrics(newMetrics);
         
-        // Prepare timeline data for the chart
+        // Prepare timeline data for the chart with safe type checking
         const timeData = sessionData.map(session => {
           const sessionAnalysis = analysisData
             .filter(item => item.session_id === session.id);
@@ -152,11 +154,19 @@ const PostureAnalyticsCard: React.FC<PostureAnalyticsCardProps> = ({ patientId }
             .reduce((sum, item) => sum + (item.posture_score || 0), 0) / 
             sessionAnalysis.filter(item => item.posture_score !== null).length || 0;
           
+          // Safely access nested properties
+          let accuracy = '0%';
+          if (typeof session.summary === 'object' && session.summary && 
+              typeof session.summary.stats === 'object' && session.summary.stats &&
+              'accuracy' in session.summary.stats) {
+            accuracy = `${session.summary.stats.accuracy}%`;
+          }
+          
           return {
             date: new Date(session.start_time).toLocaleDateString(),
             posture: session.exercise_type,
             score: Math.round(avgSessionPostureScore),
-            improvement: session.summary?.stats?.accuracy || '0%'
+            improvement: accuracy
           };
         }).reverse();
         
