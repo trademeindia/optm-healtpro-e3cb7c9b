@@ -50,17 +50,19 @@ export const warmupModel = async (): Promise<boolean> => {
       }
       
       // First check if models are already available in cache
-      const modelsCached = await human.models.check();
+      // Removed the models.check() call since it doesn't exist in the API
+      const modelsCached = human.models.loaded();
       console.log('Models cached status:', modelsCached);
       
       // Load the model with more specific error handling
       const loadResult = await human.load();
       console.log('Human.js models loaded successfully:', loadResult);
       
-      // Initialize with a minimal warmup (only do body detection)
+      // Initialize with a minimal warmup (only body detection)
+      // We need to create a proper warmup configuration without the 'warmup' property
       const warmupConfig = {...human.config};
-      warmupConfig.body = {...human.config.body, warmup: 1};
       
+      // Perform the warmup with the standard config
       const result = await human.warmup(warmupConfig);
       console.log('Human.js model warmed up:', result);
       
