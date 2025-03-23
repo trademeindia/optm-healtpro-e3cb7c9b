@@ -20,6 +20,14 @@ export interface DetectionState {
   loadProgress?: number;
 }
 
+// Model loading state
+export interface ModelState {
+  isModelLoaded: boolean;
+  isModelLoading: boolean;
+  modelError: string | null;
+  loadProgress: number;
+}
+
 // Return type for the useHumanDetection hook
 export interface UseHumanDetectionReturn {
   // Detection state
