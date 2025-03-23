@@ -61,7 +61,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ feedback, stats }) =>
   };
   
   return (
-    <Card className={`border shadow-sm ${borderColor} ${bgColor}`}>
+    <Card className={`border shadow-sm ${borderColor} ${bgColor} visible-card force-visible`}>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           {icon}

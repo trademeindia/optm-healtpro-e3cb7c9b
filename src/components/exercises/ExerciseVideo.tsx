@@ -46,7 +46,7 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
   };
   
   return (
-    <Card className="overflow-hidden border shadow-sm">
+    <Card className="overflow-hidden border shadow-sm visible-card">
       <div className="aspect-video relative bg-black flex items-center justify-center group">
         {exercise.videoUrl ? (
           <>
@@ -61,14 +61,14 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
               Your browser does not support the video tag.
             </video>
             
-            {/* Video overlay with controls */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end">
+            {/* Video overlay with controls - improved visibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end visible-content">
               <div className="p-4 flex items-center justify-between text-white">
                 <div className="flex items-center gap-2">
                   <Button 
                     size="icon" 
-                    variant="ghost" 
-                    className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white"
+                    variant="secondary" 
+                    className="h-8 w-8 rounded-full bg-white/30 backdrop-blur-sm hover:bg-white/50 text-white foreground-element"
                     onClick={togglePlay}
                   >
                     {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -76,8 +76,8 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
                   
                   <Button 
                     size="icon" 
-                    variant="ghost" 
-                    className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white"
+                    variant="secondary" 
+                    className="h-8 w-8 rounded-full bg-white/30 backdrop-blur-sm hover:bg-white/50 text-white foreground-element"
                     onClick={toggleMute}
                   >
                     {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -86,8 +86,8 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
                 
                 <Button 
                   size="icon" 
-                  variant="ghost" 
-                  className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white"
+                  variant="secondary" 
+                  className="h-8 w-8 rounded-full bg-white/30 backdrop-blur-sm hover:bg-white/50 text-white foreground-element"
                   onClick={enterFullscreen}
                 >
                   <Maximize className="h-4 w-4" />
@@ -95,16 +95,16 @@ const ExerciseVideo: React.FC<ExerciseVideoProps> = ({ exercise }) => {
               </div>
             </div>
             
-            {/* Initial play button overlay */}
+            {/* Initial play button overlay - improved visibility */}
             {!isPlaying && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center foreground-element">
                 <Button 
                   size="icon" 
                   variant="secondary" 
-                  className="h-14 w-14 rounded-full opacity-90 hover:opacity-100"
+                  className="h-16 w-16 rounded-full bg-white/30 backdrop-blur-sm hover:bg-white/50 opacity-90 hover:opacity-100 shadow-lg"
                   onClick={togglePlay}
                 >
-                  <Play className="h-6 w-6" />
+                  <Play className="h-8 w-8 text-white" />
                 </Button>
               </div>
             )}

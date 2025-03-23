@@ -63,7 +63,7 @@ const ExercisePage: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background content-visible">
           <div className="container mx-auto max-w-7xl">
             <div className="mb-6">
               <h1 className="text-3xl font-bold tracking-tight">Exercise Therapy</h1>
@@ -74,7 +74,7 @@ const ExercisePage: React.FC = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Main content area */}
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-6 visible-content">
                 <ExerciseContent 
                   showMonitor={showMonitor}
                   selectedExercise={selectedExercise}
@@ -89,7 +89,7 @@ const ExercisePage: React.FC = () => {
               
               {/* Right sidebar with progress tracking */}
               {!isMobile && !showMonitor && (
-                <div className="lg:col-span-4 space-y-6">
+                <div className="lg:col-span-4 space-y-6 visible-content">
                   <ProgressTracking 
                     muscleGroups={muscleGroups}
                     progressData={progressData}
@@ -99,7 +99,7 @@ const ExercisePage: React.FC = () => {
               
               {/* Responsive design - show progress below content on mobile */}
               {isMobile && !showMonitor && (
-                <div className="col-span-1 space-y-6 mt-6">
+                <div className="col-span-1 space-y-6 mt-6 visible-content">
                   <ProgressTracking 
                     muscleGroups={muscleGroups}
                     progressData={progressData}

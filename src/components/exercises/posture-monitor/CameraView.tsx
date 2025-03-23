@@ -24,7 +24,7 @@ const CameraView: React.FC<CameraViewProps> = ({
   detectionStatus
 }) => {
   return (
-    <div className="relative w-full h-full bg-black">
+    <div className="relative w-full h-full bg-black overflow-hidden rounded-lg border border-border/50 shadow-sm">
       {/* Video element */}
       <video
         ref={videoRef}
@@ -38,14 +38,14 @@ const CameraView: React.FC<CameraViewProps> = ({
       {/* Canvas overlay */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full object-contain"
       />
       
-      {/* Camera error state */}
+      {/* Camera error state - improved visibility */}
       {cameraError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
-          <AlertCircle className="h-10 w-10 text-destructive mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Camera Error</h3>
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/95 text-center z-10">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h3 className="text-lg font-semibold mb-2 high-contrast-text">Camera Error</h3>
           <p className="mb-4 text-muted-foreground">{cameraError}</p>
           <Button onClick={onRetryCamera} className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
@@ -54,40 +54,44 @@ const CameraView: React.FC<CameraViewProps> = ({
         </div>
       )}
       
-      {/* Inactive camera state */}
+      {/* Inactive camera state - improved visibility */}
       {!cameraActive && !cameraError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/90 text-center">
-          <Camera className="h-10 w-10 text-primary mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Camera Not Active</h3>
-          <p className="mb-4 text-muted-foreground">Click the button below to start your camera and begin tracking your exercise form.</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-background/95 text-center z-10">
+          <div className="rounded-full bg-primary/10 p-6 mb-4">
+            <Camera className="h-12 w-12 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2 high-contrast-text">Camera Not Active</h3>
+          <p className="mb-4 text-muted-foreground max-w-md">
+            Click the button below to start your camera and begin tracking your exercise form.
+          </p>
         </div>
       )}
       
-      {/* Loading state */}
+      {/* Loading state - improved visibility */}
       {isModelLoading && (
-        <div className="absolute bottom-4 left-4 bg-background/80 rounded-md px-3 py-2 flex items-center gap-2">
+        <div className="absolute bottom-4 left-4 bg-background/90 rounded-md px-3 py-2 flex items-center gap-2 z-20 shadow-md">
           <div className="h-4 w-4 border-2 border-primary border-t-transparent animate-spin rounded-full"></div>
-          <span className="text-sm font-medium">Loading AI model...</span>
+          <span className="text-sm font-medium high-contrast-text">Loading AI model...</span>
         </div>
       )}
       
-      {/* Detection status indicators */}
+      {/* Detection status indicators - improved visibility */}
       {cameraActive && detectionStatus.isDetecting && (
-        <div className="absolute top-4 right-4 bg-background/80 rounded-md px-3 py-2 flex flex-col gap-1">
+        <div className="absolute top-4 right-4 bg-background/90 rounded-md px-3 py-2 flex flex-col gap-1 z-20 shadow-md">
           <div className="flex justify-between">
             <span className="text-xs text-muted-foreground">FPS:</span>
-            <span className="text-xs font-medium">{detectionStatus.fps?.toFixed(1)}</span>
+            <span className="text-xs font-medium high-contrast-text">{detectionStatus.fps?.toFixed(1) || 0}</span>
           </div>
           {detectionStatus.confidence !== null && (
             <div className="flex justify-between">
               <span className="text-xs text-muted-foreground">Confidence:</span>
-              <span className="text-xs font-medium">{Math.round(detectionStatus.confidence * 100)}%</span>
+              <span className="text-xs font-medium high-contrast-text">{Math.round((detectionStatus.confidence || 0) * 100)}%</span>
             </div>
           )}
           {detectionStatus.detectedKeypoints !== undefined && (
             <div className="flex justify-between">
               <span className="text-xs text-muted-foreground">Keypoints:</span>
-              <span className="text-xs font-medium">{detectionStatus.detectedKeypoints}</span>
+              <span className="text-xs font-medium high-contrast-text">{detectionStatus.detectedKeypoints}</span>
             </div>
           )}
         </div>
