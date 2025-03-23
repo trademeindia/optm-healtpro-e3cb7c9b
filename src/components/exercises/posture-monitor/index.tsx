@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from 'lucide-react';
@@ -30,7 +29,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
 }) => {
   const [showTutorial, setShowTutorial] = useState(false);
   
-  // Initialize camera with enhanced detection
   const { 
     cameraActive, 
     permission, 
@@ -44,7 +42,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     videoStatus
   } = useCamera({
     onCameraStart: () => {
-      // Set initial feedback when camera starts
       setCustomFeedback({
         message: "Starting pose analysis... Stand in a clear space where your full body is visible.",
         type: FeedbackType.INFO
@@ -52,7 +49,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     }
   });
   
-  // Initialize pose detection
   const {
     model,
     isModelLoading,
@@ -69,23 +65,19 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     videoReady: videoStatus.isReady
   });
   
-  // Override feedback (e.g., for camera permission issues)
   const [customFeedback, setCustomFeedback] = useState<CustomFeedback | null>(null);
   
-  // Hook for permission monitoring
   usePermissionMonitor({
     permission,
     setCustomFeedback
   });
   
-  // Hook for video status monitoring
   useVideoStatusMonitor({
     cameraActive,
     videoStatus,
     setCustomFeedback
   });
   
-  // Hook for auto-starting camera
   useAutoStartCamera({
     cameraActive,
     permission,
@@ -93,13 +85,11 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
     setCustomFeedback
   });
   
-  // Handle finishing the exercise
   const handleFinish = () => {
     stopCamera();
     onFinish();
   };
   
-  // Determine which feedback to show (custom overrides from pose detection)
   const displayFeedback = customFeedback || feedback;
   
   if (!exerciseId || !exerciseName) {
@@ -116,7 +106,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Camera display and pose overlay */}
           <CameraView 
             cameraActive={cameraActive}
             isModelLoading={isModelLoading}
@@ -131,7 +120,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             }}
           />
           
-          {/* Render the pose skeleton on the canvas when pose is detected */}
           {pose && (
             <PoseRenderer
               pose={pose}
@@ -143,7 +131,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             />
           )}
           
-          {/* Feedback display */}
           {displayFeedback?.message && (
             <FeedbackDisplay 
               feedback={displayFeedback.message}
@@ -151,14 +138,12 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
             />
           )}
           
-          {/* Stats display */}
           <StatsDisplay 
             accuracy={stats.accuracy}
             reps={stats.reps}
             incorrectReps={stats.incorrectReps}
           />
           
-          {/* Controls */}
           <ControlButtons 
             cameraActive={cameraActive}
             isModelLoading={isModelLoading}
@@ -177,7 +162,6 @@ const PostureMonitor: React.FC<PostureMonitorProps> = ({
         </CardContent>
       </Card>
       
-      {/* Tutorial dialog */}
       <TutorialDialog 
         open={showTutorial} 
         onOpenChange={setShowTutorial} 

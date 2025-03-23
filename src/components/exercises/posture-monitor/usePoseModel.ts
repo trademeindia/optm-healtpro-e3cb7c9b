@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
 import { PoseDetectionConfig } from './poseDetectionTypes';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 interface UsePoseModelResult {
   model: posenet.PoseNet | null;
@@ -33,7 +33,7 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
       if (tf.env().get('IS_BROWSER')) {
         try {
           // @ts-ignore - accessing internals but it's useful for memory management
-          tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
+          tf.ENV.backend.disposeMemoryManagement?.();
         } catch (e) {
           console.warn("Failed to cleanup memory:", e);
         }
@@ -86,7 +86,7 @@ export const usePoseModel = (config: PoseDetectionConfig): UsePoseModelResult =>
           if (tf.env().get('IS_BROWSER')) {
             try {
               // @ts-ignore - accessing internals but it's useful for memory management
-              tf.ENV.backend.resBackend?.disposeMemoryManagement?.();
+              tf.ENV.backend.disposeMemoryManagement?.();
             } catch (e) {
               console.warn("Failed to cleanup memory:", e);
             }

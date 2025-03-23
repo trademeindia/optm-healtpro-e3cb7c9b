@@ -2,12 +2,7 @@
 import { useEffect } from 'react';
 import { FeedbackType } from '../types';
 import type { CustomFeedback } from './types';
-
-interface VideoStatus {
-  isReady: boolean;
-  hasStarted: boolean;
-  error: string | null;
-}
+import type { VideoStatus } from './detection/types';
 
 interface UseVideoStatusMonitorProps {
   cameraActive: boolean;
@@ -24,12 +19,12 @@ export const useVideoStatusMonitor = ({
   useEffect(() => {
     if (!cameraActive) return;
     
-    if (videoStatus.error) {
+    if (videoStatus.errorCount > 5) {
       setCustomFeedback({
-        message: `Camera issue: ${videoStatus.error}`,
+        message: "Camera feed has issues. Please try again or use a different camera.",
         type: FeedbackType.WARNING
       });
-    } else if (videoStatus.hasStarted && !videoStatus.isReady) {
+    } else if (!videoStatus.isReady && videoStatus.hasStream) {
       setCustomFeedback({
         message: "Initializing camera feed...",
         type: FeedbackType.INFO
