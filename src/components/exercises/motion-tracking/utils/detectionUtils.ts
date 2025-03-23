@@ -51,6 +51,8 @@ export const performDetection = async (
     
     // Perform the detection
     const result = await human.detect(videoElement);
+    console.log('Detection result:', result?.body?.length > 0 ? 'Body detected' : 'No body detected', 
+                result?.body?.[0]?.score ? `Score: ${result.body[0].score.toFixed(2)}` : '');
 
     if (!result || !result.body || result.body.length === 0) {
       return {
@@ -63,12 +65,17 @@ export const performDetection = async (
 
     // Calculate joint angles
     const angles = extractBodyAngles(result);
+    console.log('Calculated angles:', 
+                `Knee: ${angles.kneeAngle?.toFixed(1)}°, `,
+                `Hip: ${angles.hipAngle?.toFixed(1)}°, `,
+                `Shoulder: ${angles.shoulderAngle?.toFixed(1)}°`);
     
     // Calculate biomarkers based on detection and angles
     const biomarkers = extractBiomarkers(result, angles);
 
     // Determine motion state based on knee angle
     const newMotionState = determineMotionState(angles);
+    console.log('Motion state:', newMotionState);
 
     return {
       result,

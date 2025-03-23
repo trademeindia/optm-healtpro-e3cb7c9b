@@ -1,4 +1,3 @@
-
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
@@ -23,9 +22,47 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCount = useRef<number>(0);
   const maxRetries = 3;
+  
+  // Performance monitoring
+  const memoryUsageRef = useRef<number[]>([]);
+  const memoryCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup function
   useEffect(() => {
+    // Monitor memory usage in development
+    if (process.env.NODE_ENV === 'development') {
+      memoryCheckInterval.current = setInterval(() => {
+        if ((window as any).tf && (window as any).tf.memory) {
+          try {
+            const mem = (window as any).tf.memory();
+            memoryUsageRef.current.push(mem.numBytes);
+            // Keep only last 10 readings
+            if (memoryUsageRef.current.length > 10) {
+              memoryUsageRef.current.shift();
+            }
+            
+            // Check for memory leak - if usage keeps increasing significantly
+            if (memoryUsageRef.current.length >= 5) {
+              const first = memoryUsageRef.current[0];
+              const last = memoryUsageRef.current[memoryUsageRef.current.length - 1];
+              const increase = (last - first) / first;
+              
+              if (increase > 0.5) { // 50% increase
+                console.warn('Potential memory leak detected. Memory usage increasing rapidly.');
+                // Force cleanup
+                if ((window as any).tf && (window as any).tf.engine) {
+                  (window as any).tf.engine().disposeVariables();
+                  memoryUsageRef.current = [];
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Error monitoring memory:', e);
+          }
+        }
+      }, 5000);
+    }
+    
     return () => {
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
@@ -33,7 +70,25 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
       }
+      if (memoryCheckInterval.current) {
+        clearInterval(memoryCheckInterval.current);
+      }
     };
+  }, []);
+
+  // Tensor memory cleanup
+  const cleanupTensorMemory = useCallback(() => {
+    if (typeof window !== 'undefined' && (window as any).tf && (window as any).tf.engine) {
+      try {
+        console.log('Cleaning up tensor memory...');
+        (window as any).tf.engine().disposeVariables();
+        return true;
+      } catch (e) {
+        console.error('Error cleaning up tensor memory:', e);
+        return false;
+      }
+    }
+    return false;
   }, []);
 
   // Ensure model is loaded with better error handling and retry logic
@@ -53,6 +108,9 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
         detectionError: null,
         isModelLoading: true
       }));
+      
+      // Clean up any existing tensors before loading
+      cleanupTensorMemory();
       
       // Set a timeout to prevent UI from hanging
       const loadingPromise = warmupModel();
@@ -119,7 +177,7 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       toast.error('Failed to load motion detection model. Please try refreshing the page.');
       return false;
     }
-  }, [detectionState.isModelLoaded]);
+  }, [detectionState.isModelLoaded, cleanupTensorMemory]);
 
   // Perform detection on a single frame with improved error handling
   const detectFrame = useCallback(async (
@@ -155,10 +213,24 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       }));
       frameCount.current = 0;
       lastFpsUpdateTime.current = time;
+      
+      // Periodic tensor memory cleanup (every 5 seconds)
+      if (frameCount.current % 5 === 0) {
+        cleanupTensorMemory();
+      }
     }
     
     try {
       setDetectionState(prev => ({ ...prev, isDetecting: true }));
+      
+      // Check video element is ready
+      if (videoRef.current.readyState < 2) {
+        console.warn('Video not fully loaded for detection');
+        requestRef.current = requestAnimationFrame(
+          (newTime) => detectFrame(newTime, onDetectionResult)
+        );
+        return;
+      }
       
       // Perform detection
       const detectionResult = await performDetection(videoRef.current);
@@ -168,7 +240,11 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
         onDetectionResult(detectionResult);
       }
       
-      setDetectionState(prev => ({ ...prev, isDetecting: false }));
+      setDetectionState(prev => ({ 
+        ...prev, 
+        isDetecting: true,
+        detectionError: null
+      }));
     } catch (error) {
       console.error('Error in detection:', error);
       setDetectionState(prev => ({ 
@@ -176,13 +252,18 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
         isDetecting: false,
         detectionError: 'Detection failed'
       }));
+      
+      // Check if we need to reset model due to recurring errors
+      if ((error as any)?.message?.includes('memory') || (error as any)?.message?.includes('tensor')) {
+        cleanupTensorMemory();
+      }
     }
     
     // Continue detection loop
     requestRef.current = requestAnimationFrame(
       (newTime) => detectFrame(newTime, onDetectionResult)
     );
-  }, [videoRef, detectionState.isModelLoaded]);
+  }, [videoRef, detectionState.isModelLoaded, cleanupTensorMemory]);
 
   // Start detection
   const startDetection = useCallback((
@@ -214,8 +295,9 @@ export const useDetectionService = (videoRef: React.RefObject<HTMLVideoElement>)
       cancelAnimationFrame(requestRef.current);
       setDetectionState(prev => ({ ...prev, isDetecting: false }));
       console.log('Stopping detection loop');
+      cleanupTensorMemory();
     }
-  }, []);
+  }, [cleanupTensorMemory]);
   
   return {
     detectionState,

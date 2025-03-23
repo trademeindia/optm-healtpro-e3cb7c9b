@@ -50,7 +50,7 @@ export const useSessionManagement = () => {
   const saveSessionData = useCallback(async (
     detectionResult: any,
     angles: any,
-    biomarkers: any, // Add biomarkers parameter
+    biomarkers: any,
     motionState: MotionState
   ) => {
     if (!sessionId) return;
@@ -71,7 +71,7 @@ export const useSessionManagement = () => {
   }, [sessionId, exerciseType, stats]);
   
   // Complete the current session
-  const completeCurrentSession = useCallback((biomarkers: any) => { // Add biomarkers parameter
+  const completeCurrentSession = useCallback((biomarkers: any) => {
     if (!sessionId) return;
     
     try {
