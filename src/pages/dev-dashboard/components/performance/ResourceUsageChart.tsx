@@ -5,12 +5,11 @@ import { ChartContainer } from '@/components/ui/chart';
 import { Server } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatBytes } from '../../utils/formatters';
-import { TimeSeriesDataPoint } from '../../types';
 
 interface ResourceUsageChartProps {
-  cpuUsage: TimeSeriesDataPoint[];
-  memoryUsage: TimeSeriesDataPoint[];
-  diskUsage: TimeSeriesDataPoint[];
+  cpuUsage: Array<{ timestamp: string; value: number }>;
+  memoryUsage: Array<{ timestamp: string; value: number }>;
+  diskUsage: Array<{ timestamp: string; value: number }>;
 }
 
 const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
@@ -18,8 +17,6 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
   memoryUsage,
   diskUsage
 }) => {
-  console.log("ResourceUsageChart rendering with data:", { cpuUsage, memoryUsage, diskUsage });
-  
   const chartConfig = {
     cpu: { color: '#f97316' },
     memory: { color: '#60a5fa' },
@@ -35,7 +32,7 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
   }));
   
   return (
-    <Card className="visible-card">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center">
           <Server className="h-5 w-5 mr-2 text-emerald-500" />
@@ -43,7 +40,7 @@ const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] force-visible">
+        <div className="h-[300px]">
           <ChartContainer config={chartConfig} className="h-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart

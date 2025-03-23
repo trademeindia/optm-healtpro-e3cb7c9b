@@ -19,7 +19,6 @@ import PatientsPage from '@/pages/patients';
 import SettingsPage from '@/pages/SettingsPage';
 import HelpPage from '@/pages/HelpPage';
 import ExercisePage from '@/pages/exercises/ExercisePage';
-import DevDashboardPage from '@/pages/dev-dashboard/DevDashboardPage';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -41,9 +40,6 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
-        
-        {/* Dev Dashboard - no auth required for easy access during development */}
-        <Route path="/dev-dashboard" element={<DevDashboardPage />} />
         
         {/* Doctor Routes */}
         <Route 

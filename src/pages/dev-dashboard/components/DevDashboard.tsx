@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardHeader from './DashboardHeader';
@@ -15,15 +15,12 @@ import { useDependencies } from '../hooks/useDependencies';
 import { usePerformanceMetrics } from '../hooks/usePerformanceMetrics';
 import { useDevDashboardSettings } from '../hooks/useDevDashboardSettings';
 import SettingsPanel from './settings/SettingsPanel';
-import { toast } from 'sonner';
 
 interface DevDashboardProps {
   isMobile: boolean;
 }
 
 export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
-  console.log("DevDashboard rendering with isMobile:", isMobile);
-  
   const [activeTab, setActiveTab] = useState('system');
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   
@@ -35,27 +32,8 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
   
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
   
-  useEffect(() => {
-    console.log("DevDashboard mounted");
-    toast.success("Dev Dashboard loaded successfully", {
-      description: "Welcome to the developer dashboard"
-    });
-    
-    // Log the status of each data source
-    console.log("Data sources:", {
-      systemStatus,
-      projectInfo,
-      dependencies,
-      performanceMetrics
-    });
-    
-    return () => {
-      console.log("DevDashboard unmounted");
-    };
-  }, [systemStatus, projectInfo, dependencies, performanceMetrics]);
-  
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background force-visible">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       <DashboardSidebar 
         isOpen={sidebarOpen} 
         onToggle={toggleSidebar}
@@ -64,7 +42,7 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
         systemStatus={systemStatus}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden force-visible">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader 
           toggleSidebar={toggleSidebar} 
           sidebarOpen={sidebarOpen}
@@ -73,9 +51,9 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
           lastChecked={lastChecked}
         />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 force-visible">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
           <div className={cn(
-            "transition-all duration-300 ease-in-out force-visible",
+            "transition-all duration-300 ease-in-out",
             sidebarOpen ? "ml-0 md:ml-4" : "ml-0"
           )}>
             {isMobile && (
@@ -86,8 +64,8 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
               />
             )}
             
-            <Tabs defaultValue={activeTab} value={activeTab} className="mt-4 force-visible">
-              <TabsContent value="system" className="mt-0 force-visible">
+            <Tabs value={activeTab} className="mt-4">
+              <TabsContent value="system" className="mt-0">
                 <SystemCheckPanel 
                   systemStatus={systemStatus} 
                   runSystemCheck={runSystemCheck}
@@ -95,28 +73,28 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
                 />
               </TabsContent>
               
-              <TabsContent value="project" className="mt-0 force-visible">
+              <TabsContent value="project" className="mt-0">
                 <ProjectInfoPanel 
                   projectInfo={projectInfo}
                   refreshProjectInfo={refreshProjectInfo}
                 />
               </TabsContent>
               
-              <TabsContent value="dependencies" className="mt-0 force-visible">
+              <TabsContent value="dependencies" className="mt-0">
                 <DependenciesPanel 
                   dependencies={dependencies}
                   checkForUpdates={checkForUpdates}
                 />
               </TabsContent>
               
-              <TabsContent value="performance" className="mt-0 force-visible">
+              <TabsContent value="performance" className="mt-0">
                 <PerformancePanel 
                   metrics={performanceMetrics}
                   refreshMetrics={refreshMetrics}
                 />
               </TabsContent>
               
-              <TabsContent value="settings" className="mt-0 force-visible">
+              <TabsContent value="settings" className="mt-0">
                 <SettingsPanel 
                   settings={settings}
                   updateSettings={updateSettings}
@@ -129,5 +107,3 @@ export const DevDashboard: React.FC<DevDashboardProps> = ({ isMobile }) => {
     </div>
   );
 };
-
-export default DevDashboard;

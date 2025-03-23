@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { PerformanceMetrics, TimeSeriesDataPoint } from '../types';
+import { PerformanceMetrics } from '../types';
 
 export function usePerformanceMetrics() {
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
@@ -32,7 +32,7 @@ export function usePerformanceMetrics() {
       cpu: 32, // 32% usage
       memory: 512000000, // 512 MB
       disk: 1073741824, // 1 GB
-      cpuHistory: [
+      cpu: [
         { timestamp: '2023-07-07T09:30:00Z', value: 28 },
         { timestamp: '2023-07-07T09:35:00Z', value: 35 },
         { timestamp: '2023-07-07T09:40:00Z', value: 42 },
@@ -41,7 +41,7 @@ export function usePerformanceMetrics() {
         { timestamp: '2023-07-07T09:55:00Z', value: 30 },
         { timestamp: '2023-07-07T10:00:00Z', value: 32 }
       ],
-      memoryHistory: [
+      memory: [
         { timestamp: '2023-07-07T09:30:00Z', value: 495000000 },
         { timestamp: '2023-07-07T09:35:00Z', value: 510000000 },
         { timestamp: '2023-07-07T09:40:00Z', value: 540000000 },
@@ -50,7 +50,7 @@ export function usePerformanceMetrics() {
         { timestamp: '2023-07-07T09:55:00Z', value: 505000000 },
         { timestamp: '2023-07-07T10:00:00Z', value: 512000000 }
       ],
-      diskHistory: [
+      disk: [
         { timestamp: '2023-07-07T09:30:00Z', value: 950000000 },
         { timestamp: '2023-07-07T09:35:00Z', value: 980000000 },
         { timestamp: '2023-07-07T09:40:00Z', value: 1020000000 },
@@ -62,35 +62,17 @@ export function usePerformanceMetrics() {
     }
   });
 
-  // Add logging to help debug
-  useEffect(() => {
-    console.log("Initial performance metrics:", performanceMetrics);
-  }, []);
-
   const refreshMetrics = () => {
-    console.log("Refreshing metrics...");
     // In a real implementation, this would fetch actual performance metrics
     // For demo purposes, we'll just pretend to refresh the data
     
-    const updatedMetrics = {
+    setPerformanceMetrics({
       ...performanceMetrics,
       latestBuildTime: performanceMetrics.latestBuildTime * (1 - Math.random() * 0.1),
       buildTimeChange: performanceMetrics.buildTimeChange - 2,
       performanceScore: Math.min(100, performanceMetrics.performanceScore + 1),
-      performanceScoreChange: performanceMetrics.performanceScoreChange + 1,
-      // Update the timestamp on the last entry to show fresh data
-      resourceUsage: {
-        ...performanceMetrics.resourceUsage,
-        cpuHistory: performanceMetrics.resourceUsage.cpuHistory.map((item, idx) => 
-          idx === performanceMetrics.resourceUsage.cpuHistory.length - 1 
-            ? { ...item, timestamp: new Date().toISOString() }
-            : item
-        )
-      }
-    };
-    
-    console.log("Updated metrics:", updatedMetrics);
-    setPerformanceMetrics(updatedMetrics);
+      performanceScoreChange: performanceMetrics.performanceScoreChange + 1
+    });
   };
 
   return {
