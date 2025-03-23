@@ -1,130 +1,77 @@
 
-import { useCallback, useRef, useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { warmupModel, resetModel } from '@/lib/human';
-import { DetectionErrorType, DetectionError } from '@/lib/human/types';
-
-export interface ModelState {
-  isModelLoaded: boolean;
-  isModelLoading: boolean;
-  detectionError: DetectionError | null;
-}
+import { DetectionErrorType } from '@/lib/human/types';
 
 export const useModelLoader = () => {
-  // Model loading state
-  const [modelState, setModelState] = useState<ModelState>({
-    isModelLoaded: false,
-    isModelLoading: false,
-    detectionError: null
-  });
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
   
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const retryCount = useRef<number>(0);
-  const maxRetries = 3;
-
-  // Ensure model is loaded with better error handling and retry logic
-  const loadModel = useCallback(async () => {
-    if (modelState.isModelLoaded) {
+  // Load the model
+  const loadModel = useCallback(async (): Promise<boolean> => {
+    if (isModelLoaded) {
       return true;
-    }
-    
-    // Cancel any existing loading timeout
-    if (loadingTimeoutRef.current) {
-      clearTimeout(loadingTimeoutRef.current);
     }
     
     try {
-      setModelState(prev => ({ 
-        ...prev, 
-        detectionError: null,
-        isModelLoading: true
-      }));
+      setIsModelLoading(true);
+      setDetectionError(null);
       
-      // Set a timeout to prevent UI from hanging
-      const loadingPromise = warmupModel();
+      const success = await warmupModel();
       
-      loadingTimeoutRef.current = setTimeout(() => {
-        if (!modelState.isModelLoaded) {
-          console.warn('Model loading is taking longer than expected');
-          toast.warning('Model loading is taking longer than expected. Please wait...');
-        }
-      }, 5000);
-      
-      await loadingPromise;
-      
-      // Clear the timeout since loading succeeded
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-        loadingTimeoutRef.current = null;
+      if (success) {
+        setIsModelLoaded(true);
+        setIsModelLoading(false);
+        return true;
+      } else {
+        throw new Error('Model failed to load');
       }
-      
-      setModelState(prev => ({ 
-        ...prev, 
-        isModelLoaded: true,
-        isModelLoading: false,
-        detectionError: null
-      }));
-      
-      toast.success('Motion detection model loaded successfully');
-      retryCount.current = 0;
-      return true;
     } catch (error) {
       console.error('Error loading Human.js model:', error);
+      setDetectionError('Failed to load Human.js model');
+      setIsModelLoading(false);
       
-      // Clear the timeout since loading failed
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-        loadingTimeoutRef.current = null;
-      }
+      toast.error('Failed to load motion detection model', {
+        description: 'Please refresh and try again.',
+        duration: 5000
+      });
       
-      // Implement retry logic
-      if (retryCount.current < maxRetries) {
-        retryCount.current += 1;
-        toast.error(`Failed to load model. Retrying (${retryCount.current}/${maxRetries})...`);
-        
-        // Reset the model before retrying
-        await resetModel();
-        
-        setModelState(prev => ({ 
-          ...prev, 
-          isModelLoading: false,
-          detectionError: {
-            type: DetectionErrorType.MODEL_LOADING,
-            message: `Loading, retry ${retryCount.current}/${maxRetries}`,
-            retryable: true
-          }
-        }));
-        
-        // Retry after a short delay
-        setTimeout(() => loadModel(), 1500);
-        return false;
-      }
-      
-      setModelState(prev => ({ 
-        ...prev, 
-        isModelLoading: false,
-        detectionError: {
-          type: DetectionErrorType.MODEL_LOADING,
-          message: 'Failed to load motion detection model',
-          retryable: true
-        }
-      }));
-      
-      toast.error('Failed to load motion detection model. Please try refreshing the page.');
       return false;
     }
-  }, [modelState.isModelLoaded]);
-
+  }, [isModelLoaded]);
+  
   // Cleanup function
-  const cleanupModelLoader = () => {
-    if (loadingTimeoutRef.current) {
-      clearTimeout(loadingTimeoutRef.current);
-      loadingTimeoutRef.current = null;
+  const cleanupModelLoader = useCallback(() => {
+    // If we need to reset the model or clean up resources
+    resetModel().catch(err => {
+      console.error('Error cleaning up model:', err);
+    });
+  }, []);
+  
+  // Auto-load model on mount
+  useEffect(() => {
+    if (!isModelLoaded && !isModelLoading) {
+      loadModel();
     }
-  };
-
+    
+    return () => {
+      // Cleanup on component unmount
+      cleanupModelLoader();
+    };
+  }, [isModelLoaded, isModelLoading, loadModel, cleanupModelLoader]);
+  
   return {
-    modelState,
+    modelState: {
+      isModelLoaded,
+      isModelLoading,
+      detectionError: detectionError ? {
+        type: DetectionErrorType.MODEL_LOADING,
+        message: detectionError,
+        retryable: true
+      } : null
+    },
     loadModel,
     cleanupModelLoader
   };

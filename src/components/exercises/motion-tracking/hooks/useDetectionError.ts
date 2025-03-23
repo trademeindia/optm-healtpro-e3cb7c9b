@@ -1,30 +1,38 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { DetectionError } from '@/lib/human/types';
+import { DetectionError, DetectionErrorType } from '@/lib/human/types';
 
 export const useDetectionError = () => {
   const [detectionError, setDetectionError] = useState<DetectionError | null>(null);
 
   const handleDetectionError = useCallback((error: any) => {
-    console.error('Detection error handled:', error);
+    console.error('Detection error:', error);
     
-    // Convert to proper error type if needed
-    const detectionError: DetectionError = {
-      type: error.type || 'UNKNOWN',
-      message: error.message || 'Unknown detection error',
-      retryable: error.retryable !== false
-    };
+    // Map the error to a consistent format
+    let errorObj: DetectionError;
     
-    setDetectionError(detectionError);
+    if (error.type && error.message) {
+      errorObj = {
+        type: error.type,
+        message: error.message,
+        retryable: error.retryable !== false
+      };
+    } else {
+      errorObj = {
+        type: DetectionErrorType.UNKNOWN,
+        message: error.message || 'An unexpected error occurred during detection',
+        retryable: true
+      };
+    }
     
-    // Show toast error
-    toast.error('Detection error', {
-      description: detectionError.message,
+    setDetectionError(errorObj);
+    
+    // Show toast for user feedback
+    toast.error('Detection Error', {
+      description: errorObj.message,
       duration: 3000
     });
-    
-    return detectionError;
   }, []);
 
   const clearDetectionError = useCallback(() => {
