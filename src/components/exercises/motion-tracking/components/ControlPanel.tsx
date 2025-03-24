@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Play, Pause, RotateCcw, StopCircle } from 'lucide-react';
 
 interface ControlPanelProps {
   isTracking: boolean;
@@ -10,6 +10,7 @@ interface ControlPanelProps {
   onStartTracking: () => void;
   onStopTracking: () => void;
   onResetSession: () => void;
+  onFinish?: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -17,54 +18,54 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   isModelLoaded,
   onStartTracking,
   onStopTracking,
-  onResetSession
+  onResetSession,
+  onFinish
 }) => {
   return (
-    <Card className="border shadow w-full">
+    <Card>
       <CardHeader className="py-3 px-4 bg-slate-50 dark:bg-slate-800/50">
         <CardTitle className="text-lg font-medium">Controls</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="p-4">
         <div className="flex flex-col gap-3">
-          {isTracking ? (
+          {!isTracking ? (
             <Button 
-              onClick={onStopTracking} 
-              variant="outline" 
-              className="w-full flex items-center justify-center gap-2" 
+              onClick={onStartTracking} 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={!isModelLoaded}
             >
-              <Pause className="h-4 w-4" />
-              Pause Tracking
+              <Play className="mr-2 h-4 w-4" />
+              Start Tracking
             </Button>
           ) : (
             <Button 
-              onClick={onStartTracking} 
-              className="w-full flex items-center justify-center gap-2" 
-              disabled={!isModelLoaded}
+              onClick={onStopTracking} 
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white"
             >
-              <Play className="h-4 w-4" />
-              Start Tracking
+              <Pause className="mr-2 h-4 w-4" />
+              Pause Tracking
             </Button>
           )}
           
           <Button 
             onClick={onResetSession} 
-            variant="outline"
-            className="w-full flex items-center justify-center gap-2" 
+            variant="outline" 
+            className="w-full"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             Reset Session
           </Button>
-        </div>
-        
-        <div className="mt-6 text-xs text-muted-foreground">
-          <p className="mb-2 font-medium">Instructions:</p>
-          <ul className="list-disc pl-4 space-y-1.5">
-            <li>Position your camera to view your full body</li>
-            <li>Start tracking when you're ready to begin</li>
-            <li>Use good lighting for better tracking</li>
-            <li>Reset session to start a new workout</li>
-          </ul>
+          
+          {onFinish && (
+            <Button 
+              onClick={onFinish} 
+              variant="destructive" 
+              className="w-full mt-2"
+            >
+              <StopCircle className="mr-2 h-4 w-4" />
+              End Exercise
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

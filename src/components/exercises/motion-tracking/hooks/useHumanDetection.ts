@@ -1,13 +1,19 @@
-import { useCallback, useEffect, useRef } from 'react';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { MotionState, FeedbackType } from '@/lib/human/types';
-import { useDetectionState } from './useDetectionState';
-import { useMotionAnalysis } from './useMotionAnalysis';
-import { useSessionStats } from './useSessionStats';
+import * as Human from '@vladmandic/human';
+import { human } from '@/lib/human';
+import { 
+  BodyAngles, 
+  FeedbackMessage,
+  FeedbackType, 
+  MotionState
+} from '@/lib/human/types';
 import { performDetection } from '../utils/detectionUtils';
+import { determineMotionState, isRepCompleted } from '../utils/motionStateUtils';
 import { generateFeedback, FeedbackType as UtilsFeedbackType } from '../utils/feedbackUtils';
+import { useSessionStats } from './useSessionStats';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
-import { isRepCompleted } from '../utils/motionStateUtils';
 
 // Map feedback types from utils to human types
 const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
@@ -24,11 +30,8 @@ const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
   }
 };
 
-// We're explicitly re-exporting these types with their original names
-export { MotionState, FeedbackType } from '@/lib/human/types';
-
 // Evaluate rep quality based on angles and form
-export const evaluateRepQuality = (angles: any) => {
+export const evaluateRepQuality = (angles: BodyAngles) => {
   // Simple evaluation logic based on knee angle
   const kneeAngle = angles.kneeAngle || 180;
   const hipAngle = angles.hipAngle || 180;
@@ -40,7 +43,7 @@ export const evaluateRepQuality = (angles: any) => {
     feedback: isGoodForm 
       ? "Great form on that rep!" 
       : "Try to keep your back straight and go deeper",
-    feedbackType: isGoodForm ? UtilsFeedbackType.SUCCESS : UtilsFeedbackType.WARNING
+    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
   };
 };
 
@@ -48,70 +51,141 @@ export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>, 
   canvasRef: React.RefObject<HTMLCanvasElement>
 ) => {
-  // Import required hooks
-  const detection = useDetectionState();
-  const motion = useMotionAnalysis();
-  const session = useSessionStats();
+  // Detection state
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionFps, setDetectionFps] = useState<number | null>(null);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
   
-  // Create a new session if needed
-  useEffect(() => {
-    const initSession = async () => {
-      if (!session.sessionId && detection.state.isModelLoaded) {
-        const newSessionId = await createSession(session.exerciseType.current);
-        
-        if (newSessionId) {
-          session.setSessionId(newSessionId);
-        }
-      }
-    };
-    
-    initSession();
-  }, [detection.state.isModelLoaded, session.sessionId]);
+  // Motion analysis state
+  const [result, setResult] = useState<Human.Result | null>(null);
+  const [angles, setAngles] = useState<BodyAngles>({
+    kneeAngle: null,
+    hipAngle: null,
+    shoulderAngle: null,
+    elbowAngle: null,
+    ankleAngle: null,
+    neckAngle: null
+  });
+  const [biomarkers, setBiomarkers] = useState<Record<string, any>>({});
+  const [currentMotionState, setCurrentMotionState] = useState(MotionState.STANDING);
+  const [prevMotionState, setPrevMotionState] = useState(MotionState.STANDING);
+  const [feedback, setFeedback] = useState<FeedbackMessage>({
+    message: null,
+    type: FeedbackType.INFO
+  });
   
+  // Use session stats hook for tracking
+  const {
+    stats,
+    sessionId,
+    exerciseType,
+    setSessionId,
+    handleGoodRep,
+    handleBadRep,
+    resetStats
+  } = useSessionStats();
+  
+  // Detection loop references
+  const requestRef = useRef<number>();
+  const lastFrameTime = useRef<number>(0);
+  const frameCount = useRef<number>(0);
+  const lastFpsUpdateTime = useRef<number>(0);
+
   // Ensure model is loaded
   useEffect(() => {
     const loadModel = async () => {
-      await detection.loadModel();
+      try {
+        if (!isModelLoaded) {
+          setDetectionError(null);
+          console.log('Loading Human.js model...');
+          
+          // Configure human.js to use a lite model
+          human.config = {
+            ...human.config,
+            modelBasePath: '/',
+            body: {
+              enabled: true,
+              modelPath: 'blazepose-lite.json',
+              minConfidence: 0.3,
+              maxDetected: 1,
+            },
+            // Improve performance
+            backend: 'webgl',
+            warmup: 'none',
+          };
+          
+          await human.load();
+          console.log('Human.js model loaded successfully');
+          setIsModelLoaded(true);
+          toast.success("AI model loaded successfully");
+        }
+      } catch (error) {
+        console.error('Error loading Human.js model:', error);
+        setDetectionError('Failed to load Human.js model');
+        toast.error('Failed to load motion detection model. Please refresh and try again.');
+      }
     };
     
     loadModel();
     
     // Cleanup
     return () => {
-      if (detection.refs.requestRef.current) {
-        cancelAnimationFrame(detection.refs.requestRef.current);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
       }
     };
-  }, []);
+  }, [isModelLoaded]);
+  
+  // Create a new session if needed
+  useEffect(() => {
+    const initSession = async () => {
+      if (!sessionId && isModelLoaded) {
+        try {
+          console.log('Creating new exercise session');
+          const newSessionId = await createSession(exerciseType.current);
+          
+          if (newSessionId) {
+            setSessionId(newSessionId);
+            console.log('New session created:', newSessionId);
+          }
+        } catch (error) {
+          console.error('Error creating session:', error);
+        }
+      }
+    };
+    
+    initSession();
+  }, [isModelLoaded, sessionId, exerciseType, setSessionId]);
   
   // Human.js detection loop
   const detectFrame = useCallback(async (time: number) => {
-    if (!videoRef.current || !detection.state.isModelLoaded) {
-      detection.refs.requestRef.current = requestAnimationFrame(detectFrame);
+    if (!videoRef.current || !isModelLoaded) {
+      requestRef.current = requestAnimationFrame(detectFrame);
       return;
     }
     
     // Calculate FPS
-    const elapsed = time - detection.refs.lastFrameTime.current;
+    const elapsed = time - lastFrameTime.current;
     
     // Limit detection rate for performance (aim for ~20-30 FPS)
     if (elapsed < 33) { // ~30 FPS
-      detection.refs.requestRef.current = requestAnimationFrame(detectFrame);
+      requestRef.current = requestAnimationFrame(detectFrame);
       return;
     }
     
-    detection.refs.lastFrameTime.current = time;
-    detection.refs.frameCount.current++;
+    lastFrameTime.current = time;
+    frameCount.current++;
     
     // Update FPS counter every second
-    if (time - detection.refs.lastFpsUpdateTime.current >= 1000) {
-      detection.setters.setDetectionFps(detection.refs.frameCount.current);
-      detection.refs.frameCount.current = 0;
-      detection.refs.lastFpsUpdateTime.current = time;
+    if (time - lastFpsUpdateTime.current >= 1000) {
+      setDetectionFps(frameCount.current);
+      frameCount.current = 0;
+      lastFpsUpdateTime.current = time;
     }
     
     try {
-      detection.setters.setIsDetecting(true);
+      setIsDetecting(true);
       
       // Perform detection
       const {
@@ -122,43 +196,42 @@ export const useHumanDetection = (
       } = await performDetection(videoRef.current);
       
       // Update state with detection results
-      motion.setResult(detectionResult);
-      motion.setAngles(extractedAngles);
-      motion.setBiomarkers(extractedBiomarkers);
+      setResult(detectionResult);
+      setAngles(extractedAngles);
+      setBiomarkers(extractedBiomarkers);
       
       // Check if a rep was completed (full motion to standing transition)
-      if (isRepCompleted(newMotionState, motion.currentMotionState)) {
+      if (isRepCompleted(newMotionState, currentMotionState)) {
         // Evaluate rep quality
         const evaluation = evaluateRepQuality(extractedAngles);
         
         if (evaluation) {
-          // Convert from utility feedback type to human feedback type
-          const mappedFeedbackType = mapFeedbackType(evaluation.feedbackType);
-          
-          motion.setFeedback({
+          setFeedback({
             message: evaluation.feedback,
-            type: mappedFeedbackType
+            type: evaluation.feedbackType
           });
           
           if (evaluation.isGoodForm) {
-            session.handleGoodRep();
+            handleGoodRep();
+            toast.success("Good rep!", { duration: 2000 });
           } else {
-            session.handleBadRep();
+            handleBadRep();
+            toast.warning("Form needs improvement", { duration: 2000 });
           }
           
           // Save data to database after completing a rep
           await saveDetectionData(
-            session.sessionId, 
+            sessionId, 
             detectionResult, 
             extractedAngles, 
             extractedBiomarkers, 
             newMotionState, 
-            session.exerciseType.current, 
-            session.stats
+            exerciseType.current, 
+            stats
           );
         }
       } else {
-        // Generate feedback data
+        // Generate feedback based on biomarkers
         const feedbackData = generateFeedback(
           extractedBiomarkers.postureScore || 0,
           extractedBiomarkers.movementQuality || 0,
@@ -169,106 +242,85 @@ export const useHumanDetection = (
         // Map the feedback type and update motion feedback
         const mappedFeedbackType = mapFeedbackType(feedbackData.type);
         
-        motion.setFeedback({
+        setFeedback({
           message: feedbackData.message,
           type: mappedFeedbackType
         });
       }
       
       // Update motion state
-      motion.setPrevMotionState(motion.currentMotionState);
-      motion.setCurrentMotionState(newMotionState);
+      setPrevMotionState(currentMotionState);
+      setCurrentMotionState(newMotionState);
       
-      detection.setters.setIsDetecting(false);
+      setIsDetecting(false);
     } catch (error) {
       console.error('Error in detection:', error);
-      detection.setters.setIsDetecting(false);
-      detection.setters.setDetectionError('Detection failed');
+      setIsDetecting(false);
+      setDetectionError('Detection failed');
     }
     
     // Continue detection loop
-    detection.refs.requestRef.current = requestAnimationFrame(detectFrame);
+    requestRef.current = requestAnimationFrame(detectFrame);
   }, [
     videoRef, 
-    detection.state.isModelLoaded, 
-    motion.currentMotionState, 
-    motion.prevMotionState,
-    session.sessionId,
-    session.stats
+    isModelLoaded, 
+    currentMotionState,
+    sessionId,
+    stats,
+    exerciseType,
+    handleGoodRep,
+    handleBadRep
   ]);
 
   // Start detection
   const startDetection = useCallback(() => {
-    if (!detection.state.isDetecting && detection.state.isModelLoaded) {
-      detection.refs.requestRef.current = requestAnimationFrame(detectFrame);
-      detection.setters.setIsDetecting(true);
+    if (!isDetecting && isModelLoaded) {
+      requestRef.current = requestAnimationFrame(detectFrame);
+      setIsDetecting(true);
       console.log('Starting detection loop');
     }
-  }, [detectFrame, detection.state.isDetecting, detection.state.isModelLoaded]);
+  }, [detectFrame, isDetecting, isModelLoaded]);
 
   // Stop detection
   const stopDetection = useCallback(() => {
-    if (detection.refs.requestRef.current) {
-      cancelAnimationFrame(detection.refs.requestRef.current);
-      detection.setters.setIsDetecting(false);
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      setIsDetecting(false);
       console.log('Stopping detection loop');
     }
   }, []);
   
   // Reset session
   const resetSession = useCallback(() => {
-    session.resetStats();
+    resetStats();
     
-    motion.setFeedback({
+    setFeedback({
       message: "Session reset. Ready for new exercises.",
       type: FeedbackType.INFO
     });
     
     toast.info("Session Reset", {
-      description: "Your workout session has been reset. Ready to start new exercises!",
-      duration: 3000
+      description: "Your workout session has been reset. Ready to start new exercises!"
     });
-  }, []);
-  
-  // Prepare detection status for external components
-  const detectionStatus = {
-    isDetecting: detection.state.isDetecting,
-    fps: detection.state.detectionFps || 0,
-    confidence: motion.result?.body?.[0]?.score || 0,
-    detectedKeypoints: motion.result?.body?.[0]?.keypoints?.length || 0
-  };
-  
-  // Prepare detection stats object
-  const detectionStats = {
-    fps: detection.state.detectionFps || 0,
-    detections: motion.result?.body?.length || 0,
-    accuracy: (motion.result?.body?.[0]?.score || 0) * 100
-  };
+  }, [resetStats]);
   
   return {
     // Detection state
-    isDetecting: detection.state.isDetecting,
-    detectionFps: detection.state.detectionFps,
-    isModelLoaded: detection.state.isModelLoaded,
-    detectionError: detection.state.detectionError,
+    isDetecting,
+    detectionFps,
+    isModelLoaded,
+    detectionError,
     
     // Motion analysis
-    result: motion.result,
-    detectionResult: motion.result,
-    angles: motion.angles,
-    biomarkers: motion.biomarkers,
-    currentMotionState: motion.currentMotionState,
-    motionState: motion.currentMotionState,
-    feedback: motion.feedback,
+    result,
+    angles,
+    biomarkers,
+    currentMotionState,
+    feedback,
     
     // Session data
-    stats: session.stats,
-    sessionId: session.sessionId,
-    
-    // Compatibility properties
-    detectionStatus,
-    detectionStats,
-    resetDetection: resetSession,
+    stats,
+    sessionId,
     
     // Actions
     startDetection,

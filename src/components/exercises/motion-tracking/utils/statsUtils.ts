@@ -1,78 +1,64 @@
 
-import { MotionStats } from '@/lib/human/types';
+import { MotionStats } from '@/components/exercises/motion-tracking/hooks/useSessionStats';
 
-// Get initial stats for a new session
-export const getInitialStats = (): MotionStats => {
-  return {
-    totalReps: 0,
-    goodReps: 0,
-    badReps: 0,
-    accuracy: 0,
-    currentStreak: 0,
-    bestStreak: 0,
-    lastUpdated: Date.now(),
-    caloriesBurned: 0
-  };
-};
+/**
+ * Get initial stats for a new session
+ */
+export const getInitialStats = (): MotionStats => ({
+  totalReps: 0,
+  goodReps: 0,
+  badReps: 0,
+  accuracy: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  caloriesBurned: 0,
+  lastUpdated: Date.now()
+});
 
-// Update stats after a good rep
+/**
+ * Update stats for a good rep
+ */
 export const updateStatsForGoodRep = (stats: MotionStats): MotionStats => {
-  const totalReps = stats.totalReps + 1;
   const goodReps = stats.goodReps + 1;
+  const totalReps = stats.totalReps + 1;
   const currentStreak = stats.currentStreak + 1;
   const bestStreak = Math.max(stats.bestStreak, currentStreak);
-  const accuracy = Math.round((goodReps / totalReps) * 100);
-  const caloriesBurned = calculateCaloriesBurned({
-    ...stats,
-    totalReps: totalReps,
-    goodReps: goodReps
-  }, 'squat');
+  
+  // Calculate calories burned (rough estimate based on metabolic equivalent)
+  // Assuming 1 rep burns about 0.15 calories for an average person
+  const caloriesBurned = stats.caloriesBurned + 0.15;
   
   return {
-    totalReps,
     goodReps,
+    totalReps,
     badReps: stats.badReps,
-    accuracy,
+    accuracy: Math.round((goodReps / totalReps) * 100),
     currentStreak,
     bestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned
+    caloriesBurned,
+    lastUpdated: Date.now()
   };
 };
 
-// Update stats after a bad rep
+/**
+ * Update stats for a bad rep
+ */
 export const updateStatsForBadRep = (stats: MotionStats): MotionStats => {
-  const totalReps = stats.totalReps + 1;
   const badReps = stats.badReps + 1;
-  const currentStreak = 0; // Reset streak on bad rep
-  const bestStreak = stats.bestStreak; // Unchanged
-  const accuracy = Math.round((stats.goodReps / totalReps) * 100);
-  const caloriesBurned = calculateCaloriesBurned({
-    ...stats,
-    totalReps: totalReps,
-    badReps: badReps
-  }, 'squat');
+  const totalReps = stats.totalReps + 1;
+  
+  // Calculate calories burned (less for bad form)
+  // Assuming bad rep burns about 0.1 calories
+  const caloriesBurned = stats.caloriesBurned + 0.1;
   
   return {
-    totalReps,
     goodReps: stats.goodReps,
+    totalReps,
     badReps,
-    accuracy,
-    currentStreak,
-    bestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned
+    accuracy: stats.goodReps > 0 ? Math.round((stats.goodReps / totalReps) * 100) : 0,
+    currentStreak: 0, // Reset streak on bad rep
+    bestStreak: stats.bestStreak,
+    caloriesBurned,
+    lastUpdated: Date.now()
   };
-};
-
-// Calculate estimated calories burned
-export const calculateCaloriesBurned = (stats: MotionStats, exerciseType: string): number => {
-  // Simple placeholder calculation - in a real app this would account for:
-  // - Exercise type
-  // - User's weight, height, age
-  // - Exercise intensity
-  // - Duration
-  
-  const caloriesPerRep = exerciseType === 'squat' ? 0.32 : 0.28;
-  return Math.round(stats.totalReps * caloriesPerRep * 10) / 10;
 };

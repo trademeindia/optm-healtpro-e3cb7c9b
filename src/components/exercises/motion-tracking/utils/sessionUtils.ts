@@ -1,52 +1,42 @@
 
-import { BodyAngles, MotionState, MotionStats } from '@/lib/human/types';
+import { MotionState } from '@/lib/human/types';
+import { MotionStats } from '@/components/exercises/motion-tracking/hooks/useSessionStats';
 
-// Create a new session for the exercise
+/**
+ * Create a new exercise session
+ */
 export const createSession = async (exerciseType: string): Promise<string> => {
-  // In a real implementation, this would create a record in a database
-  // For now, we'll just generate a session ID
-  const sessionId = `${exerciseType}-${Date.now()}`;
-  console.log('Creating new exercise session:', sessionId);
-  
-  return sessionId;
+  // In a real implementation, this would create a session in the database
+  console.log('Creating session for:', exerciseType);
+  return `session-${Date.now()}`;
 };
 
-// Save detection data to the session
+/**
+ * Save detection data to the session
+ */
 export const saveDetectionData = async (
   sessionId: string | undefined,
   detectionResult: any,
-  angles: BodyAngles,
+  angles: any,
   biomarkers: any,
   motionState: MotionState,
   exerciseType: string,
   stats: MotionStats
-): Promise<boolean> => {
+) => {
   // In a real implementation, this would save to a database
-  console.log('Saving detection data for session:', sessionId, {
-    timestamp: new Date().toISOString(),
-    motionState,
-    stats: {
-      totalReps: stats.totalReps,
-      accuracy: stats.accuracy
-    }
-  });
-  
+  console.log('Saving detection data for session:', sessionId, 'Motion state:', motionState);
   return true;
 };
 
-// Complete a session
+/**
+ * Complete an exercise session
+ */
 export const completeSession = async (
   sessionId: string | undefined,
-  stats: MotionStats,
-  biomarkers: any
-): Promise<boolean> => {
-  if (!sessionId) return false;
-  
-  // In a real implementation, this would update the database
-  console.log('Completing session:', sessionId, {
-    completedAt: new Date().toISOString(),
-    finalStats: stats
-  });
-  
+  stats: MotionStats
+) => {
+  // In a real implementation, this would update the session status
+  console.log('Completing session:', sessionId);
+  console.log('Final stats:', stats);
   return true;
 };
