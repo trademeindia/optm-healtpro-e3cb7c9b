@@ -1,16 +1,31 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionState, FeedbackType } from '@/lib/human/types';
+import { MotionState, FeedbackType as HumanFeedbackType } from '@/lib/human/types';
 import { useDetectionState } from './useDetectionState';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionStats } from './useSessionStats';
 import { performDetection } from '../utils/detectionUtils';
-import { generateFeedback, evaluateRepQuality } from '../utils/feedbackUtils';
+import { generateFeedback, evaluateRepQuality, FeedbackType as UtilsFeedbackType } from '../utils/feedbackUtils';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
 import { isRepCompleted } from '../utils/motionStateUtils';
 
-export { MotionState, FeedbackType } from '@/lib/human/types';
+// Map feedback types from utils to human types
+const mapFeedbackType = (type: UtilsFeedbackType): HumanFeedbackType => {
+  switch (type) {
+    case UtilsFeedbackType.SUCCESS:
+      return HumanFeedbackType.SUCCESS;
+    case UtilsFeedbackType.WARNING:
+      return HumanFeedbackType.WARNING;
+    case UtilsFeedbackType.ERROR:
+      return HumanFeedbackType.ERROR;
+    case UtilsFeedbackType.INFO:
+    default:
+      return HumanFeedbackType.INFO;
+  }
+};
+
+export { MotionState, HumanFeedbackType as FeedbackType } from '@/lib/human/types';
 
 export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>, 
@@ -102,7 +117,7 @@ export const useHumanDetection = (
         if (evaluation) {
           motion.setFeedback({
             message: evaluation.feedback,
-            type: evaluation.feedbackType
+            type: mapFeedbackType(evaluation.feedbackType)
           });
           
           if (evaluation.isGoodForm) {
@@ -123,8 +138,19 @@ export const useHumanDetection = (
           );
         }
       } else {
-        // Update feedback based on current state
-        motion.setFeedback(generateFeedback(newMotionState, extractedAngles));
+        // Generate feedback data
+        const feedbackData = generateFeedback(
+          extractedBiomarkers.postureScore || 0,
+          extractedBiomarkers.movementQuality || 0,
+          extractedBiomarkers.rangeOfMotion || 0,
+          extractedBiomarkers.stabilityScore || 0
+        );
+        
+        // Map the feedback type and update motion feedback
+        motion.setFeedback({
+          message: feedbackData.message,
+          type: mapFeedbackType(feedbackData.type)
+        });
       }
       
       // Update motion state
@@ -173,7 +199,7 @@ export const useHumanDetection = (
     
     motion.setFeedback({
       message: "Session reset. Ready for new exercises.",
-      type: FeedbackType.INFO
+      type: HumanFeedbackType.INFO
     });
     
     toast.info("Session Reset", {
@@ -181,6 +207,21 @@ export const useHumanDetection = (
       duration: 3000
     });
   }, []);
+  
+  // Prepare detection status for external components
+  const detectionStatus = {
+    isDetecting: detection.state.isDetecting,
+    fps: detection.state.detectionFps || 0,
+    confidence: motion.result?.body?.[0]?.score || 0,
+    detectedKeypoints: motion.result?.body?.[0]?.keypoints?.length || 0
+  };
+  
+  // Prepare detection stats object
+  const detectionStats = {
+    fps: detection.state.detectionFps || 0,
+    detections: motion.result?.body?.length || 0,
+    accuracy: (motion.result?.body?.[0]?.score || 0) * 100
+  };
   
   return {
     // Detection state
@@ -201,6 +242,11 @@ export const useHumanDetection = (
     // Session data
     stats: session.stats,
     sessionId: session.sessionId,
+    
+    // For component interface compatibility
+    detectionStatus,
+    detectionStats,
+    resetDetection: resetSession,
     
     // Actions
     startDetection,

@@ -7,15 +7,20 @@ import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import BiomarkersDisplay from './components/BiomarkersDisplay';
-import { useHumanDetection } from './hooks/useHumanDetection';
-import { FeedbackType } from './utils/feedbackUtils';
+import { useHumanDetection, FeedbackType } from './hooks/useHumanDetection';
 
-const MotionTracker: React.FC = () => {
+interface MotionTrackerProps {
+  exerciseId?: string;
+  exerciseName?: string;
+  onFinish?: () => void;
+}
+
+const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName, onFinish }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [isAIReady, setIsAIReady] = useState(false);
-  const [feedback, setFeedback] = useState({ type: FeedbackType.INFO, message: 'Start the camera to begin tracking' });
+  const [feedback, setFeedback] = useState({ type: FeedbackType.INFO as FeedbackType, message: 'Start the camera to begin tracking' });
   const [biomarkers, setBiomarkers] = useState({
     postureScore: 0,
     movementQuality: 0,
@@ -30,37 +35,54 @@ const MotionTracker: React.FC = () => {
 
   // Initialize human detection service
   const { 
-    detectionStatus, 
+    isModelLoaded,
+    isDetecting,
+    detectionStatus,
     startDetection, 
     stopDetection, 
-    resetDetection,
+    resetSession,
+    feedback: detectionFeedback,
+    biomarkers: detectionBiomarkers,
     detectionStats 
-  } = useHumanDetection({
-    videoRef,
-    canvasRef,
-    onAIReady: () => setIsAIReady(true),
-    onTrackingStart: () => setIsTracking(true),
-    onTrackingStop: () => setIsTracking(false),
-    onFeedback: (feedbackData) => {
-      setFeedback(feedbackData);
-      
-      // Update biomarkers based on feedback
-      if (feedbackData.biomarkers) {
-        setBiomarkers(prev => ({
-          ...prev,
-          ...feedbackData.biomarkers
-        }));
-      }
+  } = useHumanDetection(videoRef, canvasRef);
+
+  // Set AI ready state based on model loading
+  useEffect(() => {
+    setIsAIReady(isModelLoaded);
+  }, [isModelLoaded]);
+
+  // Set tracking state based on detection status
+  useEffect(() => {
+    setIsTracking(isDetecting);
+  }, [isDetecting]);
+
+  // Update feedback from detection
+  useEffect(() => {
+    if (detectionFeedback && detectionFeedback.message) {
+      setFeedback(detectionFeedback);
     }
-  });
+  }, [detectionFeedback]);
+
+  // Update biomarkers from detection
+  useEffect(() => {
+    if (detectionBiomarkers) {
+      setBiomarkers(prev => ({
+        ...prev,
+        postureScore: detectionBiomarkers.postureScore || prev.postureScore,
+        movementQuality: detectionBiomarkers.movementQuality || prev.movementQuality,
+        rangeOfMotion: detectionBiomarkers.rangeOfMotion || prev.rangeOfMotion,
+        stabilityScore: detectionBiomarkers.stabilityScore || prev.stabilityScore
+      }));
+    }
+  }, [detectionBiomarkers]);
 
   // Update stats from detection
   useEffect(() => {
     if (detectionStats) {
       setStats({
-        fps: Math.round(detectionStats.fps),
+        fps: Math.round(detectionStats.fps || 0),
         detections: detectionStats.detections || 0,
-        accuracy: Math.round(detectionStats.accuracy * 100) || 0
+        accuracy: Math.round(detectionStats.accuracy || 0)
       });
     }
   }, [detectionStats]);
@@ -73,7 +95,7 @@ const MotionTracker: React.FC = () => {
 
   // Reset tracking handler
   const handleReset = useCallback(() => {
-    resetDetection();
+    resetSession();
     setBiomarkers({
       postureScore: 0,
       movementQuality: 0,
@@ -81,7 +103,7 @@ const MotionTracker: React.FC = () => {
       stabilityScore: 0
     });
     setFeedback({ type: FeedbackType.INFO, message: 'Tracking reset' });
-  }, [resetDetection]);
+  }, [resetSession]);
 
   // Stop tracking handler
   const handleStopTracking = useCallback(() => {
@@ -110,7 +132,7 @@ const MotionTracker: React.FC = () => {
         <div className="flex flex-col">
           <h2 className="text-2xl font-semibold">Motion Tracking</h2>
           <p className="text-sm text-muted-foreground">
-            Real-time posture and movement analysis
+            {exerciseName ? `Tracking: ${exerciseName}` : 'Real-time posture and movement analysis'}
           </p>
         </div>
         
@@ -207,10 +229,21 @@ const MotionTracker: React.FC = () => {
           
           <ControlPanel 
             isTracking={isTracking}
-            isAIReady={isAIReady}
-            onReset={handleReset}
+            isModelLoaded={isAIReady}
+            onStartTracking={handleCameraStart}
             onStopTracking={handleStopTracking}
+            onResetSession={handleReset}
           />
+          
+          {onFinish && (
+            <Button 
+              onClick={onFinish} 
+              className="w-full mt-4"
+              variant="secondary"
+            >
+              Finish Session
+            </Button>
+          )}
         </div>
       </div>
     </div>
