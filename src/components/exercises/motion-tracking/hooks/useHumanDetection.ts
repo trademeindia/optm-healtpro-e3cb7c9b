@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { MotionState, FeedbackType } from '@/lib/human/types';
@@ -222,7 +221,7 @@ export const useHumanDetection = (
     
     motion.setFeedback({
       message: "Session reset. Ready for new exercises.",
-      type: HumanFeedbackType.INFO
+      type: FeedbackType.INFO
     });
     
     toast.info("Session Reset", {
