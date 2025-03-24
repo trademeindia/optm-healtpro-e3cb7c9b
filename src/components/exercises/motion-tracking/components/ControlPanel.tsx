@@ -21,41 +21,43 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader className="py-4">
+      <CardHeader className="py-3 px-4 bg-slate-50 dark:bg-slate-800/50">
         <CardTitle className="text-lg">Controls</CardTitle>
       </CardHeader>
-      <CardContent className="py-2 space-y-3">
-        {!isTracking ? (
+      <CardContent className="p-4 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          {!isTracking ? (
+            <Button 
+              onClick={onStartTracking} 
+              disabled={!isModelLoaded || isTracking}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700"
+              size="lg"
+            >
+              <PlayCircle className="h-5 w-5" />
+              Start Tracking
+            </Button>
+          ) : (
+            <Button 
+              onClick={onStopTracking} 
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-2"
+              size="lg"
+            >
+              <StopCircle className="h-5 w-5" />
+              Stop Tracking
+            </Button>
+          )}
+          
           <Button 
-            onClick={onStartTracking} 
-            disabled={!isModelLoaded || isTracking}
+            onClick={onResetSession} 
+            variant="outline"
             className="w-full flex items-center justify-center gap-2"
             size="lg"
           >
-            <PlayCircle className="h-5 w-5" />
-            Start Tracking
+            <RefreshCw className="h-5 w-5" />
+            Reset Session
           </Button>
-        ) : (
-          <Button 
-            onClick={onStopTracking} 
-            variant="secondary"
-            className="w-full flex items-center justify-center gap-2"
-            size="lg"
-          >
-            <StopCircle className="h-5 w-5" />
-            Stop Tracking
-          </Button>
-        )}
-        
-        <Button 
-          onClick={onResetSession} 
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2"
-          size="lg"
-        >
-          <RefreshCw className="h-5 w-5" />
-          Reset Session
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

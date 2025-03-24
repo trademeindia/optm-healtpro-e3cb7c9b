@@ -70,7 +70,9 @@ const CameraView: React.FC<CameraViewProps> = ({
     <div className="relative w-full h-full flex items-center justify-center bg-gray-900 camera-container">
       {!cameraStarted ? (
         <div className="flex flex-col items-center text-center p-6 max-w-md mx-auto">
-          <Video className="h-12 w-12 mb-4 text-blue-400" />
+          <div className="bg-blue-500/10 p-4 rounded-full mb-4">
+            <Video className="h-12 w-12 text-blue-500" />
+          </div>
           <h3 className="text-lg text-white font-semibold mb-2">Camera Access Required</h3>
           <p className="text-gray-300 text-sm mb-5">
             Position yourself so your full body is visible to track your 

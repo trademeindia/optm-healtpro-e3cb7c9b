@@ -1,147 +1,65 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart } from 'lucide-react';
+import { Activity, TrendingUp } from 'lucide-react';
+
+interface Biomarkers {
+  postureScore: number;
+  movementQuality: number;
+  rangeOfMotion: number;
+  stabilityScore: number;
+}
 
 interface BiomarkersDisplayProps {
-  biomarkers: {
-    postureScore?: number;
-    movementQuality?: number;
-    rangeOfMotion?: number;
-    stabilityScore?: number;
-    balance?: number;
-    stability?: number;
-    symmetry?: number;
-  };
+  biomarkers: Biomarkers;
 }
 
 const BiomarkersDisplay: React.FC<BiomarkersDisplayProps> = ({ biomarkers }) => {
-  // Default angles for display
-  const angles = {
-    kneeAngle: 175,
-    hipAngle: 170,
-    ankleAngle: 90,
-    shoulderAngle: 180
-  };
-
   return (
-    <Card className="border border-border/60 shadow-sm">
-      <CardHeader className="pb-2 border-b bg-card/60">
+    <Card>
+      <CardHeader className="py-3 px-4 bg-slate-50 dark:bg-slate-800/50">
         <CardTitle className="text-lg flex items-center">
-          <BarChart className="h-4 w-4 mr-2 text-primary" />
-          Biomechanical Analysis
+          <TrendingUp className="h-5 w-5 text-primary mr-2" />
+          Performance Biomarkers
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        {/* Angles Grid - responsive grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 stats-grid-4">
-          <MetricCard 
-            title="Knee Angle" 
-            value={angles.kneeAngle} 
-            unit="°"
-            status={getAngleStatus(angles.kneeAngle, 90, 100, 120, 160)}
-          />
-          <MetricCard 
-            title="Hip Angle" 
-            value={angles.hipAngle} 
-            unit="°"
-            status={getAngleStatus(angles.hipAngle, 70, 90, 120, 140)}
-          />
-          <MetricCard 
-            title="Ankle Angle" 
-            value={angles.ankleAngle} 
-            unit="°"
-            status={getAngleStatus(angles.ankleAngle, 70, 80, 100, 110)}
-          />
-          <MetricCard 
-            title="Shoulder Angle" 
-            value={angles.shoulderAngle} 
-            unit="°"
-            status={getAngleStatus(angles.shoulderAngle, 50, 70, 100, 120)}
-          />
-        </div>
-
-        {/* Performance Metrics - 2 columns */}
-        <div className="pt-3 border-t border-border/40">
-          <h3 className="text-sm font-medium mb-2 text-muted-foreground">Performance Metrics</h3>
-          <div className="grid grid-cols-2 gap-3 stats-grid-2">
-            <MetricCard
-              title="Balance"
-              value={biomarkers.balance ? Math.round(biomarkers.balance * 100) : 85}
-              unit="%"
-              status={getValue(biomarkers.balance || 0.85, 0.7, 0.8, 0.9, 1.0)}
-            />
-            <MetricCard
-              title="Symmetry"
-              value={biomarkers.symmetry ? Math.round(biomarkers.symmetry * 100) : 80}
-              unit="%"
-              status={getValue(biomarkers.symmetry || 0.8, 0.7, 0.8, 0.9, 1.0)}
-            />
+      <CardContent className="py-4">
+        <div className="grid grid-cols-2 gap-4 biomarker-grid">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
+            <div className="text-sm text-muted-foreground mb-1">Posture Score</div>
+            <div className="text-xl font-semibold">
+              {biomarkers.postureScore ? Math.round(biomarkers.postureScore) : 0}
+              <span className="text-sm text-muted-foreground ml-1">/100</span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
+            <div className="text-sm text-muted-foreground mb-1">Movement Quality</div>
+            <div className="text-xl font-semibold">
+              {biomarkers.movementQuality ? Math.round(biomarkers.movementQuality) : 0}
+              <span className="text-sm text-muted-foreground ml-1">/100</span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
+            <div className="text-sm text-muted-foreground mb-1">Range of Motion</div>
+            <div className="text-xl font-semibold">
+              {biomarkers.rangeOfMotion ? Math.round(biomarkers.rangeOfMotion) : 0}
+              <span className="text-sm text-muted-foreground ml-1">/100</span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
+            <div className="text-sm text-muted-foreground mb-1">Stability Score</div>
+            <div className="text-xl font-semibold">
+              {biomarkers.stabilityScore ? Math.round(biomarkers.stabilityScore) : 0}
+              <span className="text-sm text-muted-foreground ml-1">/100</span>
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-};
-
-type MetricStatus = 'optimal' | 'good' | 'warning' | 'error' | 'na';
-
-interface MetricCardProps {
-  title: string;
-  value: number | null | undefined;
-  unit?: string;
-  status: MetricStatus;
-}
-
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, status }) => {
-  const statusColors = {
-    optimal: 'text-green-500 bg-green-50 dark:bg-green-900/20',
-    good: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
-    warning: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20',
-    error: 'text-red-500 bg-red-50 dark:bg-red-900/20',
-    na: 'text-gray-400 bg-gray-50 dark:bg-gray-900/20'
-  };
-
-  return (
-    <div className={`${statusColors[status]} rounded-lg p-3 text-center flex flex-col items-center justify-center metric-card`}>
-      <div className="text-xs mb-1.5 metric-label">{title}</div>
-      <div className="text-lg font-semibold metric-value">
-        {value !== null && value !== undefined ? `${value.toFixed(0)}${unit || ''}` : '--'}
-      </div>
-    </div>
-  );
-};
-
-// Helper function to determine angle status
-const getAngleStatus = (
-  angle: number | null | undefined, 
-  optimal1: number, 
-  optimal2: number, 
-  warning1: number, 
-  warning2: number
-): MetricStatus => {
-  if (angle === null || angle === undefined) return 'na';
-  
-  if (angle >= optimal1 && angle <= optimal2) return 'optimal';
-  if (angle >= optimal1 - 15 && angle <= optimal2 + 15) return 'good';
-  if (angle >= warning1 && angle <= warning2) return 'warning';
-  return 'error';
-};
-
-// Helper function to determine value status
-const getValue = (
-  value: number | null | undefined,
-  warning: number,
-  good: number,
-  optimal: number,
-  perfect: number
-): MetricStatus => {
-  if (value === null || value === undefined) return 'na';
-  
-  if (value >= optimal) return 'optimal';
-  if (value >= good) return 'good';
-  if (value >= warning) return 'warning';
-  return 'error';
 };
 
 export default BiomarkersDisplay;
