@@ -7,7 +7,23 @@ import CameraView from './components/CameraView';
 import ControlPanel from './components/ControlPanel';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import BiomarkersDisplay from './components/BiomarkersDisplay';
-import { useHumanDetection, FeedbackType } from './hooks/useHumanDetection';
+import { useHumanDetection } from './hooks/useHumanDetection';
+import { FeedbackType as UtilsFeedbackType } from './utils/feedbackUtils';
+
+// Map the human FeedbackType to feedbackUtils FeedbackType for compatibility
+const mapFeedbackTypeToUtils = (type: string): UtilsFeedbackType => {
+  switch(type) {
+    case 'success':
+      return UtilsFeedbackType.SUCCESS;
+    case 'warning':
+      return UtilsFeedbackType.WARNING;
+    case 'error':
+      return UtilsFeedbackType.ERROR;
+    case 'info':
+    default:
+      return UtilsFeedbackType.INFO;
+  }
+};
 
 interface MotionTrackerProps {
   exerciseId?: string;
@@ -20,7 +36,10 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [isAIReady, setIsAIReady] = useState(false);
-  const [feedback, setFeedback] = useState({ type: FeedbackType.INFO as FeedbackType, message: 'Start the camera to begin tracking' });
+  const [feedback, setFeedback] = useState({ 
+    type: UtilsFeedbackType.INFO, 
+    message: 'Start the camera to begin tracking' 
+  });
   const [biomarkers, setBiomarkers] = useState({
     postureScore: 0,
     movementQuality: 0,
@@ -37,14 +56,22 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   const { 
     isModelLoaded,
     isDetecting,
-    detectionStatus,
+    detectionFps,
     startDetection, 
     stopDetection, 
     resetSession,
     feedback: detectionFeedback,
     biomarkers: detectionBiomarkers,
-    detectionStats 
+    stats: detectionStats 
   } = useHumanDetection(videoRef, canvasRef);
+
+  // Create detectionStatus object from available props
+  const detectionStatus = {
+    isDetecting,
+    fps: detectionFps || 0,
+    confidence: 0, // Default value
+    detectedKeypoints: 0 // Default value
+  };
 
   // Set AI ready state based on model loading
   useEffect(() => {
@@ -59,7 +86,11 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   // Update feedback from detection
   useEffect(() => {
     if (detectionFeedback && detectionFeedback.message) {
-      setFeedback(detectionFeedback);
+      setFeedback({
+        message: detectionFeedback.message,
+        // Map the feedback type to make it compatible
+        type: mapFeedbackTypeToUtils(detectionFeedback.type)
+      });
     }
   }, [detectionFeedback]);
 
@@ -80,12 +111,12 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   useEffect(() => {
     if (detectionStats) {
       setStats({
-        fps: Math.round(detectionStats.fps || 0),
-        detections: detectionStats.detections || 0,
-        accuracy: Math.round(detectionStats.accuracy || 0)
+        fps: Math.round(detectionFps || 0),
+        detections: 1, // Default value since detectionStats might not have this
+        accuracy: Math.round((detectionStats.accuracy || 0) * 100)
       });
     }
-  }, [detectionStats]);
+  }, [detectionFps, detectionStats]);
 
   // Start camera handler
   const handleCameraStart = useCallback(() => {
@@ -102,25 +133,25 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
       rangeOfMotion: 0,
       stabilityScore: 0
     });
-    setFeedback({ type: FeedbackType.INFO, message: 'Tracking reset' });
+    setFeedback({ type: UtilsFeedbackType.INFO, message: 'Tracking reset' });
   }, [resetSession]);
 
   // Stop tracking handler
   const handleStopTracking = useCallback(() => {
     stopDetection();
-    setFeedback({ type: FeedbackType.INFO, message: 'Tracking stopped' });
+    setFeedback({ type: UtilsFeedbackType.INFO, message: 'Tracking stopped' });
   }, [stopDetection]);
 
   // Get feedback style based on type
-  const getFeedbackStyle = (type: FeedbackType) => {
+  const getFeedbackStyle = (type: UtilsFeedbackType) => {
     switch (type) {
-      case FeedbackType.SUCCESS:
+      case UtilsFeedbackType.SUCCESS:
         return 'bg-green-50 border-green-200 text-green-800';
-      case FeedbackType.WARNING:
+      case UtilsFeedbackType.WARNING:
         return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      case FeedbackType.ERROR:
+      case UtilsFeedbackType.ERROR:
         return 'bg-red-50 border-red-200 text-red-800';
-      case FeedbackType.INFO:
+      case UtilsFeedbackType.INFO:
       default:
         return 'bg-blue-50 border-blue-200 text-blue-800';
     }

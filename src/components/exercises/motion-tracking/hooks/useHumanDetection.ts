@@ -1,30 +1,49 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionState, FeedbackType } from '@/lib/human/types';
+import { MotionState, FeedbackType as HumanFeedbackType } from '@/lib/human/types';
 import { useDetectionState } from './useDetectionState';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionStats } from './useSessionStats';
 import { performDetection } from '../utils/detectionUtils';
-import { generateFeedback, evaluateRepQuality, FeedbackType as UtilsFeedbackType } from '../utils/feedbackUtils';
+import { generateFeedback, FeedbackType as UtilsFeedbackType } from '../utils/feedbackUtils';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
 import { isRepCompleted } from '../utils/motionStateUtils';
 
 // Map feedback types from utils to human types
-const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
+const mapFeedbackType = (type: UtilsFeedbackType): HumanFeedbackType => {
   switch (type) {
     case UtilsFeedbackType.SUCCESS:
-      return FeedbackType.SUCCESS;
+      return HumanFeedbackType.SUCCESS;
     case UtilsFeedbackType.WARNING:
-      return FeedbackType.WARNING;
+      return HumanFeedbackType.WARNING;
     case UtilsFeedbackType.ERROR:
-      return FeedbackType.ERROR;
+      return HumanFeedbackType.ERROR;
     case UtilsFeedbackType.INFO:
     default:
-      return FeedbackType.INFO;
+      return HumanFeedbackType.INFO;
   }
 };
 
-export { MotionState, FeedbackType } from '@/lib/human/types';
+// We're explicitly re-exporting these types with their original names
+export { MotionState, HumanFeedbackType as FeedbackType } from '@/lib/human/types';
+
+// Evaluate rep quality based on angles and form
+export const evaluateRepQuality = (angles: any) => {
+  // Simple evaluation logic based on knee angle
+  const kneeAngle = angles.kneeAngle || 180;
+  const hipAngle = angles.hipAngle || 180;
+  
+  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
+  
+  return {
+    isGoodForm,
+    feedback: isGoodForm 
+      ? "Great form on that rep!" 
+      : "Try to keep your back straight and go deeper",
+    feedbackType: isGoodForm ? UtilsFeedbackType.SUCCESS : UtilsFeedbackType.WARNING
+  };
+};
 
 export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>, 
@@ -114,9 +133,12 @@ export const useHumanDetection = (
         const evaluation = evaluateRepQuality(extractedAngles);
         
         if (evaluation) {
+          // Convert from utility feedback type to human feedback type
+          const mappedFeedbackType = mapFeedbackType(evaluation.feedbackType);
+          
           motion.setFeedback({
             message: evaluation.feedback,
-            type: mapFeedbackType(evaluation.feedbackType)
+            type: mappedFeedbackType
           });
           
           if (evaluation.isGoodForm) {
@@ -146,9 +168,11 @@ export const useHumanDetection = (
         );
         
         // Map the feedback type and update motion feedback
+        const mappedFeedbackType = mapFeedbackType(feedbackData.type);
+        
         motion.setFeedback({
           message: feedbackData.message,
-          type: mapFeedbackType(feedbackData.type)
+          type: mappedFeedbackType
         });
       }
       
@@ -198,7 +222,7 @@ export const useHumanDetection = (
     
     motion.setFeedback({
       message: "Session reset. Ready for new exercises.",
-      type: FeedbackType.INFO
+      type: HumanFeedbackType.INFO
     });
     
     toast.info("Session Reset", {
@@ -242,7 +266,7 @@ export const useHumanDetection = (
     stats: session.stats,
     sessionId: session.sessionId,
     
-    // For component interface compatibility
+    // Compatibility properties
     detectionStatus,
     detectionStats,
     resetDetection: resetSession,
