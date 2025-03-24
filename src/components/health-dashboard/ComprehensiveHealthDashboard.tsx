@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Calendar, Activity, Heart, Zap, Moon } from 'lucide-react';
 import { format } from 'date-fns';
-import { HealthMetric } from '@/services/health/types';
+import { HealthMetric, TimeRange } from '@/services/health/types';
 
 import HealthMetricsOverview from './HealthMetricsOverview';
 import ActivityTimeline from './ActivityTimeline';
@@ -86,23 +86,43 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
     }
   ] : [];
   
-  // Create metrics record from health data
-  const metrics = {
+  // Create metrics record from health data that correctly implements HealthMetric
+  const metrics: Record<string, HealthMetric | null> = {
     steps: healthData?.activity?.steps ? {
+      id: "steps-current",
+      userId: "current-user",
+      type: "steps",
       value: healthData.activity.steps,
-      unit: 'steps'
+      unit: 'steps',
+      timestamp: new Date().toISOString(),
+      source: "health_app"
     } : null,
     calories: healthData?.activity?.caloriesBurned ? {
+      id: "calories-current",
+      userId: "current-user",
+      type: "calories",
       value: healthData.activity.caloriesBurned,
-      unit: 'kcal'
+      unit: 'kcal',
+      timestamp: new Date().toISOString(),
+      source: "health_app"
     } : null,
     heart_rate: healthData?.vitalSigns?.heartRate ? {
+      id: "heart-rate-current",
+      userId: "current-user",
+      type: "heart_rate",
       value: healthData.vitalSigns.heartRate.value,
-      unit: 'bpm'
+      unit: 'bpm',
+      timestamp: new Date().toISOString(),
+      source: "health_app"
     } : null,
     distance: healthData?.activity?.distance ? {
+      id: "distance-current",
+      userId: "current-user",
+      type: "distance",
       value: healthData.activity.distance,
-      unit: 'km'
+      unit: 'km',
+      timestamp: new Date().toISOString(),
+      source: "health_app"
     } : null
   };
   
@@ -182,6 +202,7 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
           <TabsContent value="sleep" className="mt-0 pt-0">
             <SleepAnalysis 
               sleepData={sleepMetrics} 
+              timeRange="day"
               isLoading={isLoading} 
             />
           </TabsContent>
