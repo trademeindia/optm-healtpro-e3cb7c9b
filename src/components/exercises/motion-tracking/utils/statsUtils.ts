@@ -10,7 +10,8 @@ export const getInitialStats = (): MotionStats => {
     accuracy: 0,
     currentStreak: 0,
     bestStreak: 0,
-    lastUpdated: Date.now()
+    lastUpdated: Date.now(),
+    caloriesBurned: 0
   };
 };
 
@@ -21,6 +22,11 @@ export const updateStatsForGoodRep = (stats: MotionStats): MotionStats => {
   const currentStreak = stats.currentStreak + 1;
   const bestStreak = Math.max(stats.bestStreak, currentStreak);
   const accuracy = Math.round((goodReps / totalReps) * 100);
+  const caloriesBurned = calculateCaloriesBurned({
+    ...stats,
+    totalReps: totalReps,
+    goodReps: goodReps
+  }, 'squat');
   
   return {
     totalReps,
@@ -29,7 +35,8 @@ export const updateStatsForGoodRep = (stats: MotionStats): MotionStats => {
     accuracy,
     currentStreak,
     bestStreak,
-    lastUpdated: Date.now()
+    lastUpdated: Date.now(),
+    caloriesBurned
   };
 };
 
@@ -40,6 +47,11 @@ export const updateStatsForBadRep = (stats: MotionStats): MotionStats => {
   const currentStreak = 0; // Reset streak on bad rep
   const bestStreak = stats.bestStreak; // Unchanged
   const accuracy = Math.round((stats.goodReps / totalReps) * 100);
+  const caloriesBurned = calculateCaloriesBurned({
+    ...stats,
+    totalReps: totalReps,
+    badReps: badReps
+  }, 'squat');
   
   return {
     totalReps,
@@ -48,7 +60,8 @@ export const updateStatsForBadRep = (stats: MotionStats): MotionStats => {
     accuracy,
     currentStreak,
     bestStreak,
-    lastUpdated: Date.now()
+    lastUpdated: Date.now(),
+    caloriesBurned
   };
 };
 

@@ -8,7 +8,13 @@ import FeedbackDisplay from './components/FeedbackDisplay';
 import MotionRenderer from './MotionRenderer';
 import '../../styles/motion-tracker.css';
 
-const MotionTracker: React.FC = () => {
+interface MotionTrackerProps {
+  exerciseName?: string;
+  exerciseId?: string;
+  onFinish?: () => void;
+}
+
+const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseName, exerciseId, onFinish }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeTab, setActiveTab] = useState('workout');

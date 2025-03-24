@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { MotionState, FeedbackType } from '@/lib/human/types';

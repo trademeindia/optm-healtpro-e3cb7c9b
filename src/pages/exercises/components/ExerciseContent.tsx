@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Exercise } from '@/types/exercise.types'; 
@@ -32,7 +31,6 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
   const navigate = useNavigate();
   const [showMotionTracker, setShowMotionTracker] = React.useState(false);
   
-  // Check if selectedExercise is null and handle it
   if (!selectedExercise) {
     return (
       <div className="space-y-6">
@@ -122,8 +120,8 @@ const ExerciseContent: React.FC<ExerciseContentProps> = ({
               <p className="text-sm text-muted-foreground mt-1 mb-4">Position yourself in front of the camera for analysis</p>
             </div>
             <MotionTracker
-              exerciseId={selectedExercise.id}
-              exerciseName={selectedExercise.title}
+              exerciseId={selectedExercise?.id}
+              exerciseName={selectedExercise?.title}
               onFinish={handleFinishExercise}
             />
           </CardContent>

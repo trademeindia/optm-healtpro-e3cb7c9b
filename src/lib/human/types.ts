@@ -10,10 +10,10 @@ export enum MotionState {
 
 // Define feedback types for user interface
 export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR'
 }
 
 // Body angles for joint analysis
@@ -41,6 +41,7 @@ export interface MotionStats {
   currentStreak?: number;
   bestStreak?: number;
   lastUpdated?: number;
+  caloriesBurned?: number; // Added caloriesBurned property
 }
 
 // Detection status for UI
