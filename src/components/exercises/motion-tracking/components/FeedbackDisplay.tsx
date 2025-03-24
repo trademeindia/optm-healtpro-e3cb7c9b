@@ -24,10 +24,24 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ message, type, classN
     }
   };
 
+  const getBgColor = () => {
+    switch (type) {
+      case FeedbackType.SUCCESS:
+        return 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800';
+      case FeedbackType.WARNING:
+        return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-100 dark:border-yellow-800';
+      case FeedbackType.ERROR:
+        return 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800';
+      case FeedbackType.INFO:
+      default:
+        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800';
+    }
+  };
+
   return (
-    <div className={`flex items-start rounded-md feedback-display ${className}`}>
+    <div className={`flex items-start p-3 rounded-md border feedback-display ${getBgColor()} ${className}`}>
       {renderIcon()}
-      <div className="flex-1">{message}</div>
+      <div className="flex-1 text-sm">{message}</div>
     </div>
   );
 };

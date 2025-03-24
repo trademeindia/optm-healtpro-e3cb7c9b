@@ -20,12 +20,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onResetSession
 }) => {
   return (
-    <Card>
+    <Card className="h-full shadow">
       <CardHeader className="py-3 px-4 bg-slate-50 dark:bg-slate-800/50">
-        <CardTitle className="text-lg">Controls</CardTitle>
+        <CardTitle className="text-lg font-medium">Controls</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+      <CardContent className="p-4 space-y-4">
+        <div className="grid grid-cols-1 gap-3">
           {!isTracking ? (
             <Button 
               onClick={onStartTracking} 
