@@ -38,6 +38,12 @@ const HealthAppsPage: React.FC = () => {
   const formattedLastSynced = lastSynced ? 
     (typeof lastSynced === 'string' ? lastSynced : lastSynced.toISOString()) : 
     undefined;
+
+  // Create a wrapper function to handle the boolean return from syncHealthData
+  const handleSyncHealthData = async (): Promise<void> => {
+    await syncHealthData();
+    // Return type is void, so we don't return anything
+  };
   
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -68,7 +74,7 @@ const HealthAppsPage: React.FC = () => {
               healthData={healthData}
               isLoading={isLoading}
               lastSynced={formattedLastSynced}
-              onSyncClick={syncHealthData}
+              onSyncClick={handleSyncHealthData}
             />
           </div>
 

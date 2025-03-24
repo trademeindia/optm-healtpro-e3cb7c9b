@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Calendar, Activity, Heart, Zap, Moon } from 'lucide-react';
 import { format } from 'date-fns';
+import { HealthMetric } from '@/services/health/types';
 
 import HealthMetricsOverview from './HealthMetricsOverview';
 import ActivityTimeline from './ActivityTimeline';
@@ -62,6 +63,48 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
   const formattedLastSync = lastSynced 
     ? new Date(lastSynced).toLocaleString()
     : 'Never';
+
+  // Convert sleep data to HealthMetric[] format for SleepAnalysis
+  const sleepMetrics: HealthMetric[] = healthData?.sleep ? [
+    {
+      id: "sleep-duration",
+      userId: "current-user",
+      type: "sleep",
+      value: healthData.sleep.duration,
+      unit: "hours",
+      timestamp: new Date().toISOString(),
+      source: "health_app",
+      metadata: {
+        sleepStages: {
+          deep: healthData.sleep.deepSleep,
+          light: healthData.sleep.lightSleep,
+          rem: healthData.sleep.remSleep,
+          awake: 0
+        },
+        quality: healthData.sleep.quality
+      }
+    }
+  ] : [];
+  
+  // Create metrics record from health data
+  const metrics = {
+    steps: healthData?.activity?.steps ? {
+      value: healthData.activity.steps,
+      unit: 'steps'
+    } : null,
+    calories: healthData?.activity?.caloriesBurned ? {
+      value: healthData.activity.caloriesBurned,
+      unit: 'kcal'
+    } : null,
+    heart_rate: healthData?.vitalSigns?.heartRate ? {
+      value: healthData.vitalSigns.heartRate.value,
+      unit: 'bpm'
+    } : null,
+    distance: healthData?.activity?.distance ? {
+      value: healthData.activity.distance,
+      unit: 'km'
+    } : null
+  };
   
   return (
     <Card className="bg-card border-border/40">
@@ -114,7 +157,7 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
           
           <TabsContent value="overview" className="mt-0 pt-0">
             <HealthMetricsOverview 
-              healthData={healthData} 
+              metrics={metrics} 
               isLoading={isLoading} 
             />
           </TabsContent>
@@ -128,14 +171,17 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
           
           <TabsContent value="activity" className="mt-0 pt-0">
             <ActivityTimeline 
-              activityData={healthData?.activity} 
+              stepsData={[]}
+              caloriesData={[]}
+              distanceData={[]}
+              timeRange="day"
               isLoading={isLoading} 
             />
           </TabsContent>
           
           <TabsContent value="sleep" className="mt-0 pt-0">
             <SleepAnalysis 
-              sleepData={healthData?.sleep} 
+              sleepData={sleepMetrics} 
               isLoading={isLoading} 
             />
           </TabsContent>
