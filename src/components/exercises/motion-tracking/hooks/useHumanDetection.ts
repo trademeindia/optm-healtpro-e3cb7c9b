@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionState, FeedbackType as HumanFeedbackType } from '@/lib/human/types';
+import { MotionState, FeedbackType } from '@/lib/human/types';
 import { useDetectionState } from './useDetectionState';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionStats } from './useSessionStats';
@@ -11,22 +11,22 @@ import { createSession, saveDetectionData, completeSession } from '../utils/sess
 import { isRepCompleted } from '../utils/motionStateUtils';
 
 // Map feedback types from utils to human types
-const mapFeedbackType = (type: UtilsFeedbackType): HumanFeedbackType => {
+const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
   switch (type) {
     case UtilsFeedbackType.SUCCESS:
-      return HumanFeedbackType.SUCCESS;
+      return FeedbackType.SUCCESS;
     case UtilsFeedbackType.WARNING:
-      return HumanFeedbackType.WARNING;
+      return FeedbackType.WARNING;
     case UtilsFeedbackType.ERROR:
-      return HumanFeedbackType.ERROR;
+      return FeedbackType.ERROR;
     case UtilsFeedbackType.INFO:
     default:
-      return HumanFeedbackType.INFO;
+      return FeedbackType.INFO;
   }
 };
 
 // We're explicitly re-exporting these types with their original names
-export { MotionState, HumanFeedbackType as FeedbackType } from '@/lib/human/types';
+export { MotionState, FeedbackType } from '@/lib/human/types';
 
 // Evaluate rep quality based on angles and form
 export const evaluateRepQuality = (angles: any) => {

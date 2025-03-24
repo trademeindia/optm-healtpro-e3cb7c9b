@@ -19,6 +19,23 @@ export interface FeedbackData {
   };
 }
 
+// Evaluate rep quality based on angles and form
+export const evaluateRepQuality = (angles: any) => {
+  // Simple evaluation logic based on knee angle
+  const kneeAngle = angles.kneeAngle || 180;
+  const hipAngle = angles.hipAngle || 180;
+  
+  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
+  
+  return {
+    isGoodForm,
+    feedback: isGoodForm 
+      ? "Great form on that rep!" 
+      : "Try to keep your back straight and go deeper",
+    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
+  };
+};
+
 // Feedback generation utility
 export const generateFeedback = (
   posture: number, 
@@ -74,23 +91,6 @@ export const generateFeedback = (
       }
     };
   }
-};
-
-// Evaluate rep quality based on angles and form
-export const evaluateRepQuality = (angles: any) => {
-  // Simple evaluation logic based on knee angle
-  const kneeAngle = angles.kneeAngle || 180;
-  const hipAngle = angles.hipAngle || 180;
-  
-  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
-  
-  return {
-    isGoodForm,
-    feedback: isGoodForm 
-      ? "Great form on that rep!" 
-      : "Try to keep your back straight and go deeper",
-    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
-  };
 };
 
 // Initial feedback state
