@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
@@ -8,10 +7,10 @@ import {
   DetectionStatus, 
   FeedbackMessage,
   FeedbackType, 
-  MotionState, 
-  MotionStats 
+  MotionState
 } from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './utils/statsUtils';
+import type { MotionStats } from './hooks/useSessionStats';
 
 // Utility functions for detection and feedback
 const performDetection = async (video: HTMLVideoElement) => {
@@ -149,7 +148,7 @@ export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, c
     type: FeedbackType.INFO
   });
   
-  // Exercise stats
+  // Exercise stats - make sure to use the correct MotionStats type
   const [stats, setStats] = useState<MotionStats>(getInitialStats());
   
   // Session tracking
@@ -260,18 +259,12 @@ export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, c
           });
           
           if (evaluation.isGoodForm) {
-            // Create a new stats object with the lastUpdated property to satisfy the MotionStats type
-            const newStats = updateStatsForGoodRep({
-              ...stats,
-              lastUpdated: stats.lastUpdated || Date.now()
-            });
+            // Use the proper type for stats
+            const newStats = updateStatsForGoodRep(stats);
             setStats(newStats);
           } else {
-            // Create a new stats object with the lastUpdated property to satisfy the MotionStats type
-            const newStats = updateStatsForBadRep({
-              ...stats,
-              lastUpdated: stats.lastUpdated || Date.now()
-            });
+            // Use the proper type for stats
+            const newStats = updateStatsForBadRep(stats);
             setStats(newStats);
           }
           
@@ -333,7 +326,7 @@ export const useHumanDetection = (videoRef: React.RefObject<HTMLVideoElement>, c
   
   // Reset session
   const resetSession = useCallback(() => {
-    // Ensure the new initial stats has the required lastUpdated property
+    // Ensure we're using the correct type
     setStats(getInitialStats());
     
     setFeedback({

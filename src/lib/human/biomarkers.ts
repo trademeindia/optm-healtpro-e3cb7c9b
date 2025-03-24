@@ -1,10 +1,11 @@
-import { Human } from '@vladmandic/human';
+
+import type { Result } from '@vladmandic/human';
 import { BodyAngles } from './types';
 
 /**
  * Extract biomechanical markers from detection result
  */
-export const extractBiomarkers = (result: Human.Result, angles: BodyAngles) => {
+export const extractBiomarkers = (result: Result, angles: BodyAngles) => {
   // Initialize biomarkers
   const biomarkers: Record<string, number | null> = {
     postureScore: null,

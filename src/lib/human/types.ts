@@ -38,10 +38,10 @@ export interface MotionStats {
   goodReps: number;
   badReps: number;
   accuracy: number;
-  currentStreak?: number;
-  bestStreak?: number;
-  lastUpdated?: number;
-  caloriesBurned?: number; // Added caloriesBurned property
+  currentStreak: number; // Changed from optional to required
+  bestStreak: number; // Changed from optional to required
+  caloriesBurned: number; // Changed from optional to required
+  lastUpdated: number; // Changed from optional to required
 }
 
 // Detection status for UI

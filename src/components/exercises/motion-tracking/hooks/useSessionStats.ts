@@ -7,10 +7,10 @@ export interface MotionStats {
   goodReps: number;
   badReps: number;
   accuracy: number;
-  currentStreak: number;
-  bestStreak: number;
-  caloriesBurned: number;
-  lastUpdated?: number;
+  currentStreak: number; // Required
+  bestStreak: number; // Required
+  caloriesBurned: number; // Required
+  lastUpdated: number; // Required
 }
 
 // Get initial stats for a new session

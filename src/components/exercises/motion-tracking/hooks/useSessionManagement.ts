@@ -1,9 +1,10 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { MotionState, MotionStats } from '@/lib/human/types';
+import { MotionState } from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from '../utils/statsUtils';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
+import type { MotionStats } from './useSessionStats';
 
 export const useSessionManagement = () => {
   // Session state
@@ -71,11 +72,11 @@ export const useSessionManagement = () => {
   }, [sessionId, exerciseType, stats]);
   
   // Complete the current session
-  const completeCurrentSession = useCallback((biomarkers: any = {}) => {
+  const completeCurrentSession = useCallback(() => {
     if (!sessionId) return;
     
     try {
-      completeSession(sessionId, stats, biomarkers);
+      completeSession(sessionId, stats);
       toast.success('Session completed and saved');
     } catch (error) {
       console.error('Error completing session:', error);

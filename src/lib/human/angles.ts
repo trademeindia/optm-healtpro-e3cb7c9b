@@ -1,5 +1,6 @@
 
-import { Human } from '@vladmandic/human';
+import type { Result } from '@vladmandic/human';
+import { BodyAngles } from './types';
 
 /**
  * Calculate angle between three points
@@ -36,7 +37,7 @@ const calculateAngle = (a: any, b: any, c: any): number | null => {
 /**
  * Extract body angles from detection result
  */
-export const extractBodyAngles = (result: Human.Result) => {
+export const extractBodyAngles = (result: Result) => {
   // Default empty angles
   const angles = {
     kneeAngle: null,
