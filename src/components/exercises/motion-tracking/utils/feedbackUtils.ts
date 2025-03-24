@@ -1,10 +1,10 @@
 
 // Define feedback types for UI display
 export enum FeedbackType {
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR'
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error'
 }
 
 /**

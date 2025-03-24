@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FeedbackType } from '@/lib/human/types';
+import { FeedbackType } from '../utils/feedbackUtils';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 

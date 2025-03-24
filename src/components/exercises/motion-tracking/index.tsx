@@ -7,6 +7,7 @@ import ControlPanel from './components/ControlPanel';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import MotionRenderer from './MotionRenderer';
 import '../../styles/motion-tracker.css';
+import { FeedbackType } from './utils/feedbackUtils';
 
 interface MotionTrackerProps {
   exerciseName?: string;
@@ -33,6 +34,12 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseName, exerciseId,
     result,
     detectionStatus
   } = useHumanDetection(videoRef, canvasRef);
+  
+  // Convert feedback type if needed
+  const convertedFeedback = {
+    message: feedback?.message || null,
+    type: feedback?.type ? (feedback.type as unknown as FeedbackType) : FeedbackType.INFO
+  };
   
   // Stop detection when component unmounts
   useEffect(() => {
@@ -121,8 +128,8 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseName, exerciseId,
               
               {feedback && feedback.message && (
                 <FeedbackDisplay 
-                  message={feedback.message}
-                  type={feedback.type}
+                  message={convertedFeedback.message}
+                  type={convertedFeedback.type}
                 />
               )}
             </TabsContent>
