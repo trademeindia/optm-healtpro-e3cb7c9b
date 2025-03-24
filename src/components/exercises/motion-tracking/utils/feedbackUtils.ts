@@ -1,106 +1,47 @@
 
-// Define feedback type enum
+// Define feedback types for UI display
 export enum FeedbackType {
+  INFO = 'INFO',
   SUCCESS = 'SUCCESS',
   WARNING = 'WARNING',
-  ERROR = 'ERROR',
-  INFO = 'INFO'
+  ERROR = 'ERROR'
 }
 
-// Feedback interface
-export interface FeedbackData {
-  type: FeedbackType;
-  message: string;
-  biomarkers?: {
-    postureScore?: number;
-    movementQuality?: number;
-    rangeOfMotion?: number;
-    stabilityScore?: number;
-  };
-}
-
-// Evaluate rep quality based on angles and form
-export const evaluateRepQuality = (angles: any) => {
-  // Simple evaluation logic based on knee angle
-  const kneeAngle = angles.kneeAngle || 180;
-  const hipAngle = angles.hipAngle || 180;
-  
-  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
-  
-  return {
-    isGoodForm,
-    feedback: isGoodForm 
-      ? "Great form on that rep!" 
-      : "Try to keep your back straight and go deeper",
-    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
-  };
-};
-
-// Feedback generation utility
+/**
+ * Generate real-time feedback based on posture quality metrics
+ */
 export const generateFeedback = (
-  posture: number, 
-  quality: number,
-  rom: number,
-  stability: number
-): FeedbackData => {
-  // Combine all metrics for an overall score
-  const overallScore = (posture + quality + rom + stability) / 4;
-  
-  if (overallScore >= 85) {
-    return {
-      type: FeedbackType.SUCCESS,
-      message: 'Excellent form! Keep up the great work.',
-      biomarkers: {
-        postureScore: posture,
-        movementQuality: quality,
-        rangeOfMotion: rom,
-        stabilityScore: stability
-      }
-    };
-  } else if (overallScore >= 70) {
-    return {
-      type: FeedbackType.SUCCESS,
-      message: 'Good form. Minor adjustments could improve performance.',
-      biomarkers: {
-        postureScore: posture,
-        movementQuality: quality,
-        rangeOfMotion: rom,
-        stabilityScore: stability
-      }
-    };
-  } else if (overallScore >= 50) {
-    return {
-      type: FeedbackType.WARNING,
-      message: 'Moderate form. Focus on maintaining proper alignment.',
-      biomarkers: {
-        postureScore: posture,
-        movementQuality: quality,
-        rangeOfMotion: rom,
-        stabilityScore: stability
-      }
-    };
-  } else {
-    return {
-      type: FeedbackType.ERROR,
-      message: 'Form needs improvement. Consider reducing intensity or range.',
-      biomarkers: {
-        postureScore: posture,
-        movementQuality: quality,
-        rangeOfMotion: rom,
-        stabilityScore: stability
-      }
-    };
-  }
-};
+  postureScore: number, 
+  movementQuality: number,
+  rangeOfMotion: number,
+  stabilityScore: number
+) => {
+  let message = '';
+  let type: FeedbackType = FeedbackType.INFO;
 
-// Initial feedback state
-export const initialFeedback: FeedbackData = {
-  type: FeedbackType.INFO,
-  message: 'Start the camera to begin analysis',
-  biomarkers: {
-    postureScore: 0,
-    movementQuality: 0,
-    rangeOfMotion: 0,
-    stabilityScore: 0
+  // Posture feedback
+  if (postureScore < 50) {
+    message = 'Keep your back straight and head aligned';
+    type = FeedbackType.WARNING;
+  } else if (movementQuality < 60) {
+    message = 'Slow down and focus on form quality';
+    type = FeedbackType.WARNING;
+  } else if (rangeOfMotion < 65) {
+    message = 'Try to increase your range of motion';
+    type = FeedbackType.INFO;
+  } else if (stabilityScore < 70) {
+    message = 'Focus on stability during the exercise';
+    type = FeedbackType.INFO;
+  } else if (postureScore > 85 && movementQuality > 80) {
+    message = 'Excellent form! Keep it up';
+    type = FeedbackType.SUCCESS;
+  } else {
+    message = 'Maintain good form and control';
+    type = FeedbackType.INFO;
   }
+
+  return {
+    message,
+    type
+  };
 };
