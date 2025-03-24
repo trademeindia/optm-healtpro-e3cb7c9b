@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, BarChart, Camera, Play, Pause, RefreshCw } from 'lucide-react';
@@ -91,17 +92,17 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
   };
   
   return (
-    <div className="motion-tracker-container">
-      <div className="motion-tracker-header">
+    <div className="motion-tracker-container rounded-xl border border-border/60 shadow-md">
+      <div className="motion-tracker-header py-4 px-6 flex items-center justify-between bg-card/80 border-b border-border/60">
         <div>
-          <h2 className="text-lg md:text-xl font-semibold">{exerciseName}</h2>
-          <p className="text-xs text-muted-foreground">
-            Last synced: {formatTimeSinceSync()}
+          <h2 className="text-xl font-semibold text-primary">{exerciseName}</h2>
+          <p className="text-sm text-muted-foreground">
+            Position yourself in front of the camera for analysis
           </p>
         </div>
         
         {isModelLoaded && (
-          <div className="ai-status ready">
+          <div className="ai-status ready px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
             <CheckCircle className="h-4 w-4" />
             <span>AI Ready</span>
             {detectionFps && <span className="ml-1.5 opacity-80">({Math.round(detectionFps)} FPS)</span>}
@@ -109,184 +110,206 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
         )}
         
         {!isModelLoaded && (
-          <div className="ai-status loading">
+          <div className="ai-status loading px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             <span>Loading AI...</span>
           </div>
         )}
       </div>
       
-      <div className="motion-tracker-grid">
-        <div className="space-y-4">
-          <div className="camera-container">
-            <CameraView 
-              videoRef={videoRef}
-              canvasRef={canvasRef}
-              detectionStatus={{ isDetecting }}
-              onCameraStart={handleCameraStart}
-              isTracking={isDetecting}
-            />
-            <MotionRenderer
-              result={result}
-              canvasRef={canvasRef}
-              angles={angles}
-            />
-          </div>
+      <div className="motion-tracker-grid p-6 gap-6">
+        <div className="space-y-5">
+          <Card className="overflow-hidden border border-border/60 shadow-sm">
+            <CardHeader className="p-4 bg-card/60 border-b flex items-center justify-between">
+              <CardTitle className="text-lg">Camera View</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="camera-container">
+                <CameraView 
+                  videoRef={videoRef}
+                  canvasRef={canvasRef}
+                  detectionStatus={{ isDetecting }}
+                  onCameraStart={handleCameraStart}
+                  isTracking={isDetecting}
+                />
+                <MotionRenderer
+                  result={result}
+                  canvasRef={canvasRef}
+                  angles={angles}
+                />
+              </div>
+            </CardContent>
+          </Card>
           
-          <div className="control-buttons">
-            {!isDetecting ? (
-              <Button 
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                disabled={!isModelLoaded || !isCameraReady}
-                onClick={startDetection}
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Start Tracking
-              </Button>
-            ) : (
-              <Button 
-                variant="destructive" 
-                className="flex-1"
-                onClick={stopDetection}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                Stop Tracking
-              </Button>
-            )}
-            
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={resetSession}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 h-12 text-base"
+              disabled={!isModelLoaded || !isCameraReady || isDetecting}
+              onClick={startDetection}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reset
+              <Play className="h-5 w-5" />
+              Start Tracking
             </Button>
             
             <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={handleSync}
+              variant={isDetecting ? "destructive" : "outline"} 
+              className="w-full flex items-center justify-center gap-2 h-12 text-base"
+              disabled={!isDetecting}
+              onClick={isDetecting ? stopDetection : resetSession}
             >
-              <BarChart className="h-4 w-4 mr-2" />
-              Sync Data
+              {isDetecting ? (
+                <>
+                  <Pause className="h-5 w-5" />
+                  Stop Tracking
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-5 w-5" />
+                  Reset Session
+                </>
+              )}
             </Button>
           </div>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Body Measurements</CardTitle>
+            <CardHeader className="py-3 px-4 border-b">
+              <CardTitle className="text-base">Biomechanical Analysis</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="biomarker-grid">
-                {angles.kneeAngle !== null && (
-                  <div className="biomarker-card">
-                    <div className="biomarker-header">Knee Angle</div>
-                    <div className="biomarker-value">{Math.round(angles.kneeAngle)}°</div>
-                  </div>
-                )}
+            <CardContent className="p-4">
+              <div className="biomarker-grid gap-4">
+                <div className="biomarker-card rounded-lg">
+                  <div className="biomarker-header">Knee Angle</div>
+                  <div className="biomarker-value">{angles.kneeAngle !== null ? Math.round(angles.kneeAngle) : '--'}°</div>
+                </div>
                 
-                {angles.hipAngle !== null && (
-                  <div className="biomarker-card">
-                    <div className="biomarker-header">Hip Angle</div>
-                    <div className="biomarker-value">{Math.round(angles.hipAngle)}°</div>
-                  </div>
-                )}
+                <div className="biomarker-card rounded-lg">
+                  <div className="biomarker-header">Hip Angle</div>
+                  <div className="biomarker-value">{angles.hipAngle !== null ? Math.round(angles.hipAngle) : '--'}°</div>
+                </div>
                 
-                {angles.shoulderAngle !== null && (
-                  <div className="biomarker-card">
-                    <div className="biomarker-header">Shoulder Angle</div>
-                    <div className="biomarker-value">{Math.round(angles.shoulderAngle)}°</div>
-                  </div>
-                )}
+                <div className="biomarker-card rounded-lg">
+                  <div className="biomarker-header">Ankle Angle</div>
+                  <div className="biomarker-value">{angles.ankleAngle !== null ? Math.round(angles.ankleAngle) : '--'}°</div>
+                </div>
                 
-                {biomarkers.postureScore !== undefined && (
-                  <div className="biomarker-card">
-                    <div className="biomarker-header">Posture Score</div>
-                    <div className="biomarker-value">{Math.round(biomarkers.postureScore)}%</div>
-                  </div>
-                )}
+                <div className="biomarker-card rounded-lg">
+                  <div className="biomarker-header">Shoulder Angle</div>
+                  <div className="biomarker-value">{angles.shoulderAngle !== null ? Math.round(angles.shoulderAngle) : '--'}°</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <h3 className="text-sm font-medium mb-3 text-muted-foreground">Performance Metrics</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {biomarkers.balance !== undefined && (
+                    <div className="biomarker-card rounded-lg">
+                      <div className="biomarker-header">Balance</div>
+                      <div className="biomarker-value">{Math.round(biomarkers.balance * 100)}%</div>
+                    </div>
+                  )}
+                  
+                  {biomarkers.symmetry !== undefined && (
+                    <div className="biomarker-card rounded-lg">
+                      <div className="biomarker-header">Symmetry</div>
+                      <div className="biomarker-value">{Math.round(biomarkers.symmetry * 100)}%</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
         
-        <div className="space-y-4">
-          <div className="feedback-panel">
-            <div className="feedback-header">
-              <h3 className="font-medium">Real-time Feedback</h3>
-            </div>
-            <div className="feedback-content">
+        <div className="space-y-5">
+          <Card className="border border-border/60 shadow-sm overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b bg-card/60">
+              <CardTitle className="text-lg">Exercise Feedback</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
               {feedback.message && (
-                <div className={`status-message ${feedback.type?.toLowerCase() || 'info'}`}>
-                  {feedback.type === FeedbackType.SUCCESS && <CheckCircle className="h-5 w-5 text-green-500" />}
-                  {feedback.type === FeedbackType.WARNING && <AlertCircle className="h-5 w-5 text-yellow-500" />}
-                  {feedback.type === FeedbackType.ERROR && <AlertCircle className="h-5 w-5 text-red-500" />}
-                  {feedback.type === FeedbackType.INFO && <Camera className="h-5 w-5 text-blue-500" />}
-                  <span>{feedback.message}</span>
+                <div className={`p-4 rounded-lg mb-4 flex items-start gap-3 ${
+                  feedback.type === FeedbackType.SUCCESS ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400" :
+                  feedback.type === FeedbackType.WARNING ? "bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400" :
+                  feedback.type === FeedbackType.ERROR ? "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400" :
+                  "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+                }`}>
+                  {feedback.type === FeedbackType.SUCCESS && <CheckCircle className="h-5 w-5 mt-0.5" />}
+                  {feedback.type === FeedbackType.WARNING && <AlertCircle className="h-5 w-5 mt-0.5" />}
+                  {feedback.type === FeedbackType.ERROR && <AlertCircle className="h-5 w-5 mt-0.5" />}
+                  {feedback.type === FeedbackType.INFO && <Camera className="h-5 w-5 mt-0.5" />}
+                  <span className="text-base">{feedback.message}</span>
                 </div>
               )}
-              
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-value">{stats.totalReps || 0}</div>
-                  <div className="stat-label">Total Reps</div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Reps</div>
+                  <div className="font-semibold text-lg">{stats.totalReps || 0}</div>
                 </div>
                 
-                <div className="stat-card">
-                  <div className="stat-value text-green-500">{stats.goodReps || 0}</div>
-                  <div className="stat-label">Good Form</div>
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Good</div>
+                  <div className="font-semibold text-lg text-green-500">{stats.goodReps || 0}</div>
                 </div>
                 
-                <div className="stat-card">
-                  <div className="stat-value text-amber-500">{stats.badReps || 0}</div>
-                  <div className="stat-label">Needs Work</div>
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Needs Work</div>
+                  <div className="font-semibold text-lg text-orange-500">{stats.badReps || 0}</div>
                 </div>
                 
-                <div className="stat-card">
-                  <div className="stat-value">{stats.accuracy || 0}%</div>
-                  <div className="stat-label">Accuracy</div>
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Accuracy</div>
+                  <div className="font-semibold text-lg">{stats.accuracy || 0}%</div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
-                <div className="stat-card">
-                  <div className="stat-value">{stats.currentStreak || 0}</div>
-                  <div className="stat-label">Current Streak</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Current Streak</div>
+                  <div className="font-semibold text-lg">
+                    {stats.currentStreak || 0} reps
+                  </div>
                 </div>
                 
-                <div className="stat-card">
-                  <div className="stat-value">{stats.bestStreak || 0}</div>
-                  <div className="stat-label">Best Streak</div>
+                <div className="bg-muted/50 p-3 rounded-md flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Best Streak</div>
+                  <div className="font-semibold text-lg">
+                    {stats.bestStreak || 0} reps
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Exercise Guidelines</CardTitle>
+            <CardHeader className="py-3 px-4 border-b">
+              <CardTitle className="text-base">Exercise Instructions</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3 text-sm">
+            <CardContent className="p-4">
+              <div className="space-y-4">
                 <div className="flex gap-3 items-start">
                   <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">1</div>
-                  <p>Position yourself in front of the camera so your full body is visible.</p>
+                  <p className="text-sm">Position yourself in front of the camera so your full body is visible.</p>
                 </div>
                 
                 <div className="flex gap-3 items-start">
                   <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">2</div>
-                  <p>Maintain proper form throughout the exercise.</p>
+                  <p className="text-sm">Stand with your feet shoulder-width apart and arms at your sides.</p>
                 </div>
                 
                 <div className="flex gap-3 items-start">
                   <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">3</div>
-                  <p>Follow the real-time feedback to adjust your form.</p>
+                  <p className="text-sm">Slowly bend your knees and lower your body as if sitting in a chair.</p>
                 </div>
                 
                 <div className="flex gap-3 items-start">
                   <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">4</div>
-                  <p>Complete the recommended repetitions with good form.</p>
+                  <p className="text-sm">Keep your back straight and chest up throughout the movement.</p>
+                </div>
+                
+                <div className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">5</div>
+                  <p className="text-sm">Push through your heels to return to the starting position.</p>
                 </div>
               </div>
             </CardContent>
