@@ -4,13 +4,13 @@ import MotionTracker from '@/components/exercises/motion-tracking';
 import '@/styles/motion-tracker.css';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom'; // Using react-router-dom instead of next/link
 
 export default function MotionAnalysisPage() {
   return (
     <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
       <div className="mb-6">
-        <Link href="/exercises">
+        <Link to="/exercises">
           <Button variant="ghost" size="sm" className="mb-2 pl-0 hover:bg-transparent">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Exercises

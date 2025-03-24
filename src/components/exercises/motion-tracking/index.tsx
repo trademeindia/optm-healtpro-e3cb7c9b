@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, BarChart, Camera, Play, Pause, RefreshCw } from 'lucide-react';
@@ -12,6 +11,7 @@ import ExerciseInstructions from './components/ExerciseInstructions';
 import FeedbackDisplay from './FeedbackDisplay';
 import MotionRenderer from './MotionRenderer';
 import BiomarkersDisplay from './BiomarkersDisplay';
+import { FeedbackType } from '@/lib/human/types';
 import '@/styles/motion-tracker.css';
 
 interface MotionTrackerProps {
@@ -40,21 +40,17 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     resetSession
   } = useHumanDetection(videoRef, canvasRef);
   
-  // Calculate biomarkers from detection result
   const biomarkers = result ? extractBiomarkers(result, angles) : {};
   
-  // Handle camera ready
   const handleCameraStart = () => {
     setIsCameraReady(true);
     setLastSync(new Date());
     console.log('Camera is ready for tracking');
   };
   
-  // Auto-start model loading when component mounts
   useEffect(() => {
     const loadModel = async () => {
       try {
-        // The model loading is handled in useHumanDetection
         console.log('Loading Human.js model for tracking');
       } catch (error) {
         console.error('Failed to load model:', error);
@@ -64,13 +60,11 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     
     loadModel();
     
-    // Cleanup function
     return () => {
       stopDetection();
     };
   }, []);
   
-  // Handle finish exercise
   const handleFinish = () => {
     stopDetection();
     if (onFinish) {
@@ -78,7 +72,6 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     }
   };
 
-  // Format time for last sync display
   const formatTimeSinceSync = () => {
     const now = new Date();
     const diffMs = now.getTime() - lastSync.getTime();
@@ -92,7 +85,6 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
     }
   };
   
-  // Handle manual sync action
   const handleSync = () => {
     setLastSync(new Date());
     toast.success("Motion tracking data synced successfully");
@@ -125,7 +117,6 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
       </div>
       
       <div className="motion-tracker-grid">
-        {/* Left column - Camera view and controls */}
         <div className="space-y-4">
           <div className="camera-container">
             <CameraView 
@@ -220,7 +211,6 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
           </Card>
         </div>
         
-        {/* Right column - Feedback and instructions */}
         <div className="space-y-4">
           <div className="feedback-panel">
             <div className="feedback-header">
@@ -229,10 +219,10 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({ exerciseId, exerciseName,
             <div className="feedback-content">
               {feedback.message && (
                 <div className={`status-message ${feedback.type?.toLowerCase() || 'info'}`}>
-                  {feedback.type === 'SUCCESS' && <CheckCircle className="h-5 w-5 text-green-500" />}
-                  {feedback.type === 'WARNING' && <AlertCircle className="h-5 w-5 text-yellow-500" />}
-                  {feedback.type === 'ERROR' && <AlertCircle className="h-5 w-5 text-red-500" />}
-                  {feedback.type === 'INFO' && <Camera className="h-5 w-5 text-blue-500" />}
+                  {feedback.type === FeedbackType.SUCCESS && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {feedback.type === FeedbackType.WARNING && <AlertCircle className="h-5 w-5 text-yellow-500" />}
+                  {feedback.type === FeedbackType.ERROR && <AlertCircle className="h-5 w-5 text-red-500" />}
+                  {feedback.type === FeedbackType.INFO && <Camera className="h-5 w-5 text-blue-500" />}
                   <span>{feedback.message}</span>
                 </div>
               )}
