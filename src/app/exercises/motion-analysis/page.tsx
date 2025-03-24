@@ -1,37 +1,24 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import MotionTracker from '@/components/exercises/motion-tracking';
-import '@/styles/motion-tracker.css';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom'; // Using react-router-dom instead of next/link
 
 export default function MotionAnalysisPage() {
   return (
-    <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
-      <div className="mb-6">
-        <Link to="/exercises">
-          <Button variant="ghost" size="sm" className="mb-2 pl-0 hover:bg-transparent">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Exercises
-          </Button>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Motion Analysis</h1>
+        <Link 
+          to="/exercises" 
+          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
+        >
+          Back to Exercises
         </Link>
-        
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
-            Motion Analysis
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base max-w-3xl">
-            This exercise uses AI to track your movements and provide real-time feedback on your form.
-            Position yourself in front of the camera and follow the instructions.
-          </p>
-        </div>
       </div>
       
-      <MotionTracker
-        exerciseId="basic-squat"
-        exerciseName="Basic Squat Technique"
-      />
+      <div className="motion-analysis-container">
+        <MotionTracker />
+      </div>
     </div>
   );
 }

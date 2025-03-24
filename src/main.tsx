@@ -20,6 +20,7 @@ import './styles/animations.css';
 import './styles/main.css';
 // Finally App-specific styles
 import './App.css';
+import './styles/motion-tracker.css';
 
 // Import responsive styles in order of specificity
 import './styles/responsive/elements.css';

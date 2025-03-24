@@ -5,6 +5,7 @@
   overflow: hidden;
   background-color: var(--card);
   transition: all 0.3s ease;
+  border-radius: 0.75rem;
 }
 
 /* Motion tracker header styling */
@@ -44,6 +45,7 @@
   border-radius: 0.5rem;
   background-color: #111827;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(30, 41, 59, 0.25);
 }
 
 /* Video element */
@@ -104,6 +106,7 @@
   background: linear-gradient(90deg, hsla(221, 45%, 73%, 0.1) 0%, hsla(220, 78%, 29%, 0.05) 100%);
   padding: 0.75rem;
   border: 1px solid var(--border);
+  border-radius: 0.5rem;
 }
 
 .biomarker-header {
@@ -169,4 +172,43 @@
   .biomarker-value {
     font-size: 1.125rem;
   }
+}
+
+/* Feedback display styles */
+.feedback-display {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Exercise instruction card enhancements */
+.instruction-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.instruction-header {
+  background-color: var(--card-header);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.instruction-content {
+  padding: 1rem;
+}
+
+.instruction-list {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.instruction-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
 }
