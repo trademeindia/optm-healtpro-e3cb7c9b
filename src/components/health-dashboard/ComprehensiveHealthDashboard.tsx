@@ -1,23 +1,43 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { TimeRange } from '@/services/health';
-import { Heart, Footprints, Flame, Clock } from 'lucide-react';
-import DetailedMetricsTabs from './dashboard/DetailedMetricsTabs';
+import React, { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Calendar, Activity, Heart, Zap, Moon } from 'lucide-react';
+import { format } from 'date-fns';
 
-// Import refactored components
-import MetricCard from './metrics/MetricCard';
-import DashboardOverview from './overview/DashboardOverview';
-import DashboardTabContent from './tabs/DashboardTabContent';
-import TabsNavigation from './tabs/TabsNavigation';
-import DashboardHeader from './DashboardHeader';
+import HealthMetricsOverview from './HealthMetricsOverview';
+import ActivityTimeline from './ActivityTimeline';
+import HeartRateMonitor from './HeartRateMonitor';
+import SleepAnalysis from './SleepAnalysis';
+
+interface HealthData {
+  vitalSigns: {
+    heartRate: any;
+    bloodPressure: any;
+    bodyTemperature: any;
+    oxygenSaturation: any;
+  };
+  activity: {
+    steps: number;
+    distance: number;
+    caloriesBurned: number;
+    activeMinutes: number;
+  };
+  sleep: {
+    duration: number;
+    quality: 'excellent' | 'good' | 'fair' | 'poor';
+    deepSleep: number;
+    remSleep: number;
+    lightSleep: number;
+  };
+}
 
 interface ComprehensiveHealthDashboardProps {
-  healthData: any;
+  healthData: HealthData;
   isLoading: boolean;
   lastSynced?: string;
-  onSyncClick: () => void;
+  onSyncClick: () => Promise<void>;
 }
 
 const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> = ({
@@ -26,97 +46,102 @@ const ComprehensiveHealthDashboard: React.FC<ComprehensiveHealthDashboardProps> 
   lastSynced,
   onSyncClick
 }) => {
-  const [activeTab, setActiveTab] = React.useState('overview');
-  const [timeRange, setTimeRange] = React.useState<TimeRange>('week');
+  const [isSyncing, setIsSyncing] = useState(false);
   
-  const metricsHistory = {
-    steps: Array.from({ length: 7 }).map((_, i) => ({ 
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000), 
-      value: Math.floor(Math.random() * 5000) + 3000 
-    })),
-    calories: Array.from({ length: 7 }).map((_, i) => ({ 
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000), 
-      value: Math.floor(Math.random() * 800) + 1200 
-    })),
-    distance: Array.from({ length: 7 }).map((_, i) => ({ 
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000), 
-      value: Math.random() * 5 + 2 
-    })),
-    heart_rate: Array.from({ length: 24 }).map((_, i) => ({ 
-      time: new Date(Date.now() - (23 - i) * 60 * 60 * 1000), 
-      value: Math.floor(Math.random() * 20) + 60 
-    })),
-    sleep: Array.from({ length: 7 }).map((_, i) => ({ 
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000), 
-      deepSleep: Math.random() * 2 + 1, 
-      lightSleep: Math.random() * 4 + 3, 
-      remSleep: Math.random() * 1.5 + 0.5, 
-      awake: Math.random() * 0.5 
-    })),
-    workout: Array.from({ length: 5 }).map((_, i) => ({
-      date: new Date(Date.now() - (10 - i * 2) * 24 * 60 * 60 * 1000),
-      type: ['Running', 'Cycling', 'Swimming', 'Weightlifting', 'Yoga'][i],
-      duration: Math.floor(Math.random() * 60) + 20,
-      calories: Math.floor(Math.random() * 400) + 100,
-      distance: i < 3 ? Math.random() * 8 + 2 : undefined
-    }))
+  const handleSync = async () => {
+    if (isSyncing) return;
+    
+    setIsSyncing(true);
+    try {
+      await onSyncClick();
+    } finally {
+      setIsSyncing(false);
+    }
   };
   
+  const formattedLastSync = lastSynced 
+    ? new Date(lastSynced).toLocaleString()
+    : 'Never';
+  
   return (
-    <Tabs defaultValue="overview" className="space-y-4" onValueChange={setActiveTab} value={activeTab}>
-      <Card>
-        <CardHeader className="pb-2">
-          <DashboardHeader
-            lastSynced={lastSynced}
-            isLoading={isLoading}
-            onSyncClick={onSyncClick}
-          />
-        </CardHeader>
-        <CardContent>
-          <TabsNavigation activeTab={activeTab} />
-
-          <TabsContent value="overview">
-            <DashboardOverview healthData={healthData} />
-          </TabsContent>
+    <Card className="bg-card border-border/40">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl md:text-2xl">Health Dashboard</CardTitle>
+            <CardDescription>
+              {lastSynced ? (
+                <>Last updated: {formattedLastSync}</>
+              ) : (
+                <>Connect Google Fit to see your health data</>
+              )}
+            </CardDescription>
+          </div>
           
-          <TabsContent value="activity">
-            <DashboardTabContent 
-              icon={<Footprints className="h-10 w-10" />} 
-              title="Activity Tracking" 
-            />
-          </TabsContent>
-          
-          <TabsContent value="heart">
-            <DashboardTabContent 
-              icon={<Heart className="h-10 w-10" />} 
-              title="Heart Rate Monitoring" 
-            />
-          </TabsContent>
-          
-          <TabsContent value="calories">
-            <DashboardTabContent 
-              icon={<Flame className="h-10 w-10" />} 
-              title="Calorie Tracking" 
-            />
-          </TabsContent>
-          
-          <TabsContent value="sleep">
-            <DashboardTabContent 
-              icon={<Clock className="h-10 w-10" />} 
-              title="Sleep Analysis" 
-            />
-          </TabsContent>
-        </CardContent>
-      </Card>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1.5"
+            onClick={handleSync}
+            disabled={isSyncing || isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Sync Data'}
+          </Button>
+        </div>
+      </CardHeader>
       
-      <DetailedMetricsTabs 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        selectedTimeRange={timeRange}
-        metricsHistory={metricsHistory}
-        isLoading={isLoading}
-      />
-    </Tabs>
+      <CardContent>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="overview" className="flex items-center gap-1.5">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="heart" className="flex items-center gap-1.5">
+              <Heart className="h-4 w-4" />
+              <span className="hidden sm:inline">Heart</span>
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-1.5">
+              <Zap className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger value="sleep" className="flex items-center gap-1.5">
+              <Moon className="h-4 w-4" />
+              <span className="hidden sm:inline">Sleep</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview" className="mt-0 pt-0">
+            <HealthMetricsOverview 
+              healthData={healthData} 
+              isLoading={isLoading} 
+            />
+          </TabsContent>
+          
+          <TabsContent value="heart" className="mt-0 pt-0">
+            <HeartRateMonitor 
+              heartRateData={healthData?.vitalSigns?.heartRate} 
+              isLoading={isLoading} 
+            />
+          </TabsContent>
+          
+          <TabsContent value="activity" className="mt-0 pt-0">
+            <ActivityTimeline 
+              activityData={healthData?.activity} 
+              isLoading={isLoading} 
+            />
+          </TabsContent>
+          
+          <TabsContent value="sleep" className="mt-0 pt-0">
+            <SleepAnalysis 
+              sleepData={healthData?.sleep} 
+              isLoading={isLoading} 
+            />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

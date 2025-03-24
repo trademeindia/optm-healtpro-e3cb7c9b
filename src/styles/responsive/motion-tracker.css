@@ -1,6 +1,120 @@
 
-/* Import all motion tracker related styles */
-@import './motion-layout.css';
-@import './motion-cards.css';
-@import './motion-metrics.css';
-@import './camera-styles.css';
+/* Main container styling */
+.motion-tracker-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--card);
+  transition: padding 0.3s ease;
+}
+
+/* Motion tracker grid - responsive layout */
+.motion-tracker-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Camera view styling */
+.camera-view-container {
+  position: relative;
+  aspect-ratio: 16/9;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: var(--card-foreground-muted);
+}
+
+.camera-instruction {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  z-index: 10;
+  width: 90%;
+  max-width: 400px;
+}
+
+.camera-view {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Feedback panel styling */
+.feedback-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.status-indicator.success {
+  background-color: var(--success-background);
+  color: var(--success-foreground);
+}
+
+.status-indicator.warning {
+  background-color: var(--warning-background);
+  color: var(--warning-foreground);
+}
+
+.status-indicator.error {
+  background-color: var(--error-background);
+  color: var(--error-foreground);
+}
+
+.status-indicator.info {
+  background-color: var(--info-background);
+  color: var(--info-foreground);
+}
+
+/* Responsive media queries */
+@media (min-width: 768px) {
+  .motion-tracker-grid {
+    grid-template-columns: 3fr 2fr;
+    gap: 1.5rem;
+  }
+  
+  .camera-instruction {
+    padding: 1.5rem;
+    width: 80%;
+  }
+}
+
+@media (max-width: 767px) {
+  .motion-tracker-container {
+    padding: 1rem;
+  }
+  
+  .feedback-panel {
+    margin-top: 1rem;
+  }
+  
+  .status-indicator {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Dark mode adjustments */
+.dark .camera-view-container {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.dark .camera-instruction {
+  background-color: rgba(0, 0, 0, 0.8);
+}
