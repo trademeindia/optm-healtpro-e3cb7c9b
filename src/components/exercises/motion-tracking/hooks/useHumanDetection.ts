@@ -1,7 +1,6 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { MotionState, FeedbackType as HumanFeedbackType } from '@/lib/human/types';
+import { MotionState, FeedbackType } from '@/lib/human/types';
 import { useDetectionState } from './useDetectionState';
 import { useMotionAnalysis } from './useMotionAnalysis';
 import { useSessionStats } from './useSessionStats';
@@ -11,21 +10,21 @@ import { createSession, saveDetectionData, completeSession } from '../utils/sess
 import { isRepCompleted } from '../utils/motionStateUtils';
 
 // Map feedback types from utils to human types
-const mapFeedbackType = (type: UtilsFeedbackType): HumanFeedbackType => {
+const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
   switch (type) {
     case UtilsFeedbackType.SUCCESS:
-      return HumanFeedbackType.SUCCESS;
+      return FeedbackType.SUCCESS;
     case UtilsFeedbackType.WARNING:
-      return HumanFeedbackType.WARNING;
+      return FeedbackType.WARNING;
     case UtilsFeedbackType.ERROR:
-      return HumanFeedbackType.ERROR;
+      return FeedbackType.ERROR;
     case UtilsFeedbackType.INFO:
     default:
-      return HumanFeedbackType.INFO;
+      return FeedbackType.INFO;
   }
 };
 
-export { MotionState, HumanFeedbackType as FeedbackType } from '@/lib/human/types';
+export { MotionState, FeedbackType } from '@/lib/human/types';
 
 export const useHumanDetection = (
   videoRef: React.RefObject<HTMLVideoElement>, 
@@ -199,7 +198,7 @@ export const useHumanDetection = (
     
     motion.setFeedback({
       message: "Session reset. Ready for new exercises.",
-      type: HumanFeedbackType.INFO
+      type: FeedbackType.INFO
     });
     
     toast.info("Session Reset", {
