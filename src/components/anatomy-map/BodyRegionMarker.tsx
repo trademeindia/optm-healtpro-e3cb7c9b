@@ -32,18 +32,17 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
     const hasSevere = regionSymptoms.some(s => s.severity === 'severe');
     const hasModerate = regionSymptoms.some(s => s.severity === 'moderate');
     
-    if (hasSevere) return 'bg-red-500';
-    if (hasModerate) return 'bg-orange-500';
-    return 'bg-yellow-500';
+    if (hasSevere) return 'severity-severe';
+    if (hasModerate) return 'severity-moderate';
+    return 'severity-mild';
   };
 
   return (
     <div 
-      className={`hotspot-marker ${sizeClass} ${active ? 'hotspot-active hotspot-pulse' : ''}`}
+      className={`hotspot-marker ${sizeClass} ${active ? 'hotspot-active hotspot-pulse' : ''} ${determineMarkerColor()}`}
       style={{
         left: `${region.x}%`,
         top: `${region.y}%`,
-        backgroundColor: determineMarkerColor(),
         position: 'absolute',
         transform: 'translate(-50%, -50%)',
         borderRadius: '50%',
@@ -51,10 +50,8 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        zIndex: 10,
-        boxShadow: '0 0 0 2px white',
-        width: symptomCount > 3 ? '30px' : symptomCount > 0 ? '24px' : '16px',
-        height: symptomCount > 3 ? '30px' : symptomCount > 0 ? '24px' : '16px',
+        zIndex: active ? 30 : 10,
+        boxShadow: active ? '0 0 0 3px white' : '0 0 0 2px white',
       }}
       onClick={onClick}
       aria-label={`${region.name} region ${symptomCount > 0 ? `with ${symptomCount} symptoms` : ''}`}

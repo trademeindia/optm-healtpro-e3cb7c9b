@@ -1,201 +1,221 @@
 
 import { BodyRegion } from '../types';
 
-export const getBodyRegions = (): BodyRegion[] => [
+// Define body regions with detailed descriptions
+export const bodyRegions: BodyRegion[] = [
   {
-    id: 'head',
+    id: '1',
     name: 'Head',
-    description: 'Including skull, brain, and facial structures',
     x: 50,
-    y: 8
+    y: 10,
+    svgPathId: 'head',
+    description: 'The uppermost part of the body containing the brain and the centers of sight, hearing, taste, and smell.'
   },
   {
-    id: 'neck',
+    id: '2',
     name: 'Neck',
-    description: 'Including cervical spine and neck muscles',
     x: 50,
-    y: 13
+    y: 18,
+    svgPathId: 'neck',
+    description: 'The part of the body connecting the head to the torso, containing the cervical spine and various muscles.'
   },
   {
-    id: 'shoulder-right',
-    name: 'Right Shoulder',
-    description: 'Including rotator cuff and joint',
-    x: 35,
-    y: 20
-  },
-  {
-    id: 'shoulder-left',
-    name: 'Left Shoulder',
-    description: 'Including rotator cuff and joint',
-    x: 65,
-    y: 20
-  },
-  {
-    id: 'arm-upper-right',
-    name: 'Upper Right Arm',
-    description: 'Including biceps and triceps',
-    x: 28,
-    y: 30
-  },
-  {
-    id: 'arm-upper-left',
-    name: 'Upper Left Arm',
-    description: 'Including biceps and triceps',
-    x: 72,
-    y: 30
-  },
-  {
-    id: 'chest',
+    id: '3',
     name: 'Chest',
-    description: 'Including pectoral muscles and ribcage',
     x: 50,
-    y: 25
+    y: 30,
+    svgPathId: 'chest',
+    description: 'The upper torso containing the heart, lungs, and rib cage.'
   },
   {
-    id: 'back-upper',
-    name: 'Upper Back',
-    description: 'Including trapezius and rhomboid muscles',
-    x: 50,
-    y: 22
-  },
-  {
-    id: 'elbow-right',
-    name: 'Right Elbow',
-    description: 'Including joint and surrounding tendons',
-    x: 25,
-    y: 40
-  },
-  {
-    id: 'elbow-left',
-    name: 'Left Elbow',
-    description: 'Including joint and surrounding tendons',
-    x: 75,
-    y: 40
-  },
-  {
-    id: 'forearm-right',
-    name: 'Right Forearm',
-    description: 'Including wrist flexors and extensors',
-    x: 22,
-    y: 48
-  },
-  {
-    id: 'forearm-left',
-    name: 'Left Forearm',
-    description: 'Including wrist flexors and extensors',
-    x: 78,
-    y: 48
-  },
-  {
-    id: 'abdomen',
+    id: '4',
     name: 'Abdomen',
-    description: 'Including abdominal muscles and organs',
     x: 50,
-    y: 35
+    y: 42,
+    svgPathId: 'abdomen',
+    description: 'The region between the chest and pelvis containing the digestive organs.'
   },
   {
-    id: 'back-lower',
+    id: '5',
     name: 'Lower Back',
-    description: 'Including lumbar spine and surrounding muscles',
     x: 50,
-    y: 40
+    y: 50,
+    svgPathId: 'lower-back',
+    description: 'The area of the back below the ribcage including the lumbar spine.'
   },
   {
-    id: 'hand-right',
-    name: 'Right Hand',
-    description: 'Including fingers, palm, and wrist',
-    x: 20,
-    y: 55
+    id: '6',
+    name: 'Left Arm',
+    x: 30,
+    y: 35,
+    svgPathId: 'left-arm',
+    description: 'The left upper limb from the shoulder to the wrist.'
   },
   {
-    id: 'hand-left',
+    id: '7',
+    name: 'Right Arm',
+    x: 70,
+    y: 35,
+    svgPathId: 'right-arm',
+    description: 'The right upper limb from the shoulder to the wrist.'
+  },
+  {
+    id: '8',
     name: 'Left Hand',
-    description: 'Including fingers, palm, and wrist',
-    x: 80,
-    y: 55
+    x: 25,
+    y: 48,
+    svgPathId: 'left-hand',
+    description: 'The left terminal part of the arm containing fingers and palm.'
   },
   {
-    id: 'hip-right',
-    name: 'Right Hip',
-    description: 'Including hip joint and surrounding muscles',
-    x: 42,
-    y: 50
+    id: '9',
+    name: 'Right Hand',
+    x: 75,
+    y: 48,
+    svgPathId: 'right-hand',
+    description: 'The right terminal part of the arm containing fingers and palm.'
   },
   {
-    id: 'hip-left',
-    name: 'Left Hip',
-    description: 'Including hip joint and surrounding muscles',
-    x: 58,
-    y: 50
+    id: '10',
+    name: 'Pelvis',
+    x: 50,
+    y: 58,
+    svgPathId: 'pelvis',
+    description: 'The lower part of the trunk connecting the spine to the legs.'
   },
   {
-    id: 'thigh-right',
-    name: 'Right Thigh',
-    description: 'Including quadriceps and hamstrings',
-    x: 40,
-    y: 60
-  },
-  {
-    id: 'thigh-left',
+    id: '11',
     name: 'Left Thigh',
-    description: 'Including quadriceps and hamstrings',
+    x: 40,
+    y: 65,
+    svgPathId: 'left-thigh',
+    description: 'The left upper part of the leg between the hip and knee.'
+  },
+  {
+    id: '12',
+    name: 'Right Thigh',
     x: 60,
-    y: 60
+    y: 65,
+    svgPathId: 'right-thigh',
+    description: 'The right upper part of the leg between the hip and knee.'
   },
   {
-    id: 'knee-right',
-    name: 'Right Knee',
-    description: 'Including knee joint, patella, and ligaments',
-    x: 38,
-    y: 70
-  },
-  {
-    id: 'knee-left',
+    id: '13',
     name: 'Left Knee',
-    description: 'Including knee joint, patella, and ligaments',
-    x: 62,
-    y: 70
+    x: 40,
+    y: 75,
+    svgPathId: 'left-knee',
+    description: 'The left joint connecting the thigh with the lower leg.'
   },
   {
-    id: 'leg-lower-right',
-    name: 'Lower Right Leg',
-    description: 'Including calf muscles and shin',
-    x: 37,
-    y: 80
+    id: '14',
+    name: 'Right Knee',
+    x: 60,
+    y: 75,
+    svgPathId: 'right-knee',
+    description: 'The right joint connecting the thigh with the lower leg.'
   },
   {
-    id: 'leg-lower-left',
-    name: 'Lower Left Leg',
-    description: 'Including calf muscles and shin',
-    x: 63,
-    y: 80
+    id: '15',
+    name: 'Left Calf',
+    x: 40,
+    y: 85,
+    svgPathId: 'left-calf',
+    description: 'The left back part of the leg below the knee.'
   },
   {
-    id: 'ankle-right',
-    name: 'Right Ankle',
-    description: 'Including ankle joint and surrounding tendons',
-    x: 36,
-    y: 90
+    id: '16',
+    name: 'Right Calf',
+    x: 60,
+    y: 85,
+    svgPathId: 'right-calf',
+    description: 'The right back part of the leg below the knee.'
   },
   {
-    id: 'ankle-left',
+    id: '17',
     name: 'Left Ankle',
-    description: 'Including ankle joint and surrounding tendons',
-    x: 64,
-    y: 90
+    x: 40,
+    y: 92,
+    svgPathId: 'left-ankle',
+    description: 'The left joint connecting the leg to the foot.'
   },
   {
-    id: 'foot-right',
-    name: 'Right Foot',
-    description: 'Including toes, arch, and heel',
-    x: 36,
-    y: 95
+    id: '18',
+    name: 'Right Ankle',
+    x: 60,
+    y: 92,
+    svgPathId: 'right-ankle',
+    description: 'The right joint connecting the leg to the foot.'
   },
   {
-    id: 'foot-left',
+    id: '19',
     name: 'Left Foot',
-    description: 'Including toes, arch, and heel',
-    x: 64,
-    y: 95
+    x: 40,
+    y: 97,
+    svgPathId: 'left-foot',
+    description: 'The left terminal part of the leg used for standing and walking.'
+  },
+  {
+    id: '20',
+    name: 'Right Foot',
+    x: 60,
+    y: 97,
+    svgPathId: 'right-foot',
+    description: 'The right terminal part of the leg used for standing and walking.'
+  },
+  {
+    id: '21',
+    name: 'Left Shoulder',
+    x: 35,
+    y: 25,
+    svgPathId: 'left-shoulder',
+    description: 'The left joint connecting the arm to the torso.'
+  },
+  {
+    id: '22',
+    name: 'Right Shoulder',
+    x: 65,
+    y: 25,
+    svgPathId: 'right-shoulder',
+    description: 'The right joint connecting the arm to the torso.'
+  },
+  {
+    id: '23',
+    name: 'Upper Back',
+    x: 50,
+    y: 25,
+    svgPathId: 'upper-back',
+    description: 'The area of the back between the shoulders and above the lumbar spine.'
+  },
+  {
+    id: '24',
+    name: 'Left Hip',
+    x: 40,
+    y: 58,
+    svgPathId: 'left-hip',
+    description: 'The left joint connecting the leg to the torso.'
+  },
+  {
+    id: '25',
+    name: 'Right Hip',
+    x: 60,
+    y: 58,
+    svgPathId: 'right-hip',
+    description: 'The right joint connecting the leg to the torso.'
   }
 ];
+
+// Helper function to retrieve body regions
+export const getBodyRegions = (): BodyRegion[] => {
+  return bodyRegions;
+};
+
+// Helper function to find a specific body region by ID
+export const getBodyRegionById = (id: string): BodyRegion | undefined => {
+  return bodyRegions.find(region => region.id === id);
+};
+
+// Helper function to find a specific body region by name
+export const getBodyRegionByName = (name: string): BodyRegion | undefined => {
+  return bodyRegions.find(region => region.name.toLowerCase() === name.toLowerCase());
+};

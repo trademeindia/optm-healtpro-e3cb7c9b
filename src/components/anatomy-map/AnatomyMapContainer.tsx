@@ -10,6 +10,7 @@ import { SymptomHistoryContainer } from './symptom-history';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { SymptomEntry } from '@/contexts/SymptomContext';
+import { bodyRegions } from './data/bodyRegions';
 
 const AnatomyMapContainer: React.FC = () => {
   const { symptoms, addSymptom, updateSymptom, deleteSymptom } = useSymptoms();
@@ -18,24 +19,11 @@ const AnatomyMapContainer: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedSymptom, setSelectedSymptom] = useState<PainSymptom | null>(null);
   const [loading, setLoading] = useState(false);
-  const [bodyRegions, setBodyRegions] = useState<BodyRegion[]>([]);
   
-  // Simulating fetch of body regions
-  useEffect(() => {
-    // This would be a call to your API in a real application
-    const fetchedRegions: BodyRegion[] = [
-      { id: '1', name: 'Head', x: 50, y: 10, svgPathId: 'head' },
-      { id: '2', name: 'Neck', x: 50, y: 18, svgPathId: 'neck' },
-      { id: '3', name: 'Chest', x: 50, y: 30, svgPathId: 'chest' },
-      { id: '4', name: 'Abdomen', x: 50, y: 42, svgPathId: 'abdomen' },
-      { id: '5', name: 'Back', x: 25, y: 35, svgPathId: 'back' },
-      { id: '6', name: 'Arms', x: 75, y: 35, svgPathId: 'arms' },
-      { id: '7', name: 'Legs', x: 50, y: 65, svgPathId: 'legs' },
-    ];
-    setBodyRegions(fetchedRegions);
-    
-    console.log('Body regions loaded:', fetchedRegions.length);
-  }, []);
+  // Use imported body regions data
+  const availableBodyRegions = bodyRegions;
+  
+  console.log('AnatomyMapContainer rendering, symptoms:', symptoms.length);
 
   const handleRegionClick = (region: BodyRegion) => {
     console.log('Region clicked:', region.name);
@@ -46,7 +34,7 @@ const AnatomyMapContainer: React.FC = () => {
   };
 
   const handleEditSymptom = (symptom: PainSymptom) => {
-    const region = bodyRegions.find(r => r.id === symptom.bodyRegionId);
+    const region = availableBodyRegions.find(r => r.id === symptom.bodyRegionId);
     if (region) {
       setSelectedRegion(region);
       setSelectedSymptom(symptom);
@@ -163,8 +151,6 @@ const AnatomyMapContainer: React.FC = () => {
     convertToPainSymptom(symptom)
   );
 
-  console.log('AnatomyMapContainer rendering, symptoms:', symptoms.length);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4">
@@ -172,8 +158,8 @@ const AnatomyMapContainer: React.FC = () => {
           variant="outline" 
           className="border-dashed flex items-center gap-2 bg-muted/50"
           onClick={() => {
-            if (bodyRegions.length > 0) {
-              handleRegionClick(bodyRegions[0]);
+            if (availableBodyRegions.length > 0) {
+              handleRegionClick(availableBodyRegions[0]);
             }
           }}
         >
@@ -185,7 +171,7 @@ const AnatomyMapContainer: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
           <AnatomyMap 
-            bodyRegions={bodyRegions}
+            bodyRegions={availableBodyRegions}
             symptoms={convertedSymptoms}
             onAddSymptom={handleAddSymptom}
             onUpdateSymptom={handleUpdateSymptom}
@@ -199,7 +185,7 @@ const AnatomyMapContainer: React.FC = () => {
           <SymptomHistoryContainer 
             symptoms={convertedSymptoms}
             onEditSymptom={handleEditSymptom}
-            bodyRegions={bodyRegions}
+            bodyRegions={availableBodyRegions}
             onUpdateSymptom={handleUpdateSymptom}
             onDeleteSymptom={handleDeleteSymptom}
             onToggleActive={handleToggleActive}
@@ -215,7 +201,7 @@ const AnatomyMapContainer: React.FC = () => {
           selectedRegion={selectedRegion}
           existingSymptom={selectedSymptom}
           isEditMode={isEditMode}
-          bodyRegions={bodyRegions}
+          bodyRegions={availableBodyRegions}
           existingSymptoms={convertedSymptoms.filter(s => selectedRegion ? s.bodyRegionId === selectedRegion.id : false)}
           onAddSymptom={handleAddSymptom}
           onUpdateSymptom={handleUpdateSymptom}

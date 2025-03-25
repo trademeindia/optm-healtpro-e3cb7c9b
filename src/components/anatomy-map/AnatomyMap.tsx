@@ -121,7 +121,6 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
               alt="Human body anatomy"
               className="anatomy-map-image absolute top-0 left-0 w-full h-full object-contain opacity-70"
               onLoad={() => {
-                console.log('Anatomy map image loaded');
                 setImageLoaded(true);
                 setImageError(false);
               }}
