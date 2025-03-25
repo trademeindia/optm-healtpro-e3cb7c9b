@@ -210,7 +210,7 @@ export const useHumanDetection = ({
         }
         
         // Draw pose on canvas
-        await human.draw.canvas(canvas, result);
+        await human.draw.all(canvas, result);
         
         // Save session data if provided
         if (sessionId && onSessionDataSave) {
