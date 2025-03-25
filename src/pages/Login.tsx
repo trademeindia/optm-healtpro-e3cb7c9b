@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -76,6 +77,12 @@ const Login: React.FC = () => {
             <Button disabled className="w-full">
               Email & Password Login (Disabled in Demo)
             </Button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <Link to="/motion-analysis" className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+              Test Motion Tracking (No Login Required)
+            </Link>
           </div>
         </CardContent>
       </Card>

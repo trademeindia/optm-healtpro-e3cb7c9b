@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
+import Login from '@/pages/Login';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import OAuthCallback from '@/pages/OAuthCallback';
@@ -19,6 +20,7 @@ import PatientsPage from '@/pages/patients';
 import SettingsPage from '@/pages/SettingsPage';
 import HelpPage from '@/pages/HelpPage';
 import ExercisePage from '@/pages/exercises/ExercisePage';
+import MotionAnalysisPage from '@/app/exercises/motion-analysis/page';
 
 // Lazy load components
 const DoctorDashboard = lazy(() => import('@/pages/dashboard/DoctorDashboard'));
@@ -41,7 +43,11 @@ const AppRoutes: React.FC = () => {
         
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/legacy-login" element={<Login />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
+        
+        {/* Motion Analysis Route - Public for testing */}
+        <Route path="/motion-analysis" element={<MotionAnalysisPage />} />
         
         {/* Doctor Routes */}
         <Route 
