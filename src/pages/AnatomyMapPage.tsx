@@ -41,10 +41,8 @@ const AnatomyMapPage: React.FC = () => {
                 </p>
               </div>
               
-              <SymptomProvider>
-                <AnatomyMapContainer />
-                <Toaster position="bottom-right" />
-              </SymptomProvider>
+              <AnatomyMapContainer />
+              <Toaster position="bottom-right" />
             </div>
           </div>
         </main>

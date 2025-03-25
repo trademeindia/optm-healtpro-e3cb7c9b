@@ -2,10 +2,9 @@
 export interface BodyRegion {
   id: string;
   name: string;
-  description?: string;
-  x: number; // X coordinate as percentage
-  y: number; // Y coordinate as percentage
-  svgPathId?: string; // Added to support SVG path references
+  x: number;
+  y: number;
+  svgPathId?: string;
 }
 
 export interface PainSymptom {
@@ -20,41 +19,21 @@ export interface PainSymptom {
   isActive: boolean;
 }
 
-export interface PatientSymptomRecord {
-  patientId: string;
-  symptoms: PainSymptom[];
-}
-
-export type PainSeverity = 'mild' | 'moderate' | 'severe';
-
-export interface PainSeverityOption {
-  value: PainSeverity;
-  label: string;
-  color: string;
-}
-
-export interface PainTypeOption {
-  value: string;
-  label: string;
-}
-
-export const painSeverityOptions: PainSeverityOption[] = [
+export const painSeverityOptions = [
   { value: 'mild', label: 'Mild', color: 'bg-yellow-500' },
   { value: 'moderate', label: 'Moderate', color: 'bg-orange-500' },
-  { value: 'severe', label: 'Severe', color: 'bg-red-500' },
+  { value: 'severe', label: 'Severe', color: 'bg-red-500' }
 ];
 
-export const painTypeOptions: PainTypeOption[] = [
-  { value: 'sharp', label: 'Sharp' },
-  { value: 'dull', label: 'Dull' },
-  { value: 'throbbing', label: 'Throbbing' },
-  { value: 'stabbing', label: 'Stabbing' },
+export const painTypeOptions = [
   { value: 'aching', label: 'Aching' },
   { value: 'burning', label: 'Burning' },
-  { value: 'tingling', label: 'Tingling' },
-  { value: 'stiffness', label: 'Stiffness' },
+  { value: 'cramping', label: 'Cramping' },
+  { value: 'dull', label: 'Dull' },
+  { value: 'numbing', label: 'Numbing' },
+  { value: 'sharp', label: 'Sharp' },
+  { value: 'shooting', label: 'Shooting' },
+  { value: 'stabbing', label: 'Stabbing' },
+  { value: 'throbbing', label: 'Throbbing' },
+  { value: 'tingling', label: 'Tingling' }
 ];
-
-// Import the correct SymptomEntry type directly from the context
-// to ensure compatibility and avoid duplicate definitions
-export type { SymptomEntry } from '@/contexts/SymptomContext';

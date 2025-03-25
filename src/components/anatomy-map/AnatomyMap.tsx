@@ -13,8 +13,8 @@ export interface AnatomyMapProps {
   onUpdateSymptom: (symptom: PainSymptom) => void;
   onDeleteSymptom: (symptomId: string) => void;
   loading: boolean;
-  onRegionClick?: (region: BodyRegion) => void; // Added prop
-  selectedRegions?: BodyRegion[]; // Added prop
+  onRegionClick?: (region: BodyRegion) => void; 
+  selectedRegions?: BodyRegion[]; 
 }
 
 const AnatomyMap: React.FC<AnatomyMapProps> = ({
@@ -31,6 +31,7 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showDialog, setShowDialog] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Whenever activeRegion changes, show dialog if a region is selected
   useEffect(() => {
@@ -66,8 +67,6 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
     }
   };
 
-  console.log('AnatomyMap rendering, regions:', bodyRegions.length, 'symptoms:', symptoms.length);
-  
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-end space-x-2 mb-4">
@@ -98,37 +97,45 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
       </div>
       
       <div className="relative overflow-hidden border rounded-lg h-96 bg-gray-50 dark:bg-gray-800">
-        <div 
-          className="anatomy-map-wrapper absolute inset-0"
-          style={{ 
-            transform: `scale(${zoomLevel})`, 
-            transformOrigin: 'center center',
-            transition: 'transform 0.3s ease-out'
-          }}
-        >
-          <img
-            src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
-            alt="Human body anatomy"
-            className="anatomy-map-image absolute top-0 left-0 w-full h-full object-contain opacity-70"
-            onLoad={() => {
-              console.log('Anatomy map image loaded');
-              setImageLoaded(true);
+        {imageError ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-red-500">Failed to load anatomy image. Please refresh the page.</p>
+          </div>
+        ) : (
+          <div 
+            className="anatomy-map-wrapper absolute inset-0"
+            style={{ 
+              transform: `scale(${zoomLevel})`, 
+              transformOrigin: 'center center',
+              transition: 'transform 0.3s ease-out'
             }}
-            onError={(e) => {
-              console.error('Failed to load anatomy map image:', e);
-            }}
-          />
-          
-          {bodyRegions.map((region) => (
-            <BodyRegionMarker
-              key={region.id}
-              region={region}
-              active={activeRegion?.id === region.id || selectedRegions.some(r => r.id === region.id)}
-              symptoms={symptoms}
-              onClick={() => handleRegionClick(region)}
+          >
+            <img
+              src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
+              alt="Human body anatomy"
+              className="anatomy-map-image absolute top-0 left-0 w-full h-full object-contain opacity-70"
+              onLoad={() => {
+                console.log('Anatomy map image loaded');
+                setImageLoaded(true);
+                setImageError(false);
+              }}
+              onError={(e) => {
+                console.error('Failed to load anatomy map image:', e);
+                setImageError(true);
+              }}
             />
-          ))}
-        </div>
+            
+            {imageLoaded && bodyRegions.map((region) => (
+              <BodyRegionMarker
+                key={region.id}
+                region={region}
+                active={activeRegion?.id === region.id || selectedRegions.some(r => r.id === region.id)}
+                symptoms={symptoms}
+                onClick={() => handleRegionClick(region)}
+              />
+            ))}
+          </div>
+        )}
       </div>
       
       {activeRegion && !onRegionClick && (

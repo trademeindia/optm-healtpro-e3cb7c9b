@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from './contexts/auth';
 import AppRoutes from './routes/Routes';
+import './styles/responsive/hotspots.css';
+import './styles/responsive/dialog.css';
+import './styles/responsive/anatomy-components.css';
 
 // Handle loading state
 const Loading = () => (

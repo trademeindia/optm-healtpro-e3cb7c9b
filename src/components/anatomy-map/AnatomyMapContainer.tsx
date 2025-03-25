@@ -1,16 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSymptoms } from '@/contexts/SymptomContext';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { BodyRegion, PainSymptom } from './types';
 import { Plus } from 'lucide-react';
 import AnatomyMap from './AnatomyMap';
 import SymptomDialog from './SymptomDialog';
-import { painSeverityOptions, painTypeOptions } from './types';
 import { SymptomHistoryContainer } from './symptom-history';
 import { toast } from 'sonner';
-import '@/styles/responsive/dialog.css';
 import { v4 as uuidv4 } from 'uuid';
 import { SymptomEntry } from '@/contexts/SymptomContext';
 
@@ -36,9 +33,12 @@ const AnatomyMapContainer: React.FC = () => {
       { id: '7', name: 'Legs', x: 50, y: 65, svgPathId: 'legs' },
     ];
     setBodyRegions(fetchedRegions);
+    
+    console.log('Body regions loaded:', fetchedRegions.length);
   }, []);
 
   const handleRegionClick = (region: BodyRegion) => {
+    console.log('Region clicked:', region.name);
     setSelectedRegion(region);
     setIsEditMode(false);
     setSelectedSymptom(null);
@@ -85,7 +85,7 @@ const AnatomyMapContainer: React.FC = () => {
       symptomName: painSymptom.painType,
       painLevel: convertSeverityToPainLevel(painSymptom.severity),
       location: painSymptom.bodyRegionId,
-      notes: painSymptom.description || '', // Ensure notes is always a string
+      notes: painSymptom.description || '',
     };
   };
 
@@ -106,6 +106,7 @@ const AnatomyMapContainer: React.FC = () => {
       const symptomEntry = convertToSymptomEntry(symptom);
       addSymptom(symptomEntry);
       toast.success(`Pain symptom added for ${selectedRegion?.name}`);
+      setIsDialogOpen(false);
     } catch (error) {
       toast.error('Failed to add symptom');
       console.error(error);
@@ -121,6 +122,7 @@ const AnatomyMapContainer: React.FC = () => {
       const symptomEntry = convertToSymptomEntry(symptom);
       updateSymptom(symptom.id, symptomEntry);
       toast.success('Symptom updated successfully');
+      setIsDialogOpen(false);
     } catch (error) {
       toast.error('Failed to update symptom');
       console.error(error);
@@ -134,6 +136,7 @@ const AnatomyMapContainer: React.FC = () => {
     try {
       deleteSymptom(symptomId);
       toast.success('Symptom deleted successfully');
+      setIsDialogOpen(false);
     } catch (error) {
       toast.error('Failed to delete symptom');
       console.error(error);
@@ -160,7 +163,6 @@ const AnatomyMapContainer: React.FC = () => {
     convertToPainSymptom(symptom)
   );
 
-  // Add console.log to check if component is rendering
   console.log('AnatomyMapContainer rendering, symptoms:', symptoms.length);
 
   return (
@@ -206,19 +208,21 @@ const AnatomyMapContainer: React.FC = () => {
         </div>
       </div>
       
-      <SymptomDialog
-        open={isDialogOpen}
-        onClose={closeDialog}
-        selectedRegion={selectedRegion}
-        existingSymptom={selectedSymptom}
-        isEditMode={isEditMode}
-        bodyRegions={bodyRegions}
-        existingSymptoms={convertedSymptoms.filter(s => selectedRegion ? s.bodyRegionId === selectedRegion.id : false)}
-        onAddSymptom={handleAddSymptom}
-        onUpdateSymptom={handleUpdateSymptom}
-        onDeleteSymptom={handleDeleteSymptom}
-        loading={loading}
-      />
+      {selectedRegion && (
+        <SymptomDialog
+          open={isDialogOpen}
+          onClose={closeDialog}
+          selectedRegion={selectedRegion}
+          existingSymptom={selectedSymptom}
+          isEditMode={isEditMode}
+          bodyRegions={bodyRegions}
+          existingSymptoms={convertedSymptoms.filter(s => selectedRegion ? s.bodyRegionId === selectedRegion.id : false)}
+          onAddSymptom={handleAddSymptom}
+          onUpdateSymptom={handleUpdateSymptom}
+          onDeleteSymptom={handleDeleteSymptom}
+          loading={loading}
+        />
+      )}
     </div>
   );
 };

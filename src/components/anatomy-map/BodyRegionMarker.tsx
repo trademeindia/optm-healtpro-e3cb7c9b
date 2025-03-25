@@ -37,8 +37,6 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
     return 'bg-yellow-500';
   };
 
-  console.log(`Rendering marker for region: ${region.name} at position x:${region.x}, y:${region.y}`);
-
   return (
     <div 
       className={`hotspot-marker ${sizeClass} ${active ? 'hotspot-active hotspot-pulse' : ''}`}
