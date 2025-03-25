@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSymptoms } from '@/contexts/SymptomContext';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { BodyRegion, PainSymptom } from './types';
+import { BodyRegion, PainSymptom, SymptomEntry } from './types';
 import { Plus } from 'lucide-react';
 import AnatomyMap from './AnatomyMap';
 import SymptomDialog from './SymptomDialog';
@@ -12,16 +12,6 @@ import { SymptomHistoryContainer } from './symptom-history';
 import { toast } from 'sonner';
 import '@/styles/responsive/dialog.css';
 import { v4 as uuidv4 } from 'uuid';
-
-// Define an interface for SymptomEntry to avoid TypeScript errors
-interface SymptomEntry {
-  id: string;
-  date: Date;
-  symptomName: string;
-  painLevel: number;
-  location: string;
-  notes?: string;
-}
 
 const AnatomyMapContainer: React.FC = () => {
   const { symptoms, addSymptom, updateSymptom, deleteSymptom } = useSymptoms();
@@ -94,7 +84,7 @@ const AnatomyMapContainer: React.FC = () => {
       symptomName: painSymptom.painType,
       painLevel: convertSeverityToPainLevel(painSymptom.severity),
       location: painSymptom.bodyRegionId,
-      notes: painSymptom.description,
+      notes: painSymptom.description || '', // Ensure notes is always a string
     };
   };
 
@@ -154,10 +144,9 @@ const AnatomyMapContainer: React.FC = () => {
   const handleToggleActive = (symptomId: string, isActive: boolean) => {
     const symptom = convertedSymptoms.find(s => s.id === symptomId);
     if (symptom) {
-      updateSymptom(symptomId, { 
-        ...convertToSymptomEntry(symptom), 
-        painLevel: isActive ? convertSeverityToPainLevel(symptom.severity) : 0 
-      });
+      const symptomEntry = convertToSymptomEntry(symptom);
+      symptomEntry.painLevel = isActive ? convertSeverityToPainLevel(symptom.severity) : 0;
+      updateSymptom(symptomId, symptomEntry);
     }
   };
 
@@ -167,7 +156,7 @@ const AnatomyMapContainer: React.FC = () => {
 
   // Convert symptom entries to pain symptoms
   const convertedSymptoms: PainSymptom[] = symptoms.map(symptom => 
-    convertToPainSymptom(symptom as unknown as SymptomEntry)
+    convertToPainSymptom(symptom)
   );
 
   return (
