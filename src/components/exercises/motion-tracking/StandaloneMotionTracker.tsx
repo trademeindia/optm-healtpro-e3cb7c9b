@@ -23,7 +23,7 @@ const StandaloneMotionTracker: React.FC = () => {
         // Configure human.js to use a lite model for better performance
         human.config = {
           ...human.config,
-          modelBasePath: '/',
+          modelBasePath: '/models/',
           body: {
             enabled: true,
             modelPath: 'blazepose-lite.json',
@@ -75,10 +75,10 @@ const StandaloneMotionTracker: React.FC = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          if (videoRef.current) {
-            videoRef.current.play();
+        videoRef.current.play()
+          .then(() => {
             setCameraStarted(true);
+            toast.success("Camera started successfully");
             
             // Auto-start detection if model is loaded
             if (modelLoaded) {
@@ -86,8 +86,11 @@ const StandaloneMotionTracker: React.FC = () => {
                 startDetection();
               }, 500);
             }
-          }
-        };
+          })
+          .catch(err => {
+            console.error("Error playing video:", err);
+            throw new Error("Failed to start camera playback");
+          });
       }
     } catch (err) {
       console.error('Error starting camera:', err);
@@ -98,9 +101,8 @@ const StandaloneMotionTracker: React.FC = () => {
   };
 
   // Detection loop
-  const detectFrame = React.useCallback(async (time: number) => {
-    if (!videoRef.current || !canvasRef.current || !modelLoaded) {
-      requestRef.current = requestAnimationFrame(detectFrame);
+  const detectFrame = React.useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || !isDetecting || !modelLoaded) {
       return;
     }
     
@@ -109,7 +111,14 @@ const StandaloneMotionTracker: React.FC = () => {
       const result = await human.detect(videoRef.current);
       
       // Draw results on canvas
-      await human.draw.all(canvasRef.current, result);
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        // Clear previous frame
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        
+        // Draw detection results
+        await human.draw.all(canvasRef.current, result);
+      }
       
       // Continue detection loop
       requestRef.current = requestAnimationFrame(detectFrame);
@@ -117,14 +126,33 @@ const StandaloneMotionTracker: React.FC = () => {
       console.error('Error in detection:', err);
       const errorMessage = err instanceof Error ? err.message : 'Detection error';
       setError(errorMessage);
+      setIsDetecting(false);
     }
-  }, [modelLoaded]);
+  }, [isDetecting, modelLoaded]);
 
   // Start detection
   const startDetection = () => {
-    if (!isDetecting && modelLoaded) {
-      requestRef.current = requestAnimationFrame(detectFrame);
+    if (!cameraStarted) {
+      toast.error("Please start the camera first");
+      return;
+    }
+    
+    if (!modelLoaded) {
+      toast.error("AI model is still loading");
+      return;
+    }
+    
+    if (!isDetecting) {
       setIsDetecting(true);
+      
+      // Make sure canvas dimensions match video
+      if (videoRef.current && canvasRef.current) {
+        canvasRef.current.width = videoRef.current.videoWidth || 640;
+        canvasRef.current.height = videoRef.current.videoHeight || 480;
+      }
+      
+      // Start detection loop
+      requestRef.current = requestAnimationFrame(detectFrame);
       toast.success("Motion tracking started");
     }
   };
