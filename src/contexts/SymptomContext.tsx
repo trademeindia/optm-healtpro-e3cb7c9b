@@ -8,7 +8,7 @@ export type SymptomEntry = {
   symptomName: string;
   painLevel: number;
   location: string;
-  notes: string;
+  notes: string; // This is required to avoid the type error
   patientId?: number;
 };
 

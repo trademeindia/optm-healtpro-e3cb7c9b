@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSymptoms } from '@/contexts/SymptomContext';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { BodyRegion, PainSymptom, SymptomEntry } from './types';
+import { BodyRegion, PainSymptom } from './types';
 import { Plus } from 'lucide-react';
 import AnatomyMap from './AnatomyMap';
 import SymptomDialog from './SymptomDialog';
@@ -12,6 +12,7 @@ import { SymptomHistoryContainer } from './symptom-history';
 import { toast } from 'sonner';
 import '@/styles/responsive/dialog.css';
 import { v4 as uuidv4 } from 'uuid';
+import { SymptomEntry } from '@/contexts/SymptomContext';
 
 const AnatomyMapContainer: React.FC = () => {
   const { symptoms, addSymptom, updateSymptom, deleteSymptom } = useSymptoms();

@@ -55,13 +55,6 @@ export const painTypeOptions: PainTypeOption[] = [
   { value: 'stiffness', label: 'Stiffness' },
 ];
 
-// Make sure our SymptomEntry type is compatible with the one in SymptomContext
-export interface SymptomEntry {
-  id: string;
-  date: Date;
-  symptomName: string;
-  painLevel: number;
-  location: string;
-  notes: string; // Make sure this is required to match the context definition
-  patientId?: number;
-}
+// Import the correct SymptomEntry type directly from the context
+// to ensure compatibility and avoid duplicate definitions
+export type { SymptomEntry } from '@/contexts/SymptomContext';
