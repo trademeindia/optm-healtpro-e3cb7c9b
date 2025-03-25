@@ -5,6 +5,7 @@ export interface BodyRegion {
   x: number;
   y: number;
   svgPathId?: string;
+  description?: string;
 }
 
 export interface PainSymptom {
