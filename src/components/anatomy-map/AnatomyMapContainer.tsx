@@ -1,146 +1,149 @@
 
-import React, { useState, useCallback, memo, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useSymptoms } from '@/contexts/SymptomContext';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { BodyRegion, PainSymptom } from './types';
+import { Plus } from 'lucide-react';
 import AnatomyMap from './AnatomyMap';
-import { getBodyRegions } from './data/bodyRegions';
+import SymptomDialog from './SymptomDialog';
+import { painSeverityOptions, painTypeOptions } from './types';
 import { SymptomHistoryContainer } from './symptom-history';
-import { PainSymptom } from './types';
 import { toast } from 'sonner';
-import { v4 as uuidv4 } from 'uuid';
+import '@/styles/responsive/dialog.css';
 
-// Memoize the component to prevent unnecessary re-renders
-const AnatomyMapContainer: React.FC = memo(() => {
-  const [symptoms, setSymptoms] = useState<PainSymptom[]>([]);
+const AnatomyMapContainer: React.FC = () => {
+  const { symptoms, addSymptom, updateSymptom, deleteSymptom } = useSymptoms();
+  const [selectedRegion, setSelectedRegion] = useState<BodyRegion | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedSymptom, setSelectedSymptom] = useState<PainSymptom | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('map');
-  const [initialized, setInitialized] = useState(false);
+  const [bodyRegions, setBodyRegions] = useState<BodyRegion[]>([]);
   
-  // Load saved symptoms from localStorage on component mount
+  // Simulating fetch of body regions
   useEffect(() => {
-    if (!initialized) {
-      try {
-        const savedSymptoms = localStorage.getItem('pain-symptoms');
-        if (savedSymptoms) {
-          setSymptoms(JSON.parse(savedSymptoms));
-        }
-        setInitialized(true);
-      } catch (error) {
-        console.error('Failed to load symptoms from localStorage:', error);
-      }
-    }
-  }, [initialized]);
-
-  // Save symptoms to localStorage whenever they change
-  useEffect(() => {
-    if (initialized && symptoms.length > 0) {
-      try {
-        localStorage.setItem('pain-symptoms', JSON.stringify(symptoms));
-      } catch (error) {
-        console.error('Failed to save symptoms to localStorage:', error);
-      }
-    }
-  }, [symptoms, initialized]);
-  
-  // Handle adding a new symptom with useCallback to prevent recreation on every render
-  const handleAddSymptom = useCallback((symptom: PainSymptom) => {
-    setLoading(true);
-    // Use a shorter timeout to improve responsiveness
-    setTimeout(() => {
-      const newSymptom = {
-        ...symptom,
-        id: uuidv4(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setSymptoms(prev => [...prev, newSymptom]);
-      setLoading(false);
-      toast.success('Symptom added successfully');
-    }, 300);
+    // This would be a call to your API in a real application
+    const fetchedRegions: BodyRegion[] = [
+      { id: '1', name: 'Head', svgPathId: 'head' },
+      { id: '2', name: 'Neck', svgPathId: 'neck' },
+      { id: '3', name: 'Chest', svgPathId: 'chest' },
+      { id: '4', name: 'Abdomen', svgPathId: 'abdomen' },
+      { id: '5', name: 'Back', svgPathId: 'back' },
+      { id: '6', name: 'Arms', svgPathId: 'arms' },
+      { id: '7', name: 'Legs', svgPathId: 'legs' },
+    ];
+    setBodyRegions(fetchedRegions);
   }, []);
-  
-  // Handle updating an existing symptom with useCallback
-  const handleUpdateSymptom = useCallback((updatedSymptom: PainSymptom) => {
+
+  const handleRegionClick = (region: BodyRegion) => {
+    setSelectedRegion(region);
+    setIsEditMode(false);
+    setSelectedSymptom(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditSymptom = (symptom: PainSymptom) => {
+    const region = bodyRegions.find(r => r.id === symptom.bodyRegionId);
+    if (region) {
+      setSelectedRegion(region);
+      setSelectedSymptom(symptom);
+      setIsEditMode(true);
+      setIsDialogOpen(true);
+    }
+  };
+
+  const handleAddSymptom = async (symptom: PainSymptom) => {
     setLoading(true);
-    setTimeout(() => {
-      setSymptoms(prev => 
-        prev.map(s => s.id === updatedSymptom.id ? {...updatedSymptom, updatedAt: new Date().toISOString()} : s)
-      );
+    try {
+      addSymptom(symptom);
+      toast.success(`Pain symptom added for ${selectedRegion?.name}`);
+    } catch (error) {
+      toast.error('Failed to add symptom');
+      console.error(error);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateSymptom = async (symptom: PainSymptom) => {
+    setLoading(true);
+    try {
+      updateSymptom(symptom);
       toast.success('Symptom updated successfully');
-    }, 300);
-  }, []);
-  
-  // Handle deleting a symptom with useCallback
-  const handleDeleteSymptom = useCallback((symptomId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setSymptoms(prev => prev.filter(s => s.id !== symptomId));
+    } catch (error) {
+      toast.error('Failed to update symptom');
+      console.error(error);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteSymptom = async (symptomId: string) => {
+    setLoading(true);
+    try {
+      deleteSymptom(symptomId);
       toast.success('Symptom deleted successfully');
-    }, 300);
-  }, []);
-  
-  // Handle toggling a symptom's active state with useCallback
-  const handleToggleActive = useCallback((symptomId: string, isActive: boolean) => {
-    setLoading(true);
-    setTimeout(() => {
-      setSymptoms(prev => 
-        prev.map(s => s.id === symptomId ? {...s, isActive, updatedAt: new Date().toISOString()} : s)
-      );
+    } catch (error) {
+      toast.error('Failed to delete symptom');
+      console.error(error);
+    } finally {
       setLoading(false);
-      toast.success(`Symptom ${isActive ? 'activated' : 'deactivated'} successfully`);
-    }, 300);
-  }, []);
+    }
+  };
 
-  // Memoize the body regions to prevent re-calculation on every render
-  const bodyRegions = React.useMemo(() => getBodyRegions(), []);
-  
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+  };
+
   return (
-    <Card className="col-span-1 lg:col-span-2 h-full">
-      <CardHeader className="pb-3 flex flex-row justify-between items-center">
-        <CardTitle>Anatomical Map</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0 overflow-hidden">
-        <Tabs 
-          defaultValue="map" 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="h-full flex flex-col"
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-4">
+        <Button 
+          variant="outline" 
+          className="border-dashed flex items-center gap-2 bg-muted/50"
+          onClick={() => {
+            if (bodyRegions.length > 0) {
+              handleRegionClick(bodyRegions[0]);
+            }
+          }}
         >
-          <TabsList className="grid grid-cols-2 bg-muted/50 mx-4 mt-0 mb-3">
-            <TabsTrigger value="map">Anatomy Map</TabsTrigger>
-            <TabsTrigger value="history">Symptom History</TabsTrigger>
-          </TabsList>
-          <div className="flex-1 overflow-auto">
-            <TabsContent value="map" className="h-full m-0 p-4 pt-0">
-              <AnatomyMap
-                symptoms={symptoms}
-                bodyRegions={bodyRegions}
-                onAddSymptom={handleAddSymptom}
-                onUpdateSymptom={handleUpdateSymptom}
-                onDeleteSymptom={handleDeleteSymptom}
-                loading={loading}
-              />
-            </TabsContent>
-            <TabsContent value="history" className="h-full m-0 p-4 pt-0">
-              <SymptomHistoryContainer 
-                symptoms={symptoms}
-                bodyRegions={bodyRegions}
-                onUpdateSymptom={handleUpdateSymptom}
-                onDeleteSymptom={handleDeleteSymptom}
-                onToggleActive={handleToggleActive}
-                loading={loading}
-              />
-            </TabsContent>
-          </div>
-        </Tabs>
-      </CardContent>
-    </Card>
+          <Plus size={16} />
+          Add New Symptom
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
+          <AnatomyMap 
+            onRegionClick={handleRegionClick} 
+            selectedRegions={symptoms.map(s => s.bodyRegionId)}
+          />
+        </div>
+        <div>
+          <SymptomHistoryContainer 
+            symptoms={symptoms} 
+            onEditSymptom={handleEditSymptom}
+            regions={bodyRegions}
+          />
+        </div>
+      </div>
+      
+      <SymptomDialog
+        open={isDialogOpen}
+        onClose={closeDialog}
+        selectedRegion={selectedRegion}
+        existingSymptom={selectedSymptom}
+        isEditMode={isEditMode}
+        bodyRegions={bodyRegions}
+        existingSymptoms={symptoms}
+        onAddSymptom={handleAddSymptom}
+        onUpdateSymptom={handleUpdateSymptom}
+        onDeleteSymptom={handleDeleteSymptom}
+        loading={loading}
+      />
+    </div>
   );
-});
-
-// Add display name for better debugging
-AnatomyMapContainer.displayName = 'AnatomyMapContainer';
+};
 
 export default AnatomyMapContainer;

@@ -142,9 +142,9 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl rounded-xl">
-        <DialogHeader className="border-b pb-4 mb-5 dark:border-gray-700">
-          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+      <DialogContent className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <DialogHeader className="pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
+          <DialogTitle className="text-xl font-bold flex items-center">
             {isEditMode ? 'Edit Symptom' : 'Add New Symptom'} 
             <span className="ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
               {selectedRegion.name}
@@ -153,15 +153,15 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="severity"
                 render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                      <span className="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
                       Pain Severity
                     </FormLabel>
                     <Select
@@ -170,18 +170,18 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-primary focus:ring-2 focus:ring-primary/20 h-11 shadow-sm">
+                        <SelectTrigger className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800">
                           <SelectValue placeholder="Select severity" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md">
                         {painSeverityOptions.map(option => (
                           <SelectItem 
                             key={option.value} 
                             value={option.value}
-                            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 cursor-pointer py-2.5"
+                            className="flex items-center gap-2 py-2 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                           >
-                            <div className={`w-3 h-3 rounded-full ${option.color} mr-2 flex-shrink-0`}></div>
+                            <div className={`w-2 h-2 rounded-full ${option.color} mr-2`}></div>
                             {option.label}
                           </SelectItem>
                         ))}
@@ -196,9 +196,9 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                 control={form.control}
                 name="painType"
                 render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                      <span className="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
                       Pain Type
                     </FormLabel>
                     <Select
@@ -207,16 +207,16 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:border-primary focus:ring-2 focus:ring-primary/20 h-11 shadow-sm">
+                        <SelectTrigger className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800">
                           <SelectValue placeholder="Select pain type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent position="popper" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                      <SelectContent position="popper" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md">
                         {painTypeOptions.map(option => (
                           <SelectItem 
                             key={option.value} 
                             value={option.value}
-                            className="hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 cursor-pointer py-2.5"
+                            className="py-2 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                           >
                             {option.label}
                           </SelectItem>
@@ -233,15 +233,15 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                    <span className="w-3 h-3 rounded-full bg-purple-500 mr-2"></span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                    <div className="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
                     Description
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Describe your pain or discomfort..."
-                      className="min-h-[120px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white hover:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm resize-none"
+                      className="min-h-24 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -254,15 +254,15 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
               control={form.control}
               name="triggers"
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                    <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
                     Triggers (Comma separated)
                   </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Walking, Sitting, After exercise"
-                      className="h-11 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white hover:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
+                      className="w-full h-10 p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
                       {...field}
                     />
                   </FormControl>
@@ -271,31 +271,31 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
               )}
             />
 
-            <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-5 mt-6 border-t dark:border-gray-700">
+            <DialogFooter className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
               <div>
                 {isEditMode && (
                   <Button 
                     variant="destructive" 
                     type="button" 
                     onClick={handleDelete}
-                    className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white font-medium"
+                    className="w-full sm:w-auto bg-red-500 hover:bg-red-600"
                   >
                     Delete
                   </Button>
                 )}
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   type="button" 
                   onClick={onClose}
-                  className="w-full sm:w-auto border-gray-300 dark:border-gray-600 dark:text-gray-200 font-medium"
+                  className="w-full sm:w-auto border-gray-300 dark:border-gray-600"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {isEditMode ? 'Update' : 'Save'}

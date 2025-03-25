@@ -1,0 +1,87 @@
+
+/* Responsive styles for dialog components */
+
+/* Base dialog styles */
+.dialog-content {
+  @apply rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700;
+}
+
+/* Improve spacing and visibility */
+.dialog-header {
+  @apply pb-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+/* Custom styling for form elements in dialogs */
+.dialog-form-item {
+  @apply space-y-1.5;
+}
+
+.dialog-label {
+  @apply font-medium text-gray-700 dark:text-gray-300 flex items-center;
+}
+
+.dialog-indicator {
+  @apply w-2 h-2 rounded-full mr-2;
+}
+
+.dialog-input,
+.dialog-select,
+.dialog-textarea {
+  @apply w-full border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800;
+}
+
+.dialog-textarea {
+  @apply min-h-24 resize-none;
+}
+
+.dialog-footer {
+  @apply pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .dialog-content {
+    @apply w-[95vw] p-4;
+  }
+  
+  .dialog-grid {
+    @apply grid-cols-1 gap-3;
+  }
+  
+  .dialog-actions {
+    @apply flex-col gap-2;
+  }
+  
+  .dialog-button {
+    @apply w-full;
+  }
+}
+
+@media (min-width: 641px) {
+  .dialog-content {
+    @apply max-w-md;
+  }
+  
+  .dialog-grid {
+    @apply grid-cols-2 gap-4;
+  }
+  
+  .dialog-actions {
+    @apply flex-row gap-2;
+  }
+}
+
+/* Ensure dropdowns appear on top of other elements */
+[data-radix-popper-content-wrapper] {
+  @apply z-50 !important;
+}
+
+/* Enhanced styling for select items */
+.select-item-indicator {
+  @apply flex items-center gap-2;
+}
+
+/* Improve region badge styling */
+.region-badge {
+  @apply ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full;
+}
