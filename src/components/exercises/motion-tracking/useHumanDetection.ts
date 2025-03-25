@@ -1,9 +1,7 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { human, extractBodyAngles, extractBiomarkers, warmupModel, resetModel } from '@/lib/human';
 import { MotionState, FeedbackType, DetectionStatus } from '@/lib/human/types';
-import type { BodyAngles } from '@/lib/human/types';
-import type { MotionStats } from './hooks/useSessionStats';
+import type { BodyAngles, MotionStats } from '@/lib/human/types';
 
 interface UseHumanDetectionProps {
   videoRef: React.RefObject<HTMLVideoElement>;

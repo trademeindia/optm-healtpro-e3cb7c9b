@@ -1,7 +1,9 @@
+
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
-import { human, warmupModel, resetModel } from '@/lib/human';
+import { human } from '@/lib/human';
+import { warmupModel, resetModel } from '@/lib/human';
 import { DetectionResult, DetectionState } from './types';
 import { performDetection } from '../utils/detectionUtils';
 

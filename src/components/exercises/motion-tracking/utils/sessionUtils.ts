@@ -1,7 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { MotionState } from '@/lib/human/types';
-import type { MotionStats } from '../hooks/useSessionStats';
+import type { MotionStats } from '@/components/exercises/motion-tracking/hooks/useSessionStats';
 
 // Creates a new exercise session
 export const createSession = async (exerciseType: string): Promise<string> => {
