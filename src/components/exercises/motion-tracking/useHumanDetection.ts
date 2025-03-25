@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { human, extractBodyAngles, extractBiomarkers, warmupModel, resetModel } from '@/lib/human';
 import { MotionState, FeedbackType, DetectionStatus } from '@/lib/human/types';
@@ -211,7 +210,7 @@ export const useHumanDetection = ({
         }
         
         // Draw pose on canvas
-        await human.draw.canvas(canvas, video, result);
+        await human.draw.canvas(canvas, result);
         
         // Save session data if provided
         if (sessionId && onSessionDataSave) {
