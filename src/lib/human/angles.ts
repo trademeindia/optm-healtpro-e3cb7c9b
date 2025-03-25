@@ -1,112 +1,92 @@
 
 import type { Result } from '@vladmandic/human';
-import { BodyAngles } from './types';
 
-/**
- * Calculate angle between three points
- */
-const calculateAngle = (a: any, b: any, c: any): number | null => {
-  if (!a || !b || !c) return null;
-  
-  // Convert to vectors
-  const ab = { x: b.x - a.x, y: b.y - a.y };
-  const cb = { x: b.x - c.x, y: b.y - c.y };
+// Calculate the angle between three points
+export const calculateAngle = (a: [number, number], b: [number, number], c: [number, number]): number => {
+  const ab = [b[0] - a[0], b[1] - a[1]];
+  const cb = [b[0] - c[0], b[1] - c[1]];
   
   // Calculate dot product
-  const dot = ab.x * cb.x + ab.y * cb.y;
+  const dot = ab[0] * cb[0] + ab[1] * cb[1];
   
   // Calculate magnitudes
-  const magAB = Math.sqrt(ab.x * ab.x + ab.y * ab.y);
-  const magCB = Math.sqrt(cb.x * cb.x + cb.y * cb.y);
+  const magAb = Math.sqrt(ab[0] * ab[0] + ab[1] * ab[1]);
+  const magCb = Math.sqrt(cb[0] * cb[0] + cb[1] * cb[1]);
   
-  // Calculate angle
-  if (magAB === 0 || magCB === 0) return null;
+  // Calculate angle in degrees
+  let angle = Math.acos(dot / (magAb * magCb)) * (180 / Math.PI);
   
-  const cosAngle = dot / (magAB * magCB);
+  // Prevent NaN
+  if (isNaN(angle)) {
+    angle = 0;
+  }
   
-  // Clamp for potential floating point errors
-  const clampedCosAngle = Math.max(-1, Math.min(1, cosAngle));
-  
-  // Convert to degrees
-  const angleRad = Math.acos(clampedCosAngle);
-  const angleDeg = angleRad * (180 / Math.PI);
-  
-  return Math.round(angleDeg);
+  return angle;
 };
 
-/**
- * Extract body angles from detection result
- */
+// Extract body angles from a Human.js result
 export const extractBodyAngles = (result: Result) => {
-  // Default empty angles
+  // Initialize with null values
   const angles = {
-    kneeAngle: null,
-    hipAngle: null,
-    shoulderAngle: null,
-    elbowAngle: null,
-    ankleAngle: null,
-    neckAngle: null,
+    kneeAngle: null as number | null,
+    hipAngle: null as number | null,
+    shoulderAngle: null as number | null,
+    elbowAngle: null as number | null,
+    ankleAngle: null as number | null,
+    neckAngle: null as number | null
   };
   
-  // Check if there's a valid body detection
   if (!result || !result.body || result.body.length === 0 || !result.body[0].keypoints) {
     return angles;
   }
   
-  // Get keypoints
   const keypoints = result.body[0].keypoints;
   
-  // Find necessary keypoints
-  const findKeypoint = (name: string) => keypoints.find(kp => kp.part === name);
+  // Helper to get a keypoint's position
+  const getPoint = (name: string): [number, number] | null => {
+    const point = keypoints.find(kp => kp.name === name);
+    return point ? [point.position[0], point.position[1]] : null;
+  };
   
-  // Right side (typically more visible in frontal exercises)
-  const rightHip = findKeypoint('rightHip');
-  const rightKnee = findKeypoint('rightKnee');
-  const rightAnkle = findKeypoint('rightAnkle');
-  const rightShoulder = findKeypoint('rightShoulder');
-  const rightElbow = findKeypoint('rightElbow');
-  const rightWrist = findKeypoint('rightWrist');
-  const nose = findKeypoint('nose');
+  // Extract key points
+  const hip = getPoint('hip right');
+  const knee = getPoint('knee right');
+  const ankle = getPoint('ankle right');
+  const shoulder = getPoint('shoulder right');
+  const elbow = getPoint('elbow right');
+  const wrist = getPoint('wrist right');
+  const neck = getPoint('neck');
+  const ear = getPoint('ear right');
   
-  // Calculate knee angle (ankle -> knee -> hip)
-  if (rightAnkle && rightKnee && rightHip) {
-    angles.kneeAngle = calculateAngle(rightAnkle, rightKnee, rightHip);
+  // Calculate knee angle (between hip, knee, and ankle)
+  if (hip && knee && ankle) {
+    angles.kneeAngle = calculateAngle(hip, knee, ankle);
   }
   
-  // Calculate hip angle (knee -> hip -> shoulder)
-  if (rightKnee && rightHip && rightShoulder) {
-    angles.hipAngle = calculateAngle(rightKnee, rightHip, rightShoulder);
+  // Calculate hip angle (between shoulder, hip, and knee)
+  if (shoulder && hip && knee) {
+    angles.hipAngle = calculateAngle(shoulder, hip, knee);
   }
   
-  // Calculate shoulder angle (hip -> shoulder -> elbow)
-  if (rightHip && rightShoulder && rightElbow) {
-    angles.shoulderAngle = calculateAngle(rightHip, rightShoulder, rightElbow);
+  // Calculate shoulder angle (between elbow, shoulder, and hip)
+  if (elbow && shoulder && hip) {
+    angles.shoulderAngle = calculateAngle(elbow, shoulder, hip);
   }
   
-  // Calculate elbow angle (shoulder -> elbow -> wrist)
-  if (rightShoulder && rightElbow && rightWrist) {
-    angles.elbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+  // Calculate elbow angle (between shoulder, elbow, and wrist)
+  if (shoulder && elbow && wrist) {
+    angles.elbowAngle = calculateAngle(shoulder, elbow, wrist);
   }
   
-  // Calculate ankle angle (knee -> ankle -> foot)
-  // Note: 'foot' is not a standard keypoint, so we approximate
-  if (rightKnee && rightAnkle) {
-    // Create a point below the ankle to approximate foot position
-    const foot = { 
-      x: rightAnkle.x, 
-      y: rightAnkle.y + 30 // 30 pixels below ankle
-    };
-    angles.ankleAngle = calculateAngle(rightKnee, rightAnkle, foot);
+  // Calculate ankle angle (between knee, ankle, and toe)
+  const toe = getPoint('foot index right');
+  if (knee && ankle && toe) {
+    angles.ankleAngle = calculateAngle(knee, ankle, toe);
   }
   
-  // Calculate neck angle (approximation using shoulder and nose)
-  if (rightShoulder && nose) {
-    // Create a point vertically above shoulder to form baseline
-    const verticalRef = { 
-      x: rightShoulder.x, 
-      y: rightShoulder.y - 50 // 50 pixels above shoulder 
-    };
-    angles.neckAngle = calculateAngle(rightShoulder, nose, verticalRef);
+  // Calculate neck angle (between ear, neck, and shoulder)
+  if (ear && neck && shoulder) {
+    angles.neckAngle = calculateAngle(ear, neck, shoulder);
   }
   
   return angles;

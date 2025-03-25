@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { MotionState } from '@/lib/human/types';
-import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from '../utils/statsUtils';
+import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './useSessionStats';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
 import type { MotionStats } from './useSessionStats';
 
