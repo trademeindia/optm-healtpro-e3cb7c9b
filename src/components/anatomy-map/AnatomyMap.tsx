@@ -13,8 +13,8 @@ export interface AnatomyMapProps {
   onUpdateSymptom: (symptom: PainSymptom) => void;
   onDeleteSymptom: (symptomId: string) => void;
   loading: boolean;
-  onRegionClick?: (region: BodyRegion) => void; // Added optional prop
-  selectedRegions?: BodyRegion[]; // Added optional prop
+  onRegionClick?: (region: BodyRegion) => void; // Added prop
+  selectedRegions?: BodyRegion[]; // Added prop
 }
 
 const AnatomyMap: React.FC<AnatomyMapProps> = ({

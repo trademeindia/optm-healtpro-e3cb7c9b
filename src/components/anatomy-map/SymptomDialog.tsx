@@ -30,6 +30,7 @@ import { BodyRegion, PainSymptom, painSeverityOptions, painTypeOptions } from '.
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { X } from 'lucide-react';
 
 interface SymptomDialogProps {
   open: boolean;
@@ -142,168 +143,167 @@ const SymptomDialog: React.FC<SymptomDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <DialogHeader className="pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
-          <DialogTitle className="text-xl font-bold flex items-center">
-            {isEditMode ? 'Edit Symptom' : 'Add New Symptom'} 
-            <span className="ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
-              {selectedRegion.name}
-            </span>
-          </DialogTitle>
-        </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <DialogContent className="max-w-md p-0 overflow-hidden">
+        <div className="p-6 pb-2">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold flex items-center justify-between">
+              <div className="flex items-center">
+                {isEditMode ? 'Edit Symptom' : 'Add New Symptom'}
+                <span className="ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
+                  {selectedRegion.name}
+                </span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onClose} 
+                className="h-7 w-7 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="severity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                        Pain Severity
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select severity" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-[60]">
+                          {painSeverityOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <div className="flex items-center">
+                                <span className={`h-2 w-2 rounded-full ${option.color} mr-2`}></span>
+                                {option.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="painType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="h-2 w-2 bg-blue-500 rounded-full mr-2"></span>
+                        Pain Type
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select pain type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-[60]">
+                          {painTypeOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="severity"
+                name="description"
                 render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
-                      Pain Severity
+                  <FormItem>
+                    <FormLabel className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="h-2 w-2 bg-purple-500 rounded-full mr-2"></span>
+                      Description
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800">
-                          <SelectValue placeholder="Select severity" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md">
-                        {painSeverityOptions.map(option => (
-                          <SelectItem 
-                            key={option.value} 
-                            value={option.value}
-                            className="flex items-center gap-2 py-2 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                          >
-                            <div className={`w-2 h-2 rounded-full ${option.color} mr-2`}></div>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-500 text-xs" />
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe your pain or discomfort..."
+                        className="min-h-[100px] resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="painType"
+                name="triggers"
                 render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                      Pain Type
+                  <FormItem>
+                    <FormLabel className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="h-2 w-2 bg-amber-500 rounded-full mr-2"></span>
+                      Triggers (Comma separated)
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800">
-                          <SelectValue placeholder="Select pain type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent position="popper" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md">
-                        {painTypeOptions.map(option => (
-                          <SelectItem 
-                            key={option.value} 
-                            value={option.value}
-                            className="py-2 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                          >
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-500 text-xs" />
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Walking, Sitting, After exercise"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem className="space-y-1.5">
-                  <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
-                    Description
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe your pain or discomfort..."
-                      className="min-h-24 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="triggers"
-              render={({ field }) => (
-                <FormItem className="space-y-1.5">
-                  <FormLabel className="font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
-                    Triggers (Comma separated)
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Walking, Sitting, After exercise"
-                      className="w-full h-10 p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
-              <div>
+              <DialogFooter className="flex justify-end gap-2 pt-4 mt-4">
                 {isEditMode && (
                   <Button 
                     variant="destructive" 
                     type="button" 
                     onClick={handleDelete}
-                    className="w-full sm:w-auto bg-red-500 hover:bg-red-600"
+                    className="mr-auto"
                   >
                     Delete
                   </Button>
                 )}
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   type="button" 
                   onClick={onClose}
-                  className="w-full sm:w-auto border-gray-300 dark:border-gray-600"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {isEditMode ? 'Update' : 'Save'}
                 </Button>
-              </div>
-            </DialogFooter>
-          </form>
-        </Form>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );
