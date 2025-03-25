@@ -33,6 +33,12 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
+  // Reset image states when component mounts or when bodyRegions change
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, []);
+  
   // Whenever activeRegion changes, show dialog if a region is selected
   useEffect(() => {
     if (activeRegion) {
@@ -119,8 +125,8 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
                 setImageLoaded(true);
                 setImageError(false);
               }}
-              onError={(e) => {
-                console.error('Failed to load anatomy map image:', e);
+              onError={() => {
+                console.error('Failed to load anatomy map image');
                 setImageError(true);
               }}
             />

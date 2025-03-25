@@ -1,17 +1,16 @@
 
 import React from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BodyRegion, PainSymptom } from './types';
 import { format } from 'date-fns';
+import { X } from 'lucide-react';
+import { BodyRegion, PainSymptom, painSeverityOptions, painTypeOptions } from './types';
 
 interface SymptomDetailsDialogProps {
   open: boolean;
@@ -28,82 +27,79 @@ const SymptomDetailsDialog: React.FC<SymptomDetailsDialogProps> = ({
 }) => {
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMMM d, yyyy h:mm a');
+      return format(new Date(dateString), 'PPP p');
     } catch (e) {
       return dateString;
     }
   };
-  
-  const getSeverityColor = (severity: 'mild' | 'moderate' | 'severe') => {
-    return severity === 'severe' ? 'bg-red-500 text-white' : 
-           severity === 'moderate' ? 'bg-orange-500 text-white' : 
-           'bg-yellow-500 text-white';
+
+  const getSeverityLabel = (severity: string) => {
+    const option = painSeverityOptions.find(opt => opt.value === severity);
+    return option?.label || severity;
   };
-  
+
+  const getPainTypeLabel = (painType: string) => {
+    const option = painTypeOptions.find(opt => opt.value === painType);
+    return option?.label || painType;
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'severe': return 'bg-red-500 text-white';
+      case 'moderate': return 'bg-orange-500 text-white';
+      default: return 'bg-yellow-500 text-white';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl">
-        <DialogHeader className="border-b pb-3 mb-4 dark:border-gray-700">
-          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">Symptom Details</DialogTitle>
-          <DialogDescription className="text-gray-600 dark:text-gray-400">
-            Detailed information about your reported symptom
-          </DialogDescription>
+      <DialogContent className="max-w-md">
+        <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogTitle className="text-xl font-bold">
+            {region.name} - {getPainTypeLabel(symptom.painType)} Pain
+          </DialogTitle>
+          <DialogClose className="h-8 w-8 rounded-full" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </DialogClose>
         </DialogHeader>
-        
-        <div className="space-y-5 py-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{region.name}</h3>
-            <Badge className={`px-3 py-1 ${getSeverityColor(symptom.severity)}`}>
-              {symptom.severity.charAt(0).toUpperCase() + symptom.severity.slice(1)} Severity
+
+        <div className="space-y-4 pt-4">
+          <div className="flex flex-wrap gap-2">
+            <Badge className={getSeverityColor(symptom.severity)}>
+              {getSeverityLabel(symptom.severity)} Pain
+            </Badge>
+            <Badge variant="outline">
+              {symptom.isActive ? 'Active' : 'Inactive'}
             </Badge>
           </div>
-          
-          <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pain Type</p>
-              <p className="text-gray-900 dark:text-white">{symptom.painType}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Status</p>
-              <Badge variant={symptom.isActive ? "default" : "outline"} className={symptom.isActive ? "bg-green-500 text-white" : ""}>
-                {symptom.isActive ? 'Active' : 'Inactive'}
-              </Badge>
-            </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Description</h4>
+            <p className="text-sm">{symptom.description || 'No description provided.'}</p>
           </div>
-          
-          <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Description</p>
-            <p className="text-gray-900 dark:text-white">{symptom.description}</p>
-          </div>
-          
+
           {symptom.triggers && symptom.triggers.length > 0 && (
-            <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Triggers</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Triggers</h4>
+              <div className="flex flex-wrap gap-1.5">
                 {symptom.triggers.map((trigger, index) => (
-                  <Badge key={index} variant="outline" className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
-                    {trigger}
-                  </Badge>
+                  <Badge key={index} variant="secondary">{trigger}</Badge>
                 ))}
               </div>
             </div>
           )}
-          
-          <div className="grid grid-cols-2 gap-4 border-t pt-4 dark:border-gray-700 text-sm">
+
+          <div className="grid grid-cols-2 gap-4 pt-2">
             <div>
-              <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">First Reported</p>
-              <p className="text-gray-900 dark:text-white">{formatDate(symptom.createdAt)}</p>
+              <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
+              <p className="text-sm">{formatDate(symptom.createdAt)}</p>
             </div>
             <div>
-              <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">Last Updated</p>
-              <p className="text-gray-900 dark:text-white">{formatDate(symptom.updatedAt)}</p>
+              <h4 className="text-sm font-medium text-muted-foreground">Last Updated</h4>
+              <p className="text-sm">{formatDate(symptom.updatedAt)}</p>
             </div>
           </div>
         </div>
-        
-        <DialogFooter className="mt-4 pt-4 border-t dark:border-gray-700">
-          <Button onClick={onClose} className="bg-blue-600 hover:bg-blue-700 text-white">Close</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

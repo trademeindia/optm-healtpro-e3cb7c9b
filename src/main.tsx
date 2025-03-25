@@ -9,6 +9,7 @@ import './styles/responsive/dialog.css';
 import './styles/responsive/anatomy-components.css';
 import { ThemeProvider } from './components/theme-provider';
 import { SymptomProvider } from './contexts/SymptomContext';
+import { Toaster } from 'sonner';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <SymptomProvider>
           <App />
+          <Toaster position="bottom-right" richColors />
         </SymptomProvider>
       </ThemeProvider>
     </BrowserRouter>

@@ -57,6 +57,7 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
         height: symptomCount > 3 ? '30px' : symptomCount > 0 ? '24px' : '16px',
       }}
       onClick={onClick}
+      aria-label={`${region.name} region ${symptomCount > 0 ? `with ${symptomCount} symptoms` : ''}`}
     >
       {symptomCount > 0 && (
         <span className="text-white text-xs font-bold">{symptomCount}</span>

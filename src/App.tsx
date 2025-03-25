@@ -20,13 +20,14 @@ function App() {
 
   useEffect(() => {
     // Simulate loading
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     
     console.log('App component mounted');
     
     return () => {
+      clearTimeout(timer);
       console.log('App component unmounted');
     };
   }, []);
@@ -36,16 +37,9 @@ function App() {
   }
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-      disableTransitionOnChange
-    >
-      <div className="app-container full-height-layout">
-        <AppRoutes />
-      </div>
-    </ThemeProvider>
+    <div className="app-container full-height-layout">
+      <AppRoutes />
+    </div>
   );
 }
 

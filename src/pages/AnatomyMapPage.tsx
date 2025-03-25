@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import AnatomyMapContainer from '@/components/anatomy-map/AnatomyMapContainer';
 import { Toaster } from 'sonner';
-import { SymptomProvider } from '@/contexts/SymptomContext';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 
