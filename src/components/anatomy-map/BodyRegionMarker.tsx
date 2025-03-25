@@ -37,13 +37,26 @@ const BodyRegionMarker: React.FC<BodyRegionMarkerProps> = ({
     return 'bg-yellow-500';
   };
 
+  console.log(`Rendering marker for region: ${region.name} at position x:${region.x}, y:${region.y}`);
+
   return (
     <div 
       className={`hotspot-marker ${sizeClass} ${active ? 'hotspot-active hotspot-pulse' : ''}`}
       style={{
         left: `${region.x}%`,
         top: `${region.y}%`,
-        backgroundColor: determineMarkerColor()
+        backgroundColor: determineMarkerColor(),
+        position: 'absolute',
+        transform: 'translate(-50%, -50%)',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        zIndex: 10,
+        boxShadow: '0 0 0 2px white',
+        width: symptomCount > 3 ? '30px' : symptomCount > 0 ? '24px' : '16px',
+        height: symptomCount > 3 ? '30px' : symptomCount > 0 ? '24px' : '16px',
       }}
       onClick={onClick}
     >

@@ -160,6 +160,9 @@ const AnatomyMapContainer: React.FC = () => {
     convertToPainSymptom(symptom)
   );
 
+  // Add console.log to check if component is rendering
+  console.log('AnatomyMapContainer rendering, symptoms:', symptoms.length);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4">

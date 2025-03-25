@@ -1,246 +1,80 @@
 
-@tailwind components;
-
-/* Hotspot positioning and alignment styles */
+/* Hotspot marker styles */
 .hotspot-marker {
-  @apply absolute flex items-center justify-center cursor-pointer z-10;
-  transform: translate(-50%, -50%); /* Center the hotspot on its position */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease-out;
+  position: absolute;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  backdrop-filter: blur(1px);
-  opacity: 0.95; /* More visible by default */
-  will-change: transform, opacity, box-shadow; /* Optimize for animations */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 0 0 2px white;
+  transition: all 0.3s ease;
 }
 
-/* Enhanced pulsing animation */
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 125, 0, 0.4);
-  }
-  70% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 5px rgba(255, 125, 0, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 125, 0, 0);
-  }
-}
-
-.hotspot-pulse {
-  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* Improved glow effect */
-.hotspot-marker::before {
-  content: '';
-  @apply absolute inset-0 rounded-full opacity-30;
-  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
-  z-index: -1;
-  transform: scale(1.1);
-}
-
-/* Improved size classes for better visual hierarchy */
 .hotspot-size-sm {
-  @apply w-6 h-6;
+  width: 16px;
+  height: 16px;
 }
 
 .hotspot-size-md {
-  @apply w-7 h-7;
+  width: 24px;
+  height: 24px;
 }
 
 .hotspot-size-lg {
-  @apply w-8 h-8;
+  width: 30px;
+  height: 30px;
 }
 
-/* Enhanced styling based on severity - using more visible colors */
-.hotspot-severity-low {
-  @apply bg-yellow-500 border border-yellow-300 text-white;
-  box-shadow: 0 0 12px rgba(234, 179, 8, 0.5);
-}
-
-.hotspot-severity-medium {
-  @apply bg-orange-500 border border-orange-300 text-white;
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
-}
-
-.hotspot-severity-high {
-  @apply bg-red-500 border border-red-300 text-white;
-  box-shadow: 0 0 18px rgba(239, 68, 68, 0.5);
-}
-
-/* Enhanced active state */
 .hotspot-active {
-  @apply ring-2 ring-white;
-  z-index: 40 !important;
-  opacity: 1; /* Fully opaque when active */
-  box-shadow: 0 0 20px rgba(255, 86, 48, 0.8);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 0 6px rgba(59, 130, 246, 0.3);
 }
 
-/* Enhanced label styling */
-.hotspot-label {
-  @apply absolute -bottom-7 left-1/2 -translate-x-1/2 bg-black/80 px-2.5 py-1.5 rounded-md whitespace-nowrap text-xs text-white font-medium;
-  min-width: 80px;
-  text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.hotspot-pulse {
+  animation: pulse 1.5s infinite;
 }
 
-/* Better responsive adjustments */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7), 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0), 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Responsive styles for different screen sizes */
 @media (max-width: 640px) {
   .hotspot-size-sm {
-    @apply w-5 h-5;
+    width: 12px;
+    height: 12px;
   }
   
   .hotspot-size-md {
-    @apply w-6 h-6;
+    width: 18px;
+    height: 18px;
   }
   
   .hotspot-size-lg {
-    @apply w-7 h-7;
-  }
-  
-  .hotspot-label {
-    @apply text-[10px] px-2 py-1;
-    min-width: 60px;
+    width: 24px;
+    height: 24px;
   }
 }
 
-/* Improved container for map image and hotspots */
+/* Ensure the hotspot container is properly positioned */
 .anatomy-map-wrapper {
-  @apply relative mx-auto inline-block;
-  height: 450px;
-  perspective: 1000px; /* Improves 3D transforms */
-  transition: transform 0.3s ease-out;
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 
 .anatomy-map-image {
-  @apply h-full w-auto max-h-full object-contain;
-  transform: translateZ(0); /* Hardware acceleration */
-}
-
-.anatomy-position-container {
-  @apply flex justify-center items-center overflow-hidden;
-  min-height: 450px;
-}
-
-/* Enhanced tooltip styling */
-.hotspot-tooltip {
-  @apply z-50 bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg;
-  max-width: 250px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Animation for new hotspots appearing */
-@keyframes hotspot-appear {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-  100% {
-    opacity: 0.95;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-.hotspot-new {
-  animation: hotspot-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Enhanced hover effect for better interactivity */
-.hotspot-marker:hover {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.1);
-  box-shadow: 0 0 15px rgba(255, 86, 48, 0.6);
-}
-
-/* Create a floating effect on active hotspots */
-@keyframes float {
-  0% {
-    transform: translate(-50%, -50%) translateY(0px);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateY(-5px);
-  }
-  100% {
-    transform: translate(-50%, -50%) translateY(0px);
-  }
-}
-
-.hotspot-active {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Enhanced highlight effect */
-.hotspot-marker::after {
-  content: '';
-  @apply absolute rounded-full w-full h-full;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
-  pointer-events: none;
-}
-
-/* Ensure the anatomy container is responsive */
-.anatomy-position-container {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Enhance tooltip item styling */
-.hotspot-tooltip-item {
-  @apply flex gap-2 py-1 px-0.5 text-xs;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.hotspot-tooltip-item:last-child {
-  border-bottom: none;
-}
-
-/* Better highlighting animation for active markers */
-@keyframes highlight-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-
-.hotspot-highlight {
-  animation: highlight-pulse 2s infinite;
-}
-
-/* Fix for tooltips being cut off at screen edges */
-[data-radix-popper-content-wrapper] {
-  z-index: 50 !important;
-}
-
-/* Ensure tooltips don't get cut off even in scrollable containers */
-.hotspot-tooltip-anchor {
-  position: fixed !important;
-}
-
-/* Extra padding for dialogs by default to avoid edge cutting */
-[role="dialog"] {
-  padding-left: env(safe-area-inset-left, 10px);
-  padding-right: env(safe-area-inset-right, 10px);
-}
-
-/* Keep tooltips on top and make sure they don't get cut off by overflow containers */
-.radix-tooltip-content {
-  z-index: 9999 !important;
-  position: relative;
-  max-width: min(calc(100vw - 30px), 300px) !important;
-}
-
-/* Fix for tooltip arrow positioning */
-.radix-tooltip-arrow {
-  fill: currentColor;
-  width: 8px;
-  height: 4px;
+  height: 100%;
+  object-fit: contain;
 }

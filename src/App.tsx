@@ -20,6 +20,12 @@ function App() {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
+    
+    console.log('App component mounted');
+    
+    return () => {
+      console.log('App component unmounted');
+    };
   }, []);
 
   if (loading) {

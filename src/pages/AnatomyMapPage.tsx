@@ -17,7 +17,12 @@ const AnatomyMapPage: React.FC = () => {
     };
     
     document.addEventListener('submit', handleSubmit);
-    return () => document.removeEventListener('submit', handleSubmit);
+    console.log('AnatomyMapPage mounted');
+    
+    return () => {
+      document.removeEventListener('submit', handleSubmit);
+      console.log('AnatomyMapPage unmounted');
+    };
   }, []);
 
   return (

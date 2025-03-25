@@ -65,6 +65,8 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
       setActiveRegion(region);
     }
   };
+
+  console.log('AnatomyMap rendering, regions:', bodyRegions.length, 'symptoms:', symptoms.length);
   
   return (
     <div className="flex flex-col h-full">
@@ -108,10 +110,16 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
             src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
             alt="Human body anatomy"
             className="anatomy-map-image absolute top-0 left-0 w-full h-full object-contain opacity-70"
-            onLoad={() => setImageLoaded(true)}
+            onLoad={() => {
+              console.log('Anatomy map image loaded');
+              setImageLoaded(true);
+            }}
+            onError={(e) => {
+              console.error('Failed to load anatomy map image:', e);
+            }}
           />
           
-          {imageLoaded && bodyRegions.map((region) => (
+          {bodyRegions.map((region) => (
             <BodyRegionMarker
               key={region.id}
               region={region}

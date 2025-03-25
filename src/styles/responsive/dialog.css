@@ -1,177 +1,65 @@
 
-/* Responsive styles for dialog components */
+/* Dialog styles */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
 
-/* Base dialog styles */
 .dialog-content {
-  @apply rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700;
+  position: relative;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Improve spacing and visibility */
-.dialog-header {
-  @apply pb-4 border-b border-gray-200 dark:border-gray-700;
-}
-
-/* Custom styling for form elements in dialogs */
-.dialog-form-item {
-  @apply space-y-1.5;
-}
-
-.dialog-label {
-  @apply font-medium text-gray-700 dark:text-gray-300 flex items-center;
-}
-
-.dialog-indicator {
-  @apply w-2 h-2 rounded-full mr-2;
-}
-
-.dialog-input,
-.dialog-select,
-.dialog-textarea {
-  @apply w-full border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800;
-}
-
-.dialog-textarea {
-  @apply min-h-24 resize-none;
-}
-
-.dialog-footer {
-  @apply pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .dialog-content {
-    @apply w-[95vw] p-4;
-  }
-  
-  .dialog-grid {
-    @apply grid-cols-1 gap-3;
-  }
-  
-  .dialog-actions {
-    @apply flex-col gap-2;
-  }
-  
-  .dialog-button {
-    @apply w-full;
-  }
-}
-
-@media (min-width: 641px) {
-  .dialog-content {
-    @apply max-w-md;
-  }
-  
-  .dialog-grid {
-    @apply grid-cols-2 gap-4;
-  }
-  
-  .dialog-actions {
-    @apply flex-row gap-2;
-  }
-}
-
-/* Ensure dropdowns appear on top of other elements */
-[data-radix-popper-content-wrapper] {
-  @apply z-50 !important;
-}
-
-/* Enhanced styling for select items */
-.select-item-indicator {
-  @apply flex items-center gap-2;
-}
-
-/* Improve region badge styling */
-.region-badge {
-  @apply ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full;
-}
-
-/* Additional styles for better visibility */
-.data-\[state\=open\]\:animate-in {
+/* Make sure dialogs and popups have proper z-index to be visible */
+.radix-dialog-overlay,
+.radix-dialog-content {
   z-index: 50 !important;
 }
 
-[data-radix-dropdown-menu-content], 
+.radix-popover-content,
+.radix-dropdown-menu-content {
+  z-index: 60 !important;
+}
+
+/* Ensure dialog content is properly sized and positioned */
+@media (min-width: 640px) {
+  .dialog-content {
+    max-width: 500px;
+  }
+}
+
+/* Fix for react-hook-form dialogs */
+.react-hook-form-dialog {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Fix for SelectContent elements to ensure they're visible */
+.SelectContent, 
 [data-radix-select-content] {
   z-index: 60 !important;
   background-color: white !important;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 0.375rem !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Dark mode adjustments */
-.dark [data-radix-dropdown-menu-content],
+.dark .SelectContent,
 .dark [data-radix-select-content] {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
 }
-
-.select-content {
-  z-index: 999 !important;
-}
-
-/* Add styles for the anatomy map hotspot markers */
-.hotspot-marker {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease-in-out;
-}
-
-.hotspot-size-sm {
-  width: 24px;
-  height: 24px;
-}
-
-.hotspot-size-md {
-  width: 30px;
-  height: 30px;
-}
-
-.hotspot-size-lg {
-  width: 36px;
-  height: 36px;
-}
-
-.hotspot-active {
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
-}
-
-.hotspot-pulse::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: inherit;
-  opacity: 0.7;
-  z-index: -1;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  70% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-
-.hotspot-tooltip {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
