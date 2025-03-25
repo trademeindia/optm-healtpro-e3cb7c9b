@@ -16,6 +16,7 @@ type SymptomContextType = {
   symptoms: SymptomEntry[];
   addSymptom: (symptom: SymptomEntry) => void;
   updateSymptom: (id: string, updates: Partial<SymptomEntry>) => void;
+  deleteSymptom: (id: string) => void; // Added deleteSymptom function
   loadPatientSymptoms: (patientId: number) => void;
   currentPatientId: number | null;
 };
@@ -148,6 +149,10 @@ export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ childre
     );
   };
 
+  const deleteSymptom = (id: string) => {
+    setSymptoms(prev => prev.filter(symptom => symptom.id !== id));
+  };
+
   const loadPatientSymptoms = (patientId: number) => {
     console.log(`Loading symptoms for patient ${patientId}`);
     setCurrentPatientId(patientId);
@@ -170,7 +175,7 @@ export const SymptomProvider: React.FC<{children: React.ReactNode}> = ({ childre
   }, [currentPatientId]);
 
   return (
-    <SymptomContext.Provider value={{ symptoms, addSymptom, updateSymptom, loadPatientSymptoms, currentPatientId }}>
+    <SymptomContext.Provider value={{ symptoms, addSymptom, updateSymptom, deleteSymptom, loadPatientSymptoms, currentPatientId }}>
       {children}
     </SymptomContext.Provider>
   );

@@ -13,6 +13,8 @@ export interface AnatomyMapProps {
   onUpdateSymptom: (symptom: PainSymptom) => void;
   onDeleteSymptom: (symptomId: string) => void;
   loading: boolean;
+  onRegionClick?: (region: BodyRegion) => void; // Added optional prop
+  selectedRegions?: BodyRegion[]; // Added optional prop
 }
 
 const AnatomyMap: React.FC<AnatomyMapProps> = ({
@@ -21,7 +23,9 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   onAddSymptom,
   onUpdateSymptom,
   onDeleteSymptom,
-  loading
+  loading,
+  onRegionClick,
+  selectedRegions = []
 }) => {
   const [activeRegion, setActiveRegion] = useState<BodyRegion | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -52,6 +56,15 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
   
   // Reset zoom
   const handleResetZoom = () => setZoomLevel(1);
+  
+  // Handle region click, either for internal state or external handler
+  const handleRegionClick = (region: BodyRegion) => {
+    if (onRegionClick) {
+      onRegionClick(region);
+    } else {
+      setActiveRegion(region);
+    }
+  };
   
   return (
     <div className="flex flex-col h-full">
@@ -102,15 +115,15 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
             <BodyRegionMarker
               key={region.id}
               region={region}
-              active={activeRegion?.id === region.id}
+              active={activeRegion?.id === region.id || selectedRegions.some(r => r.id === region.id)}
               symptoms={symptoms}
-              onClick={() => setActiveRegion(region)}
+              onClick={() => handleRegionClick(region)}
             />
           ))}
         </div>
       </div>
       
-      {activeRegion && (
+      {activeRegion && !onRegionClick && (
         <SymptomDialog
           open={showDialog}
           onClose={handleCloseDialog}

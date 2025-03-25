@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BodyRegion, PainSymptom } from '../types';
 import SymptomHistoryTable from './SymptomHistoryTable';
@@ -8,6 +7,8 @@ import SymptomDetailsDialog from '../SymptomDetailsDialog';
 interface SymptomHistoryContainerProps {
   symptoms: PainSymptom[];
   bodyRegions: BodyRegion[];
+  regions?: BodyRegion[];
+  onEditSymptom?: (symptom: PainSymptom) => void;
   onUpdateSymptom: (symptom: PainSymptom) => void;
   onDeleteSymptom: (symptomId: string) => void;
   onToggleActive: (symptomId: string, isActive: boolean) => void;
@@ -17,6 +18,8 @@ interface SymptomHistoryContainerProps {
 const SymptomHistoryContainer: React.FC<SymptomHistoryContainerProps> = ({
   symptoms,
   bodyRegions,
+  regions,
+  onEditSymptom,
   onUpdateSymptom,
   onDeleteSymptom,
   onToggleActive,
@@ -31,7 +34,14 @@ const SymptomHistoryContainer: React.FC<SymptomHistoryContainerProps> = ({
     const region = bodyRegions.find(r => r.id === symptom.bodyRegionId) || null;
     setSelectedSymptom(symptom);
     setSelectedRegion(region);
-    setEditDialogOpen(true);
+    
+    if (onEditSymptom) {
+      // If external handler is provided, use it
+      onEditSymptom(symptom);
+    } else {
+      // Otherwise open the edit dialog
+      setEditDialogOpen(true);
+    }
   };
   
   const handleViewDetails = (symptom: PainSymptom) => {

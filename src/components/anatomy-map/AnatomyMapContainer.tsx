@@ -11,9 +11,10 @@ import { painSeverityOptions, painTypeOptions } from './types';
 import { SymptomHistoryContainer } from './symptom-history';
 import { toast } from 'sonner';
 import '@/styles/responsive/dialog.css';
+import { v4 as uuidv4 } from 'uuid';
 
 const AnatomyMapContainer: React.FC = () => {
-  const { symptoms, addSymptom, updateSymptom } = useSymptoms();
+  const { symptoms, addSymptom, updateSymptom, deleteSymptom } = useSymptoms();
   const [selectedRegion, setSelectedRegion] = useState<BodyRegion | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -130,11 +131,7 @@ const AnatomyMapContainer: React.FC = () => {
   const handleDeleteSymptom = async (symptomId: string) => {
     setLoading(true);
     try {
-      // We'll simulate deleting by updating the symptom to inactive
-      const symptomToUpdate = symptoms.find(s => s.id === symptomId);
-      if (symptomToUpdate) {
-        updateSymptom(symptomId, { ...symptomToUpdate, painLevel: 0 });
-      }
+      deleteSymptom(symptomId);
       toast.success('Symptom deleted successfully');
     } catch (error) {
       toast.error('Failed to delete symptom');
@@ -183,7 +180,6 @@ const AnatomyMapContainer: React.FC = () => {
           <SymptomHistoryContainer 
             symptoms={convertedSymptoms}
             onEditSymptom={handleEditSymptom}
-            regions={bodyRegions}
             bodyRegions={bodyRegions}
             onUpdateSymptom={handleUpdateSymptom}
             onDeleteSymptom={handleDeleteSymptom}
@@ -208,7 +204,7 @@ const AnatomyMapContainer: React.FC = () => {
         existingSymptom={selectedSymptom}
         isEditMode={isEditMode}
         bodyRegions={bodyRegions}
-        existingSymptoms={convertedSymptoms}
+        existingSymptoms={convertedSymptoms.filter(s => selectedRegion ? s.bodyRegionId === selectedRegion.id : false)}
         onAddSymptom={handleAddSymptom}
         onUpdateSymptom={handleUpdateSymptom}
         onDeleteSymptom={handleDeleteSymptom}

@@ -1,10 +1,10 @@
-
 export interface BodyRegion {
   id: string;
   name: string;
   description?: string;
   x: number; // X coordinate as percentage
   y: number; // Y coordinate as percentage
+  svgPathId?: string; // Added to support SVG path references
 }
 
 export interface PainSymptom {
