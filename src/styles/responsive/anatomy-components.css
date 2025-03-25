@@ -1,177 +1,106 @@
 
 /* Responsive styles for anatomy map components */
 
-/* Map container responsive adjustments */
-.anatomy-map-container {
-  @apply w-full overflow-hidden;
+/* Anatomy map container */
+.anatomy-map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Improved marker styling for different screen sizes */
-@media (max-width: 640px) {
-  .region-marker-sm {
-    @apply w-3 h-3;
-  }
-  
-  .region-marker-md {
-    @apply w-4 h-4;
-  }
-  
-  .region-marker-lg {
-    @apply w-5 h-5;
-  }
-  
-  .anatomy-map-container {
-    @apply rounded-md;
-  }
-  
-  .anatomy-tabs {
-    @apply text-sm;
-  }
-  
-  .symptom-table-cell {
-    @apply p-2 text-xs;
-  }
-  
-  .symptom-action-button {
-    @apply p-1.5;
-  }
-  
-  .symptom-badge {
-    @apply text-xs px-1.5 py-0.5;
-  }
-  
-  .symptom-table-row {
-    @apply text-sm;
-  }
+.anatomy-map-image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
-  .region-marker-sm {
-    @apply w-4 h-4;
-  }
-  
-  .region-marker-md {
-    @apply w-5 h-5;
-  }
-  
-  .region-marker-lg {
-    @apply w-6 h-6;
-  }
-  
-  .symptom-table-cell {
-    @apply p-3;
-  }
+/* Hotspot marker styling */
+.hotspot-marker {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
 }
 
-@media (min-width: 1025px) {
-  .region-marker-sm {
-    @apply w-4 h-4;
+.hotspot-size-sm {
+  width: 24px;
+  height: 24px;
+}
+
+.hotspot-size-md {
+  width: 32px;
+  height: 32px;
+}
+
+.hotspot-size-lg {
+  width: 40px;
+  height: 40px;
+}
+
+.hotspot-active {
+  z-index: 30;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+/* Pulse animation for active markers */
+.hotspot-pulse {
+  animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
   }
-  
-  .region-marker-md {
-    @apply w-5 h-5;
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
   }
-  
-  .region-marker-lg {
-    @apply w-6 h-6;
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
 
-/* Smooth transitions for interactive elements */
-.region-marker-transition {
-  @apply transition-all duration-200 ease-in-out;
-}
-
-/* Better tooltip positioning */
-.region-tooltip {
-  @apply z-50;
-}
-
-/* Responsive anatomy container height */
-.anatomy-height-sm {
-  height: 350px;
-}
-
-.anatomy-height-md {
-  height: 450px;
-}
-
-.anatomy-height-lg {
-  height: 600px;
-}
-
-/* Better tab styling */
-.anatomy-tabs {
-  @apply border-b border-border w-full;
-}
-
-.anatomy-tab {
-  @apply py-2 px-4 font-medium text-muted-foreground border-b-2 border-transparent transition-colors;
-}
-
-.anatomy-tab-active {
-  @apply text-primary border-primary;
-}
-
-/* Better card layout for anatomy components */
-.anatomy-card {
-  @apply bg-card border border-border rounded-lg shadow-sm overflow-hidden;
-}
-
-/* Enhance symptoms table on small screens */
-@media (max-width: 640px) {
-  .symptom-table-cell {
-    @apply p-2 text-xs;
-  }
-  
-  .symptom-action-button {
-    @apply p-1.5;
-  }
-  
-  .symptom-badge {
-    @apply text-xs px-1.5 py-0.5;
-  }
-}
-
-/* Fix dropdown positioning and visibility */
-.select-content {
-  @apply z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700;
-}
-
-/* Ensure dropdowns are always on top */
-[data-radix-popper-content-wrapper] {
-  @apply z-[100] !important;
-}
-
-/* Additional fixes for dropdown visibility */
-.anatomy-dialog .select-dropdown,
-.anatomy-form .select-dropdown {
-  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 !important;
+/* Tooltip styling */
+.hotspot-tooltip {
+  max-width: 220px;
+  background-color: white;
+  color: #333;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
 }
 
-/* Force solid backgrounds for popups */
-.radix-dialog-content,
-.radix-sheet-content,
-.radix-alert-dialog-content {
-  @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 !important;
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .hotspot-size-sm {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .hotspot-size-md {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .hotspot-size-lg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .hotspot-tooltip {
+    max-width: 180px;
+  }
 }
 
-/* Style Radix portals to ensure they're properly visible */
-[data-radix-portal] {
-  @apply z-[100];
-}
-
-/* Enhanced visibility for dialog overlays */
-.radix-dialog-overlay,
-.radix-sheet-overlay,
-.radix-alert-dialog-overlay {
-  @apply bg-black/80 backdrop-blur-sm !important;
-}
-
-/* Force solid backgrounds for selects and dropdowns */
-[data-radix-select-content],
-[data-radix-dropdown-menu-content] {
-  @apply bg-white dark:bg-gray-800 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+@media (max-width: 480px) {
+  .anatomy-map-wrapper {
+    padding: 0.5rem;
+  }
 }

@@ -82,9 +82,9 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
         </Button>
       </div>
       
-      <div className="flex-1 overflow-hidden anatomy-position-container">
+      <div className="relative overflow-hidden border rounded-lg h-96 bg-gray-50 dark:bg-gray-800">
         <div 
-          className="anatomy-map-wrapper"
+          className="anatomy-map-wrapper absolute inset-0"
           style={{ 
             transform: `scale(${zoomLevel})`, 
             transformOrigin: 'center center',
@@ -94,7 +94,7 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({
           <img
             src="/lovable-uploads/d4871440-0787-4dc8-bfbf-20a04c1f96fc.png"
             alt="Human body anatomy"
-            className="anatomy-map-image"
+            className="anatomy-map-image absolute top-0 left-0 w-full h-full object-contain opacity-70"
             onLoad={() => setImageLoaded(true)}
           />
           
