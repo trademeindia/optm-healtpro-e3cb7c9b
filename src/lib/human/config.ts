@@ -1,13 +1,18 @@
 
 import * as Human from '@vladmandic/human';
 
-// Create a partial config that we'll extend with Human.js defaults
+// Create a complete config
 export const humanConfig: Partial<Human.Config> = {
-  // Set backend to use WebGL for better performance
+  // Backend settings
   backend: 'webgl',
   
   // Model paths
   modelBasePath: '/',
+  
+  // Required properties that were missing
+  wasmPath: '/',
+  cacheModels: true,
+  asynch: true,  // Fixed spelling from 'async' to 'asynch' to match Human.js API
   
   // Optimizations
   warmup: 'none',

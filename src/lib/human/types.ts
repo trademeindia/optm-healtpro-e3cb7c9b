@@ -1,52 +1,38 @@
 
-// Add necessary types for the motion tracking system
-
+// Motion state enum
 export enum MotionState {
-  STANDING = 'standing',
-  MID_MOTION = 'mid-motion',
-  FULL_MOTION = 'full-motion',
-  REST = 'rest'
+  STANDING = 'STANDING',
+  MID_MOTION = 'MID_MOTION',
+  FULL_MOTION = 'FULL_MOTION'
 }
 
+// Feedback types
 export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR'
 }
 
-export interface FeedbackMessage {
-  message: string | null;
-  type: FeedbackType;
-}
-
+// Body angles interface
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;
   shoulderAngle: number | null;
   elbowAngle: number | null;
   ankleAngle: number | null;
-  neckAngle: number | null;
 }
 
-export interface MotionBiomarkers {
-  postureScore?: number | null;
-  movementQuality?: number | null;
-  rangeOfMotion?: number | null;
-  stabilityScore?: number | null;
-  symmetry?: number | null;
-  balance?: number | null;
-  // Add string index signature to allow any string key
-  [key: string]: number | null | undefined;
-}
-
+// Detection status interface
 export interface DetectionStatus {
   isDetecting: boolean;
-  fps: number | null;
-  confidence: number | null;
+  fps?: number | null;
+  confidence?: number | null;
   detectedKeypoints?: number;
+  lastDetectionTime?: number;
 }
 
+// Motion statistics
 export interface MotionStats {
   totalReps: number;
   goodReps: number;
@@ -56,4 +42,20 @@ export interface MotionStats {
   bestStreak: number;
   lastUpdated: number;
   caloriesBurned: number;
+}
+
+// Feedback message interface
+export interface FeedbackMessage {
+  message: string | null;
+  type: FeedbackType;
+}
+
+// Helper function to safely extract values from a JSON object
+export function safeGetFromJson<T>(obj: any, key: string, defaultValue: T): T {
+  try {
+    if (!obj || typeof obj !== 'object') return defaultValue;
+    return (obj[key] !== undefined && obj[key] !== null) ? obj[key] : defaultValue;
+  } catch {
+    return defaultValue;
+  }
 }
