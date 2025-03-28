@@ -1,218 +1,244 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { PatientProfile, MedicalRecord } from '@/types/patient';
+import { PatientProfile } from '@/types/patient';
+import { v4 as uuidv4 } from 'uuid';
 
-// Fetch patient profile
+// Mock data for development
+const mockPatientProfiles = [
+  {
+    id: '1',
+    user_id: 'user-1',
+    first_name: 'John',
+    last_name: 'Doe',
+    date_of_birth: '1980-01-01',
+    gender: 'Male',
+    blood_type: 'A+',
+    allergies: ['Penicillin'],
+    emergency_contact: '555-1234',
+    phone_number: '555-5678',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
+
+/**
+ * Get a patient profile by ID
+ */
 export const getPatientProfile = async (patientId?: string): Promise<PatientProfile | null> => {
-  try {
-    let userId = patientId;
-    
-    // If no patient ID provided, use the current user
-    if (!userId) {
-      const { data } = await supabase.auth.getSession();
-      userId = data.session?.user?.id;
+  if (!patientId) {
+    try {
+      // If no patientId provided, get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
       
-      if (!userId) {
-        console.error('No patient ID provided and no user is authenticated');
+      if (!userId) return null;
+      
+      // Try to get profile from database
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+          
+        if (error || !data) {
+          console.log('No patient profile found in database, using mock data');
+          return mockPatientProfiles.find(p => p.user_id === userId) || null;
+        }
+        
+        return {
+          id: data.id,
+          user_id: data.id,
+          first_name: data.name?.split(' ')[0] || '',
+          last_name: data.name?.split(' ').slice(1).join(' ') || '',
+          date_of_birth: '',
+          gender: '',
+          blood_type: '',
+          allergies: [],
+          emergency_contact: '',
+          phone_number: '',
+          created_at: data.created_at || new Date().toISOString(),
+          updated_at: data.updated_at || new Date().toISOString()
+        };
+      } catch (err) {
+        console.error('Error fetching patient profile:', err);
         return null;
       }
-    }
-    
-    // Get patient profile from profiles table (using the existing table)
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching patient profile:', error);
+    } catch (err) {
+      console.error('Error getting current session:', err);
       return null;
     }
-    
-    // Convert to PatientProfile format
-    const patientProfile: PatientProfile = {
-      id: profile.id,
-      user_id: profile.id,
-      first_name: profile.name?.split(' ')[0] || '',
-      last_name: profile.name?.split(' ')[1] || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    return patientProfile;
-  } catch (error) {
-    console.error('Error in getPatientProfile:', error);
-    return null;
+  } else {
+    // Get by specific patientId
+    try {
+      // Try getting from the database first
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', patientId)
+        .single();
+        
+      if (error || !data) {
+        // Return mock data for development
+        console.log('No patient profile found in database, using mock data');
+        return mockPatientProfiles.find(p => p.id === patientId) || null;
+      }
+      
+      return {
+        id: data.id,
+        user_id: data.id,
+        first_name: data.name?.split(' ')[0] || '',
+        last_name: data.name?.split(' ').slice(1).join(' ') || '',
+        date_of_birth: '',
+        gender: '',
+        blood_type: '',
+        allergies: [],
+        emergency_contact: '',
+        phone_number: '',
+        created_at: data.created_at || new Date().toISOString(),
+        updated_at: data.updated_at || new Date().toISOString()
+      };
+    } catch (err) {
+      console.error('Error fetching patient profile:', err);
+      return mockPatientProfiles.find(p => p.id === patientId) || null;
+    }
   }
 };
 
-// Update patient profile
-export const updatePatientProfile = async (
-  patientId: string,
-  updates: Partial<PatientProfile>
-): Promise<PatientProfile | null> => {
+/**
+ * Get all medical records for a patient
+ */
+export const getPatientMedicalRecords = async (patientId: string): Promise<any[] | null> => {
+  // For development, return mock data
+  return [
+    {
+      id: '1',
+      patient_id: patientId,
+      record_type: 'Blood Test',
+      diagnosis: 'Normal results',
+      treatment: '',
+      notes: 'All values within normal range',
+      date: new Date().toISOString(),
+      attachments: [],
+    }
+  ];
+};
+
+/**
+ * Update a patient profile
+ */
+export const updatePatientProfile = async (patientId: string, updates: Partial<PatientProfile>): Promise<PatientProfile | null> => {
   try {
-    // Extract name from first_name and last_name
-    const name = updates.first_name && updates.last_name 
-      ? `${updates.first_name} ${updates.last_name}`
-      : undefined;
+    if (!patientId) return null;
     
-    // Update the profile in profiles table
+    // Try to update in database
     const { data, error } = await supabase
       .from('profiles')
-      .update({ 
-        name: name,
-        // Add other fields that match between PatientProfile and profiles table
+      .update({
+        name: `${updates.first_name} ${updates.last_name}`,
+        updated_at: new Date().toISOString()
       })
       .eq('id', patientId)
-      .select('*')
+      .select()
       .single();
-    
+      
     if (error) {
       console.error('Error updating patient profile:', error);
+      // For development, update mock data
+      const existingProfile = mockPatientProfiles.find(p => p.id === patientId);
+      if (existingProfile) {
+        Object.assign(existingProfile, updates, {
+          updated_at: new Date().toISOString()
+        });
+        return existingProfile;
+      }
       return null;
     }
     
-    // Convert to PatientProfile format
-    const patientProfile: PatientProfile = {
+    // Return the updated profile
+    return {
       id: data.id,
       user_id: data.id,
-      first_name: data.name?.split(' ')[0] || '',
-      last_name: data.name?.split(' ')[1] || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      first_name: updates.first_name || data.name?.split(' ')[0] || '',
+      last_name: updates.last_name || data.name?.split(' ').slice(1).join(' ') || '',
+      date_of_birth: updates.date_of_birth || '',
+      gender: updates.gender || '',
+      blood_type: updates.blood_type || '',
+      allergies: updates.allergies || [],
+      emergency_contact: updates.emergency_contact || '',
+      phone_number: updates.phone_number || '',
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString()
     };
-    
-    return patientProfile;
-  } catch (error) {
-    console.error('Error in updatePatientProfile:', error);
+  } catch (err) {
+    console.error('Error updating patient profile:', err);
     return null;
   }
 };
 
-// Create patient profile
-export const createPatientProfile = async (
-  patientId: string,
-  profileData: Omit<PatientProfile, 'id' | 'created_at' | 'updated_at'>
-): Promise<PatientProfile | null> => {
-  try {
-    // For now, we'll just return mock data
-    // In a real implementation, you would create the profile in your database
-    
-    const mockProfile: PatientProfile = {
-      id: patientId,
-      user_id: patientId,
-      first_name: profileData.first_name,
-      last_name: profileData.last_name,
-      date_of_birth: profileData.date_of_birth,
-      gender: profileData.gender,
-      blood_type: profileData.blood_type,
-      allergies: profileData.allergies,
-      emergency_contact: profileData.emergency_contact,
-      phone_number: profileData.phone_number,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    return mockProfile;
-  } catch (error) {
-    console.error('Error in createPatientProfile:', error);
-    return null;
-  }
-};
-
-// Fetch medical records for a patient - using mock data
-export const getMedicalRecords = async (patientId: string): Promise<MedicalRecord[] | null> => {
-  try {
-    // Return mock data
-    const mockRecords: MedicalRecord[] = [
-      {
-        id: '1',
-        patient_id: patientId,
-        doctor_id: 'doctor-123',
-        record_type: 'Consultation',
-        diagnosis: 'Common cold',
-        treatment: 'Rest and fluids',
-        notes: 'Patient should recover in a few days',
-        date: new Date().toISOString().split('T')[0],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+// Export the service interface
+export const patientService = {
+  getPatientProfile,
+  updatePatientProfile,
+  getPatientMedicalRecords,
+  
+  createPatientProfile: async (patientId: string, profileData: Partial<PatientProfile>): Promise<PatientProfile | null> => {
+    try {
+      const { first_name = '', last_name = '' } = profileData;
+      
+      // Try to create in database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          name: `${first_name} ${last_name}`,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', patientId)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error('Error creating patient profile:', error);
+        // For development, create mock data
+        const newProfile = {
+          id: patientId,
+          user_id: patientId,
+          first_name,
+          last_name,
+          date_of_birth: profileData.date_of_birth || '',
+          gender: profileData.gender || '',
+          blood_type: profileData.blood_type || '',
+          allergies: profileData.allergies || [],
+          emergency_contact: profileData.emergency_contact || '',
+          phone_number: profileData.phone_number || '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        mockPatientProfiles.push(newProfile);
+        return newProfile;
       }
-    ];
-    
-    return mockRecords;
-  } catch (error) {
-    console.error('Error in getMedicalRecords:', error);
-    return null;
+      
+      // Return the created profile
+      return {
+        id: data.id,
+        user_id: data.id,
+        first_name,
+        last_name,
+        date_of_birth: profileData.date_of_birth || '',
+        gender: profileData.gender || '',
+        blood_type: profileData.blood_type || '',
+        allergies: profileData.allergies || [],
+        emergency_contact: profileData.emergency_contact || '',
+        phone_number: profileData.phone_number || '',
+        created_at: data.created_at || new Date().toISOString(),
+        updated_at: data.updated_at || new Date().toISOString()
+      };
+    } catch (err) {
+      console.error('Error creating patient profile:', err);
+      return null;
+    }
   }
 };
 
-// Add a new medical record for a patient
-export const addMedicalRecord = async (
-  patientId: string,
-  recordData: Omit<MedicalRecord, 'id' | 'created_at' | 'updated_at'>
-): Promise<MedicalRecord | null> => {
-  try {
-    // For now, we'll just return mock data
-    // In a real implementation, you would add the record to your database
-    
-    const mockRecord: MedicalRecord = {
-      id: Math.random().toString(36).substring(2, 15),
-      patient_id: patientId,
-      record_type: recordData.record_type,
-      diagnosis: recordData.diagnosis,
-      treatment: recordData.treatment,
-      notes: recordData.notes,
-      date: recordData.date,
-      attachments: recordData.attachments,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    return mockRecord;
-  } catch (error) {
-    console.error('Error in addMedicalRecord:', error);
-    return null;
-  }
-};
-
-// Update an existing medical record - using mock data
-export const updateMedicalRecord = async (
-  recordId: string,
-  updates: Partial<MedicalRecord>
-): Promise<MedicalRecord | null> => {
-  try {
-    // Return mock data
-    const mockUpdatedRecord: MedicalRecord = {
-      id: recordId,
-      patient_id: updates.patient_id || 'patient-id',
-      doctor_id: updates.doctor_id,
-      record_type: updates.record_type || 'Consultation',
-      diagnosis: updates.diagnosis,
-      treatment: updates.treatment,
-      notes: updates.notes,
-      date: updates.date || new Date().toISOString().split('T')[0],
-      attachments: updates.attachments,
-      updated_at: new Date().toISOString()
-    };
-    
-    return mockUpdatedRecord;
-  } catch (error) {
-    console.error('Error in updateMedicalRecord:', error);
-    return null;
-  }
-};
-
-// Delete a medical record - using mock data
-export const deleteMedicalRecord = async (recordId: string): Promise<boolean> => {
-  try {
-    // In a real implementation, you would delete the record from your database
-    // For now, just return success
-    
-    return true;
-  } catch (error) {
-    console.error('Error in deleteMedicalRecord:', error);
-    return false;
-  }
-};
+// Export type for the service
+export type PatientService = typeof patientService;

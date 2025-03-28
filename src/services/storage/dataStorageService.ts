@@ -41,9 +41,10 @@ export const saveUserData = async <T extends Record<string, any>>(
       table === 'fitness_data' ||
       table === 'messages'
     ) {
+      // Use type assertion to handle the generic type safely
       const { data: savedData, error } = await supabase
         .from(table)
-        .upsert(dataWithUser, {
+        .upsert(dataWithUser as any, {
           onConflict: 'id'
         })
         .select();
@@ -54,7 +55,7 @@ export const saveUserData = async <T extends Record<string, any>>(
       }
       
       // Assuming the first item in the array is the saved data
-      return savedData.length > 0 ? savedData[0] as T : null;
+      return savedData.length > 0 ? savedData[0] as unknown as T : null;
     } else {
       // For mock data or tables that don't exist yet
       console.log(`Mocking data save to table ${table} for development`);
@@ -68,3 +69,72 @@ export const saveUserData = async <T extends Record<string, any>>(
     return null;
   }
 };
+
+// Export a proper DataStorageService interface and implementation
+export const dataStorageService = {
+  saveData: saveUserData,
+  
+  getData: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
+    try {
+      const { data, error } = await supabase
+        .from(table as any)
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error(`Error getting data from ${table}:`, error);
+        return null;
+      }
+      
+      return data as unknown as T;
+    } catch (error) {
+      console.error(`Error in getData for table ${table}:`, error);
+      return null;
+    }
+  },
+  
+  getDataByUserId: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
+    try {
+      const { data, error } = await supabase
+        .from(table as any)
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error(`Error getting data from ${table}:`, error);
+        return null;
+      }
+      
+      return data as unknown as T[];
+    } catch (error) {
+      console.error(`Error in getDataByUserId for table ${table}:`, error);
+      return null;
+    }
+  },
+  
+  deleteData: async (table: string, id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from(table as any)
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error(`Error deleting data from ${table}:`, error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`Error in deleteData for table ${table}:`, error);
+      return false;
+    }
+  }
+};
+
+// Export type for the service
+export type DataStorageService = typeof dataStorageService;
+
+// Export the service instance
+export { dataStorageService as DataStorageService };

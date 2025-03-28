@@ -3,15 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/contexts/auth/types';
 import { saveUserData } from './storage/dataStorageService';
 import { getPatientProfile } from './patient/patientService';
-import { DataStorageService, PatientService } from './types';
+import { dataStorageService } from './storage/dataStorageService';
+import { patientService } from './patient/patientService';
 
-// This is just a placeholder implementation since we don't have the actual services
-const dataStorageService: DataStorageService = {
-  saveData: saveUserData,
-  getData: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
+// Create a DataSyncService for better typings
+export const dataSyncService = {
+  getDataFromTable: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
     try {
       const { data, error } = await supabase
-        .from(table)
+        .from(table as any)
         .select('*')
         .eq('id', id)
         .single();
@@ -21,34 +21,36 @@ const dataStorageService: DataStorageService = {
         return null;
       }
       
-      return data as T;
+      return data as unknown as T;
     } catch (error) {
-      console.error(`Error in getData for table ${table}:`, error);
+      console.error(`Error in getDataFromTable for table ${table}:`, error);
       return null;
     }
   },
-  getDataByUserId: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
+
+  getDataByUserFromTable: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
     try {
       const { data, error } = await supabase
-        .from(table)
+        .from(table as any)
         .select('*')
         .eq('user_id', userId);
       
       if (error) {
-        console.error(`Error getting data from ${table}:`, error);
+        console.error(`Error getting data from ${table} for user ${userId}:`, error);
         return null;
       }
       
-      return data as T[];
+      return data as unknown as T[];
     } catch (error) {
-      console.error(`Error in getDataByUserId for table ${table}:`, error);
+      console.error(`Error in getDataByUserFromTable for table ${table}:`, error);
       return null;
     }
   },
-  deleteData: async (table: string, id: string): Promise<boolean> => {
+
+  deleteDataFromTable: async (table: string, id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
-        .from(table)
+        .from(table as any)
         .delete()
         .eq('id', id);
       
@@ -59,21 +61,31 @@ const dataStorageService: DataStorageService = {
       
       return true;
     } catch (error) {
-      console.error(`Error in deleteData for table ${table}:`, error);
+      console.error(`Error in deleteDataFromTable for table ${table}:`, error);
       return false;
     }
-  }
-};
-
-const patientService: PatientService = {
-  getPatientProfile,
-  updatePatientProfile: async (patientId: string, updates: Partial<any>) => {
-    // Mock implementation
-    return null;
   },
-  createPatientProfile: async (patientId: string, profileData: Partial<any>) => {
-    // Mock implementation
-    return null;
+
+  getPatientData: async (patientId: string) => {
+    return await patientService.getPatientProfile(patientId);
+  },
+
+  processMedicalReport: async (report: any, patient: any) => {
+    // Mock implementation for processing medical reports
+    console.log(`Processing medical report for patient ${patient.id}`);
+    
+    // In a real implementation, we would send this to an API for analysis
+    const mockAnalysis = {
+      id: `analysis-${Date.now()}`,
+      patientId: patient.id,
+      timestamp: new Date().toISOString(),
+      findings: [
+        { name: 'Glucose', value: '95 mg/dL', status: 'normal' },
+        { name: 'Cholesterol', value: '180 mg/dL', status: 'normal' }
+      ]
+    };
+    
+    return { analysis: mockAnalysis };
   }
 };
 
@@ -109,3 +121,8 @@ export const syncUserProfile = async (user: User): Promise<boolean> => {
     return false;
   }
 };
+
+// Export the DataSyncService type
+export type DataSyncService = typeof dataSyncService;
+// Export the service instance
+export { dataSyncService as DataSyncService };

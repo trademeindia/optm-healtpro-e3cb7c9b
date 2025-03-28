@@ -6,7 +6,13 @@ export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 
 
 // User session interface
 export interface UserSession {
-  user: {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  provider: string;
+  picture: string | null;
+  user?: {
     id: string;
     email: string;
     name: string | null;
@@ -14,7 +20,7 @@ export interface UserSession {
     provider: string;
     picture: string | null;
   };
-  accessToken: string;
+  accessToken?: string;
   refreshToken?: string;
   expiresAt?: number;
 }
