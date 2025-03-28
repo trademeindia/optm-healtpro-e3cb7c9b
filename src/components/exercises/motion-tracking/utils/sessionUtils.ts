@@ -1,59 +1,56 @@
 
-import { v4 as uuidv4 } from 'uuid';
-import { BodyAngles, MotionBiomarkers, MotionState, MotionStats } from '@/lib/human/types';
+import { MotionState, MotionStats } from '@/lib/human/types';
 
-// Create a new exercise session
-export const createSession = async (exerciseType: string): Promise<string> => {
+/**
+ * Create a new exercise session
+ */
+export const createSession = async (exerciseType: string): Promise<string | undefined> => {
   try {
-    const sessionId = uuidv4();
-    console.log('Created new session:', sessionId, 'for exercise type:', exerciseType);
-    return sessionId;
+    // Placeholder implementation - would normally use API
+    console.log('Creating new session for exercise type:', exerciseType);
+    return `session-${Date.now()}`;
   } catch (error) {
     console.error('Error creating session:', error);
-    throw error;
+    return undefined;
   }
 };
 
-// Save detection data for a rep
+/**
+ * Save detection data to the database
+ */
 export const saveDetectionData = async (
   sessionId: string | undefined,
   result: any,
-  angles: BodyAngles,
-  biomarkers: Record<string, number | null>,
+  angles: any,
+  biomarkers: any,
   motionState: MotionState,
   exerciseType: string,
   stats: MotionStats
-): Promise<void> => {
-  if (!sessionId) {
-    console.warn('No session ID provided, cannot save detection data');
-    return;
-  }
+) => {
+  if (!sessionId) return;
   
   try {
-    // For now, simply log the data - in a real app, this would save to a database
-    console.log('Saving detection data for session:', sessionId, {
-      timestamp: new Date().toISOString(),
-      exerciseType,
-      motionState,
-      angles,
-      biomarkers,
-      stats
-    });
+    // Placeholder implementation - would normally use API
+    console.log('Saving detection data for session:', sessionId);
+    console.log('Stats:', stats);
   } catch (error) {
     console.error('Error saving detection data:', error);
   }
 };
 
-// Complete an exercise session
-export const completeSession = async (sessionId: string | undefined): Promise<void> => {
-  if (!sessionId) {
-    console.warn('No session ID provided, cannot complete session');
-    return;
-  }
+/**
+ * Complete an exercise session
+ */
+export const completeSession = async (
+  sessionId: string | undefined,
+  stats: MotionStats
+) => {
+  if (!sessionId) return;
   
   try {
+    // Placeholder implementation - would normally use API
     console.log('Completing session:', sessionId);
-    // In a real app, this would update the session status in the database
+    console.log('Final stats:', stats);
   } catch (error) {
     console.error('Error completing session:', error);
   }

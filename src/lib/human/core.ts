@@ -52,15 +52,16 @@ export const resetModel = async (): Promise<void> => {
     
     // Properly clean up resources based on Human.js API
     if (human) {
-      // Try different cleanup approaches
-      if (typeof human.cleanup === 'function') {
-        await human.cleanup();
-      } else if (human.tf && typeof human.tf.dispose === 'function') {
+      // Try different cleanup approaches for various Human.js versions
+      if (human.tf && typeof human.tf.dispose === 'function') {
         // Alternative method for older versions
         await human.tf.dispose();
       } else if (human.tf && human.tf.engine) {
         // Yet another alternative
         human.tf.engine().disposeVariables();
+      } else {
+        // For newer versions, simply do basic garbage collection
+        console.log('No specific cleanup method available for this Human.js version');
       }
     }
     

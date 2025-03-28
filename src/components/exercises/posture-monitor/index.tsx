@@ -28,11 +28,18 @@ const PostureMonitor: React.FC = () => {
     toggleCamera,
     stopCamera,
     cameraError,
-    retryCamera,
     videoStatus
   } = useCamera({
     onCameraStart: () => setVideoReady(true)
   });
+  
+  // Add a retry camera function
+  const retryCamera = () => {
+    stopCamera();
+    setTimeout(() => {
+      toggleCamera();
+    }, 500);
+  };
   
   useEffect(() => {
     // Cleanup
@@ -95,7 +102,7 @@ const PostureMonitor: React.FC = () => {
             
             <button
               className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm"
-              onClick={() => toggleCamera()}
+              onClick={toggleCamera}
             >
               {cameraActive ? 'Stop Camera' : 'Start Camera'}
             </button>

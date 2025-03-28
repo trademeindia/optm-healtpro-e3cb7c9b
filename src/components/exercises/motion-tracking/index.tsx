@@ -9,7 +9,7 @@ import ControlPanel from './components/ControlPanel';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import MotionRenderer from './MotionRenderer';
 import { toast } from 'sonner';
-import { FeedbackType } from './utils/feedbackUtils';
+import { FeedbackType } from '@/lib/human/types';
 
 interface MotionTrackerProps {
   exerciseName?: string;
@@ -75,16 +75,16 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     let uiType = FeedbackType.INFO;
     
     switch (feedback.type) {
-      case 'SUCCESS':
+      case FeedbackType.SUCCESS:
         uiType = FeedbackType.SUCCESS;
         break;
-      case 'WARNING':
+      case FeedbackType.WARNING:
         uiType = FeedbackType.WARNING;
         break;
-      case 'ERROR':
+      case FeedbackType.ERROR:
         uiType = FeedbackType.ERROR;
         break;
-      case 'INFO':
+      case FeedbackType.INFO:
       default:
         uiType = FeedbackType.INFO;
     }

@@ -1,7 +1,8 @@
 
 import * as Human from '@vladmandic/human';
 
-export const humanConfig: Human.Config = {
+// Create a partial config that we'll extend with Human.js defaults
+export const humanConfig: Partial<Human.Config> = {
   // Set backend to use WebGL for better performance
   backend: 'webgl',
   
