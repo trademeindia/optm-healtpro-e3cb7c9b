@@ -10,7 +10,7 @@ import './styles/responsive/anatomy-components.css';
 import { ThemeProvider } from './components/theme-provider';
 import { SymptomProvider } from './contexts/SymptomContext';
 import { Toaster } from 'sonner';
-import { AuthProvider } from './contexts/auth';
+import { AuthProvider } from './contexts/AuthContext'; // Corrected import path
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
