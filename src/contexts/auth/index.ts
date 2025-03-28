@@ -3,24 +3,19 @@ import { createContext, useContext } from 'react';
 import { AuthContextType, User } from './types';
 // Import Provider from types without re-exporting to avoid ambiguity
 import type { Provider as AuthProvider } from './types';
-
-// Create the auth context
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
-  login: async () => null,
-  loginWithSocialProvider: async () => {},
-  handleOAuthCallback: async () => {},
-  signup: async () => null,
-  logout: async () => {},
-  forgotPassword: async () => {},
-});
+import { AuthContext } from './AuthContext';
 
 // Export the auth context hook
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 // Export types
-export type { User };
+export type { User, AuthContextType };
 export type { AuthProvider };
 export { AuthProvider as AuthProviderComponent } from './AuthProvider';
+
