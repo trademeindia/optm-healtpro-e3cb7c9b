@@ -1,29 +1,41 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/contexts/auth/types';
-import { saveUserData } from './storage/dataStorageService';
-import { getPatientProfile } from './patient/patientService';
 import { dataStorageService } from './storage/dataStorageService';
 import { patientService } from './patient/patientService';
 import { MedicalAnalysis, MedicalReport, Patient } from '@/types/medicalData';
-import { v4 as uuidv4 } from 'uuid';
 
 // Create a DataSyncService for better typings
 export const dataSyncService = {
   getDataFromTable: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
     try {
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        console.error(`Error getting data from ${table}:`, error);
-        return null;
+      if (
+        table === 'profiles' || 
+        table === 'appointments' || 
+        table === 'fitness_connections' ||
+        table === 'fitness_data' ||
+        table === 'messages' ||
+        table === 'analysis_sessions' ||
+        table === 'body_analysis' ||
+        table === 'exercise_sessions'
+      ) {
+        // @ts-ignore - This is necessary due to dynamic table usage
+        const { data, error } = await supabase
+          .from(table)
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          console.error(`Error getting data from ${table}:`, error);
+          return null;
+        }
+        
+        return data as unknown as T;
       }
       
-      return data as T;
+      console.error(`Table ${table} not found or not accessible`);
+      return null;
     } catch (error) {
       console.error(`Error in getDataFromTable for table ${table}:`, error);
       return null;
@@ -32,17 +44,32 @@ export const dataSyncService = {
 
   getDataByUserFromTable: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
     try {
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .eq('user_id', userId);
-      
-      if (error) {
-        console.error(`Error getting data from ${table} for user ${userId}:`, error);
-        return null;
+      if (
+        table === 'profiles' || 
+        table === 'appointments' || 
+        table === 'fitness_connections' ||
+        table === 'fitness_data' ||
+        table === 'messages' ||
+        table === 'analysis_sessions' ||
+        table === 'body_analysis' ||
+        table === 'exercise_sessions'
+      ) {
+        // @ts-ignore - This is necessary due to dynamic table usage
+        const { data, error } = await supabase
+          .from(table)
+          .select('*')
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error(`Error getting data from ${table} for user ${userId}:`, error);
+          return null;
+        }
+        
+        return data as unknown as T[];
       }
       
-      return data as T[];
+      console.error(`Table ${table} not found or not accessible`);
+      return null;
     } catch (error) {
       console.error(`Error in getDataByUserFromTable for table ${table}:`, error);
       return null;
@@ -51,17 +78,32 @@ export const dataSyncService = {
 
   deleteDataFromTable: async (table: string, id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq('id', id);
-      
-      if (error) {
-        console.error(`Error deleting data from ${table}:`, error);
-        return false;
+      if (
+        table === 'profiles' || 
+        table === 'appointments' || 
+        table === 'fitness_connections' ||
+        table === 'fitness_data' ||
+        table === 'messages' ||
+        table === 'analysis_sessions' ||
+        table === 'body_analysis' ||
+        table === 'exercise_sessions'
+      ) {
+        // @ts-ignore - This is necessary due to dynamic table usage
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          console.error(`Error deleting data from ${table}:`, error);
+          return false;
+        }
+        
+        return true;
       }
       
-      return true;
+      console.error(`Table ${table} not found or not accessible`);
+      return false;
     } catch (error) {
       console.error(`Error in deleteDataFromTable for table ${table}:`, error);
       return false;
