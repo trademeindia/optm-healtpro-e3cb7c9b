@@ -13,21 +13,28 @@ export const useCameraSetupValidation = ({
   waitForVideoElement
 }: UseCameraSetupValidationProps) => {
   
-  // Validate video element
-  const validateVideoElement = useCallback(async (
-    videoRef: React.MutableRefObject<HTMLVideoElement | null>
-  ): Promise<boolean> => {
-    // Wait for video element to be available
-    const videoElementAvailable = await waitForVideoElement(videoRef);
-    
-    if (!videoElementAvailable) {
-      setCameraError("Video element not available. Please reload the page.");
+  // Validate video element exists and is ready
+  const validateVideoElement = useCallback(async (): Promise<boolean> => {
+    try {
+      // Wait for video element to be available in DOM
+      const videoElementReady = await waitForVideoElement({
+        current: document.querySelector('video')
+      } as React.MutableRefObject<HTMLVideoElement | null>);
+      
+      if (!videoElementReady) {
+        setCameraError("Video element not found or not ready");
+        setIsInitializing(false);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error validating video element:", error);
+      setCameraError(`Video element validation failed: ${error}`);
       setIsInitializing(false);
       return false;
     }
-    
-    return true;
-  }, [waitForVideoElement, setCameraError, setIsInitializing]);
+  }, [setCameraError, setIsInitializing, waitForVideoElement]);
   
   return {
     validateVideoElement

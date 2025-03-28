@@ -1,19 +1,12 @@
 
 import { MotionState } from '@/lib/human/types';
 
-// Determine the current motion state based on angles and previous state
-export const determineMotionState = (
-  kneeAngle: number | null, 
-  prevState: MotionState
-): MotionState => {
+// Determine the current motion state based on knee angle
+export const determineMotionState = (kneeAngle: number | null): MotionState => {
   if (kneeAngle === null) {
-    return prevState; // Keep previous state if no data
+    return MotionState.STANDING;
   }
   
-  // For squats: 
-  // - Standing is around 170-180 degrees
-  // - Bottom position is around 90 degrees or less
-  // - Mid motion is in between
   if (kneeAngle > 160) {
     return MotionState.STANDING;
   } else if (kneeAngle < 100) {
@@ -23,35 +16,12 @@ export const determineMotionState = (
   }
 };
 
-// Check if a rep was completed - when transitioning from FULL_MOTION to MID_MOTION
-export const isRepCompleted = (
-  currentState: MotionState, 
-  previousState: MotionState
-): boolean => {
-  return (
-    previousState === MotionState.FULL_MOTION && 
-    currentState === MotionState.MID_MOTION
-  );
+// Check if a repetition has been completed
+export const isRepCompleted = (newState: MotionState, prevState: MotionState): boolean => {
+  return prevState === MotionState.FULL_MOTION && newState === MotionState.STANDING;
 };
 
-// Check if the user is starting a new rep - from STANDING to MID_MOTION
-export const isStartingRep = (
-  currentState: MotionState, 
-  previousState: MotionState
-): boolean => {
-  return (
-    previousState === MotionState.STANDING && 
-    currentState === MotionState.MID_MOTION
-  );
-};
-
-// Check if the user has returned to starting position
-export const isReturnedToStart = (
-  currentState: MotionState, 
-  previousState: MotionState
-): boolean => {
-  return (
-    previousState !== MotionState.STANDING && 
-    currentState === MotionState.STANDING
-  );
+// Check if motion is in progress
+export const isMotionInProgress = (state: MotionState): boolean => {
+  return state === MotionState.MID_MOTION || state === MotionState.FULL_MOTION;
 };

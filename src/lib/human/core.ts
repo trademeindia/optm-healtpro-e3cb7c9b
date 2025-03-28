@@ -48,20 +48,19 @@ export const warmupModel = async (): Promise<boolean> => {
  */
 export const resetModel = async (): Promise<void> => {
   try {
-    // Use the correct method to clean up resources based on Human.js API
-    // Note: Human.js uses cleanup instead of dispose
-    if (human && typeof human.cleanup === 'function') {
-      await human.cleanup();
-    } else {
-      // Fallback for different versions
-      console.warn('Human.js cleanup method not found, trying alternative methods');
-      
-      // Try to reset config and tensors
-      if (human.tf) {
-        // @ts-ignore - Reset TensorFlow memory if available
-        human.tf.disposeVariables?.();
-        // @ts-ignore - Try to clear backend memory if available
-        human.tf.engine?.().endScope?.();
+    console.log('Resetting Human.js model...');
+    
+    // Properly clean up resources based on Human.js API
+    if (human) {
+      // Try different cleanup approaches
+      if (typeof human.cleanup === 'function') {
+        await human.cleanup();
+      } else if (human.tf && typeof human.tf.dispose === 'function') {
+        // Alternative method for older versions
+        await human.tf.dispose();
+      } else if (human.tf && human.tf.engine) {
+        // Yet another alternative
+        human.tf.engine().disposeVariables();
       }
     }
     

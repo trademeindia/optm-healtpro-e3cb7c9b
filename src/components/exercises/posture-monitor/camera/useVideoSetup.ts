@@ -1,68 +1,32 @@
 
 import { useCallback } from 'react';
 
-/**
- * Provides utilities for setting up the video element with a camera stream
- */
-export const useVideoSetup = () => {
-  /**
-   * Sets up a video element with the provided stream
-   */
+interface UseVideoSetupProps {}
+
+export const useVideoSetup = (props?: UseVideoSetupProps) => {
+  // Set up the video element with the camera stream
   const setupVideoElement = useCallback(async (
     videoRef: React.MutableRefObject<HTMLVideoElement | null>,
     canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
     stream: MediaStream
   ): Promise<boolean> => {
-    if (!videoRef.current) {
-      console.error("Video element reference is null");
-      return false;
-    }
-    
     try {
-      // Set stream as source for video element
+      if (!videoRef.current) {
+        console.error("Video element not found while setting up");
+        return false;
+      }
+      
+      // Set video source to the stream
       videoRef.current.srcObject = stream;
       
-      // Wait for the video to be ready
-      await new Promise<void>((resolve, reject) => {
-        if (!videoRef.current) {
-          reject(new Error("Video element reference is null"));
-          return;
-        }
-        
-        const handleLoaded = () => {
-          resolve();
-          cleanup();
-        };
-        
-        const handleError = (error: Event) => {
-          console.error("Error loading video metadata:", error);
-          reject(new Error("Failed to load video metadata"));
-          cleanup();
-        };
-        
-        const cleanup = () => {
-          videoRef.current?.removeEventListener('loadedmetadata', handleLoaded);
-          videoRef.current?.removeEventListener('error', handleError);
-        };
-        
-        videoRef.current.addEventListener('loadedmetadata', handleLoaded);
-        videoRef.current.addEventListener('error', handleError);
-        
-        // If already loaded, resolve immediately
-        if (videoRef.current.readyState >= 2) {
-          resolve();
-          cleanup();
-        }
-      });
+      // Wait for video metadata to load (dimensions, etc.)
+      await videoRef.current.play();
       
-      // Set canvas size to match video
-      if (canvasRef.current && videoRef.current.videoWidth) {
+      // Set canvas dimensions to match video
+      if (canvasRef.current && videoRef.current.videoWidth && videoRef.current.videoHeight) {
         canvasRef.current.width = videoRef.current.videoWidth;
         canvasRef.current.height = videoRef.current.videoHeight;
       }
-      
-      // Start playback
-      await videoRef.current.play();
       
       return true;
     } catch (error) {

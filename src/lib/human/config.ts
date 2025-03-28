@@ -1,33 +1,36 @@
 
-/**
- * Configuration for Human.js library
- */
-export const humanConfig = {
-  // Use WebGL backend for better performance
-  backend: 'webgl' as const,
+import * as Human from '@vladmandic/human';
+
+export const humanConfig: Human.Config = {
+  // Set backend to use WebGL for better performance
+  backend: 'webgl',
   
-  // Path for models
-  modelBasePath: '/models/',
+  // Model paths
+  modelBasePath: '/',
   
-  // Skip warmup for better startup performance
-  warmup: 'none' as const,
+  // Optimizations
+  warmup: 'none',
   
-  // Enable body pose detection with higher confidence
-  body: {
-    enabled: true,
-    // Use lite model for better performance
-    modelPath: 'blazepose-lite.json',
-    minConfidence: 0.3,
-    maxDetected: 1,
-  },
+  // Media settings
+  filter: { enabled: false },
   
-  // Disable components we don't need
+  // Detection settings
   face: { enabled: false },
   hand: { enabled: false },
-  gesture: { enabled: false },
-  object: { enabled: false },
+  body: {
+    enabled: true,
+    modelPath: 'blazepose-lite.json',
+    minConfidence: 0.3,
+    maxDetected: 1
+  },
   
-  // Performance settings
-  filter: { enabled: true },
+  // Advanced settings
   segmentation: { enabled: false },
+  gesture: { enabled: false },
+  
+  // Debugging settings
+  debug: false
 };
+
+// Default human export with configuration
+export default humanConfig;
