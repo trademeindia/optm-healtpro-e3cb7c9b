@@ -1,6 +1,6 @@
 
 import { MedicalReport, MedicalAnalysis, Patient } from '@/types/medicalData';
-import { DataSyncService } from '../dataSyncService';
+import { dataSyncService } from '../dataSyncService';
 import { storeInLocalStorage, getFromLocalStorage } from '../storage/localStorageService';
 import { User } from '@/contexts/auth/types';
 import { hasPermission } from '@/utils/rbac';
@@ -56,11 +56,25 @@ export class MedicalReportService {
       this.storeReportInLocalStorage(report);
       
       // 4. Get patient data
-      const patient = await DataSyncService.getPatientData(patientId);
+      const patient = await dataSyncService.getPatientData(patientId);
       if (!patient) throw new Error("Patient not found");
       
       // 5. Process the report
-      const { analysis } = await DataSyncService.processMedicalReport(report, patient);
+      const result = await dataSyncService.processMedicalReport(report, {
+        id: patient.id,
+        name: `${patient.first_name} ${patient.last_name}`,
+        biomarkers: [],
+        symptoms: [],
+        anatomicalMappings: [],
+        reports: [],
+        analyses: []
+      });
+      
+      if (!result || !result.analysis) {
+        throw new Error("Failed to process medical report");
+      }
+      
+      const analysis = result.analysis;
       
       return { report, analysis };
     } catch (error) {

@@ -55,7 +55,7 @@ export const saveUserData = async <T extends Record<string, any>>(
       }
       
       // Assuming the first item in the array is the saved data
-      return savedData.length > 0 ? savedData[0] as unknown as T : null;
+      return savedData.length > 0 ? (savedData[0] as T) : null;
     } else {
       // For mock data or tables that don't exist yet
       console.log(`Mocking data save to table ${table} for development`);
@@ -77,7 +77,7 @@ export const dataStorageService = {
   getData: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
     try {
       const { data, error } = await supabase
-        .from(table as any)
+        .from(table)
         .select('*')
         .eq('id', id)
         .single();
@@ -87,7 +87,7 @@ export const dataStorageService = {
         return null;
       }
       
-      return data as unknown as T;
+      return data as T;
     } catch (error) {
       console.error(`Error in getData for table ${table}:`, error);
       return null;
@@ -97,7 +97,7 @@ export const dataStorageService = {
   getDataByUserId: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
     try {
       const { data, error } = await supabase
-        .from(table as any)
+        .from(table)
         .select('*')
         .eq('user_id', userId);
       
@@ -106,7 +106,7 @@ export const dataStorageService = {
         return null;
       }
       
-      return data as unknown as T[];
+      return data as T[];
     } catch (error) {
       console.error(`Error in getDataByUserId for table ${table}:`, error);
       return null;
@@ -116,7 +116,7 @@ export const dataStorageService = {
   deleteData: async (table: string, id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
-        .from(table as any)
+        .from(table)
         .delete()
         .eq('id', id);
       

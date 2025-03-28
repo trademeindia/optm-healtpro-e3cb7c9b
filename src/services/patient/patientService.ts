@@ -3,6 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { PatientProfile } from '@/types/patient';
 import { v4 as uuidv4 } from 'uuid';
 
+// Extend the profile type to include the missing fields
+interface ProfileWithTimestamps {
+  id: string;
+  user_id: string;
+  email: string;
+  name: string;
+  role: string;
+  provider: string;
+  picture: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Mock data for development
 const mockPatientProfiles = [
   {
@@ -46,19 +59,22 @@ export const getPatientProfile = async (patientId?: string): Promise<PatientProf
           return mockPatientProfiles.find(p => p.user_id === userId) || null;
         }
         
+        // Cast data to include missing properties
+        const profileData = data as ProfileWithTimestamps;
+        
         return {
-          id: data.id,
-          user_id: data.id,
-          first_name: data.name?.split(' ')[0] || '',
-          last_name: data.name?.split(' ').slice(1).join(' ') || '',
+          id: profileData.id,
+          user_id: profileData.id,
+          first_name: profileData.name?.split(' ')[0] || '',
+          last_name: profileData.name?.split(' ').slice(1).join(' ') || '',
           date_of_birth: '',
           gender: '',
           blood_type: '',
           allergies: [],
           emergency_contact: '',
           phone_number: '',
-          created_at: data.created_at || new Date().toISOString(),
-          updated_at: data.updated_at || new Date().toISOString()
+          created_at: profileData.created_at || new Date().toISOString(),
+          updated_at: profileData.updated_at || new Date().toISOString()
         };
       } catch (err) {
         console.error('Error fetching patient profile:', err);
@@ -84,19 +100,22 @@ export const getPatientProfile = async (patientId?: string): Promise<PatientProf
         return mockPatientProfiles.find(p => p.id === patientId) || null;
       }
       
+      // Cast data to include missing properties
+      const profileData = data as ProfileWithTimestamps;
+      
       return {
-        id: data.id,
-        user_id: data.id,
-        first_name: data.name?.split(' ')[0] || '',
-        last_name: data.name?.split(' ').slice(1).join(' ') || '',
+        id: profileData.id,
+        user_id: profileData.id,
+        first_name: profileData.name?.split(' ')[0] || '',
+        last_name: profileData.name?.split(' ').slice(1).join(' ') || '',
         date_of_birth: '',
         gender: '',
         blood_type: '',
         allergies: [],
         emergency_contact: '',
         phone_number: '',
-        created_at: data.created_at || new Date().toISOString(),
-        updated_at: data.updated_at || new Date().toISOString()
+        created_at: profileData.created_at || new Date().toISOString(),
+        updated_at: profileData.updated_at || new Date().toISOString()
       };
     } catch (err) {
       console.error('Error fetching patient profile:', err);
@@ -155,20 +174,23 @@ export const updatePatientProfile = async (patientId: string, updates: Partial<P
       return null;
     }
     
+    // Cast data to include missing properties
+    const profileData = data as ProfileWithTimestamps;
+    
     // Return the updated profile
     return {
-      id: data.id,
-      user_id: data.id,
-      first_name: updates.first_name || data.name?.split(' ')[0] || '',
-      last_name: updates.last_name || data.name?.split(' ').slice(1).join(' ') || '',
+      id: profileData.id,
+      user_id: profileData.id,
+      first_name: updates.first_name || profileData.name?.split(' ')[0] || '',
+      last_name: updates.last_name || profileData.name?.split(' ').slice(1).join(' ') || '',
       date_of_birth: updates.date_of_birth || '',
       gender: updates.gender || '',
       blood_type: updates.blood_type || '',
       allergies: updates.allergies || [],
       emergency_contact: updates.emergency_contact || '',
       phone_number: updates.phone_number || '',
-      created_at: data.created_at || new Date().toISOString(),
-      updated_at: data.updated_at || new Date().toISOString()
+      created_at: profileData.created_at || new Date().toISOString(),
+      updated_at: profileData.updated_at || new Date().toISOString()
     };
   } catch (err) {
     console.error('Error updating patient profile:', err);
@@ -218,10 +240,13 @@ export const patientService = {
         return newProfile;
       }
       
+      // Cast data to include missing properties
+      const profileResult = data as ProfileWithTimestamps;
+      
       // Return the created profile
       return {
-        id: data.id,
-        user_id: data.id,
+        id: profileResult.id,
+        user_id: profileResult.id,
         first_name,
         last_name,
         date_of_birth: profileData.date_of_birth || '',
@@ -230,8 +255,8 @@ export const patientService = {
         allergies: profileData.allergies || [],
         emergency_contact: profileData.emergency_contact || '',
         phone_number: profileData.phone_number || '',
-        created_at: data.created_at || new Date().toISOString(),
-        updated_at: data.updated_at || new Date().toISOString()
+        created_at: profileResult.created_at || new Date().toISOString(),
+        updated_at: profileResult.updated_at || new Date().toISOString()
       };
     } catch (err) {
       console.error('Error creating patient profile:', err);

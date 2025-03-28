@@ -7,7 +7,7 @@ import {
   MedicalAnalysis,
   Biomarker
 } from '@/types/medicalData';
-import { DataSyncService } from '@/services/dataSyncService';
+import { dataSyncService } from '@/services/dataSyncService';
 
 // Default empty patient data
 const defaultPatient: Patient = {
@@ -76,18 +76,30 @@ export const MedicalDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setError(null);
     
     try {
-      // Process the report and get updated patient data
-      const { updatedPatient, analysis } = await DataSyncService.processMedicalReport(report, patient);
+      // Process the report and get analysis
+      const result = await dataSyncService.processMedicalReport(report, patient);
+      
+      if (!result || !result.analysis) {
+        throw new Error("Failed to process medical report");
+      }
+      
+      const analysis = result.analysis;
+      
+      // Update patient with the new report and analysis
+      setPatient(prev => ({
+        ...prev,
+        reports: [...prev.reports, report],
+        analyses: [...prev.analyses, analysis]
+      }));
       
       // Update state
-      setPatient(updatedPatient);
       setLastProcessedReport(report);
       setLastAnalysis(analysis);
       
       // Notify user
       toast({
         title: "Report Processed Successfully",
-        description: `Extracted ${analysis.extractedBiomarkers.length} biomarkers from your report`,
+        description: `Extracted ${analysis.extractedBiomarkers?.length || 0} biomarkers from your report`,
       });
       
       return analysis;

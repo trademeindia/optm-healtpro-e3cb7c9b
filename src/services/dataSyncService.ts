@@ -5,13 +5,15 @@ import { saveUserData } from './storage/dataStorageService';
 import { getPatientProfile } from './patient/patientService';
 import { dataStorageService } from './storage/dataStorageService';
 import { patientService } from './patient/patientService';
+import { MedicalAnalysis, MedicalReport, Patient } from '@/types/medicalData';
+import { v4 as uuidv4 } from 'uuid';
 
 // Create a DataSyncService for better typings
 export const dataSyncService = {
   getDataFromTable: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
     try {
       const { data, error } = await supabase
-        .from(table as any)
+        .from(table)
         .select('*')
         .eq('id', id)
         .single();
@@ -21,7 +23,7 @@ export const dataSyncService = {
         return null;
       }
       
-      return data as unknown as T;
+      return data as T;
     } catch (error) {
       console.error(`Error in getDataFromTable for table ${table}:`, error);
       return null;
@@ -31,7 +33,7 @@ export const dataSyncService = {
   getDataByUserFromTable: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
     try {
       const { data, error } = await supabase
-        .from(table as any)
+        .from(table)
         .select('*')
         .eq('user_id', userId);
       
@@ -40,7 +42,7 @@ export const dataSyncService = {
         return null;
       }
       
-      return data as unknown as T[];
+      return data as T[];
     } catch (error) {
       console.error(`Error in getDataByUserFromTable for table ${table}:`, error);
       return null;
@@ -50,7 +52,7 @@ export const dataSyncService = {
   deleteDataFromTable: async (table: string, id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
-        .from(table as any)
+        .from(table)
         .delete()
         .eq('id', id);
       
@@ -70,19 +72,29 @@ export const dataSyncService = {
     return await patientService.getPatientProfile(patientId);
   },
 
-  processMedicalReport: async (report: any, patient: any) => {
+  processMedicalReport: async (report: MedicalReport, patient: Patient) => {
     // Mock implementation for processing medical reports
     console.log(`Processing medical report for patient ${patient.id}`);
     
     // In a real implementation, we would send this to an API for analysis
-    const mockAnalysis = {
+    const mockAnalysis: MedicalAnalysis = {
       id: `analysis-${Date.now()}`,
-      patientId: patient.id,
+      reportId: report.id,
       timestamp: new Date().toISOString(),
-      findings: [
-        { name: 'Glucose', value: '95 mg/dL', status: 'normal' },
-        { name: 'Cholesterol', value: '180 mg/dL', status: 'normal' }
-      ]
+      summary: "Sample analysis of blood test results",
+      keyFindings: [
+        "Normal blood glucose levels",
+        "Cholesterol within healthy range"
+      ],
+      recommendations: [
+        "Continue with current diet and exercise regimen",
+        "Follow up in 6 months for routine check"
+      ],
+      extractedBiomarkers: [
+        { name: 'Glucose', value: '95 mg/dL', unit: 'mg/dL', normalRange: '70-100 mg/dL', status: 'normal' },
+        { name: 'Cholesterol', value: '180 mg/dL', unit: 'mg/dL', normalRange: '<200 mg/dL', status: 'normal' }
+      ],
+      suggestedDiagnoses: []
     };
     
     return { analysis: mockAnalysis };
@@ -124,5 +136,3 @@ export const syncUserProfile = async (user: User): Promise<boolean> => {
 
 // Export the DataSyncService type
 export type DataSyncService = typeof dataSyncService;
-// Export the service instance
-export { dataSyncService as DataSyncService };
