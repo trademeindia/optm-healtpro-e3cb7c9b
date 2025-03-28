@@ -1,8 +1,11 @@
 
+// User role type definition
 export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
 
-export type Provider = 'google' | 'apple' | 'facebook' | 'twitter' | 'email' | 'github' | 'azure';
+// Provider type definition
+export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'email';
 
+// User type definition
 export interface User {
   id: string;
   email: string;
@@ -13,15 +16,19 @@ export interface User {
   patientId?: string;
 }
 
+// Auth context type definition
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  authError?: Error | null;
+  authError: Error | null;
   login: (email: string, password: string) => Promise<User | null>;
   loginWithSocialProvider: (provider: string) => Promise<void>;
   handleOAuthCallback: (provider: string, code: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role?: UserRole) => Promise<User | null>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 }
+
+// Include a proper export for Provider
+export { Provider };

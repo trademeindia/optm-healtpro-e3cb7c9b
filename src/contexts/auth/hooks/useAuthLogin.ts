@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
@@ -13,74 +12,89 @@ export const useAuthLogin = ({ setIsLoading, navigate }: UseAuthLoginProps) => {
   const login = async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
     try {
-      console.log(`Attempting to log in with email: ${email}`);
-      
-      // Check if using demo credentials
-      const isDemoDoctor = email === 'doctor@example.com' && password === 'password123';
-      const isDemoPatient = email === 'patient@example.com' && password === 'password123';
-      const isDemoReceptionist = email === 'receptionist@example.com' && password === 'password123';
-      
-      if (isDemoDoctor || isDemoPatient || isDemoReceptionist) {
-        console.log('Using demo account login');
-        
-        // Create a demo user without actually authenticating
+      // Special cases for demo accounts
+      if (email === 'admin@example.com' && password === 'password123') {
+        // Handle demo admin login
         const demoUser: User = {
-          id: isDemoDoctor ? 'demo-doctor-id' : isDemoPatient ? 'demo-patient-id' : 'demo-receptionist-id',
+          id: `demo-admin-${Date.now()}`,
           email: email,
-          name: isDemoDoctor ? 'Demo Doctor' : isDemoPatient ? 'Demo Patient' : 'Demo Receptionist',
-          role: isDemoDoctor ? 'doctor' : isDemoPatient ? 'patient' : 'receptionist',
+          name: 'Admin Demo Account',
+          role: 'admin' as any,
           provider: 'email',
           picture: null
         };
         
-        toast.success('Demo login successful');
+        toast.success('Admin demo login successful');
+        navigate('/dashboard');
+        return demoUser;
+      }
+      else if (email === 'doctor@example.com' && password === 'password123') {
+        // Handle demo doctor login
+        const demoUser: User = {
+          id: `demo-doctor-${Date.now()}`,
+          email: email,
+          name: 'Dr. Demo Account',
+          role: 'doctor' as any,
+          provider: 'email',
+          picture: null
+        };
         
-        // Navigate to the appropriate dashboard with a slight delay to ensure state is updated
-        setTimeout(() => {
-          const dashboard = isDemoDoctor ? '/dashboard/doctor' : 
-                           isDemoPatient ? '/dashboard/patient' : 
-                           '/dashboard/receptionist';
-          console.log(`Navigating to ${dashboard}`);
-          navigate(dashboard);
-        }, 100);
+        toast.success('Doctor demo login successful');
+        navigate('/dashboard');
+        return demoUser;
+      }
+      else if (email === 'patient@example.com' && password === 'password123') {
+        // Handle demo patient login
+        const demoUser: User = {
+          id: `demo-patient-${Date.now()}`,
+          email: email,
+          name: 'Patient Demo',
+          role: 'patient' as any,
+          provider: 'email',
+          picture: null
+        };
         
+        toast.success('Patient demo login successful');
+        navigate('/patient-dashboard');
+        return demoUser;
+      }
+      else if (email === 'receptionist@example.com' && password === 'password123') {
+        // Handle demo receptionist login
+        const demoUser: User = {
+          id: `demo-receptionist-${Date.now()}`,
+          email: email,
+          name: 'Receptionist Demo',
+          role: 'receptionist' as any,
+          provider: 'email',
+          picture: null
+        };
+        
+        toast.success('Receptionist demo login successful');
+        navigate('/dashboard');
         return demoUser;
       }
       
-      // Regular authentication flow for non-demo users
+      // Handle real login with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
-
-      if (error) {
-        console.error('Authentication error:', error);
-        toast.error(error.message || 'Login failed');
-        throw error;
-      }
-
-      if (!data.user) {
-        throw new Error('No user returned from authentication');
-      }
-
+      
+      if (error) throw error;
+      
       const formattedUser = await formatUser(data.user);
-      if (!formattedUser) {
-        throw new Error('User profile not found');
+      
+      if (formattedUser) {
+        toast.success('Login successful');
+        navigate(formattedUser.role === 'doctor' ? '/dashboard' : '/patient-dashboard');
       }
-      
-      toast.success('Login successful');
-      
-      // Navigate to the appropriate dashboard based on user role
-      const dashboard = formattedUser.role === 'doctor' ? '/dashboard/doctor' : 
-                        formattedUser.role === 'receptionist' ? '/dashboard/receptionist' : 
-                        '/dashboard/patient';
-      
-      setTimeout(() => navigate(dashboard), 100);
       
       return formattedUser;
     } catch (error: any) {
-      console.error('Login failed:', error);
-      toast.error(error.message || 'Login failed');
+      console.error('Login error:', error);
+      toast.error(error.message || 'Login failed', {
+        duration: 5000
+      });
       throw error;
     } finally {
       setIsLoading(false);

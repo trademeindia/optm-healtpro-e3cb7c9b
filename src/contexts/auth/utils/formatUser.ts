@@ -1,76 +1,63 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { User, UserRole } from '../types';
-import { Provider } from './types';
-import { createUserProfile, getUserSession } from './userProfile';
+import { User, UserRole, Provider } from '../types';
+import { SupabaseUser } from './types';
 
-/**
- * Formats a Supabase user object into our application's User format
- */
-export const formatUser = async (supabaseUser: any): Promise<User | null> => {
-  if (!supabaseUser || !supabaseUser.id) {
-    return null;
-  }
-
+export async function formatUser(user?: SupabaseUser | null): Promise<User | null> {
+  if (!user) return null;
+  
   try {
     // Get the user's profile from the database
-    const userSession = await getUserSession(supabaseUser.id);
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('name, role, picture, provider')
+      .eq('id', user.id)
+      .single();
     
-    if (!userSession) {
-      console.log('No user profile found, checking for user metadata');
-      
-      // If no profile found, try to get role from user metadata
-      const userRole = supabaseUser.user_metadata?.role || 
-                       supabaseUser.app_metadata?.role || 
-                       'patient';
-                       
-      const displayName = supabaseUser.user_metadata?.name || 
-                          supabaseUser.user_metadata?.full_name || 
-                          'User';
-      
-      // Create profile for the user
-      const provider = supabaseUser.app_metadata?.provider || 'email';
-      const picture = supabaseUser.user_metadata?.avatar_url || null;
-      
-      const userProfile = await createUserProfile(
-        supabaseUser.id,
-        supabaseUser.email || '',
-        displayName,
-        userRole as UserRole,
-        provider as Provider,
-        picture || ''
-      );
-      
-      if (!userProfile) {
-        console.error('Failed to create user profile');
-        return null;
-      }
-      
-      const user: User = {
-        id: userProfile.id,
-        email: userProfile.email,
-        name: userProfile.name,
-        role: userProfile.role as UserRole,
-        provider: userProfile.provider as Provider,
-        picture: userProfile.picture
-      };
-      
-      return user;
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows returned" error
+      console.error('Error fetching user profile:', error);
+      // Continue with available data only
     }
-    
-    // Return user with profile data
-    const user: User = {
-      id: userSession.id,
-      email: userSession.email,
-      name: userSession.name,
-      role: userSession.role as UserRole,
-      provider: userSession.provider as Provider,
-      picture: userSession.picture
+
+    // Determine provider: use profile if available, else infer from app_metadata
+    let provider: Provider = 'email';
+    if (profile?.provider) {
+      provider = profile.provider as Provider;
+    } else if (user.app_metadata?.provider) {
+      provider = (user.app_metadata.provider === 'google' ? 'google' :
+                 user.app_metadata.provider === 'facebook' ? 'facebook' :
+                 user.app_metadata.provider === 'twitter' ? 'twitter' :
+                 user.app_metadata.provider === 'github' ? 'github' : 'email') as Provider;
+    }
+
+    // Get name from profile > user_metadata > email prefix
+    const name = profile?.name || 
+                user.user_metadata?.name || 
+                user.user_metadata?.full_name || 
+                (user.email ? user.email.split('@')[0] : null);
+
+    // Get role from profile > user_metadata > default to 'patient'
+    const role = profile?.role || 
+                (user.user_metadata?.role as UserRole) || 
+                'patient';
+
+    // Get picture from profile > user_metadata
+    const picture = profile?.picture || 
+                   user.user_metadata?.avatar_url || 
+                   null;
+
+    return {
+      id: user.id,
+      email: user.email || '',
+      name,
+      role,
+      provider,
+      picture,
+      // If the user is a patient, add the patientId field
+      ...(role === 'patient' ? { patientId: user.id } : {})
     };
-    
-    return user;
   } catch (error) {
     console.error('Error formatting user:', error);
     return null;
   }
-};
+}
