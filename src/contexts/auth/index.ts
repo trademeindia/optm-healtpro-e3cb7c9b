@@ -17,5 +17,5 @@ export const useAuth = () => {
 // Export types
 export type { User, AuthContextType };
 export type { AuthProvider };
+export { AuthContext };
 export { AuthProvider as AuthProviderComponent } from './AuthProvider';
-

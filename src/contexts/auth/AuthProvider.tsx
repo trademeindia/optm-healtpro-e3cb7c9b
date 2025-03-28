@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { AuthContext } from './index';
+import { AuthContext } from './AuthContext';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useAuthOperations } from './hooks/useAuthOperations';
 import { User, UserRole } from './types';

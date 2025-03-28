@@ -1,12 +1,5 @@
+// This file is no longer needed as useAuth is now exported from index.ts
+// Can be safely removed, but keeping it for compatibility
+import { useAuth as useAuthHook } from './index';
 
-import { useContext } from 'react';
-import { AuthContext } from './AuthContext';
-import { AuthContextType } from './types';
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === null) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = useAuthHook;

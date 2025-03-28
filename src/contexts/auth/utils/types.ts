@@ -1,8 +1,9 @@
 
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { Provider as MainProvider } from '../types';
 
 // Define OAuth providers - using string literals
-export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'apple';
+export type Provider = MainProvider;
 
 // User session interface
 export interface UserSession {

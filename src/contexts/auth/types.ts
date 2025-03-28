@@ -1,7 +1,7 @@
 
 export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
 
-export type Provider = 'google' | 'apple' | 'facebook' | 'twitter' | 'email' | 'github';
+export type Provider = 'google' | 'apple' | 'facebook' | 'twitter' | 'email' | 'github' | 'azure';
 
 export interface User {
   id: string;
