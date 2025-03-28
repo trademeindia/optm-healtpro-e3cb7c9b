@@ -30,7 +30,8 @@ export const saveUserData = async <T extends Record<string, any>>(
     
     // If no id is provided, add created_at
     if (!data.id) {
-      dataWithUser.created_at = dataWithUser.updated_at;
+      // Use as any to avoid TypeScript error about created_at not existing on the type
+      (dataWithUser as any).created_at = dataWithUser.updated_at;
     }
     
     // For tables we know exist in the database
@@ -41,11 +42,10 @@ export const saveUserData = async <T extends Record<string, any>>(
       table === 'fitness_data' ||
       table === 'messages'
     ) {
-      // Use type assertion to handle the generic type safely
-      // @ts-ignore - This is necessary due to dynamic table usage
+      // Use type assertion to handle the dynamic table usage safely
       const { data: savedData, error } = await supabase
-        .from(table)
-        .upsert(dataWithUser, {
+        .from(table as any)
+        .upsert(dataWithUser as any, {
           onConflict: 'id'
         })
         .select();
@@ -87,9 +87,9 @@ export const dataStorageService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion to handle the dynamic table usage safely
         const { data, error } = await supabase
-          .from(table)
+          .from(table as any)
           .select('*')
           .eq('id', id)
           .single();
@@ -123,9 +123,9 @@ export const dataStorageService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion to handle the dynamic table usage safely
         const { data, error } = await supabase
-          .from(table)
+          .from(table as any)
           .select('*')
           .eq('user_id', userId);
         
@@ -158,9 +158,9 @@ export const dataStorageService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion to handle the dynamic table usage safely
         const { error } = await supabase
-          .from(table)
+          .from(table as any)
           .delete()
           .eq('id', id);
         

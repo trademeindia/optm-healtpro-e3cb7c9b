@@ -19,9 +19,9 @@ export const dataSyncService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion for the table name
         const { data, error } = await supabase
-          .from(table)
+          .from(table as any)
           .select('*')
           .eq('id', id)
           .single();
@@ -54,9 +54,9 @@ export const dataSyncService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion for the table name
         const { data, error } = await supabase
-          .from(table)
+          .from(table as any)
           .select('*')
           .eq('user_id', userId);
         
@@ -88,9 +88,9 @@ export const dataSyncService = {
         table === 'body_analysis' ||
         table === 'exercise_sessions'
       ) {
-        // @ts-ignore - This is necessary due to dynamic table usage
+        // Use type assertion for the table name
         const { error } = await supabase
-          .from(table)
+          .from(table as any)
           .delete()
           .eq('id', id);
         
