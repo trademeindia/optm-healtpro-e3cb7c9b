@@ -1,22 +1,25 @@
 
-import * as Human from '@vladmandic/human';
+// Add necessary types for the motion tracking system
 
-// Define motion states for exercise analysis
 export enum MotionState {
   STANDING = 'standing',
-  MID_MOTION = 'mid_motion',
-  FULL_MOTION = 'full_motion'
+  MID_MOTION = 'mid-motion',
+  FULL_MOTION = 'full-motion',
+  REST = 'rest'
 }
 
-// Define feedback types for user interface
 export enum FeedbackType {
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR'
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error'
 }
 
-// Body angles for joint analysis
+export interface FeedbackMessage {
+  message: string | null;
+  type: FeedbackType;
+}
+
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;
@@ -26,13 +29,23 @@ export interface BodyAngles {
   neckAngle: number | null;
 }
 
-// Feedback message format
-export interface FeedbackMessage {
-  message: string | null;
-  type: FeedbackType;
+export interface MotionBiomarkers {
+  postureScore?: number | null;
+  movementQuality?: number | null;
+  rangeOfMotion?: number | null;
+  stabilityScore?: number | null;
+  symmetry?: number | null;
+  balance?: number | null;
+  [key: string]: number | null | undefined;
 }
 
-// Motion statistics for the exercise session
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
+  detectedKeypoints?: number;
+}
+
 export interface MotionStats {
   totalReps: number;
   goodReps: number;
@@ -40,14 +53,6 @@ export interface MotionStats {
   accuracy: number;
   currentStreak: number;
   bestStreak: number;
-  caloriesBurned: number;
   lastUpdated: number;
-}
-
-// Detection status for UI
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number | null;
-  confidence: number | null;
-  detectedKeypoints?: number;
+  caloriesBurned: number;
 }

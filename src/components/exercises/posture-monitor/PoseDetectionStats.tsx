@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import type { DetectionStatus } from './hooks/detection/types';
+import { DetectionStatus } from '@/lib/human/types';
 
 interface PoseDetectionStatsProps {
   stats: {

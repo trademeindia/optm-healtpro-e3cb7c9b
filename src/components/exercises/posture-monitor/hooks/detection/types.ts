@@ -6,3 +6,11 @@ export interface VideoStatus {
   lastCheckTime: number;
   errorCount: number;
 }
+
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
+  detectedKeypoints?: number;
+  lastDetectionTime?: number;
+}

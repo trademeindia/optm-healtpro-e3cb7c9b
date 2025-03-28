@@ -49,7 +49,8 @@ export const warmupModel = async (): Promise<boolean> => {
 export const resetModel = async (): Promise<void> => {
   try {
     // Free WASM memory and remove cached tensors
-    await human.dispose();
+    // Use the correct method to clean up resources based on Human.js API
+    await human.cleanup();
     
     console.log('Human.js model reset successfully');
   } catch (error) {

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { MotionState } from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './useSessionStats';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
-import type { MotionStats } from './useSessionStats';
+import type { MotionStats } from '@/lib/human/types';
 
 export const useSessionManagement = () => {
   // Session state
@@ -76,13 +76,13 @@ export const useSessionManagement = () => {
     if (!sessionId) return;
     
     try {
-      completeSession(sessionId, stats);
+      completeSession(sessionId);
       toast.success('Session completed and saved');
     } catch (error) {
       console.error('Error completing session:', error);
       toast.error('Failed to save session data');
     }
-  }, [sessionId, stats]);
+  }, [sessionId]);
   
   // Reset the current session data
   const resetSession = useCallback(() => {

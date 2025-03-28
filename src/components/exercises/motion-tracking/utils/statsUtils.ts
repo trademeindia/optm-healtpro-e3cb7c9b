@@ -1,5 +1,5 @@
 
-import { MotionStats } from '@/components/exercises/motion-tracking/hooks/useSessionStats';
+import { MotionStats } from '@/lib/human/types';
 
 /**
  * Get initial stats for a new session
