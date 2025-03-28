@@ -1,12 +1,14 @@
 
-import { createContext, useContext } from 'react';
-import { AuthContextType, User } from './types';
-// Import Provider from types without re-exporting to avoid ambiguity
-import type { Provider as AuthProvider } from './types';
+import { AuthProvider } from './AuthProvider';
 import { AuthContext } from './AuthContext';
+import { useContext } from 'react';
+import { AuthContextType } from './types';
 
-// Export the auth context hook
-export const useAuth = () => {
+// Export the AuthProvider with a better name to avoid conflicts
+export const AuthProviderComponent = AuthProvider;
+
+// Export the context directly
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -15,7 +17,7 @@ export const useAuth = () => {
 };
 
 // Export types
-export type { User, AuthContextType };
-export type { AuthProvider };
+export * from './types';
+
+// Export context
 export { AuthContext };
-export { AuthProvider as AuthProviderComponent } from './AuthProvider';

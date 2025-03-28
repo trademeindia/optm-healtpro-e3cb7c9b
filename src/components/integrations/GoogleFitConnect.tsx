@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { FaGoogle } from 'react-icons/fa';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { ButtonProps } from '@/components/ui/button';
+// Replace FaGoogle with a simple icon until react-icons is loaded properly
+import { LogIn } from 'lucide-react';
 
 interface GoogleFitConnectProps extends Omit<ButtonProps, 'onConnected'> {
   onConnected?: () => void;
@@ -178,7 +179,7 @@ const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
                 </>
               ) : (
                 <>
-                  <FaGoogle className="mr-2" /> Connect Google Fit
+                  <LogIn className="mr-2" /> Connect Google Fit
                 </>
               )}
             </Button>
@@ -212,7 +213,7 @@ const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({
       {isConnecting ? (
         <>Connecting...</>
       ) : (
-        <>{buttonProps.children || <><FaGoogle className="mr-2" /> Connect Google Fit</>}</>
+        <>{buttonProps.children || <><LogIn className="mr-2" /> Connect Google Fit</>}</>
       )}
     </Button>
   );

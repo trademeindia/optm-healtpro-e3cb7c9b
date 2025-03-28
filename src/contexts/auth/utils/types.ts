@@ -1,45 +1,27 @@
 
-import { User as SupabaseUser } from '@supabase/supabase-js';
-import { Provider as MainProvider } from '../types';
+import { UserRole, Provider } from '../types';
 
-// Define OAuth providers - using string literals
-export type Provider = MainProvider;
+// Re-export User type from Supabase but with our custom structure
+export interface SupabaseUser {
+  id: string;
+  email?: string;
+  app_metadata?: {
+    provider?: string;
+    [key: string]: any;
+  };
+  user_metadata?: {
+    name?: string;
+    role?: UserRole;
+    avatar_url?: string;
+    [key: string]: any;
+  };
+}
 
-// User session interface
 export interface UserSession {
   id: string;
   email: string;
   name: string | null;
-  role: string;
-  provider: string;
+  role: UserRole;
+  provider: Provider;
   picture: string | null;
-  user?: {
-    id: string;
-    email: string;
-    name: string | null;
-    role: string;
-    provider: string;
-    picture: string | null;
-  };
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
 }
-
-// Mapping of provider names to display values
-export const providerDisplayNames: Record<Provider | string, string> = {
-  google: 'Google',
-  facebook: 'Facebook',
-  twitter: 'Twitter',
-  github: 'GitHub',
-  azure: 'Microsoft',
-  apple: 'Apple',
-  email: 'Email',
-};
-
-// Authentication errors
-export type AuthError = {
-  message: string;
-  status?: number;
-  details?: any;
-};

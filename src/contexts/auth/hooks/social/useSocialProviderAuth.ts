@@ -1,6 +1,5 @@
 
 import { toast } from 'sonner';
-import { Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 type UseSocialProviderAuthProps = {
@@ -8,7 +7,7 @@ type UseSocialProviderAuthProps = {
 };
 
 export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthProps) => {
-  const loginWithSocialProvider = async (provider: Provider): Promise<void> => {
+  const loginWithSocialProvider = async (provider: string): Promise<void> => {
     setIsLoading(true);
     try {
       console.log(`Starting OAuth flow with provider: ${provider}`);
@@ -40,7 +39,7 @@ export const useSocialProviderAuth = ({ setIsLoading }: UseSocialProviderAuthPro
       
       // Use the correct structure for OAuth with explicit scopes for Google
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: provider as any,
         options
       });
 

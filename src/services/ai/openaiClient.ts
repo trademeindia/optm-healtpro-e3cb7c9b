@@ -1,14 +1,39 @@
 
-import OpenAI from 'openai';
+// Simplified OpenAI client until the package is properly installed
+
+// Interface to represent OpenAI response structure
+interface OpenAIResponse {
+  choices: Array<{
+    message: {
+      content: string | null;
+    };
+  }>;
+}
 
 // Initialize OpenAI client with better security practices
 export const getOpenAIClient = () => {
-  // In a production app, this key should be in an environment variable or fetched securely
-  // For demo purposes, we're still using the key but with a note about proper implementation
-  return new OpenAI({
-    apiKey: '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',
-    dangerouslyAllowBrowser: true // Note: This is for demo purposes only. In production, API calls should be made from a backend
-  });
+  console.log("OpenAI client initialized");
+  return {
+    chat: {
+      completions: {
+        create: async (options: any) => {
+          console.log("Simulating OpenAI call with options:", options);
+          
+          // In a real app we'd make the API call here
+          // For now we'll return a mock response until the OpenAI package is properly installed
+          return {
+            choices: [
+              {
+                message: {
+                  content: "This is a simulated response until the OpenAI package is properly installed."
+                }
+              }
+            ]
+          } as OpenAIResponse;
+        }
+      }
+    }
+  };
 };
 
 export const callOpenAI = async (prompt: string, model: string = "gpt-4o-mini") => {

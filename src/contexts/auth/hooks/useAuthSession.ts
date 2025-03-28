@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUser } from '../utils';
@@ -56,7 +55,7 @@ export const useAuthSession = () => {
           return;
         }
         
-        if (data.session) {
+        if (data?.session) {
           console.log('Supabase session found, loading user profile');
           const formattedUser = await formatUser(data.session.user);
           setUser(formattedUser);
@@ -73,7 +72,7 @@ export const useAuthSession = () => {
     initializeAuth();
 
     // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event);
         setIsLoading(true);
@@ -96,7 +95,7 @@ export const useAuthSession = () => {
     );
 
     return () => {
-      subscription.unsubscribe();
+      data?.subscription?.unsubscribe();
     };
   }, []);
 

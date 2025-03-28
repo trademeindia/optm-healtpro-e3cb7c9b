@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     let lastEventTimestamp = Date.now();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       // Prevent duplicate events in short timespan
       const now = Date.now();
       const timeSinceLastEvent = now - lastEventTimestamp;
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     return () => {
-      subscription.unsubscribe();
+      data?.subscription?.unsubscribe();
     };
   }, [setUser, user, lastAuthEvent]);
 
