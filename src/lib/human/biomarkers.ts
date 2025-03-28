@@ -1,15 +1,6 @@
 
 import type { Result } from '@vladmandic/human';
-import type { BodyAngles } from './types';
-
-export interface MotionBiomarkers {
-  postureScore: number | null;
-  movementQuality: number | null;
-  rangeOfMotion: number | null;
-  stabilityScore: number | null;
-  symmetryScore: number | null;
-  balanceScore: number | null;
-}
+import type { BodyAngles, MotionBiomarkers } from './types';
 
 // Extract biomarkers from detection result and angles
 export const extractBiomarkers = (result: Result, angles: BodyAngles): MotionBiomarkers => {

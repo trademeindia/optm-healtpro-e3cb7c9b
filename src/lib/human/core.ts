@@ -48,9 +48,22 @@ export const warmupModel = async (): Promise<boolean> => {
  */
 export const resetModel = async (): Promise<void> => {
   try {
-    // Free WASM memory and remove cached tensors
     // Use the correct method to clean up resources based on Human.js API
-    await human.cleanup();
+    // Note: Human.js uses cleanup instead of dispose
+    if (human && typeof human.cleanup === 'function') {
+      await human.cleanup();
+    } else {
+      // Fallback for different versions
+      console.warn('Human.js cleanup method not found, trying alternative methods');
+      
+      // Try to reset config and tensors
+      if (human.tf) {
+        // @ts-ignore - Reset TensorFlow memory if available
+        human.tf.disposeVariables?.();
+        // @ts-ignore - Try to clear backend memory if available
+        human.tf.engine?.().endScope?.();
+      }
+    }
     
     console.log('Human.js model reset successfully');
   } catch (error) {

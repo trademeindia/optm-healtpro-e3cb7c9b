@@ -1,104 +1,92 @@
 
-import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
-import { MotionState } from '@/lib/human/types';
+import { useState, useCallback, useEffect } from 'react';
+import * as Human from '@vladmandic/human';
+import { MotionState, BodyAngles } from '@/lib/human/types';
 import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './useSessionStats';
-import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
-import type { MotionStats } from '@/lib/human/types';
+import { MotionStats } from '@/lib/human/types';
 
-export const useSessionManagement = () => {
-  // Session state
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+interface UseSessionManagementProps {
+  sessionId?: string;
+  onSessionComplete?: (sessionData: any) => void;
+}
+
+export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessionManagementProps) => {
   const [stats, setStats] = useState<MotionStats>(getInitialStats());
-  const [exerciseType, setExerciseType] = useState<string>('general');
+  const [sessionData, setSessionData] = useState<any[]>([]);
   
-  // Initialize a new session
-  const initSession = useCallback(async (type: string = 'general') => {
-    try {
-      setExerciseType(type);
-      const newSessionId = await createSession(type);
-      setSessionId(newSessionId);
-      setStats(getInitialStats());
-      
-      console.log(`New session created: ${newSessionId} for exercise type: ${type}`);
-      return newSessionId;
-    } catch (error) {
-      console.error('Error initializing session:', error);
-      toast.error('Failed to initialize session tracking');
-      return undefined;
-    }
-  }, []);
-  
-  // Handle good rep (completed with proper form)
-  const handleGoodRep = useCallback(() => {
+  // Add a rep with good form
+  const addGoodRep = useCallback(() => {
     setStats(prev => updateStatsForGoodRep(prev));
-    toast.success('Good rep!', { 
-      position: 'top-right',
-      duration: 1500
-    });
   }, []);
   
-  // Handle bad rep (completed with poor form)
-  const handleBadRep = useCallback(() => {
+  // Add a rep with bad form
+  const addBadRep = useCallback(() => {
     setStats(prev => updateStatsForBadRep(prev));
-    toast.warning('Room for improvement on that rep', { 
-      position: 'top-right',
-      duration: 1500
-    });
   }, []);
   
-  // Save session data to persistent storage
-  const saveSessionData = useCallback(async (
-    detectionResult: any,
-    angles: any,
-    biomarkers: any,
-    motionState: MotionState
-  ) => {
-    if (!sessionId) return;
-    
-    try {
-      await saveDetectionData(
-        sessionId,
-        detectionResult,
-        angles,
-        biomarkers,
-        motionState,
-        exerciseType,
-        stats
-      );
-    } catch (error) {
-      console.error('Error saving session data:', error);
-    }
-  }, [sessionId, exerciseType, stats]);
-  
-  // Complete the current session
-  const completeCurrentSession = useCallback(() => {
-    if (!sessionId) return;
-    
-    try {
-      completeSession(sessionId);
-      toast.success('Session completed and saved');
-    } catch (error) {
-      console.error('Error completing session:', error);
-      toast.error('Failed to save session data');
-    }
-  }, [sessionId]);
-  
-  // Reset the current session data
+  // Reset the session stats
   const resetSession = useCallback(() => {
     setStats(getInitialStats());
-    toast.info('Session reset');
+    setSessionData([]);
   }, []);
   
+  // Save session data for a rep
+  const saveRepData = useCallback((
+    result: Human.Result,
+    angles: BodyAngles,
+    biomarkers: Record<string, number | null>,
+    motionState: MotionState,
+    isGoodForm: boolean
+  ) => {
+    const timestamp = Date.now();
+    
+    const repData = {
+      timestamp,
+      sessionId,
+      motionState,
+      angles,
+      biomarkers,
+      isGoodForm,
+      stats: { ...stats }
+    };
+    
+    setSessionData(prev => [...prev, repData]);
+    
+    return repData;
+  }, [sessionId, stats]);
+  
+  // Complete the session and process data
+  const completeSession = useCallback(async () => {
+    if (!sessionId) return;
+    
+    try {
+      // Prepare session summary
+      const sessionSummary = {
+        sessionId,
+        completedAt: Date.now(),
+        stats,
+        data: sessionData
+      };
+      
+      // Call the provided callback with session data
+      if (onSessionComplete) {
+        onSessionComplete(sessionSummary);
+      }
+      
+      return sessionSummary;
+    } catch (error) {
+      console.error('Error completing session:', error);
+      return null;
+    }
+  }, [sessionId, stats, sessionData, onSessionComplete]);
+  
   return {
-    sessionId,
     stats,
-    exerciseType,
-    initSession,
-    handleGoodRep,
-    handleBadRep,
-    saveSessionData,
-    completeCurrentSession,
-    resetSession
+    sessionData,
+    addGoodRep,
+    addBadRep,
+    resetSession,
+    saveRepData,
+    completeSession
   };
 };

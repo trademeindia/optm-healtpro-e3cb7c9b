@@ -36,6 +36,7 @@ export interface MotionBiomarkers {
   stabilityScore?: number | null;
   symmetry?: number | null;
   balance?: number | null;
+  // Add string index signature to allow any string key
   [key: string]: number | null | undefined;
 }
 

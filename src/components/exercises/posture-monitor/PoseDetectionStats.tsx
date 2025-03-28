@@ -1,73 +1,62 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { AlertCircle, Camera } from 'lucide-react';
 import { DetectionStatus } from '@/lib/human/types';
 
 interface PoseDetectionStatsProps {
-  stats: {
-    totalReps: number;
-    goodReps: number;
-    badReps: number;
-    accuracy: number;
-  };
   detectionStatus: DetectionStatus;
 }
 
-const PoseDetectionStats: React.FC<PoseDetectionStatsProps> = ({ stats, detectionStatus }) => {
-  // Calculate confidence percentage
-  const confidencePercent = Math.round((detectionStatus.confidence || 0) * 100);
+const PoseDetectionStats: React.FC<PoseDetectionStatsProps> = ({ 
+  detectionStatus 
+}) => {
+  const { isDetecting, fps, confidence, detectedKeypoints } = detectionStatus;
   
   return (
-    <Card className="bg-card">
+    <Card className="border border-border/60">
       <CardContent className="p-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Detection Confidence</span>
-              <span className="font-medium">{confidencePercent}%</span>
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Camera className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Detection Status</span>
             </div>
-            <Progress 
-              value={confidencePercent} 
-              className="h-2"
-              // Color based on confidence level
-              style={{ 
-                background: confidencePercent < 30 ? '#fecaca' : '#e5e7eb',
-                "--progress-color": confidencePercent < 30 ? '#ef4444' : 
-                                   confidencePercent < 70 ? '#f59e0b' : '#10b981'
-              } as React.CSSProperties}
-            />
+            <div className="flex items-center space-x-1">
+              <div className={`h-2 w-2 rounded-full ${isDetecting ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+              <span className="text-xs text-muted-foreground">
+                {isDetecting ? 'Active' : 'Inactive'}
+              </span>
+            </div>
           </div>
           
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Form Accuracy</span>
-              <span className="font-medium">{stats.accuracy.toFixed(0)}%</span>
+          {fps !== null && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">FPS</span>
+              <span className="text-xs font-medium">{fps}</span>
             </div>
-            <Progress 
-              value={stats.accuracy} 
-              className="h-2"
-              style={{ 
-                "--progress-color": stats.accuracy < 30 ? '#ef4444' : 
-                                  stats.accuracy < 70 ? '#f59e0b' : '#10b981'
-              } as React.CSSProperties}
-            />
-          </div>
+          )}
           
-          <div className="col-span-2 grid grid-cols-3 gap-2 mt-2 text-center text-sm">
-            <div className="bg-muted rounded-md p-2">
-              <div className="text-muted-foreground">FPS</div>
-              <div className="font-semibold">{detectionStatus.fps || 0}</div>
+          {confidence !== null && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Confidence</span>
+              <span className="text-xs font-medium">{Math.round(confidence * 100)}%</span>
             </div>
-            <div className="bg-muted rounded-md p-2">
-              <div className="text-muted-foreground">Keypoints</div>
-              <div className="font-semibold">{detectionStatus.detectedKeypoints}</div>
+          )}
+          
+          {detectedKeypoints !== undefined && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Keypoints</span>
+              <span className="text-xs font-medium">{detectedKeypoints}</span>
             </div>
-            <div className="bg-muted rounded-md p-2">
-              <div className="text-muted-foreground">Total Reps</div>
-              <div className="font-semibold">{stats.totalReps}</div>
+          )}
+          
+          {!isDetecting && (
+            <div className="flex items-center mt-2 text-amber-500">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              <span className="text-xs">Not currently tracking</span>
             </div>
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>

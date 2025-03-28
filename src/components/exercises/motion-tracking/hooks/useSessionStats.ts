@@ -1,9 +1,8 @@
 
-import { useState, useRef, useCallback } from 'react';
-import { toast } from 'sonner';
-import type { MotionStats } from '@/lib/human/types';
+import { useCallback, useRef, useState } from 'react';
+import { MotionStats } from '@/lib/human/types';
 
-// Export this for reuse in other files
+// Helper functions for stats management
 export const getInitialStats = (): MotionStats => ({
   totalReps: 0,
   goodReps: 0,
@@ -11,70 +10,70 @@ export const getInitialStats = (): MotionStats => ({
   accuracy: 0,
   currentStreak: 0,
   bestStreak: 0,
-  lastUpdated: Date.now(),
-  caloriesBurned: 0
+  caloriesBurned: 0,
+  lastUpdated: Date.now()
 });
 
-// Export functions for updating stats
-export const updateStatsForGoodRep = (prevStats: MotionStats): MotionStats => {
-  const currentStreak = prevStats.currentStreak + 1;
-  const bestStreak = Math.max(prevStats.bestStreak, currentStreak);
-  const totalReps = prevStats.totalReps + 1;
-  const goodReps = prevStats.goodReps + 1;
-  const accuracy = (goodReps / totalReps) * 100;
-  const caloriesBurned = Math.round(prevStats.caloriesBurned + 0.75); // Approximate calories per rep
+export const updateStatsForGoodRep = (stats: MotionStats): MotionStats => {
+  const goodReps = stats.goodReps + 1;
+  const totalReps = stats.totalReps + 1;
+  const currentStreak = stats.currentStreak + 1;
+  const bestStreak = Math.max(stats.bestStreak, currentStreak);
+  
+  // Calculate calories burned (rough estimate based on metabolic equivalent)
+  // Assuming 1 rep burns about 0.15 calories for an average person
+  const caloriesBurned = stats.caloriesBurned + 0.15;
   
   return {
-    totalReps,
     goodReps,
-    badReps: prevStats.badReps,
-    accuracy,
+    totalReps,
+    badReps: stats.badReps,
+    accuracy: Math.round((goodReps / totalReps) * 100),
     currentStreak,
     bestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned
+    caloriesBurned,
+    lastUpdated: Date.now()
   };
 };
 
-export const updateStatsForBadRep = (prevStats: MotionStats): MotionStats => {
-  const totalReps = prevStats.totalReps + 1;
-  const badReps = prevStats.badReps + 1;
-  const accuracy = (prevStats.goodReps / totalReps) * 100;
-  const caloriesBurned = Math.round(prevStats.caloriesBurned + 0.5); // Lower calories for bad form
+export const updateStatsForBadRep = (stats: MotionStats): MotionStats => {
+  const badReps = stats.badReps + 1;
+  const totalReps = stats.totalReps + 1;
+  
+  // Calculate calories burned (less for bad form)
+  // Assuming bad rep burns about 0.1 calories
+  const caloriesBurned = stats.caloriesBurned + 0.1;
   
   return {
+    goodReps: stats.goodReps,
     totalReps,
-    goodReps: prevStats.goodReps,
     badReps,
-    accuracy,
+    accuracy: stats.goodReps > 0 ? Math.round((stats.goodReps / totalReps) * 100) : 0,
     currentStreak: 0, // Reset streak on bad rep
-    bestStreak: prevStats.bestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned
+    bestStreak: stats.bestStreak,
+    caloriesBurned,
+    lastUpdated: Date.now()
   };
 };
 
 export const useSessionStats = () => {
   const [stats, setStats] = useState<MotionStats>(getInitialStats());
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const exerciseType = useRef<string>('squat'); // Default exercise type
   
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const exerciseType = useRef('squat');
-  
-  // Function to handle when a good rep is completed
+  // Handle a good rep (proper form)
   const handleGoodRep = useCallback(() => {
     setStats(prevStats => updateStatsForGoodRep(prevStats));
   }, []);
   
-  // Function to handle when a bad rep is completed
+  // Handle a bad rep (improper form)
   const handleBadRep = useCallback(() => {
     setStats(prevStats => updateStatsForBadRep(prevStats));
   }, []);
   
-  // Reset all stats
+  // Reset stats
   const resetStats = useCallback(() => {
     setStats(getInitialStats());
-    
-    toast.info('Exercise stats reset');
   }, []);
   
   // Set exercise type
@@ -94,5 +93,5 @@ export const useSessionStats = () => {
   };
 };
 
-// Export the type as well
-export type { MotionStats };
+// Re-export types for consumers
+export type { MotionStats } from '@/lib/human/types';

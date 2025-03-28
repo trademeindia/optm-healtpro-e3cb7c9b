@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { VideoStatus } from '../hooks/detection/types';
@@ -105,7 +106,7 @@ export const useCameraToggle = ({
       if (!validateComponentMounted()) return;
       
       // Setup video with stream
-      const videoSetup = await setupVideo();
+      const videoSetup = await setupVideo(streamRef.current!);
       if (!videoSetup) {
         setIsInitializing(false);
         return;
