@@ -6,45 +6,54 @@ import { useCallback } from 'react';
  */
 export const useVideoStatus = () => {
   /**
-   * Check if video element is ready for processing
+   * Checks the status of the video element to ensure it's ready for use
    */
-  const checkVideoStatus = useCallback((videoRef: React.RefObject<HTMLVideoElement>): { 
-    isReady: boolean, 
-    details: string,
-    resolution: { width: number, height: number } | null
-  } => {
+  const checkVideoStatus = useCallback((videoRef: React.MutableRefObject<HTMLVideoElement | null>) => {
     if (!videoRef.current) {
-      return { isReady: false, details: "Video element not found", resolution: null };
+      return { 
+        isReady: false, 
+        details: 'Video element reference is null',
+        resolution: null
+      };
     }
     
     const video = videoRef.current;
-    const hasStream = !!video.srcObject;
-    const hasValidDimensions = video.videoWidth > 0 && video.videoHeight > 0;
-    const isPlaying = !video.paused && !video.ended;
-    const hasValidReadyState = video.readyState >= 2;
     
-    let details = "";
+    // Check video state
+    const paused = video.paused;
+    const ended = video.ended;
+    const muted = video.muted;
+    const readyState = video.readyState;
+    const hasSource = !!video.srcObject;
+    const hasDimensions = video.videoWidth > 0 && video.videoHeight > 0;
     
-    if (!hasStream) details += "No stream. ";
-    if (!hasValidDimensions) details += "No dimensions. ";
-    if (!isPlaying) details += "Not playing. ";
-    if (!hasValidReadyState) details += `Ready state: ${video.readyState}. `;
-    
-    const isReady = hasStream && hasValidDimensions && isPlaying && hasValidReadyState;
-    
-    // Resolution
-    const resolution = hasValidDimensions 
-      ? { width: video.videoWidth, height: video.videoHeight } 
+    // Get resolution if available
+    const resolution = hasDimensions 
+      ? { width: video.videoWidth, height: video.videoHeight }
       : null;
     
-    return { 
-      isReady, 
-      details: isReady ? "Video ready" : `Video not ready: ${details}`, 
-      resolution 
-    };
+    let isReady = false;
+    let details = '';
+    
+    // Check for various issues
+    if (!hasSource) {
+      details = 'No video source';
+    } else if (readyState < 2) {
+      // HAVE_CURRENT_DATA = 2
+      details = `Video not ready (state ${readyState})`;
+    } else if (ended) {
+      details = 'Video playback ended';
+    } else if (paused) {
+      details = 'Video paused';
+    } else if (!hasDimensions) {
+      details = 'Video has no dimensions';
+    } else {
+      isReady = true;
+      details = 'Video ready';
+    }
+    
+    return { isReady, details, resolution };
   }, []);
   
-  return {
-    checkVideoStatus
-  };
+  return { checkVideoStatus };
 };

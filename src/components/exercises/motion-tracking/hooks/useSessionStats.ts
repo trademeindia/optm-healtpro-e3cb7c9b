@@ -1,92 +1,86 @@
 
 import { useState, useRef, useCallback } from 'react';
-
-// Define the MotionStats type
-export interface MotionStats {
-  totalReps: number;
-  goodReps: number;
-  badReps: number;
-  accuracy: number;
-  currentStreak: number; // Required
-  bestStreak: number; // Required
-  caloriesBurned: number; // Required
-  lastUpdated: number; // Required
-}
-
-// Get initial stats for a new session
-export const getInitialStats = (): MotionStats => ({
-  totalReps: 0,
-  goodReps: 0,
-  badReps: 0,
-  accuracy: 0,
-  currentStreak: 0,
-  bestStreak: 0,
-  caloriesBurned: 0,
-  lastUpdated: Date.now()
-});
-
-// Update stats for a good rep
-export const updateStatsForGoodRep = (stats: MotionStats): MotionStats => {
-  const goodReps = stats.goodReps + 1;
-  const totalReps = stats.totalReps + 1;
-  const currentStreak = stats.currentStreak + 1;
-  const bestStreak = Math.max(stats.bestStreak, currentStreak);
-  
-  // Calculate calories burned (rough estimate based on metabolic equivalent)
-  // Assuming 1 rep burns about 0.15 calories for an average person
-  const caloriesBurned = stats.caloriesBurned + 0.15;
-  
-  return {
-    goodReps,
-    totalReps,
-    badReps: stats.badReps,
-    accuracy: Math.round((goodReps / totalReps) * 100),
-    currentStreak,
-    bestStreak,
-    caloriesBurned,
-    lastUpdated: Date.now()
-  };
-};
-
-// Update stats for a bad rep
-export const updateStatsForBadRep = (stats: MotionStats): MotionStats => {
-  const badReps = stats.badReps + 1;
-  const totalReps = stats.totalReps + 1;
-  
-  // Calculate calories burned (less for bad form)
-  // Assuming bad rep burns about 0.1 calories
-  const caloriesBurned = stats.caloriesBurned + 0.1;
-  
-  return {
-    goodReps: stats.goodReps,
-    totalReps,
-    badReps,
-    accuracy: stats.goodReps > 0 ? Math.round((stats.goodReps / totalReps) * 100) : 0,
-    currentStreak: 0, // Reset streak on bad rep
-    bestStreak: stats.bestStreak,
-    caloriesBurned,
-    lastUpdated: Date.now()
-  };
-};
+import { toast } from 'sonner';
+import type { MotionStats } from '@/lib/human/types';
 
 export const useSessionStats = () => {
-  const [stats, setStats] = useState<MotionStats>(getInitialStats());
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const exerciseType = useRef<string>("squat");
+  const [stats, setStats] = useState<MotionStats>({
+    totalReps: 0,
+    goodReps: 0,
+    badReps: 0,
+    accuracy: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+    lastUpdated: Date.now(),
+    caloriesBurned: 0
+  });
   
-  // Handle a good rep
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const exerciseType = useRef('squat');
+  
+  // Function to handle when a good rep is completed
   const handleGoodRep = useCallback(() => {
-    setStats(prevStats => updateStatsForGoodRep(prevStats));
+    setStats(prevStats => {
+      const currentStreak = prevStats.currentStreak + 1;
+      const bestStreak = Math.max(prevStats.bestStreak, currentStreak);
+      const totalReps = prevStats.totalReps + 1;
+      const goodReps = prevStats.goodReps + 1;
+      const accuracy = (goodReps / totalReps) * 100;
+      const caloriesBurned = Math.round(prevStats.caloriesBurned + 0.75); // Approximate calories per rep
+      
+      return {
+        totalReps,
+        goodReps,
+        badReps: prevStats.badReps,
+        accuracy,
+        currentStreak,
+        bestStreak,
+        lastUpdated: Date.now(),
+        caloriesBurned
+      };
+    });
   }, []);
   
-  // Handle a bad rep
+  // Function to handle when a bad rep is completed
   const handleBadRep = useCallback(() => {
-    setStats(prevStats => updateStatsForBadRep(prevStats));
+    setStats(prevStats => {
+      const totalReps = prevStats.totalReps + 1;
+      const badReps = prevStats.badReps + 1;
+      const accuracy = (prevStats.goodReps / totalReps) * 100;
+      const caloriesBurned = Math.round(prevStats.caloriesBurned + 0.5); // Lower calories for bad form
+      
+      return {
+        totalReps,
+        goodReps: prevStats.goodReps,
+        badReps,
+        accuracy,
+        currentStreak: 0, // Reset streak on bad rep
+        bestStreak: prevStats.bestStreak,
+        lastUpdated: Date.now(),
+        caloriesBurned
+      };
+    });
   }, []);
   
-  // Reset stats for a new session
+  // Reset all stats
   const resetStats = useCallback(() => {
-    setStats(getInitialStats());
+    setStats({
+      totalReps: 0,
+      goodReps: 0,
+      badReps: 0,
+      accuracy: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      lastUpdated: Date.now(),
+      caloriesBurned: 0
+    });
+    
+    toast.info('Exercise stats reset');
+  }, []);
+  
+  // Set exercise type
+  const setExerciseType = useCallback((type: string) => {
+    exerciseType.current = type;
   }, []);
   
   return {
@@ -96,6 +90,7 @@ export const useSessionStats = () => {
     setSessionId,
     handleGoodRep,
     handleBadRep,
-    resetStats
+    resetStats,
+    setExerciseType
   };
 };

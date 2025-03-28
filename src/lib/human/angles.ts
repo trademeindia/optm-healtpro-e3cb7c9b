@@ -44,49 +44,49 @@ export const extractBodyAngles = (result: Result) => {
   
   // Helper to get a keypoint's position
   const getPoint = (name: string): [number, number] | null => {
-    const point = keypoints.find(kp => kp.name === name);
-    return point ? [point.position[0], point.position[1]] : null;
+    const point = keypoints.find(kp => kp.part === name);
+    return point && point.score > 0.5 ? [point.x, point.y] : null;
   };
   
-  // Extract key points
-  const hip = getPoint('hip right');
-  const knee = getPoint('knee right');
-  const ankle = getPoint('ankle right');
-  const shoulder = getPoint('shoulder right');
-  const elbow = getPoint('elbow right');
-  const wrist = getPoint('wrist right');
-  const neck = getPoint('neck');
-  const ear = getPoint('ear right');
+  // Calculate knee angle (right leg)
+  const rightHip = getPoint('rightHip');
+  const rightKnee = getPoint('rightKnee');
+  const rightAnkle = getPoint('rightAnkle');
   
-  // Calculate knee angle (between hip, knee, and ankle)
-  if (hip && knee && ankle) {
-    angles.kneeAngle = calculateAngle(hip, knee, ankle);
+  if (rightHip && rightKnee && rightAnkle) {
+    angles.kneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
   }
   
-  // Calculate hip angle (between shoulder, hip, and knee)
-  if (shoulder && hip && knee) {
-    angles.hipAngle = calculateAngle(shoulder, hip, knee);
+  // Calculate hip angle
+  const rightShoulder = getPoint('rightShoulder');
+  if (rightShoulder && rightHip && rightKnee) {
+    angles.hipAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
   }
   
-  // Calculate shoulder angle (between elbow, shoulder, and hip)
-  if (elbow && shoulder && hip) {
-    angles.shoulderAngle = calculateAngle(elbow, shoulder, hip);
+  // Calculate shoulder angle
+  const rightElbow = getPoint('rightElbow');
+  if (rightElbow && rightShoulder && rightHip) {
+    angles.shoulderAngle = calculateAngle(rightElbow, rightShoulder, rightHip);
   }
   
-  // Calculate elbow angle (between shoulder, elbow, and wrist)
-  if (shoulder && elbow && wrist) {
-    angles.elbowAngle = calculateAngle(shoulder, elbow, wrist);
+  // Calculate elbow angle
+  const rightWrist = getPoint('rightWrist');
+  if (rightWrist && rightElbow && rightShoulder) {
+    angles.elbowAngle = calculateAngle(rightWrist, rightElbow, rightShoulder);
   }
   
-  // Calculate ankle angle (between knee, ankle, and toe)
-  const toe = getPoint('foot index right');
-  if (knee && ankle && toe) {
-    angles.ankleAngle = calculateAngle(knee, ankle, toe);
+  // Calculate ankle angle
+  if (rightKnee && rightAnkle) {
+    const rightFoot = getPoint('rightFoot') || getPoint('rightHeel');
+    if (rightFoot) {
+      angles.ankleAngle = calculateAngle(rightKnee, rightAnkle, rightFoot);
+    }
   }
   
-  // Calculate neck angle (between ear, neck, and shoulder)
-  if (ear && neck && shoulder) {
-    angles.neckAngle = calculateAngle(ear, neck, shoulder);
+  // Calculate neck angle
+  const nose = getPoint('nose');
+  if (nose && rightShoulder && rightHip) {
+    angles.neckAngle = calculateAngle(nose, rightShoulder, rightHip);
   }
   
   return angles;

@@ -1,5 +1,6 @@
 
 import { useCallback } from 'react';
+import { useCameraSetupValidation } from './useCameraSetupValidation';
 
 interface UseCameraToggleStateProps {
   mountedRef: React.MutableRefObject<boolean>;
@@ -8,11 +9,7 @@ interface UseCameraToggleStateProps {
   stopCamera: () => void;
   setIsInitializing: (initializing: boolean) => void;
   waitForVideoElement: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => Promise<boolean>;
-  checkVideoStatus: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => { 
-    isReady: boolean, 
-    details: string,
-    resolution: { width: number, height: number } | null
-  };
+  checkVideoStatus: (videoRef: React.MutableRefObject<HTMLVideoElement | null>) => { isReady: boolean, details: string, resolution: { width: number, height: number } | null };
 }
 
 export const useCameraToggleState = ({
@@ -25,51 +22,40 @@ export const useCameraToggleState = ({
   checkVideoStatus
 }: UseCameraToggleStateProps) => {
   
-  // Check if video element exists and is ready
-  const validateVideoElement = useCallback(async (): Promise<boolean> => {
-    // First, ensure video element exists
-    const videoElementExists = await waitForVideoElement(videoRef);
-    if (!videoElementExists) {
-      setCameraError("Video element not found. Please reload the page and try again.");
-      setIsInitializing(false);
-      return false;
-    }
-    return true;
-  }, [waitForVideoElement, videoRef, setCameraError, setIsInitializing]);
+  // Use the validation hook
+  const { validateVideoElement } = useCameraSetupValidation({
+    setCameraError,
+    setIsInitializing,
+    waitForVideoElement
+  });
   
   // Validate component is still mounted
   const validateComponentMounted = useCallback((): boolean => {
     if (!mountedRef.current) {
-      console.log("Component unmounted during camera initialization");
+      console.log("Component unmounted during camera setup");
       stopCamera();
-      setIsInitializing(false);
       return false;
     }
+    
     return true;
-  }, [mountedRef, stopCamera, setIsInitializing]);
+  }, [mountedRef, stopCamera]);
   
-  // Perform final video status check
+  // Perform final status check
   const performFinalStatusCheck = useCallback(async (): Promise<boolean> => {
-    // Final video status check
-    const finalStatus = checkVideoStatus(videoRef);
+    if (!videoRef.current) return false;
     
-    if (!finalStatus.isReady) {
-      console.error("Final video status check failed:", finalStatus.details);
-      setCameraError(`Camera feed has issues: ${finalStatus.details}`);
-      
-      // Double-check video element exists
-      if (!videoRef.current) {
-        setCameraError("Video element unavailable. Please reload the page.");
-        stopCamera();
-        setIsInitializing(false);
-        return false;
-      }
-      
+    // Check video status
+    const status = checkVideoStatus(videoRef);
+    
+    console.log("Final video status check:", status);
+    
+    if (!status.isReady) {
+      console.warn("Video is not ready:", status.details);
       return false;
     }
     
     return true;
-  }, [checkVideoStatus, videoRef, setCameraError, stopCamera, setIsInitializing]);
+  }, [videoRef, checkVideoStatus]);
   
   return {
     validateVideoElement,

@@ -1,34 +1,57 @@
 
 import { MotionState } from '@/lib/human/types';
 
-/**
- * Determine motion state based on body angles
- */
-export const determineMotionState = (kneeAngle: number | null): MotionState => {
-  if (kneeAngle === null) return MotionState.STANDING;
+// Determine the current motion state based on angles and previous state
+export const determineMotionState = (
+  kneeAngle: number | null, 
+  prevState: MotionState
+): MotionState => {
+  if (kneeAngle === null) {
+    return prevState; // Keep previous state if no data
+  }
   
-  if (kneeAngle < 100) {
-    return MotionState.FULL_MOTION;
-  } else if (kneeAngle < 150) {
-    return MotionState.MID_MOTION;
-  } else {
+  // For squats: 
+  // - Standing is around 170-180 degrees
+  // - Bottom position is around 90 degrees or less
+  // - Mid motion is in between
+  if (kneeAngle > 160) {
     return MotionState.STANDING;
+  } else if (kneeAngle < 100) {
+    return MotionState.FULL_MOTION;
+  } else {
+    return MotionState.MID_MOTION;
   }
 };
 
-/**
- * Check if a rep has been completed based on motion state transition
- */
+// Check if a rep was completed - when transitioning from FULL_MOTION to MID_MOTION
 export const isRepCompleted = (
-  currentState: MotionState,
+  currentState: MotionState, 
   previousState: MotionState
 ): boolean => {
-  // A rep is completed when transitioning from FULL_MOTION to STANDING
-  // Or from FULL_MOTION to MID_MOTION (on the way back up)
-  if (previousState === MotionState.FULL_MOTION && 
-      (currentState === MotionState.STANDING || currentState === MotionState.MID_MOTION)) {
-    return true;
-  }
-  
-  return false;
+  return (
+    previousState === MotionState.FULL_MOTION && 
+    currentState === MotionState.MID_MOTION
+  );
+};
+
+// Check if the user is starting a new rep - from STANDING to MID_MOTION
+export const isStartingRep = (
+  currentState: MotionState, 
+  previousState: MotionState
+): boolean => {
+  return (
+    previousState === MotionState.STANDING && 
+    currentState === MotionState.MID_MOTION
+  );
+};
+
+// Check if the user has returned to starting position
+export const isReturnedToStart = (
+  currentState: MotionState, 
+  previousState: MotionState
+): boolean => {
+  return (
+    previousState !== MotionState.STANDING && 
+    currentState === MotionState.STANDING
+  );
 };

@@ -5,27 +5,43 @@ interface UseWaitForVideoElementProps {
   mountedRef: React.MutableRefObject<boolean>;
 }
 
-export const useWaitForVideoElement = ({
-  mountedRef
-}: UseWaitForVideoElementProps) => {
-  // Function to check if video element is ready
-  const waitForVideoElement = useCallback(async (videoRef: React.RefObject<HTMLVideoElement>): Promise<boolean> => {
-    console.log("Waiting for video element to be available in DOM...");
-    // Try for up to 10 seconds (100 attempts * 100ms)
-    for (let i = 0; i < 100; i++) {
-      if (!mountedRef.current) return false;
+/**
+ * Provides functionality to wait for a video element to be available in the DOM
+ */
+export const useWaitForVideoElement = ({ mountedRef }: UseWaitForVideoElementProps) => {
+  /**
+   * Wait for the video element reference to be available
+   */
+  const waitForVideoElement = useCallback(async (
+    videoRef: React.MutableRefObject<HTMLVideoElement | null>
+  ): Promise<boolean> => {
+    if (videoRef.current) return true;
+    
+    try {
+      // Wait for video element to be available (max 5 seconds)
+      let attempts = 0;
+      const maxAttempts = 50; // 50 * 100ms = 5 seconds
       
-      if (videoRef.current) {
-        console.log("Video element found in DOM");
-        return true;
+      while (!videoRef.current && attempts < maxAttempts && mountedRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
       }
       
-      // Wait a bit and try again
-      await new Promise(resolve => setTimeout(resolve, 100));
+      if (!mountedRef.current) {
+        console.log("Component unmounted while waiting for video element");
+        return false;
+      }
+      
+      if (!videoRef.current) {
+        console.error("Video element not available after waiting");
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error waiting for video element:", error);
+      return false;
     }
-    
-    console.error("Timed out waiting for video element");
-    return false;
   }, [mountedRef]);
   
   return { waitForVideoElement };

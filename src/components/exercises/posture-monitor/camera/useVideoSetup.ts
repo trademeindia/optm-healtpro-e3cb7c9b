@@ -1,101 +1,75 @@
 
 import { useCallback } from 'react';
-import { useVideoPlayback } from './useVideoPlayback';
 
 /**
- * Provides utilities for setting up video elements
+ * Provides utilities for setting up the video element with a camera stream
  */
 export const useVideoSetup = () => {
-  const { attemptVideoPlay } = useVideoPlayback();
-
   /**
-   * Setup video element with stream and play it
+   * Sets up a video element with the provided stream
    */
   const setupVideoElement = useCallback(async (
-    videoRef: React.RefObject<HTMLVideoElement>,
-    canvasRef: React.RefObject<HTMLCanvasElement>,
+    videoRef: React.MutableRefObject<HTMLVideoElement | null>,
+    canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
     stream: MediaStream
-  ) => {
+  ): Promise<boolean> => {
     if (!videoRef.current) {
-      console.error("Video element ref is null");
+      console.error("Video element reference is null");
       return false;
     }
     
     try {
-      console.log("Setting up video element with stream");
-      
       // Set stream as source for video element
       videoRef.current.srcObject = stream;
       
-      // Set proper size for the video and canvas
-      if (canvasRef.current) {
-        canvasRef.current.width = 640;
-        canvasRef.current.height = 480;
-      }
-      
-      // Wait for video metadata to load with improved timeout handling
-      return new Promise<boolean>((resolve) => {
+      // Wait for the video to be ready
+      await new Promise<void>((resolve, reject) => {
         if (!videoRef.current) {
-          console.error("Video ref became null during setup");
-          resolve(false);
+          reject(new Error("Video element reference is null"));
           return;
         }
         
-        // Set a timeout in case metadata never loads
-        const timeoutId = setTimeout(() => {
-          console.error("Video metadata load timeout");
-          resolve(false);
-        }, 8000); // Increased timeout for slower devices
-        
-        // Handle video loading event
-        const onLoadedMetadata = async () => {
-          if (!videoRef.current) {
-            console.error("Video ref is null in onLoadedMetadata");
-            clearTimeout(timeoutId);
-            resolve(false);
-            return;
-          }
-          
-          videoRef.current.removeEventListener('loadedmetadata', onLoadedMetadata);
-          clearTimeout(timeoutId);
-          
-          try {
-            // Try to play video with retry mechanism
-            await attemptVideoPlay(videoRef.current);
-            console.log("Video is now playing after metadata loaded");
-            resolve(true);
-          } catch (err) {
-            console.error("Failed to play video after metadata loaded:", err);
-            resolve(false);
-          }
+        const handleLoaded = () => {
+          resolve();
+          cleanup();
         };
         
-        // If metadata already loaded
+        const handleError = (error: Event) => {
+          console.error("Error loading video metadata:", error);
+          reject(new Error("Failed to load video metadata"));
+          cleanup();
+        };
+        
+        const cleanup = () => {
+          videoRef.current?.removeEventListener('loadedmetadata', handleLoaded);
+          videoRef.current?.removeEventListener('error', handleError);
+        };
+        
+        videoRef.current.addEventListener('loadedmetadata', handleLoaded);
+        videoRef.current.addEventListener('error', handleError);
+        
+        // If already loaded, resolve immediately
         if (videoRef.current.readyState >= 2) {
-          console.log("Video metadata already loaded, playing now");
-          clearTimeout(timeoutId);
-          attemptVideoPlay(videoRef.current)
-            .then(() => {
-              console.log("Video playing (metadata already loaded)");
-              resolve(true);
-            })
-            .catch((err) => {
-              console.error("Error playing video (metadata already loaded):", err);
-              resolve(false);
-            });
-        } else {
-          // Wait for metadata to load
-          console.log("Waiting for video metadata to load");
-          videoRef.current.addEventListener('loadedmetadata', onLoadedMetadata);
+          resolve();
+          cleanup();
         }
       });
+      
+      // Set canvas size to match video
+      if (canvasRef.current && videoRef.current.videoWidth) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+      }
+      
+      // Start playback
+      await videoRef.current.play();
+      
+      return true;
     } catch (error) {
-      console.error("Error in setupVideoElement:", error);
+      console.error("Error setting up video element:", error);
       return false;
     }
-  }, [attemptVideoPlay]);
+  }, []);
   
-  return {
-    setupVideoElement
-  };
+  return { setupVideoElement };
 };

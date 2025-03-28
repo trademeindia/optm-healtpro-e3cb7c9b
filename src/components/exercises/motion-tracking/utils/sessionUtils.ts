@@ -1,84 +1,95 @@
 
-import { v4 as uuidv4 } from 'uuid';
-import { MotionState } from '@/lib/human/types';
-import type { MotionStats } from '@/components/exercises/motion-tracking/hooks/useSessionStats';
+import { toast } from 'sonner';
+import type { Result } from '@vladmandic/human';
+import type { BodyAngles, MotionState, MotionStats } from '@/lib/human/types';
 
-// Creates a new exercise session
-export const createSession = async (exerciseType: string): Promise<string> => {
-  // In a real application, this would make an API call to create a session
-  const sessionId = uuidv4();
-  
-  // Store session info in localStorage for demo purposes
-  localStorage.setItem(`session_${sessionId}`, JSON.stringify({
-    id: sessionId,
-    exerciseType,
-    startTime: Date.now(),
-    endTime: null,
-    completed: false
-  }));
-  
-  console.log(`Created new session: ${sessionId} for exercise: ${exerciseType}`);
-  
-  return sessionId;
+// Create a new exercise session
+export const createSession = async (exerciseType: string): Promise<string | null> => {
+  try {
+    // Generate a unique session ID using timestamp
+    const sessionId = `session_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    
+    // In a real app, this would create a session in the database
+    console.log(`Created new ${exerciseType} session with ID: ${sessionId}`);
+    
+    return sessionId;
+  } catch (error) {
+    console.error('Error creating session:', error);
+    toast.error('Failed to create exercise session');
+    return null;
+  }
 };
 
-// Saves detection data for the current session
+// Save detection data to session
 export const saveDetectionData = async (
-  sessionId: string,
-  detectionResult: any,
-  angles: any,
-  biomarkers: any,
+  sessionId: string | null,
+  result: Result,
+  angles: BodyAngles,
+  biomarkers: Record<string, any>,
   motionState: MotionState,
   exerciseType: string,
   stats: MotionStats
-): Promise<void> => {
-  // In a real application, this would make an API call to save the data
-  
-  // For demo, we'll save minimal data to localStorage
-  const timestamp = Date.now();
-  const key = `detection_${sessionId}_${timestamp}`;
-  
-  // Extract only necessary data to avoid storage issues
-  const minimalDetectionData = {
-    timestamp,
-    sessionId,
-    exerciseType,
-    motionState,
-    angles,
-    biomarkers,
-    stats
-  };
-  
-  localStorage.setItem(key, JSON.stringify(minimalDetectionData));
-};
-
-// Completes the current session
-export const completeSession = (
-  sessionId: string,
-  stats: MotionStats
-): void => {
-  // In a real application, this would make an API call to complete the session
-  
-  // Get existing session
-  const sessionDataString = localStorage.getItem(`session_${sessionId}`);
-  if (!sessionDataString) {
-    console.error(`Session ${sessionId} not found`);
-    return;
-  }
+): Promise<boolean> => {
+  if (!sessionId) return false;
   
   try {
-    const sessionData = JSON.parse(sessionDataString);
+    // Create a data object with the detection results
+    const detectionData = {
+      timestamp: Date.now(),
+      sessionId,
+      exerciseType,
+      angles,
+      biomarkers,
+      motionState,
+      stats
+    };
     
-    // Update session data
-    sessionData.endTime = Date.now();
-    sessionData.completed = true;
-    sessionData.stats = stats;
+    // In a real app, this would save to a database
+    console.log('Saved detection data:', detectionData);
     
-    // Save updated session
-    localStorage.setItem(`session_${sessionId}`, JSON.stringify(sessionData));
+    return true;
+  } catch (error) {
+    console.error('Error saving detection data:', error);
+    return false;
+  }
+};
+
+// Complete a session
+export const completeSession = async (sessionId: string | null): Promise<boolean> => {
+  if (!sessionId) return false;
+  
+  try {
+    // In a real app, this would update the session status in a database
+    console.log(`Completed session: ${sessionId}`);
+    toast.success('Exercise session completed successfully!');
     
-    console.log(`Completed session ${sessionId} with ${stats.totalReps} total reps`);
+    return true;
   } catch (error) {
     console.error('Error completing session:', error);
+    toast.error('Failed to complete exercise session');
+    return false;
+  }
+};
+
+// Get session stats
+export const getSessionStats = async (sessionId: string | null): Promise<MotionStats | null> => {
+  if (!sessionId) return null;
+  
+  try {
+    // In a real app, this would retrieve stats from a database
+    // Here we're returning placeholder stats
+    return {
+      totalReps: 0,
+      goodReps: 0,
+      badReps: 0,
+      accuracy: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      lastUpdated: Date.now(),
+      caloriesBurned: 0
+    };
+  } catch (error) {
+    console.error('Error getting session stats:', error);
+    return null;
   }
 };
