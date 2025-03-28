@@ -17,4 +17,3 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 AuthContext.displayName = 'AuthContext'; // This helps with React DevTools debugging
-
