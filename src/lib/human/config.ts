@@ -11,7 +11,7 @@ export const humanConfig: Partial<Human.Config> = {
   
   // Required properties
   wasmPath: '/',
-  async: true,  // Corrected from 'asynch'
+  async: true,  // Use 'async' instead of 'asynch'
   cacheModels: true,
   
   // Optimizations

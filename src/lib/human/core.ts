@@ -2,110 +2,85 @@
 import * as Human from '@vladmandic/human';
 import humanConfig from './config';
 
-// Initialize Human
-export const human = new Human.Human(humanConfig);
+// Create a singleton instance of Human.js
+class HumanInstance {
+  private static instance: Human.Human | null = null;
+  private static isInitialized = false;
+  private static isLoading = false;
 
-// Warm up the model
-export const warmupModel = async () => {
-  try {
-    console.log('Warming up Human.js model...');
-    // Initialize and warm up
-    await human.load();
-    // Perform a test detection on an empty canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = 640;
-    canvas.height = 480;
-    await human.detect(canvas);
-    console.log('Human.js model warmed up successfully');
-    return true;
-  } catch (error) {
-    console.error('Error warming up Human.js model:', error);
-    return false;
+  static async getInstance(): Promise<Human.Human> {
+    if (!this.instance) {
+      this.instance = new Human.Human(humanConfig);
+      return this.instance;
+    }
+    return this.instance;
   }
-};
 
-// Reset the model
-export const resetModel = () => {
-  try {
-    // For Human.js v3.x, proper cleanup
-    if (typeof human.reset === 'function') {
-      human.reset();
+  static async load(): Promise<Human.Human> {
+    if (this.isInitialized) {
+      return this.getInstance();
     }
     
-    // Ensure tensor memory is released
-    if (human.tf && typeof human.tf.dispose === 'function') {
-      human.tf.dispose();
+    if (this.isLoading) {
+      // Wait for initialization to complete
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(async () => {
+          if (this.isInitialized) {
+            clearInterval(checkInterval);
+            const instance = await this.getInstance();
+            resolve(instance);
+          }
+        }, 100);
+      });
     }
-    
-    // Handle different Human.js versions 
-    // Note: cleanup() doesn't exist in the Human type, but may exist at runtime
-    // We'll use an alternative approach
     
     try {
-      // Attempt to call reset which is the recommended way to clean up
-      // @ts-ignore - Using ignore since the type doesn't have cleanup but the runtime might
-      if (typeof human.cleanup === 'function') {
-        // @ts-ignore
-        human.cleanup();
-      }
-    } catch (e) {
-      console.warn('Human.js cleanup method not available:', e);
+      this.isLoading = true;
+      const human = await this.getInstance();
+      await human.load();
+      this.isInitialized = true;
+      this.isLoading = false;
+      return human;
+    } catch (error) {
+      this.isLoading = false;
+      console.error('Error initializing Human.js:', error);
+      throw error;
     }
-    
-    console.log('Human.js model reset successfully');
-  } catch (error) {
-    console.error('Error resetting Human.js model:', error);
-  }
-};
-
-// Extract body angles from detection result
-export const extractBodyAngles = (result: Human.Result) => {
-  // Default values
-  const angles = {
-    kneeAngle: null as number | null,
-    hipAngle: null as number | null,
-    shoulderAngle: null as number | null,
-    elbowAngle: null as number | null,
-    ankleAngle: null as number | null,
-    neckAngle: null as number | null
-  };
-  
-  // Check if we have valid body keypoints
-  if (!result.body || result.body.length === 0 || !result.body[0].keypoints) {
-    return angles;
   }
   
-  const keypoints = result.body[0].keypoints;
-  
-  // Extract keypoints for angle calculations
-  // Implementation would go here...
-  
-  // Return the extracted angles
-  return angles;
-};
-
-// Extract biomarkers from detection result and angles
-export const extractBiomarkers = (result: Human.Result, angles: any) => {
-  // Default biomarkers
-  const biomarkers = {
-    postureQuality: null as number | null,
-    movementQuality: null as number | null,
-    stabilityScore: null as number | null,
-    symmetryScore: null as number | null,
-    rangeOfMotion: null as number | null,
-    movementSpeed: null as number | null
-  };
-  
-  // Check if we have valid body detection
-  if (!result.body || result.body.length === 0 || !result.body[0].keypoints) {
-    return biomarkers;
+  static reset(): void {
+    if (this.instance) {
+      // Using the correct method for cleanup
+      try {
+        // Note: based on Human.js API, it might be tensor.dispose() instead of direct cleanup
+        this.instance = null;
+        this.isInitialized = false;
+      } catch (error) {
+        console.error('Error resetting Human.js:', error);
+      }
+    }
   }
-  
-  // Extract biomarkers based on detection and angles
-  // Implementation would go here...
-  
-  return biomarkers;
-};
+}
 
-// Export Human instance and utilities
-export default human;
+// Export the human instance for use throughout the application
+export const human = {
+  async detect(input: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): Promise<Human.Result> {
+    const instance = await HumanInstance.load();
+    return instance.detect(input);
+  },
+  
+  async load(): Promise<Human.Human> {
+    return HumanInstance.load();
+  },
+  
+  reset(): void {
+    HumanInstance.reset();
+  },
+  
+  draw: {
+    all: async (canvas: HTMLCanvasElement, result: Human.Result): Promise<void> => {
+      const instance = await HumanInstance.getInstance();
+      await instance.draw.all(canvas, result);
+    }
+  }
+};

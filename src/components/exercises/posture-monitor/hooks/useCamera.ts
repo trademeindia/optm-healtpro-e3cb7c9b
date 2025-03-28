@@ -1,10 +1,11 @@
 
-import { useCallback, useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 
 export default function useCamera(videoRef: React.RefObject<HTMLVideoElement>) {
   const [cameraActive, setCameraActive] = useState(false);
   const [permission, setPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [videoStatus, setVideoStatus] = useState({
     isReady: false,
     hasStream: false,
@@ -104,6 +105,7 @@ export default function useCamera(videoRef: React.RefObject<HTMLVideoElement>) {
     videoStatus,
     permission,
     retryCamera,
-    stopCamera
+    stopCamera,
+    cameraError
   };
 }

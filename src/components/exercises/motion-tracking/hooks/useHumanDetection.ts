@@ -1,49 +1,50 @@
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import * as Human from '@vladmandic/human';
-import { human } from '@/lib/human';
-import { 
-  BodyAngles, 
-  FeedbackMessage,
-  FeedbackType, 
-  MotionState
-} from '@/lib/human/types';
-import { performDetection } from '../utils/detectionUtils';
-import { determineMotionState, isRepCompleted } from '../utils/motionStateUtils';
-import { generateFeedback } from '../utils/feedbackUtils';
-import { useSessionStats } from './useSessionStats';
-import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { human } from '@/lib/human/core';
+import { BodyAngles, DetectionStatus, FeedbackType } from '@/lib/human/types';
+import { calculateBodyAngles } from '@/lib/human/angles';
 
-// Evaluate rep quality based on angles and form
-export const evaluateRepQuality = (angles: BodyAngles) => {
-  // Simple evaluation logic based on knee angle
-  const kneeAngle = angles.kneeAngle || 180;
-  const hipAngle = angles.hipAngle || 180;
-  
-  const isGoodForm = kneeAngle < 120 && hipAngle < 140;
-  
-  return {
-    isGoodForm,
-    feedback: isGoodForm 
-      ? "Great form on that rep!" 
-      : "Try to keep your back straight and go deeper",
-    feedbackType: isGoodForm ? FeedbackType.SUCCESS : FeedbackType.WARNING
-  };
+// Define the feedback mapper function
+const mapFeedbackType = (type: FeedbackType): FeedbackType => {
+  return type; // Simple pass-through for now
 };
 
-export const useHumanDetection = (
-  videoRef: React.RefObject<HTMLVideoElement>, 
-  canvasRef: React.RefObject<HTMLCanvasElement>
-) => {
-  // Detection state
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [detectionFps, setDetectionFps] = useState<number | null>(null);
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
-  const [detectionError, setDetectionError] = useState<string | null>(null);
+export interface UseHumanDetectionProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  isActive: boolean;
+  onAngleUpdate?: (angles: BodyAngles) => void;
+  onPoseDetected?: (pose: any) => void;
+}
+
+export interface HumanDetectionResult {
+  isModelLoading: boolean;
+  pose: any | null;
+  angles: BodyAngles;
+  detectionStatus: DetectionStatus;
+  feedback: {
+    message: string | null;
+    type: FeedbackType;
+  };
+  startDetection: () => void;
+  stopDetection: () => void;
+  resetDetection: () => void;
+}
+
+export function useHumanDetection({
+  videoRef,
+  canvasRef,
+  isActive,
+  onAngleUpdate,
+  onPoseDetected
+}: UseHumanDetectionProps): HumanDetectionResult {
+  // State for pose detection
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [modelLoaded, setModelLoaded] = useState(false);
+  const [modelError, setModelError] = useState<string | null>(null);
+  const [pose, setPose] = useState<any | null>(null);
   
-  // Motion analysis state
-  const [result, setResult] = useState<Human.Result | null>(null);
+  // Angles state
   const [angles, setAngles] = useState<BodyAngles>({
     kneeAngle: null,
     hipAngle: null,
@@ -52,262 +53,220 @@ export const useHumanDetection = (
     ankleAngle: null,
     neckAngle: null
   });
-  const [biomarkers, setBiomarkers] = useState<Record<string, any>>({});
-  const [currentMotionState, setCurrentMotionState] = useState(MotionState.STANDING);
-  const [prevMotionState, setPrevMotionState] = useState(MotionState.STANDING);
-  const [feedback, setFeedback] = useState<FeedbackMessage>({
-    message: null,
+  
+  // Detection status
+  const [detectionStatus, setDetectionStatus] = useState<DetectionStatus>({
+    isDetecting: false,
+    fps: null,
+    confidence: null
+  });
+  
+  // Feedback state
+  const [feedback, setFeedback] = useState({
+    message: null as string | null,
     type: FeedbackType.INFO
   });
   
-  // Use session stats hook for tracking
-  const {
-    stats,
-    sessionId,
-    exerciseType,
-    setSessionId,
-    handleGoodRep,
-    handleBadRep,
-    resetStats
-  } = useSessionStats();
+  // Animation frame reference
+  const requestRef = useRef<number | null>(null);
   
-  // Detection loop references
-  const requestRef = useRef<number>();
-  const lastFrameTime = useRef<number>(0);
-  const frameCount = useRef<number>(0);
-  const lastFpsUpdateTime = useRef<number>(0);
-
-  // Ensure model is loaded
+  // Performance metrics
+  const fpsCounter = useRef(0);
+  const lastFpsUpdate = useRef(Date.now());
+  
+  // Load model on component mount
   useEffect(() => {
     const loadModel = async () => {
       try {
-        if (!isModelLoaded) {
-          setDetectionError(null);
-          console.log('Loading Human.js model...');
-          
-          // Configure human.js to use a lite model
-          human.config = {
-            ...human.config,
-            modelBasePath: '/',
-            body: {
-              enabled: true,
-              modelPath: 'blazepose-lite.json',
-              minConfidence: 0.3,
-              maxDetected: 1,
-            },
-            // Improve performance
-            backend: 'webgl',
-            warmup: 'none',
-          };
-          
-          await human.load();
-          console.log('Human.js model loaded successfully');
-          setIsModelLoaded(true);
-          toast.success("AI model loaded successfully");
-        }
+        setIsModelLoading(true);
+        setModelError(null);
+        
+        await human.load();
+        
+        setModelLoaded(true);
+        setIsModelLoading(false);
+        setFeedback({
+          message: "AI model loaded successfully",
+          type: FeedbackType.SUCCESS
+        });
       } catch (error) {
-        console.error('Error loading Human.js model:', error);
-        setDetectionError('Failed to load Human.js model');
-        toast.error('Failed to load motion detection model. Please refresh and try again.');
+        console.error('Error loading pose detection model:', error);
+        setModelError('Failed to load pose detection model');
+        setIsModelLoading(false);
+        setFeedback({
+          message: "Error loading AI model. Please refresh and try again.",
+          type: FeedbackType.ERROR
+        });
       }
     };
     
     loadModel();
     
-    // Cleanup
     return () => {
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
       }
+      
+      // Attempt to clean up Human.js resources
+      human.reset();
     };
-  }, [isModelLoaded]);
+  }, []);
   
-  // Create a new session if needed
-  useEffect(() => {
-    const initSession = async () => {
-      if (!sessionId && isModelLoaded) {
-        try {
-          console.log('Creating new exercise session');
-          const newSessionId = await createSession(exerciseType.current);
-          
-          if (newSessionId) {
-            setSessionId(newSessionId);
-            console.log('New session created:', newSessionId);
-          }
-        } catch (error) {
-          console.error('Error creating session:', error);
-        }
-      }
-    };
-    
-    initSession();
-  }, [isModelLoaded, sessionId, exerciseType, setSessionId]);
-  
-  // Human.js detection loop
-  const detectFrame = useCallback(async (time: number) => {
-    if (!videoRef.current || !isModelLoaded) {
-      requestRef.current = requestAnimationFrame(detectFrame);
+  // Process frame with pose detection
+  const processFrame = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || !modelLoaded || !videoRef.current.readyState) {
+      requestRef.current = requestAnimationFrame(processFrame);
       return;
-    }
-    
-    // Calculate FPS
-    const elapsed = time - lastFrameTime.current;
-    
-    // Limit detection rate for performance (aim for ~20-30 FPS)
-    if (elapsed < 33) { // ~30 FPS
-      requestRef.current = requestAnimationFrame(detectFrame);
-      return;
-    }
-    
-    lastFrameTime.current = time;
-    frameCount.current++;
-    
-    // Update FPS counter every second
-    if (time - lastFpsUpdateTime.current >= 1000) {
-      setDetectionFps(frameCount.current);
-      frameCount.current = 0;
-      lastFpsUpdateTime.current = time;
     }
     
     try {
-      setIsDetecting(true);
+      // Run pose detection
+      const result = await human.detect(videoRef.current);
       
-      // Perform detection
-      const {
-        result: detectionResult,
-        angles: extractedAngles,
-        biomarkers: extractedBiomarkers,
-        newMotionState
-      } = await performDetection(videoRef.current);
-      
-      // Update state with detection results
-      setResult(detectionResult);
-      setAngles(extractedAngles);
-      setBiomarkers(extractedBiomarkers);
-      
-      // Check if a rep was completed (full motion to standing transition)
-      if (isRepCompleted(newMotionState, currentMotionState)) {
-        // Evaluate rep quality
-        const evaluation = evaluateRepQuality(extractedAngles);
-        
-        if (evaluation) {
-          setFeedback({
-            message: evaluation.feedback,
-            type: evaluation.feedbackType
-          });
-          
-          if (evaluation.isGoodForm) {
-            handleGoodRep();
-            toast.success("Good rep!", { duration: 2000 });
-          } else {
-            handleBadRep();
-            toast.warning("Form needs improvement", { duration: 2000 });
-          }
-          
-          // Save data to database after completing a rep
-          await saveDetectionData(
-            sessionId, 
-            detectionResult, 
-            extractedAngles, 
-            extractedBiomarkers, 
-            newMotionState, 
-            exerciseType.current, 
-            stats
-          );
-        }
-      } else {
-        // Generate feedback based on biomarkers
-        const feedbackData = generateFeedback(
-          extractedBiomarkers.postureScore || 0,
-          extractedBiomarkers.movementQuality || 0,
-          extractedBiomarkers.rangeOfMotion || 0,
-          extractedBiomarkers.stabilityScore || 0
-        );
-        
-        // Update with the feedback directly (no mapping needed)
-        setFeedback({
-          message: feedbackData.message,
-          type: feedbackData.type
-        });
+      // Update FPS counter
+      fpsCounter.current++;
+      const now = Date.now();
+      if (now - lastFpsUpdate.current > 1000) {
+        setDetectionStatus(prev => ({
+          ...prev,
+          fps: fpsCounter.current
+        }));
+        fpsCounter.current = 0;
+        lastFpsUpdate.current = now;
       }
       
-      // Update motion state
-      setPrevMotionState(currentMotionState);
-      setCurrentMotionState(newMotionState);
+      // Check if we have body detection
+      if (result.body && result.body.length > 0) {
+        const detectedPose = result.body[0];
+        setPose(detectedPose);
+        
+        if (onPoseDetected) {
+          onPoseDetected(detectedPose);
+        }
+        
+        // Update detection confidence
+        setDetectionStatus(prev => ({
+          ...prev,
+          confidence: detectedPose.score || null,
+          detectedKeypoints: detectedPose.keypoints?.length || 0
+        }));
+        
+        // Calculate angles from detection
+        const calculatedAngles = calculateBodyAngles(detectedPose);
+        setAngles(calculatedAngles);
+        
+        if (onAngleUpdate) {
+          onAngleUpdate(calculatedAngles);
+        }
+      } else {
+        // No body detected
+        if (detectionStatus.confidence !== null) {
+          setDetectionStatus(prev => ({
+            ...prev,
+            confidence: null
+          }));
+        }
+      }
       
-      setIsDetecting(false);
+      // Draw pose keypoints on canvas
+      await human.draw.all(canvasRef.current, result);
+      
     } catch (error) {
-      console.error('Error in detection:', error);
-      setIsDetecting(false);
-      setDetectionError('Detection failed');
+      console.error('Error in pose detection:', error);
+      setFeedback({
+        message: "Detection error occurred. Please retry.",
+        type: FeedbackType.ERROR
+      });
     }
     
-    // Continue detection loop
-    requestRef.current = requestAnimationFrame(detectFrame);
-  }, [
-    videoRef, 
-    isModelLoaded, 
-    currentMotionState,
-    sessionId,
-    stats,
-    exerciseType,
-    handleGoodRep,
-    handleBadRep
-  ]);
-
+    // Continue the detection loop
+    requestRef.current = requestAnimationFrame(processFrame);
+  }, [videoRef, canvasRef, modelLoaded, detectionStatus.confidence, onAngleUpdate, onPoseDetected]);
+  
   // Start detection
   const startDetection = useCallback(() => {
-    if (!isDetecting && isModelLoaded) {
-      requestRef.current = requestAnimationFrame(detectFrame);
-      setIsDetecting(true);
-      console.log('Starting detection loop');
+    if (!isActive || !modelLoaded) {
+      if (!modelLoaded) {
+        setFeedback({
+          message: "AI model is not loaded yet. Please wait.",
+          type: FeedbackType.WARNING
+        });
+      } else if (!isActive) {
+        setFeedback({
+          message: "Camera is not active. Please start camera first.",
+          type: FeedbackType.WARNING
+        });
+      }
+      return;
     }
-  }, [detectFrame, isDetecting, isModelLoaded]);
-
+    
+    setDetectionStatus(prev => ({
+      ...prev,
+      isDetecting: true
+    }));
+    
+    setFeedback({
+      message: "Motion detection active. Position yourself in frame.",
+      type: FeedbackType.INFO
+    });
+    
+    requestRef.current = requestAnimationFrame(processFrame);
+  }, [isActive, modelLoaded, processFrame]);
+  
   // Stop detection
   const stopDetection = useCallback(() => {
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
-      setIsDetecting(false);
-      console.log('Stopping detection loop');
+      requestRef.current = null;
     }
-  }, []);
-  
-  // Reset session
-  const resetSession = useCallback(() => {
-    resetStats();
+    
+    setDetectionStatus(prev => ({
+      ...prev,
+      isDetecting: false
+    }));
     
     setFeedback({
-      message: "Session reset. Ready for new exercises.",
+      message: "Motion detection paused",
       type: FeedbackType.INFO
     });
-    
-    toast.info("Session Reset", {
-      description: "Your workout session has been reset. Ready to start new exercises!"
+  }, []);
+  
+  // Reset detection
+  const resetDetection = useCallback(() => {
+    stopDetection();
+    setPose(null);
+    setAngles({
+      kneeAngle: null,
+      hipAngle: null,
+      shoulderAngle: null,
+      elbowAngle: null,
+      ankleAngle: null,
+      neckAngle: null
     });
-  }, [resetStats]);
+    
+    setFeedback({
+      message: "Motion detection reset. Ready to start.",
+      type: mapFeedbackType(FeedbackType.INFO)
+    });
+  }, [stopDetection]);
+  
+  // Auto-start/stop based on isActive
+  useEffect(() => {
+    if (isActive && modelLoaded && !detectionStatus.isDetecting) {
+      startDetection();
+    } else if (!isActive && detectionStatus.isDetecting) {
+      stopDetection();
+    }
+  }, [isActive, modelLoaded, detectionStatus.isDetecting, startDetection, stopDetection]);
   
   return {
-    // Detection state
-    isDetecting,
-    detectionFps,
-    isModelLoaded,
-    detectionError,
-    
-    // Motion analysis
-    result,
+    isModelLoading,
+    pose,
     angles,
-    biomarkers,
-    currentMotionState,
+    detectionStatus,
     feedback,
-    
-    // Session data
-    stats,
-    sessionId,
-    
-    // Actions
     startDetection,
     stopDetection,
-    resetSession
+    resetDetection
   };
-};
+}
