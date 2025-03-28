@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
@@ -223,12 +224,10 @@ export const useHumanDetection = (
           extractedBiomarkers.stabilityScore || 0
         );
         
-        // Map the feedback type and update motion feedback
-        const mappedFeedbackType = mapFeedbackType(feedbackData.type);
-        
+        // Update with the feedback directly (no mapping needed)
         setFeedback({
           message: feedbackData.message,
-          type: mappedFeedbackType
+          type: feedbackData.type
         });
       }
       

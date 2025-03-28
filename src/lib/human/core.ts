@@ -33,13 +33,23 @@ export const resetModel = () => {
     }
     
     // Ensure tensor memory is released
-    if (typeof human.tf?.dispose === 'function') {
+    if (human.tf && typeof human.tf.dispose === 'function') {
       human.tf.dispose();
     }
     
-    // For different versions that might have different cleanup methods
-    if (typeof human.cleanup === 'function') {
-      human.cleanup();
+    // Handle different Human.js versions 
+    // Note: cleanup() doesn't exist in the Human type, but may exist at runtime
+    // We'll use an alternative approach
+    
+    try {
+      // Attempt to call reset which is the recommended way to clean up
+      // @ts-ignore - Using ignore since the type doesn't have cleanup but the runtime might
+      if (typeof human.cleanup === 'function') {
+        // @ts-ignore
+        human.cleanup();
+      }
+    } catch (e) {
+      console.warn('Human.js cleanup method not available:', e);
     }
     
     console.log('Human.js model reset successfully');

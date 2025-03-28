@@ -16,21 +16,23 @@ export const useAutoStartCamera = ({
   toggleCamera,
   setCustomFeedback
 }: UseAutoStartCameraProps) => {
-  // Auto-start camera if permission is already granted
+  // Auto-start camera if permission is granted
   useEffect(() => {
-    // Only auto-start if we have explicit permission and camera is not active
-    if (permission === 'granted' && !cameraActive) {
+    if (!cameraActive && permission === 'granted') {
+      // Show feedback
       setCustomFeedback({
         message: "Starting camera automatically...",
         type: FeedbackType.INFO
       });
       
-      // Small delay to avoid race conditions and prevent multiple calls
+      // Slight delay to allow feedback to be displayed
       const timer = setTimeout(() => {
         toggleCamera();
       }, 500);
       
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
     }
-  }, [permission, cameraActive, toggleCamera, setCustomFeedback]);
+  }, [cameraActive, permission, toggleCamera, setCustomFeedback]);
 };

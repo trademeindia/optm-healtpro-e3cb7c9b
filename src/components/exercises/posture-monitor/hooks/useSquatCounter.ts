@@ -1,15 +1,15 @@
 
 import { useState, useCallback } from 'react';
 
-const useSquatCounter = () => {
+export default function useSquatCounter() {
   const [squatCount, setSquatCount] = useState(0);
   const [goodSquats, setGoodSquats] = useState(0);
   const [badSquats, setBadSquats] = useState(0);
   
-  const incrementSquatCount = useCallback((isGood: boolean = true) => {
+  const incrementSquatCount = useCallback((isGoodForm: boolean) => {
     setSquatCount(prev => prev + 1);
     
-    if (isGood) {
+    if (isGoodForm) {
       setGoodSquats(prev => prev + 1);
     } else {
       setBadSquats(prev => prev + 1);
@@ -29,6 +29,4 @@ const useSquatCounter = () => {
     incrementSquatCount,
     resetCounter
   };
-};
-
-export default useSquatCounter;
+}

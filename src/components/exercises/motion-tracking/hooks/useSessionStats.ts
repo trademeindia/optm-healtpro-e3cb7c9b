@@ -1,70 +1,67 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { MotionStats } from '@/lib/human/types';
-import { calculateAccuracy, estimateCaloriesBurned } from '../utils/statsUtils';
 
-// Initialize stats function that was missing
+// Get initial stats
 export const getInitialStats = (): MotionStats => ({
   totalReps: 0,
   goodReps: 0,
   badReps: 0,
   accuracy: 0,
   currentStreak: 0,
-  bestStreak: 0,
-  lastUpdated: Date.now(),
-  caloriesBurned: 0
+  bestStreak: 0
 });
 
-// Utility functions to update stats
-export const updateStatsForGoodRep = (prevStats: MotionStats): MotionStats => {
-  const newTotalReps = prevStats.totalReps + 1;
-  const newGoodReps = prevStats.goodReps + 1;
-  const newCurrentStreak = prevStats.currentStreak + 1;
-  const newBestStreak = Math.max(prevStats.bestStreak, newCurrentStreak);
+// Update stats for good rep
+export const updateStatsForGoodRep = (currentStats: MotionStats): MotionStats => {
+  const totalReps = currentStats.totalReps + 1;
+  const goodReps = currentStats.goodReps + 1;
+  const currentStreak = currentStats.currentStreak + 1;
+  const bestStreak = Math.max(currentStreak, currentStats.bestStreak);
+  const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
   
   return {
-    totalReps: newTotalReps,
-    goodReps: newGoodReps,
-    badReps: prevStats.badReps,
-    accuracy: calculateAccuracy(newGoodReps, newTotalReps),
-    currentStreak: newCurrentStreak,
-    bestStreak: newBestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned: estimateCaloriesBurned(newTotalReps, 'squat')
+    ...currentStats,
+    totalReps,
+    goodReps,
+    accuracy,
+    currentStreak,
+    bestStreak,
+    lastUpdated: Date.now()
   };
 };
 
-export const updateStatsForBadRep = (prevStats: MotionStats): MotionStats => {
-  const newTotalReps = prevStats.totalReps + 1;
-  const newBadReps = prevStats.badReps + 1;
+// Update stats for bad rep
+export const updateStatsForBadRep = (currentStats: MotionStats): MotionStats => {
+  const totalReps = currentStats.totalReps + 1;
+  const badReps = currentStats.badReps + 1;
+  const goodReps = currentStats.goodReps;
+  const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
   
   return {
-    totalReps: newTotalReps,
-    goodReps: prevStats.goodReps,
-    badReps: newBadReps,
-    accuracy: calculateAccuracy(prevStats.goodReps, newTotalReps),
+    ...currentStats,
+    totalReps,
+    badReps,
+    accuracy,
     currentStreak: 0, // Reset streak on bad rep
-    bestStreak: prevStats.bestStreak,
-    lastUpdated: Date.now(),
-    caloriesBurned: estimateCaloriesBurned(newTotalReps, 'squat')
+    bestStreak: currentStats.bestStreak,
+    lastUpdated: Date.now()
   };
 };
 
 export const useSessionStats = () => {
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [stats, setStats] = useState<MotionStats>(getInitialStats());
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const exerciseType = useRef<string>('squat');
   
-  // Initialize stats
-  const [stats, setStats] = useState<MotionStats>(getInitialStats());
-  
-  // Handle good rep
+  // Handle a good rep
   const handleGoodRep = useCallback(() => {
-    setStats(prevStats => updateStatsForGoodRep(prevStats));
+    setStats(currentStats => updateStatsForGoodRep(currentStats));
   }, []);
   
-  // Handle bad rep
+  // Handle a bad rep
   const handleBadRep = useCallback(() => {
-    setStats(prevStats => updateStatsForBadRep(prevStats));
+    setStats(currentStats => updateStatsForBadRep(currentStats));
   }, []);
   
   // Reset stats
@@ -82,5 +79,3 @@ export const useSessionStats = () => {
     resetStats
   };
 };
-
-export default useSessionStats;

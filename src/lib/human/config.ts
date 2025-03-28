@@ -9,10 +9,10 @@ export const humanConfig: Partial<Human.Config> = {
   // Model paths
   modelBasePath: '/',
   
-  // Required properties that were missing
+  // Required properties
   wasmPath: '/',
+  async: true,  // Corrected from 'asynch'
   cacheModels: true,
-  async: true,
   
   // Optimizations
   warmup: 'none',

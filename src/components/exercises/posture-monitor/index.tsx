@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,8 @@ const PostureMonitor: React.FC = () => {
     toggleCamera,
     videoStatus,
     permission,
-    retryCamera
+    retryCamera,
+    stopCamera
   } = useCamera(videoRef);
   
   const {
