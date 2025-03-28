@@ -1,16 +1,23 @@
 
-import { Provider as SupabaseProvider } from '@supabase/supabase-js';
-import { User, UserRole } from '../types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
-// Define UserSession type here since it's not in types.ts
-export interface UserSession {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  provider: string;
-  picture: string | null;
-}
+// Define OAuth providers - using string literals
+export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'apple';
 
-// Use SupabaseProvider instead of the local Provider
-export type Provider = SupabaseProvider;
+// Mapping of provider names to display values
+export const providerDisplayNames: Record<Provider | string, string> = {
+  google: 'Google',
+  facebook: 'Facebook',
+  twitter: 'Twitter',
+  github: 'GitHub',
+  azure: 'Microsoft',
+  apple: 'Apple',
+  email: 'Email',
+};
+
+// Authentication errors
+export type AuthError = {
+  message: string;
+  status?: number;
+  details?: any;
+};

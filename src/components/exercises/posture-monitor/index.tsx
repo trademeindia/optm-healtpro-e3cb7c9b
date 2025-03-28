@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Pause, Play, RefreshCw } from 'lucide-react';
 import CameraView from './CameraView';
 import { FeedbackType, SquatState } from '@/lib/human/types';
-import { useCamera } from './camera/useCamera';
+import { useCamera } from './hooks/useCamera';
 import usePoseDetection from './hooks/usePoseDetection';
 import PoseRenderer from './renderer/PoseRenderer';
 import SquatGuide from './components/SquatGuide';
@@ -31,7 +31,6 @@ const PostureMonitor: React.FC = () => {
     toggleCamera,
     videoStatus,
     permission,
-    retryCamera,
     cameraError
   } = useCamera(videoRef);
   
@@ -82,6 +81,12 @@ const PostureMonitor: React.FC = () => {
     resetCounter();
     setIsDetecting(false);
   };
+
+  const handleRetryCameraClick = () => {
+    if (typeof toggleCamera === 'function') {
+      toggleCamera();
+    }
+  };
   
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -98,7 +103,7 @@ const PostureMonitor: React.FC = () => {
                 videoRef={videoRef}
                 canvasRef={canvasRef}
                 cameraError={cameraError}
-                onRetryCamera={retryCamera}
+                onRetryCamera={handleRetryCameraClick}
                 detectionStatus={detectionStatus}
               />
             </div>

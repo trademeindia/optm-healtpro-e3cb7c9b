@@ -1,20 +1,25 @@
 
-import { Provider } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
+// Define available user roles
 export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
-export type AuthProviderType = Provider | 'email';
 
-export type User = {
+// Define OAuth providers - using string literals instead of importing Provider
+export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'apple';
+
+// User model with role information
+export interface User {
   id: string;
   email: string;
-  name: string;
+  name: string | null;
   role: UserRole;
-  provider?: AuthProviderType;
-  picture?: string | null;
-  patientId?: string; // Added to link patient users to their records
-};
+  provider: string;
+  picture: string | null;
+  patientId?: string;
+}
 
-export type AuthContextType = {
+// Auth context interface
+export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -24,4 +29,4 @@ export type AuthContextType = {
   signup: (email: string, password: string, name: string, role: UserRole) => Promise<User | null>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-};
+}

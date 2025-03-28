@@ -1,88 +1,54 @@
-
-import { Patient, MedicalAnalysis, MedicalReport, Biomarker } from '@/types/medicalData';
 import { supabase } from '@/integrations/supabase/client';
-import { storeInLocalStorage } from './localStorageService';
 
 /**
- * Service to handle data storage operations
+ * Saves data to the specified table for the current user
+ * @param table The table name to save data to
+ * @param data The data to save
+ * @returns The saved data or null if there was an error
  */
-export class DataStorageService {
-  /**
-   * Stores the updated patient data in Supabase if connected, otherwise locally
-   */
-  static async storeData(
-    patient: Patient,
-    analysis: MedicalAnalysis,
-    report: MedicalReport
-  ): Promise<void> {
-    try {
-      // Check if we have an authenticated user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log("No authenticated user, skipping data storage");
-        return;
-      }
-      
-      // Store in local storage instead of trying to use non-existent tables
-      // This is a temporary solution until the database schema is updated
-      this.storeAnalysis(analysis, patient.id, user.id);
-      
-      // Store biomarkers in local storage
-      this.storeBiomarkers(patient.biomarkers, patient.id, user.id);
-      
-      console.log("Successfully stored data in local storage (Supabase schema mismatch)");
-    } catch (error) {
-      console.error("Error storing data:", error);
-      // Don't throw here, as we don't want to fail the whole process if storage fails
-      // The local state update will still work
+export const saveUserData = async <T extends Record<string, any>>(
+  table: string,
+  data: T
+): Promise<T | null> => {
+  try {
+    // Get the current user
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+    
+    if (!userId) {
+      console.error('No authenticated user found');
+      return null;
     }
-  }
-
-  /**
-   * Store analysis data
-   */
-  private static storeAnalysis(
-    analysis: MedicalAnalysis,
-    patientId: string,
-    userId: string
-  ): void {
-    storeInLocalStorage('analyses', {
-      id: analysis.id,
-      reportId: analysis.reportId,
-      patientId: patientId,
-      userId: userId,
-      summary: analysis.summary,
-      keyFindings: analysis.keyFindings,
-      recommendations: analysis.recommendations,
-      suggestedDiagnoses: analysis.suggestedDiagnoses,
-      timestamp: analysis.timestamp
-    });
-  }
-
-  /**
-   * Store biomarker data
-   */
-  private static storeBiomarkers(
-    biomarkers: Biomarker[],
-    patientId: string,
-    userId: string
-  ): void {
-    for (const biomarker of biomarkers) {
-      storeInLocalStorage('biomarkers', {
-        id: biomarker.id,
-        patientId: patientId,
-        userId: userId,
-        name: biomarker.name,
-        category: biomarker.category,
-        description: biomarker.description,
-        latestValue: biomarker.latestValue,
-        historicalValues: biomarker.historicalValues,
-        relatedSymptoms: biomarker.relatedSymptoms,
-        affectedBodyParts: biomarker.affectedBodyParts,
-        recommendations: biomarker.recommendations,
-        timestamp: new Date().toISOString()
-      });
+    
+    // Add user_id and timestamps to the data
+    const dataWithUser = {
+      ...data,
+      user_id: userId,
+      updated_at: new Date().toISOString()
+    };
+    
+    // If no id is provided, add created_at
+    if (!data.id) {
+      dataWithUser.created_at = dataWithUser.updated_at;
     }
+    
+    // Insert or update the data
+    const { data: savedData, error } = await supabase
+      .from(table)
+      .upsert(dataWithUser, {
+        onConflict: 'id'
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error(`Error saving data to ${table}:`, error);
+      return null;
+    }
+    
+    return savedData;
+  } catch (error) {
+    console.error(`Error in saveUserData for table ${table}:`, error);
+    return null;
   }
-}
+};

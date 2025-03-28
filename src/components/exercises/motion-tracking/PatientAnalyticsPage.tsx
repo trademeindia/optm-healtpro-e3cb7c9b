@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PostureAnalyticsCard from '@/components/patient-dashboard/PostureAnalyticsCard';
 import { Progress } from '@/components/ui/progress';
 import { isJsonObject, safeGetFromJson } from '@/types/human';
+import { useAuth } from '@/contexts/auth';
 
 interface PatientAnalyticsPageProps {
   patientId?: string;
@@ -18,6 +19,7 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
   const [sessions, setSessions] = useState<any[]>([]);
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();
   
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -25,7 +27,13 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
         setIsLoading(true);
         
         // Get current user if patientId not provided
-        const userId = patientId || (await supabase.auth.getUser()).data.user?.id;
+        const userId = patientId || user?.id;
+        
+        if (!userId) {
+          setError('No user ID available');
+          setIsLoading(false);
+          return;
+        }
         
         // Fetch all sessions for this patient
         const { data: sessionData, error: sessionError } = await supabase
@@ -77,7 +85,7 @@ const PatientAnalyticsPage: React.FC<PatientAnalyticsPageProps> = ({ patientId }
     };
     
     fetchAnalytics();
-  }, [patientId]);
+  }, [patientId, user]);
   
   if (isLoading) {
     return (
