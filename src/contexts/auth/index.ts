@@ -23,3 +23,4 @@ export const useAuth = () => useContext(AuthContext);
 // Export types
 export type { User };
 export type { AuthProvider };
+export { AuthProvider as AuthProviderComponent } from './AuthProvider';

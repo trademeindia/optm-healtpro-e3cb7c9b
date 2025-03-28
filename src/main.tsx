@@ -10,7 +10,7 @@ import './styles/responsive/anatomy-components.css';
 import { ThemeProvider } from './components/theme-provider';
 import { SymptomProvider } from './contexts/SymptomContext';
 import { Toaster } from 'sonner';
-import { AuthProvider } from './contexts/auth/AuthProvider'; // Update to direct import from the component file
+import { AuthProviderComponent as AuthProvider } from './contexts/auth'; // Import using the renamed export
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
