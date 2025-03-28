@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import * as Human from '@vladmandic/human';
 import { MotionState, MotionStats } from '@/lib/human/types';
-import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep, toMotionStats } from './useSessionStats';
+import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep, toMotionStats, SessionStats } from './useSessionStats';
 
 interface UseSessionManagementProps {
   sessionId?: string;
@@ -10,7 +10,7 @@ interface UseSessionManagementProps {
 }
 
 export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessionManagementProps) => {
-  // Use MotionStats type for state to match the expected type in the component
+  // Use SessionStats type internally but expose as MotionStats to match the interface
   const [stats, setStats] = useState<MotionStats>(() => {
     const initialStats = getInitialStats();
     return toMotionStats(initialStats);
@@ -21,24 +21,28 @@ export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessio
   // Add a rep with good form
   const addGoodRep = useCallback(() => {
     setStats(prev => {
-      const updatedStats = updateStatsForGoodRep({
+      // Convert MotionStats to SessionStats, update it, then convert back
+      const sessionStats: SessionStats = {
         ...prev,
-        startTime: prev.lastUpdated || Date.now(),
-        lastUpdate: prev.lastUpdated || Date.now(),
-      });
-      return toMotionStats(updatedStats);
+        startTime: prev.lastUpdated,
+        lastUpdate: prev.lastUpdated
+      };
+      const updatedSessionStats = updateStatsForGoodRep(sessionStats);
+      return toMotionStats(updatedSessionStats);
     });
   }, []);
   
   // Add a rep with bad form
   const addBadRep = useCallback(() => {
     setStats(prev => {
-      const updatedStats = updateStatsForBadRep({
+      // Convert MotionStats to SessionStats, update it, then convert back
+      const sessionStats: SessionStats = {
         ...prev,
-        startTime: prev.lastUpdated || Date.now(),
-        lastUpdate: prev.lastUpdated || Date.now(),
-      });
-      return toMotionStats(updatedStats);
+        startTime: prev.lastUpdated,
+        lastUpdate: prev.lastUpdated
+      };
+      const updatedSessionStats = updateStatsForBadRep(sessionStats);
+      return toMotionStats(updatedSessionStats);
     });
   }, []);
   

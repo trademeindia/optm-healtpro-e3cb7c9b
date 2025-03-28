@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Pause, Play, RefreshCw } from 'lucide-react';
 import CameraView from './CameraView';
 import { FeedbackType, SquatState } from '@/lib/human/types';
-import useCamera from './hooks/useCamera';
+import { useCamera } from './hooks/useCamera';
 import usePoseDetection from './hooks/usePoseDetection';
 import PoseRenderer from './renderer/PoseRenderer';
 import SquatGuide from './components/SquatGuide';

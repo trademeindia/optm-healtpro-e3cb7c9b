@@ -2,6 +2,7 @@
 import { human } from '@/lib/human/core';
 import { BodyAngles, FeedbackType } from '@/lib/human/types';
 import { calculateBodyAngles } from '@/lib/human/angles';
+import { DetectionResult } from '../hooks/types';
 
 // Helper function to map feedback type
 export const mapFeedbackType = (type: FeedbackType): FeedbackType => {
@@ -36,7 +37,7 @@ export const estimateCaloriesBurned = (exerciseDuration: number, intensity: numb
   const MET = 3 + (intensity * 4); // Scale intensity from 0-1 to 3-7 MET
   const weight = 70; // Default weight in kg
   
-  // Formula: MET * weight * duration(hours)
+  // Formula: MET * weight * time in hours
   return (MET * weight * (exerciseDuration / 3600)).toFixed(1) as unknown as number;
 };
 
@@ -72,20 +73,57 @@ export const getPostureFeedback = (angles: BodyAngles): { message: string, type:
 // Implement the performDetection function
 export const performDetection = async (
   videoElement: HTMLVideoElement | null
-): Promise<{ result: any; error: string | null }> => {
+): Promise<DetectionResult> => {
   if (!videoElement) {
-    return { result: null, error: "Missing video element" };
+    return { 
+      result: null, 
+      error: "Missing video element",
+      angles: {
+        kneeAngle: null,
+        hipAngle: null,
+        shoulderAngle: null,
+        elbowAngle: null,
+        ankleAngle: null,
+        neckAngle: null
+      },
+      biomarkers: {},
+      newMotionState: null
+    };
   }
 
   try {
     const result = await human.detect(videoElement);
+    const angles = result?.body?.[0] ? getBodyAngles(result.body[0]) : {
+      kneeAngle: null,
+      hipAngle: null,
+      shoulderAngle: null,
+      elbowAngle: null,
+      ankleAngle: null,
+      neckAngle: null
+    };
     
-    return { result, error: null };
+    return { 
+      result, 
+      error: null,
+      angles,
+      biomarkers: {},
+      newMotionState: null
+    };
   } catch (error) {
     console.error("Detection error:", error);
     return { 
       result: null, 
-      error: error instanceof Error ? error.message : "Unknown detection error" 
+      error: error instanceof Error ? error.message : "Unknown detection error",
+      angles: {
+        kneeAngle: null,
+        hipAngle: null,
+        shoulderAngle: null,
+        elbowAngle: null,
+        ankleAngle: null,
+        neckAngle: null
+      },
+      biomarkers: {},
+      newMotionState: null
     };
   }
 };

@@ -83,12 +83,12 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
       if (startPoint && endPoint && startPoint.score > 0.5 && endPoint.score > 0.5) {
         ctx.beginPath();
         ctx.moveTo(
-          startPoint.x * canvas.width / videoWidth, 
-          startPoint.y * canvas.height / videoHeight
+          startPoint.x * canvasRef.current!.width / videoWidth, 
+          startPoint.y * canvasRef.current!.height / videoHeight
         );
         ctx.lineTo(
-          endPoint.x * canvas.width / videoWidth, 
-          endPoint.y * canvas.height / videoHeight
+          endPoint.x * canvasRef.current!.width / videoWidth, 
+          endPoint.y * canvasRef.current!.height / videoHeight
         );
         ctx.stroke();
       }
@@ -100,8 +100,8 @@ const PoseRenderer: React.FC<PoseRendererProps> = ({
         ctx.fillStyle = '#FF5722';
         ctx.beginPath();
         ctx.arc(
-          keypoint.x * canvas.width / videoWidth,
-          keypoint.y * canvas.height / videoHeight,
+          keypoint.x * canvasRef.current!.width / videoWidth,
+          keypoint.y * canvasRef.current!.height / videoHeight,
           5,
           0,
           2 * Math.PI
