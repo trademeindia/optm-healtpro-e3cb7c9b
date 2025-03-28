@@ -10,15 +10,18 @@ import './styles/responsive/anatomy-components.css';
 import { ThemeProvider } from './components/theme-provider';
 import { SymptomProvider } from './contexts/SymptomContext';
 import { Toaster } from 'sonner';
+import { AuthProvider } from './contexts/auth';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <SymptomProvider>
-          <App />
-          <Toaster position="bottom-right" richColors />
-        </SymptomProvider>
+        <AuthProvider>
+          <SymptomProvider>
+            <App />
+            <Toaster position="bottom-right" richColors />
+          </SymptomProvider>
+        </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
