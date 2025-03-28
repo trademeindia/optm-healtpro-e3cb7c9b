@@ -12,7 +12,7 @@ export const humanConfig: Partial<Human.Config> = {
   // Required properties that were missing
   wasmPath: '/',
   cacheModels: true,
-  asynch: true,  // Fixed spelling from 'async' to 'asynch' to match Human.js API
+  async: true,
   
   // Optimizations
   warmup: 'none',

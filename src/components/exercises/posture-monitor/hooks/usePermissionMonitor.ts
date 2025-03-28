@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { FeedbackType } from '../types';
+import { FeedbackType } from '@/lib/human/types';
 import type { CustomFeedback } from './types';
 
 interface UsePermissionMonitorProps {

@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,27 +70,10 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
       };
     }
     
-    // Map the feedback type from Human.js to our UI component
-    let uiType = FeedbackType.INFO;
-    
-    switch (feedback.type) {
-      case FeedbackType.SUCCESS:
-        uiType = FeedbackType.SUCCESS;
-        break;
-      case FeedbackType.WARNING:
-        uiType = FeedbackType.WARNING;
-        break;
-      case FeedbackType.ERROR:
-        uiType = FeedbackType.ERROR;
-        break;
-      case FeedbackType.INFO:
-      default:
-        uiType = FeedbackType.INFO;
-    }
-    
+    // Pass through the feedback type directly since we've aligned the enums
     return {
       message: feedback.message,
-      type: uiType
+      type: feedback.type
     };
   };
   

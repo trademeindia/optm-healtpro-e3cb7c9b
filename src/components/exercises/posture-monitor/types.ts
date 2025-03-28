@@ -1,12 +1,7 @@
 
 // Definition of shared types for posture monitoring
 
-export enum FeedbackType {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
+export { FeedbackType } from '@/lib/human/types';
 
 export enum SquatState {
   STANDING = 'standing',
@@ -50,5 +45,5 @@ export interface DetectionStatus {
 
 export interface FeedbackMessage {
   message: string | null;
-  type: FeedbackType;
+  type: import('@/lib/human/types').FeedbackType;
 }

@@ -21,6 +21,7 @@ export interface BodyAngles {
   shoulderAngle: number | null;
   elbowAngle: number | null;
   ankleAngle: number | null;
+  neckAngle: number | null;
 }
 
 // Detection status interface

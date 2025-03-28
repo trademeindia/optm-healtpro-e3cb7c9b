@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import * as Human from '@vladmandic/human';
@@ -11,24 +10,9 @@ import {
 } from '@/lib/human/types';
 import { performDetection } from '../utils/detectionUtils';
 import { determineMotionState, isRepCompleted } from '../utils/motionStateUtils';
-import { generateFeedback, FeedbackType as UtilsFeedbackType } from '../utils/feedbackUtils';
+import { generateFeedback } from '../utils/feedbackUtils';
 import { useSessionStats } from './useSessionStats';
 import { createSession, saveDetectionData, completeSession } from '../utils/sessionUtils';
-
-// Map feedback types from utils to human types
-const mapFeedbackType = (type: UtilsFeedbackType): FeedbackType => {
-  switch (type) {
-    case UtilsFeedbackType.SUCCESS:
-      return FeedbackType.SUCCESS;
-    case UtilsFeedbackType.WARNING:
-      return FeedbackType.WARNING;
-    case UtilsFeedbackType.ERROR:
-      return FeedbackType.ERROR;
-    case UtilsFeedbackType.INFO:
-    default:
-      return FeedbackType.INFO;
-  }
-};
 
 // Evaluate rep quality based on angles and form
 export const evaluateRepQuality = (angles: BodyAngles) => {

@@ -33,13 +33,13 @@ export const resetModel = () => {
     }
     
     // Ensure tensor memory is released
-    if (typeof human.tf.dispose === 'function') {
+    if (typeof human.tf?.dispose === 'function') {
       human.tf.dispose();
     }
     
     // For different versions that might have different cleanup methods
-    if (typeof human.dispose === 'function') {
-      human.dispose();
+    if (typeof human.cleanup === 'function') {
+      human.cleanup();
     }
     
     console.log('Human.js model reset successfully');
@@ -56,7 +56,8 @@ export const extractBodyAngles = (result: Human.Result) => {
     hipAngle: null as number | null,
     shoulderAngle: null as number | null,
     elbowAngle: null as number | null,
-    ankleAngle: null as number | null
+    ankleAngle: null as number | null,
+    neckAngle: null as number | null
   };
   
   // Check if we have valid body keypoints
