@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DetectionStatus } from '@/lib/human/types';
 
@@ -81,7 +81,7 @@ const CameraView: React.FC<CameraViewProps> = ({
       />
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
       
       {/* Confidence indicator */}

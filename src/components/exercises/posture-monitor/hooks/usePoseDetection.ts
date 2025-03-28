@@ -48,6 +48,8 @@ export default function usePoseDetection(
         
         setModelLoaded(true);
         setIsModelLoading(false);
+        
+        console.log("Human.js model loaded successfully");
       } catch (error) {
         console.error('Error loading pose detection model:', error);
         setModelError('Failed to load pose detection model');
@@ -66,7 +68,7 @@ export default function usePoseDetection(
   
   // Process frame with pose detection
   const processFrame = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current || !modelLoaded) {
+    if (!videoRef.current || !canvasRef.current || !modelLoaded || !videoRef.current.readyState) {
       requestRef.current = requestAnimationFrame(processFrame);
       return;
     }
@@ -97,11 +99,21 @@ export default function usePoseDetection(
           confidence: result.body[0].score || null
         }));
         
-        // Extract angles from detection
+        // Extract angles from detection results
         // These would typically come from a utility function
-        setKneeAngle(140); // placeholder
-        setHipAngle(160); // placeholder
-        setShoulderAngle(170); // placeholder
+        // For now we're using placeholder values that will be updated later
+        if (result.body[0].keypoints) {
+          const knees = result.body[0].keypoints.filter(kp => kp.name.includes('knee'));
+          const hips = result.body[0].keypoints.filter(kp => kp.name.includes('hip'));
+          
+          if (knees.length > 0 && knees[0].score > 0.5) {
+            setKneeAngle(calculateAngle(result.body[0], 'knee') || 170);
+          }
+          
+          if (hips.length > 0 && hips[0].score > 0.5) {
+            setHipAngle(calculateAngle(result.body[0], 'hip') || 160);
+          }
+        }
         
         // Determine squat state based on knee angle
         if (kneeAngle !== null) {
@@ -116,10 +128,6 @@ export default function usePoseDetection(
           }
         }
       }
-      
-      // Draw pose keypoints on canvas
-      await human.draw.all(canvasRef.current, result);
-      
     } catch (error) {
       console.error('Error in pose detection:', error);
     }
@@ -127,6 +135,20 @@ export default function usePoseDetection(
     // Continue the detection loop
     requestRef.current = requestAnimationFrame(processFrame);
   }, [videoRef, canvasRef, modelLoaded, currentSquatState, kneeAngle]);
+  
+  // Simple placeholder function to calculate angles
+  const calculateAngle = (pose: any, jointType: string): number | null => {
+    // This is a very simplified placeholder
+    // A real implementation would use the keypoints to calculate actual angles
+    if (!pose || !pose.keypoints) return null;
+    
+    // Return placeholder values for now
+    if (jointType === 'knee') return 160;
+    if (jointType === 'hip') return 170;
+    if (jointType === 'shoulder') return 180;
+    
+    return null;
+  };
   
   // Start detection
   const startDetection = useCallback(() => {
