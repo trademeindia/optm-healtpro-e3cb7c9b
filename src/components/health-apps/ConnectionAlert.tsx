@@ -25,9 +25,10 @@ const ConnectionAlert: React.FC<ConnectionAlertProps> = ({
         </span>
         <div className="flex gap-2">
           <GoogleFitConnect 
-            variant="outline" 
             className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700" 
-          />
+          >
+            Connect Google Fit
+          </GoogleFitConnect>
           {!showDebugInfo && (
             <Button 
               variant="ghost" 

@@ -1,95 +1,111 @@
 
-import { 
-  MedicalReport, 
-  MedicalAnalysis, 
-  Patient
-} from '@/types/medicalData';
-import { analyzeReportContent } from './openaiService';
-import { syncBiomarkers } from './sync/biomarkerSync';
-import { syncSymptoms } from './sync/symptomSync';
-import { syncAnatomicalMappings } from './sync/anatomicalSync';
-import { DataStorageService } from './storage/dataStorageService';
-import { PatientService } from './patient/patientService';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@/contexts/auth/types';
+import { saveUserData } from './storage/dataStorageService';
+import { getPatientProfile } from './patient/patientService';
+import { DataStorageService, PatientService } from './types';
 
-export class DataSyncService {
-  /**
-   * Processes a medical report, analyzes it, and syncs all extracted data
-   */
-  static async processMedicalReport(
-    report: MedicalReport, 
-    currentPatient: Patient
-  ): Promise<{
-    updatedPatient: Patient;
-    analysis: MedicalAnalysis;
-  }> {
+// This is just a placeholder implementation since we don't have the actual services
+const dataStorageService: DataStorageService = {
+  saveData: saveUserData,
+  getData: async <T extends Record<string, any>>(table: string, id: string): Promise<T | null> => {
     try {
-      console.log(`Processing medical report: ${report.id}`);
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('id', id)
+        .single();
       
-      // 1. Analyze the report
-      const analysis = await analyzeReportContent(report.content);
+      if (error) {
+        console.error(`Error getting data from ${table}:`, error);
+        return null;
+      }
       
-      // Add metadata to analysis
-      const analysisWithMeta: MedicalAnalysis = {
-        ...analysis,
-        id: `analysis-${Date.now()}`,
-        reportId: report.id,
-        timestamp: new Date().toISOString()
-      };
-      
-      // 2. Update the report with analysis ID
-      const updatedReport = {
-        ...report,
-        analyzed: true,
-        analysisId: analysisWithMeta.id
-      };
-      
-      // 3. Create updated biomarkers from the analysis
-      const updatedBiomarkers = syncBiomarkers(
-        analysisWithMeta.extractedBiomarkers,
-        currentPatient.biomarkers
-      );
-      
-      // 4. Update symptom records if needed
-      const updatedSymptoms = syncSymptoms(
-        updatedBiomarkers,
-        currentPatient.symptoms
-      );
-      
-      // 5. Update anatomical mappings
-      const updatedMappings = syncAnatomicalMappings(
-        updatedBiomarkers,
-        currentPatient.anatomicalMappings
-      );
-      
-      // 6. Prepare the updated patient object
-      const updatedPatient: Patient = {
-        ...currentPatient,
-        biomarkers: updatedBiomarkers,
-        symptoms: updatedSymptoms,
-        anatomicalMappings: updatedMappings,
-        reports: [updatedReport, ...currentPatient.reports.filter(r => r.id !== report.id)],
-        analyses: [analysisWithMeta, ...currentPatient.analyses]
-      };
-      
-      // 7. Store the updated data
-      await DataStorageService.storeData(updatedPatient, analysisWithMeta, updatedReport);
-      
-      console.log(`Successfully processed report: ${report.id}`);
-      
-      return {
-        updatedPatient,
-        analysis: analysisWithMeta
-      };
+      return data as T;
     } catch (error) {
-      console.error('Error in processing medical report:', error);
-      throw new Error('Failed to process medical report');
+      console.error(`Error in getData for table ${table}:`, error);
+      return null;
+    }
+  },
+  getDataByUserId: async <T extends Record<string, any>>(table: string, userId: string): Promise<T[] | null> => {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error(`Error getting data from ${table}:`, error);
+        return null;
+      }
+      
+      return data as T[];
+    } catch (error) {
+      console.error(`Error in getDataByUserId for table ${table}:`, error);
+      return null;
+    }
+  },
+  deleteData: async (table: string, id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error(`Error deleting data from ${table}:`, error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`Error in deleteData for table ${table}:`, error);
+      return false;
     }
   }
-  
-  /**
-   * Retrieves patient data
-   */
-  static async getPatientData(patientId: string): Promise<Patient | null> {
-    return PatientService.getPatientData(patientId);
+};
+
+const patientService: PatientService = {
+  getPatientProfile,
+  updatePatientProfile: async (patientId: string, updates: Partial<any>) => {
+    // Mock implementation
+    return null;
+  },
+  createPatientProfile: async (patientId: string, profileData: Partial<any>) => {
+    // Mock implementation
+    return null;
   }
-}
+};
+
+export const syncUserProfile = async (user: User): Promise<boolean> => {
+  try {
+    // Get existing patient profile
+    const existingProfile = await patientService.getPatientProfile(user.id);
+    
+    if (!existingProfile) {
+      // Create a new profile
+      const newProfile = {
+        user_id: user.id,
+        first_name: user.name ? user.name.split(' ')[0] : '',
+        last_name: user.name ? user.name.split(' ').slice(1).join(' ') : '',
+        email: user.email
+      };
+      
+      await dataStorageService.saveData('profiles', newProfile);
+    } else {
+      // Update existing profile
+      const updates = {
+        id: existingProfile.id,
+        email: user.email,
+        name: user.name
+      };
+      
+      await dataStorageService.saveData('profiles', updates);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error syncing user profile:', error);
+    return false;
+  }
+};

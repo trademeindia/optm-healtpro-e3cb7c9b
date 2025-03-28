@@ -1,15 +1,23 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { FaGoogle } from 'react-icons/fa';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { ButtonProps } from '@/components/ui/button';
 
-interface GoogleFitConnectProps {
+interface GoogleFitConnectProps extends Omit<ButtonProps, 'onConnected'> {
   onConnected?: () => void;
 }
 
-const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({ onConnected }) => {
+const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({ 
+  onConnected, 
+  className,
+  variant,
+  size,
+  ...buttonProps 
+}) => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +30,7 @@ const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({ onConnected }) => {
         if (!user?.id) return;
         
         const { data, error } = await supabase
-          .from('user_health_connections')
+          .from('fitness_connections')
           .select('*')
           .eq('user_id', user.id)
           .eq('provider', 'google_fit')
@@ -108,7 +116,7 @@ const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({ onConnected }) => {
       
       // Delete the connection record
       await supabase
-        .from('user_health_connections')
+        .from('fitness_connections')
         .delete()
         .eq('user_id', user.id)
         .eq('provider', 'google_fit');
@@ -123,58 +131,90 @@ const GoogleFitConnect: React.FC<GoogleFitConnectProps> = ({ onConnected }) => {
     }
   };
   
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connect to Google Fit</CardTitle>
-        <CardDescription>
-          Sync your activity and health data from Google Fit to enhance your
-          health tracking experience.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {error && <p className="text-red-500">{error}</p>}
-        {isConnected ? (
-          <div className="text-green-500">
+  // If used as standalone button
+  if (!buttonProps.children) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Connect to Google Fit</CardTitle>
+          <CardDescription>
+            Sync your activity and health data from Google Fit to enhance your
+            health tracking experience.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && <p className="text-red-500">{error}</p>}
+          {isConnected ? (
+            <div className="text-green-500">
+              <p>
+                <span className="font-bold">Connected!</span> Your Google Fit
+                account is linked.
+              </p>
+            </div>
+          ) : (
             <p>
-              <span className="font-bold">Connected!</span> Your Google Fit
-              account is linked.
+              Connect your Google Fit account to automatically track your steps,
+              sleep, and other health metrics.
             </p>
-          </div>
-        ) : (
-          <p>
-            Connect your Google Fit account to automatically track your steps,
-            sleep, and other health metrics.
-          </p>
-        )}
-      </CardContent>
-      <CardFooter className="flex justify-end">
-        {isConnected ? (
-          <Button
-            variant="destructive"
-            onClick={disconnectGoogleFit}
-            disabled={isConnecting}
-          >
-            {isConnecting ? "Disconnecting..." : "Disconnect Google Fit"}
-          </Button>
-        ) : (
-          <Button
-            onClick={connectGoogleFit}
-            disabled={isConnecting}
-          >
-            {isConnecting ? (
-              <>
-                Connecting...
-              </>
-            ) : (
-              <>
-                <FaGoogle className="mr-2" /> Connect Google Fit
-              </>
-            )}
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          {isConnected ? (
+            <Button
+              variant="destructive"
+              onClick={disconnectGoogleFit}
+              disabled={isConnecting}
+            >
+              {isConnecting ? "Disconnecting..." : "Disconnect Google Fit"}
+            </Button>
+          ) : (
+            <Button
+              onClick={connectGoogleFit}
+              disabled={isConnecting}
+            >
+              {isConnecting ? (
+                <>
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <FaGoogle className="mr-2" /> Connect Google Fit
+                </>
+              )}
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
+    );
+  }
+  
+  // If used as a button with custom children
+  return isConnected ? (
+    <Button
+      variant={variant || "destructive"}
+      size={size}
+      onClick={disconnectGoogleFit}
+      disabled={isConnecting}
+      className={className}
+      {...buttonProps}
+    >
+      {isConnecting ? "Disconnecting..." : buttonProps.children || "Disconnect Google Fit"}
+    </Button>
+  ) : (
+    <Button
+      variant={variant}
+      size={size}
+      onClick={connectGoogleFit}
+      disabled={isConnecting}
+      className={className}
+      {...buttonProps}
+    >
+      {isConnecting ? (
+        <>Connecting...</>
+      ) : (
+        <>{buttonProps.children || <><FaGoogle className="mr-2" /> Connect Google Fit</>}</>
+      )}
+    </Button>
   );
 };
 

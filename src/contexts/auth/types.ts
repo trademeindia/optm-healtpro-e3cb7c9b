@@ -4,7 +4,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 // Define available user roles
 export type UserRole = 'admin' | 'doctor' | 'patient' | 'receptionist';
 
-// Define OAuth providers - using string literals instead of importing Provider
+// Define OAuth providers - using string literals
 export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'apple';
 
 // User model with role information
@@ -16,6 +16,14 @@ export interface User {
   provider: string;
   picture: string | null;
   patientId?: string;
+}
+
+// User session interface
+export interface UserSession {
+  user: User;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: number;
 }
 
 // Auth context interface

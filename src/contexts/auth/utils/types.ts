@@ -4,6 +4,21 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 // Define OAuth providers - using string literals
 export type Provider = 'google' | 'facebook' | 'twitter' | 'github' | 'azure' | 'apple';
 
+// User session interface
+export interface UserSession {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: string;
+    provider: string;
+    picture: string | null;
+  };
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: number;
+}
+
 // Mapping of provider names to display values
 export const providerDisplayNames: Record<Provider | string, string> = {
   google: 'Google',
