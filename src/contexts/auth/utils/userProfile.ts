@@ -1,7 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '../types';
-import { Provider, UserSession } from './types';
+import type { Provider } from '../types';
+import { UserSession } from './types';
 
 /**
  * Creates a user profile in the database

@@ -37,9 +37,15 @@ export async function formatUser(user?: SupabaseUser | null): Promise<User | nul
                 (user.email ? user.email.split('@')[0] : null);
 
     // Get role from profile > user_metadata > default to 'patient'
-    const role = profile?.role || 
-                (user.user_metadata?.role as UserRole) || 
-                'patient';
+    // Cast role to UserRole to ensure type safety
+    const rawRole = profile?.role || 
+                   (user.user_metadata?.role) || 
+                   'patient';
+                   
+    const role = (typeof rawRole === 'string' && 
+                 ['admin', 'doctor', 'patient', 'receptionist'].includes(rawRole)) 
+                 ? rawRole as UserRole 
+                 : 'patient' as UserRole;
 
     // Get picture from profile > user_metadata
     const picture = profile?.picture || 

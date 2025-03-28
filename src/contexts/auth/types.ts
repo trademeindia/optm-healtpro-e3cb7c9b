@@ -30,5 +30,6 @@ export interface AuthContextType {
   forgotPassword: (email: string) => Promise<void>;
 }
 
-// Include a proper export for Provider
-export { Provider };
+// Export Provider as a type to fix the re-export issue
+// Using 'export type' when isolatedModules is enabled
+export type { Provider };

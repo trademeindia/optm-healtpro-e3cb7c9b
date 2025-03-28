@@ -1,5 +1,6 @@
 
-import { UserRole, Provider } from '../types';
+import { UserRole } from '../types';
+import type { Provider } from '../types';
 
 // Re-export User type from Supabase but with our custom structure
 export interface SupabaseUser {
