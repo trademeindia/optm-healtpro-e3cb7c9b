@@ -17,6 +17,12 @@ export enum FeedbackType {
   ERROR = 'ERROR'
 }
 
+// FeedbackMessage type
+export interface FeedbackMessage {
+  message: string | null;
+  type: FeedbackType;
+}
+
 // Motion state for exercise tracking
 export enum MotionState {
   STANDING = 'STANDING',

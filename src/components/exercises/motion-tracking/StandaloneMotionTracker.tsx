@@ -1,9 +1,9 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { human } from '@/lib/human';
+import { humanConfig } from '@/lib/human';
 
 const StandaloneMotionTracker: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -20,20 +20,8 @@ const StandaloneMotionTracker: React.FC = () => {
       try {
         console.log('Loading Human.js model...');
         
-        // Configure human.js to use a lite model for better performance
-        human.config = {
-          ...human.config,
-          modelBasePath: '/models/',
-          body: {
-            enabled: true,
-            modelPath: 'blazepose-lite.json',
-            minConfidence: 0.3,
-            maxDetected: 1,
-          },
-          backend: 'webgl',
-          warmup: 'none',
-        };
-        
+        // We can't directly modify human.config, so we just use the humanConfig for reference
+        // Instead of modifying config, we'll just load the model
         await human.load();
         console.log('Human.js model loaded successfully');
         setModelLoaded(true);

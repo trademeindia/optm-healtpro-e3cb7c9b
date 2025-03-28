@@ -39,7 +39,11 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     stats,
     result,
     detectionError
-  } = useHumanDetection(videoRef, canvasRef);
+  } = useHumanDetection({
+    videoRef,
+    canvasRef,
+    isActive: true
+  });
   
   // Handle camera start
   const handleCameraStart = () => {
@@ -61,24 +65,11 @@ const MotionTracker: React.FC<MotionTrackerProps> = ({
     }
   };
   
-  // Map feedback type from Human library type to our UI component type
-  const mapFeedbackForUI = () => {
-    if (!feedback || !feedback.message) {
-      return {
-        message: null,
-        type: FeedbackType.INFO
-      };
-    }
-    
-    // Pass through the feedback type directly since we've aligned the enums
-    return {
-      message: feedback.message,
-      type: feedback.type
-    };
-  };
-  
   // Convert feedback for UI component
-  const uiFeedback = mapFeedbackForUI();
+  const uiFeedback = {
+    message: feedback?.message || null,
+    type: feedback?.type || FeedbackType.INFO
+  };
   
   // Stop detection when component unmounts
   useEffect(() => {

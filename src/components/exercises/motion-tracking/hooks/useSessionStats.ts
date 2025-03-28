@@ -10,15 +10,34 @@ interface SessionStats {
   lastUpdate: number;
 }
 
+// Initial stats
+export const getInitialStats = (): SessionStats => ({
+  totalReps: 0,
+  goodReps: 0,
+  badReps: 0,
+  caloriesBurned: 0,
+  startTime: Date.now(),
+  lastUpdate: Date.now()
+});
+
+// Update stats for good rep
+export const updateStatsForGoodRep = (stats: SessionStats): SessionStats => ({
+  ...stats,
+  totalReps: stats.totalReps + 1,
+  goodReps: stats.goodReps + 1,
+  lastUpdate: Date.now()
+});
+
+// Update stats for bad rep
+export const updateStatsForBadRep = (stats: SessionStats): SessionStats => ({
+  ...stats,
+  totalReps: stats.totalReps + 1,
+  badReps: stats.badReps + 1,
+  lastUpdate: Date.now()
+});
+
 export const useSessionStats = () => {
-  const [stats, setStats] = useState<SessionStats>({
-    totalReps: 0,
-    goodReps: 0,
-    badReps: 0,
-    caloriesBurned: 0,
-    startTime: Date.now(),
-    lastUpdate: Date.now()
-  });
+  const [stats, setStats] = useState<SessionStats>(getInitialStats());
   
   // Update stats with calorie calculations
   useEffect(() => {
@@ -45,32 +64,15 @@ export const useSessionStats = () => {
   }, []);
   
   const addGoodRep = () => {
-    setStats(prev => ({
-      ...prev,
-      totalReps: prev.totalReps + 1,
-      goodReps: prev.goodReps + 1,
-      lastUpdate: Date.now()
-    }));
+    setStats(prev => updateStatsForGoodRep(prev));
   };
   
   const addBadRep = () => {
-    setStats(prev => ({
-      ...prev,
-      totalReps: prev.totalReps + 1,
-      badReps: prev.badReps + 1,
-      lastUpdate: Date.now()
-    }));
+    setStats(prev => updateStatsForBadRep(prev));
   };
   
   const resetStats = () => {
-    setStats({
-      totalReps: 0,
-      goodReps: 0,
-      badReps: 0,
-      caloriesBurned: 0,
-      startTime: Date.now(),
-      lastUpdate: Date.now()
-    });
+    setStats(getInitialStats());
   };
   
   return {

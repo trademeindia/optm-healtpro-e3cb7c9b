@@ -1,13 +1,7 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { human } from '@/lib/human/core';
 import { BodyAngles, FeedbackType, DetectionStatus } from '@/lib/human/types';
 import { calculateBodyAngles } from '@/lib/human/angles';
-
-// Define the feedback mapper function
-const mapFeedbackType = (type: FeedbackType): FeedbackType => {
-  return type; // Simple pass-through for now
-};
 
 export interface UseHumanDetectionProps {
   videoRef: React.RefObject<HTMLVideoElement>;
