@@ -50,14 +50,10 @@ class HumanInstance {
   
   static reset(): void {
     if (this.instance) {
-      // Using the correct method for cleanup
-      try {
-        // Note: based on Human.js API, it might be tensor.dispose() instead of direct cleanup
-        this.instance = null;
-        this.isInitialized = false;
-      } catch (error) {
-        console.error('Error resetting Human.js:', error);
-      }
+      // Human.js doesn't have direct dispose/cleanup methods like TensorFlow.js
+      // We simply set the instance to null for garbage collection
+      this.instance = null;
+      this.isInitialized = false;
     }
   }
 }

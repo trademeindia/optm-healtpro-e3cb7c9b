@@ -1,26 +1,5 @@
 
-// Enum definitions
-export enum FeedbackType {
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR'
-}
-
-export enum SquatState {
-  STANDING = 'standing',
-  DESCENDING = 'descending',
-  BOTTOM = 'bottom',
-  ASCENDING = 'ascending'
-}
-
-export enum MotionState {
-  STANDING = 'standing',
-  MID_MOTION = 'mid_motion',
-  FULL_MOTION = 'full_motion'
-}
-
-// Interface definitions
+// BodyAngles interface for use in pose detection
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;
@@ -30,26 +9,47 @@ export interface BodyAngles {
   neckAngle: number | null;
 }
 
-export interface FeedbackMessage {
-  message: string | null;
-  type: FeedbackType;
+// Feedback types
+export enum FeedbackType {
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR'
 }
 
+// Motion state for exercise tracking
+export enum MotionState {
+  STANDING = 'STANDING',
+  DESCENDING = 'DESCENDING',
+  MID_MOTION = 'MID_MOTION',
+  FULL_MOTION = 'FULL_MOTION',
+  ASCENDING = 'ASCENDING'
+}
+
+// Squat states
+export enum SquatState {
+  STANDING = 'STANDING',
+  DESCENDING = 'DESCENDING',
+  BOTTOM = 'BOTTOM',
+  ASCENDING = 'ASCENDING'
+}
+
+// Detection status for tracking
+export interface DetectionStatus {
+  isDetecting: boolean;
+  fps: number | null;
+  confidence: number | null;
+  detectedKeypoints?: number;
+}
+
+// Stats tracking
 export interface MotionStats {
+  lastUpdated: number;
   totalReps: number;
   goodReps: number;
   badReps: number;
   accuracy: number;
   currentStreak: number;
   bestStreak: number;
-  lastUpdated?: number;
-  caloriesBurned?: number;
-}
-
-export interface DetectionStatus {
-  isDetecting: boolean;
-  fps: number | null;
-  confidence: number | null;
-  detectedKeypoints?: number;
-  lastDetectionTime?: number;
+  caloriesBurned: number;
 }

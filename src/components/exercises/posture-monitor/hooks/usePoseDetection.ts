@@ -172,6 +172,9 @@ export default function usePoseDetection(
     setCurrentSquatState(SquatState.STANDING);
   }, [stopDetection]);
   
+  // Add resetSession alias for resetDetection to match API
+  const resetSession = resetDetection;
+  
   return {
     isModelLoading,
     modelError,
@@ -183,6 +186,7 @@ export default function usePoseDetection(
     detectionStatus,
     startDetection,
     stopDetection,
-    resetDetection
+    resetDetection,
+    resetSession
   };
 }

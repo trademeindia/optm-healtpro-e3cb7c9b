@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Play, Pause, RotateCcw, Flag } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Play, Pause, RefreshCcw, CheckSquare } from 'lucide-react';
 
 interface ControlPanelProps {
   isTracking: boolean;
@@ -10,7 +10,7 @@ interface ControlPanelProps {
   onStartTracking: () => void;
   onStopTracking: () => void;
   onResetSession: () => void;
-  onFinish: () => void;
+  onFinish?: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -23,53 +23,56 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   return (
     <Card>
-      <CardContent className="p-4 space-y-4">
-        <h3 className="font-medium text-base">Control Panel</h3>
-        
-        <div className="grid grid-cols-2 gap-2">
-          {isTracking ? (
-            <Button 
-              onClick={onStopTracking}
-              className="w-full flex items-center justify-center"
-              variant="outline"
+      <CardHeader className="py-3 px-4 bg-slate-50 dark:bg-slate-800/50">
+        <CardTitle className="text-lg font-medium">Controls</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex flex-col gap-3">
+          <Button
+            variant={isTracking ? "destructive" : "default"}
+            className="w-full flex justify-center items-center gap-2"
+            onClick={isTracking ? onStopTracking : onStartTracking}
+            disabled={!isModelLoaded}
+          >
+            {isTracking ? (
+              <>
+                <Pause className="h-4 w-4" />
+                Pause Tracking
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Start Tracking
+              </>
+            )}
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="w-full flex justify-center items-center gap-2"
+            onClick={onResetSession}
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Reset Session
+          </Button>
+          
+          {onFinish && (
+            <Button
+              variant="secondary"
+              className="w-full flex justify-center items-center gap-2 mt-4"
+              onClick={onFinish}
             >
-              <Pause className="h-4 w-4 mr-2" />
-              Pause
-            </Button>
-          ) : (
-            <Button 
-              onClick={onStartTracking}
-              className="w-full flex items-center justify-center bg-primary"
-              disabled={!isModelLoaded}
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Start
+              <CheckSquare className="h-4 w-4" />
+              Finish Exercise
             </Button>
           )}
-          
-          <Button 
-            onClick={onResetSession}
-            className="w-full flex items-center justify-center"
-            variant="outline"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset
-          </Button>
         </div>
         
-        <Button 
-          onClick={onFinish}
-          className="w-full flex items-center justify-center"
-          variant="secondary"
-        >
-          <Flag className="h-4 w-4 mr-2" />
-          Finish Exercise
-        </Button>
-        
-        <div className="text-xs text-muted-foreground">
-          <p>Tracking Status: {isModelLoaded ? 
-            (isTracking ? "Active" : "Ready") : 
-            "Loading Model..."}</p>
+        <div className="text-xs text-muted-foreground mt-4 space-y-2 border-t pt-3">
+          <p>• Face the camera directly</p>
+          <p>• Ensure your full body is visible</p>
+          <p>• Move slowly for better tracking</p>
+          <p>• Keep good lighting conditions</p>
         </div>
       </CardContent>
     </Card>

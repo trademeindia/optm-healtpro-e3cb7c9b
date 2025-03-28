@@ -1,81 +1,82 @@
 
-import { useState, useRef, useCallback } from 'react';
-import { MotionStats } from '@/lib/human/types';
+import { useState, useRef, useEffect } from 'react';
 
-// Get initial stats
-export const getInitialStats = (): MotionStats => ({
-  totalReps: 0,
-  goodReps: 0,
-  badReps: 0,
-  accuracy: 0,
-  currentStreak: 0,
-  bestStreak: 0
-});
-
-// Update stats for good rep
-export const updateStatsForGoodRep = (currentStats: MotionStats): MotionStats => {
-  const totalReps = currentStats.totalReps + 1;
-  const goodReps = currentStats.goodReps + 1;
-  const currentStreak = currentStats.currentStreak + 1;
-  const bestStreak = Math.max(currentStreak, currentStats.bestStreak);
-  const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
-  
-  return {
-    ...currentStats,
-    totalReps,
-    goodReps,
-    accuracy,
-    currentStreak,
-    bestStreak,
-    lastUpdated: Date.now()
-  };
-};
-
-// Update stats for bad rep
-export const updateStatsForBadRep = (currentStats: MotionStats): MotionStats => {
-  const totalReps = currentStats.totalReps + 1;
-  const badReps = currentStats.badReps + 1;
-  const goodReps = currentStats.goodReps;
-  const accuracy = totalReps > 0 ? Math.round((goodReps / totalReps) * 100) : 0;
-  
-  return {
-    ...currentStats,
-    totalReps,
-    badReps,
-    accuracy,
-    currentStreak: 0, // Reset streak on bad rep
-    bestStreak: currentStats.bestStreak,
-    lastUpdated: Date.now()
-  };
-};
+interface SessionStats {
+  totalReps: number;
+  goodReps: number;
+  badReps: number;
+  caloriesBurned: number;
+  startTime: number;
+  lastUpdate: number;
+}
 
 export const useSessionStats = () => {
-  const [stats, setStats] = useState<MotionStats>(getInitialStats());
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const exerciseType = useRef<string>('squat');
+  const [stats, setStats] = useState<SessionStats>({
+    totalReps: 0,
+    goodReps: 0,
+    badReps: 0,
+    caloriesBurned: 0,
+    startTime: Date.now(),
+    lastUpdate: Date.now()
+  });
   
-  // Handle a good rep
-  const handleGoodRep = useCallback(() => {
-    setStats(currentStats => updateStatsForGoodRep(currentStats));
+  // Update stats with calorie calculations
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setStats(prev => {
+        const sessionDuration = (Date.now() - prev.startTime) / 1000; // in seconds
+        
+        // Simple calorie calculation based on activity level and duration
+        // MET value for moderate exercise is around 5-7
+        const met = 5; 
+        const weight = 70; // kg, default value
+        const caloriesPerMinute = (met * 3.5 * weight) / 200; 
+        const burnedCalories = (caloriesPerMinute * sessionDuration) / 60;
+        
+        return {
+          ...prev,
+          caloriesBurned: parseFloat(burnedCalories.toFixed(1)),
+          lastUpdate: Date.now()
+        };
+      });
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
   }, []);
   
-  // Handle a bad rep
-  const handleBadRep = useCallback(() => {
-    setStats(currentStats => updateStatsForBadRep(currentStats));
-  }, []);
+  const addGoodRep = () => {
+    setStats(prev => ({
+      ...prev,
+      totalReps: prev.totalReps + 1,
+      goodReps: prev.goodReps + 1,
+      lastUpdate: Date.now()
+    }));
+  };
   
-  // Reset stats
-  const resetStats = useCallback(() => {
-    setStats(getInitialStats());
-  }, []);
+  const addBadRep = () => {
+    setStats(prev => ({
+      ...prev,
+      totalReps: prev.totalReps + 1,
+      badReps: prev.badReps + 1,
+      lastUpdate: Date.now()
+    }));
+  };
+  
+  const resetStats = () => {
+    setStats({
+      totalReps: 0,
+      goodReps: 0,
+      badReps: 0,
+      caloriesBurned: 0,
+      startTime: Date.now(),
+      lastUpdate: Date.now()
+    });
+  };
   
   return {
     stats,
-    sessionId,
-    exerciseType,
-    setSessionId,
-    handleGoodRep,
-    handleBadRep,
+    addGoodRep,
+    addBadRep,
     resetStats
   };
 };

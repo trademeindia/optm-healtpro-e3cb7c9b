@@ -1,121 +1,98 @@
 
 import { BodyAngles } from './types';
 
-type Point = {
-  x: number;
-  y: number;
-  z?: number;
-  score?: number;
-};
-
-type Keypoint = Point & {
-  part: string;
-};
-
-type Body = {
-  keypoints: Keypoint[];
-  score?: number;
-};
-
-export const calculateBodyAngles = (body: Body): BodyAngles => {
-  // Initialize with default values
-  const angles: BodyAngles = {
-    kneeAngle: null,
-    hipAngle: null,
-    shoulderAngle: null,
-    elbowAngle: null,
-    ankleAngle: null,
-    neckAngle: null
-  };
-
-  // If no keypoints, return empty angles
-  if (!body.keypoints || body.keypoints.length === 0) {
-    return angles;
-  }
-
-  // Map keypoints by part name for easier access
-  const keypointMap = new Map<string, Keypoint>();
-  for (const kp of body.keypoints) {
-    if (kp.score && kp.score > 0.5) {
-      keypointMap.set(kp.part, kp);
-    }
-  }
-
-  // Calculate knee angle
-  const hip = keypointMap.get('rightHip') || keypointMap.get('leftHip');
-  const knee = keypointMap.get('rightKnee') || keypointMap.get('leftKnee');
-  const ankle = keypointMap.get('rightAnkle') || keypointMap.get('leftAnkle');
-  
-  if (hip && knee && ankle) {
-    angles.kneeAngle = calculateAngle(hip, knee, ankle);
-  }
-
-  // Calculate hip angle
-  const shoulder = keypointMap.get('rightShoulder') || keypointMap.get('leftShoulder');
-  
-  if (shoulder && hip && knee) {
-    angles.hipAngle = calculateAngle(shoulder, hip, knee);
-  }
-
-  // Calculate shoulder angle
-  const elbow = keypointMap.get('rightElbow') || keypointMap.get('leftElbow');
-  
-  if (elbow && shoulder && hip) {
-    angles.shoulderAngle = calculateAngle(elbow, shoulder, hip);
-  }
-
-  // Calculate elbow angle
-  const wrist = keypointMap.get('rightWrist') || keypointMap.get('leftWrist');
-  
-  if (wrist && elbow && shoulder) {
-    angles.elbowAngle = calculateAngle(wrist, elbow, shoulder);
-  }
-
-  // Calculate ankle angle
-  if (knee && ankle) {
-    // For ankle angle, we need a point on the ground
-    const groundPoint = { 
-      x: ankle.x, 
-      y: ankle.y + 50 // Arbitrary point below the ankle
+// Calculate body angles based on Human.js pose keypoints
+export function calculateBodyAngles(pose: any): BodyAngles {
+  if (!pose || !pose.keypoints) {
+    return {
+      kneeAngle: null,
+      hipAngle: null,
+      shoulderAngle: null,
+      elbowAngle: null,
+      ankleAngle: null,
+      neckAngle: null
     };
-    angles.ankleAngle = calculateAngle(knee, ankle, groundPoint);
   }
-
-  // Calculate neck angle
-  const nose = keypointMap.get('nose');
   
-  if (nose && shoulder) {
-    // For neck angle, we use the vertical line and the line from shoulder to nose
-    const verticalPoint = { x: shoulder.x, y: shoulder.y - 100 }; // Point directly above shoulder
-    angles.neckAngle = calculateAngle(verticalPoint, shoulder, nose);
-  }
+  // Get keypoints
+  const keypoints = pose.keypoints.reduce((acc: any, kp: any) => {
+    acc[kp.name] = kp;
+    return acc;
+  }, {});
+  
+  // Calculate knee angle
+  const kneeAngle = calculateAngle(
+    keypoints['right_hip'] || keypoints['left_hip'],
+    keypoints['right_knee'] || keypoints['left_knee'],
+    keypoints['right_ankle'] || keypoints['left_ankle']
+  );
+  
+  // Calculate hip angle
+  const hipAngle = calculateAngle(
+    keypoints['right_shoulder'] || keypoints['left_shoulder'],
+    keypoints['right_hip'] || keypoints['left_hip'],
+    keypoints['right_knee'] || keypoints['left_knee']
+  );
+  
+  // Calculate shoulder angle
+  const shoulderAngle = calculateAngle(
+    keypoints['right_elbow'] || keypoints['left_elbow'],
+    keypoints['right_shoulder'] || keypoints['left_shoulder'],
+    keypoints['right_hip'] || keypoints['left_hip']
+  );
+  
+  // Calculate elbow angle
+  const elbowAngle = calculateAngle(
+    keypoints['right_shoulder'] || keypoints['left_shoulder'],
+    keypoints['right_elbow'] || keypoints['left_elbow'],
+    keypoints['right_wrist'] || keypoints['left_wrist']
+  );
+  
+  // Calculate ankle angle
+  const ankleAngle = calculateAngle(
+    keypoints['right_knee'] || keypoints['left_knee'],
+    keypoints['right_ankle'] || keypoints['left_ankle'],
+    keypoints['right_foot_index'] || keypoints['left_foot_index']
+  );
+  
+  // Calculate neck angle
+  const neckAngle = calculateAngle(
+    keypoints['nose'],
+    keypoints['right_shoulder'] || keypoints['left_shoulder'],
+    keypoints['right_hip'] || keypoints['left_hip']
+  );
+  
+  return {
+    kneeAngle,
+    hipAngle,
+    shoulderAngle,
+    elbowAngle,
+    ankleAngle,
+    neckAngle
+  };
+}
 
-  return angles;
-};
-
-// Calculate angle between three points in degrees
-const calculateAngle = (p1: Point, p2: Point, p3: Point): number => {
-  try {
-    // Calculate vectors
-    const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
-    const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
-    
-    // Calculate dot product
-    const dotProduct = v1.x * v2.x + v1.y * v2.y;
-    
-    // Calculate magnitudes
-    const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-    const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-    
-    // Calculate angle in radians
-    const angleRad = Math.acos(Math.min(1, Math.max(-1, dotProduct / (mag1 * mag2))));
-    
-    // Convert to degrees
-    const angleDeg = angleRad * (180 / Math.PI);
-    
-    return angleDeg;
-  } catch (error) {
-    console.error('Error calculating angle:', error);
-    return 0;
+// Helper function to calculate angle between three points
+function calculateAngle(a: any, b: any, c: any): number | null {
+  if (!a || !b || !c || a.score < 0.5 || b.score < 0.5 || c.score < 0.5) {
+    return null;
   }
-};
+  
+  const ab = { x: b.x - a.x, y: b.y - a.y };
+  const bc = { x: c.x - b.x, y: c.y - b.y };
+  
+  // Calculate dot product
+  const dotProduct = ab.x * bc.x + ab.y * bc.y;
+  
+  // Calculate magnitudes
+  const abMagnitude = Math.sqrt(ab.x * ab.x + ab.y * ab.y);
+  const bcMagnitude = Math.sqrt(bc.x * bc.x + bc.y * bc.y);
+  
+  // Calculate angle in radians
+  const angleRadians = Math.acos(dotProduct / (abMagnitude * bcMagnitude));
+  
+  // Convert to degrees
+  const angleDegrees = angleRadians * (180 / Math.PI);
+  
+  return angleDegrees;
+}

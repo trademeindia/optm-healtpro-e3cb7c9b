@@ -1,111 +1,113 @@
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+
+type VideoStatus = 'inactive' | 'loading' | 'active' | 'error';
+type PermissionStatus = 'granted' | 'denied' | 'prompt' | 'unknown';
 
 export default function useCamera(videoRef: React.RefObject<HTMLVideoElement>) {
   const [cameraActive, setCameraActive] = useState(false);
-  const [permission, setPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [videoStatus, setVideoStatus] = useState<VideoStatus>('inactive');
+  const [permission, setPermission] = useState<PermissionStatus>('unknown');
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [videoStatus, setVideoStatus] = useState({
-    isReady: false,
-    hasStream: false,
-    resolution: null as { width: number; height: number } | null,
-  });
-  
-  const streamRef = useRef<MediaStream | null>(null);
-  
-  const toggleCamera = useCallback(async () => {
-    if (cameraActive) {
-      // Stop camera
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-      
-      setCameraActive(false);
-      setVideoStatus(prev => ({
-        ...prev,
-        isReady: false,
-        hasStream: false
-      }));
-      
-      return;
-    }
-    
+  const stream = useRef<MediaStream | null>(null);
+
+  // Request camera permission
+  const requestCameraPermission = useCallback(async () => {
+    setVideoStatus('loading');
+    setCameraError(null);
+
     try {
-      // Start camera
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access not supported in this browser');
+      // Check if permission was already denied
+      const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      setPermission(permissionStatus.state as PermissionStatus);
+
+      if (permissionStatus.state === 'denied') {
+        throw new Error('Camera permission was denied. Please enable camera access in your browser settings.');
       }
-      
-      const stream = await navigator.mediaDevices.getUserMedia({
+
+      // Request camera access
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
+          facingMode: 'user',
           width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'user'
-        }
+          height: { ideal: 720 }
+        },
+        audio: false
       });
-      
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        
-        setVideoStatus({
-          isReady: true,
-          hasStream: true,
-          resolution: {
-            width: videoRef.current.videoWidth,
-            height: videoRef.current.videoHeight
-          }
-        });
-        
-        setCameraActive(true);
-        setPermission('granted');
-        
-        toast.success("Camera started successfully");
+
+      if (!videoRef.current) {
+        throw new Error('Video element not available');
       }
-    } catch (err: any) {
-      console.error('Error accessing camera:', err);
+
+      videoRef.current.srcObject = mediaStream;
+      stream.current = mediaStream;
+      setVideoStatus('active');
+      setCameraActive(true);
+      setPermission('granted');
+      toast.success('Camera activated successfully');
+
+    } catch (error) {
+      console.error('Camera error:', error);
+      setCameraError(error instanceof Error ? error.message : 'Failed to access camera');
+      setVideoStatus('error');
+      setCameraActive(false);
       
-      if (err.name === 'NotAllowedError') {
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
         setPermission('denied');
-        toast.error('Camera access denied. Please allow camera permissions.');
+        toast.error('Camera access denied. Please check your browser permissions.');
       } else {
-        toast.error(`Camera error: ${err.message || 'Unknown error'}`);
+        toast.error('Failed to access camera. Please make sure no other app is using it.');
       }
     }
-  }, [cameraActive, videoRef]);
-  
-  const retryCamera = useCallback(() => {
-    toggleCamera();
-  }, [toggleCamera]);
-  
+  }, [videoRef]);
+
+  // Stop camera
   const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
+    if (stream.current) {
+      stream.current.getTracks().forEach(track => track.stop());
+      stream.current = null;
     }
-    
+
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    
+
+    setVideoStatus('inactive');
     setCameraActive(false);
+    toast.info('Camera stopped');
   }, [videoRef]);
-  
+
+  // Toggle camera state
+  const toggleCamera = useCallback(() => {
+    if (cameraActive) {
+      stopCamera();
+    } else {
+      requestCameraPermission();
+    }
+  }, [cameraActive, stopCamera, requestCameraPermission]);
+
+  // Retry camera connection
+  const retryCamera = useCallback(() => {
+    stopCamera();
+    requestCameraPermission();
+  }, [stopCamera, requestCameraPermission]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (stream.current) {
+        stream.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   return {
     cameraActive,
     toggleCamera,
     videoStatus,
     permission,
     retryCamera,
-    stopCamera,
     cameraError
   };
 }

@@ -6,7 +6,7 @@ export default function useSquatCounter() {
   const [goodSquats, setGoodSquats] = useState(0);
   const [badSquats, setBadSquats] = useState(0);
   
-  const incrementSquatCount = useCallback((isGoodForm: boolean) => {
+  const incrementSquatCount = useCallback((isGoodForm: boolean = true) => {
     setSquatCount(prev => prev + 1);
     
     if (isGoodForm) {

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowDown, ArrowUp, Check, Info } from 'lucide-react';
 import { SquatState } from '@/lib/human/types';
 
 interface SquatGuideProps {
@@ -20,61 +21,75 @@ const SquatGuide: React.FC<SquatGuideProps> = ({
   kneeAngle,
   hipAngle
 }) => {
-  const renderStateMessage = () => {
+  const getStateIcon = () => {
     switch (currentSquatState) {
-      case SquatState.STANDING:
-        return "Stand with feet shoulder-width apart and begin to squat down";
       case SquatState.DESCENDING:
-        return "Keep descending, maintain straight back";
-      case SquatState.BOTTOM:
-        return "Great! Now push through heels to rise up";
+        return <ArrowDown className="h-5 w-5 text-blue-500" />;
       case SquatState.ASCENDING:
-        return "Continue rising while maintaining form";
+        return <ArrowUp className="h-5 w-5 text-green-500" />;
+      case SquatState.BOTTOM:
+        return <Check className="h-5 w-5 text-green-500" />;
       default:
-        return "Prepare for squat";
+        return <Info className="h-5 w-5 text-blue-500" />;
+    }
+  };
+  
+  const getStateText = () => {
+    switch (currentSquatState) {
+      case SquatState.DESCENDING:
+        return "Going Down";
+      case SquatState.ASCENDING:
+        return "Going Up";
+      case SquatState.BOTTOM:
+        return "Holding Squat";
+      default:
+        return "Standing";
     }
   };
   
   return (
-    <Card className="border shadow-sm bg-white dark:bg-gray-800">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">Squat Guide</CardTitle>
+        <CardTitle className="text-lg">Squat Guide</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         <div className="space-y-4">
-          <div className="flex justify-between">
-            <div className="text-sm font-medium">Total Squats:</div>
-            <div className="text-sm">{squatCount}</div>
-          </div>
-          <div className="flex justify-between">
-            <div className="text-sm font-medium">Good Form:</div>
-            <div className="text-sm text-green-600">{goodSquats}</div>
-          </div>
-          <div className="flex justify-between">
-            <div className="text-sm font-medium">Needs Improvement:</div>
-            <div className="text-sm text-amber-600">{badSquats}</div>
-          </div>
-          
-          <div className="pt-2 border-t">
-            <h4 className="text-sm font-medium mb-2">Current State:</h4>
-            <div className="p-3 bg-primary/10 rounded-md text-sm">
-              {renderStateMessage()}
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-muted p-2 rounded-md">
+              <div className="text-2xl font-bold">{squatCount}</div>
+              <div className="text-xs text-muted-foreground">Total Squats</div>
+            </div>
+            <div className="bg-muted p-2 rounded-md">
+              <div className="text-2xl font-bold text-green-500">{goodSquats}</div>
+              <div className="text-xs text-muted-foreground">Good Form</div>
+            </div>
+            <div className="bg-muted p-2 rounded-md">
+              <div className="text-2xl font-bold text-amber-500">{badSquats}</div>
+              <div className="text-xs text-muted-foreground">Needs Work</div>
             </div>
           </div>
           
-          {kneeAngle !== null && (
-            <div className="flex justify-between">
-              <div className="text-sm font-medium">Knee Angle:</div>
-              <div className="text-sm">{Math.round(kneeAngle)}°</div>
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+            <div className="flex items-center gap-2">
+              {getStateIcon()}
+              <span className="font-medium">{getStateText()}</span>
             </div>
-          )}
+            <div className="text-xs text-muted-foreground">
+              {kneeAngle !== null ? `Knee: ${kneeAngle.toFixed(0)}°` : ''}
+              {hipAngle !== null ? ` Hip: ${hipAngle.toFixed(0)}°` : ''}
+            </div>
+          </div>
           
-          {hipAngle !== null && (
-            <div className="flex justify-between">
-              <div className="text-sm font-medium">Hip Angle:</div>
-              <div className="text-sm">{Math.round(hipAngle)}°</div>
-            </div>
-          )}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Proper Squat Form:</h4>
+            <ul className="text-xs space-y-1 text-muted-foreground">
+              <li>• Keep your back straight</li>
+              <li>• Knees should align with toes</li>
+              <li>• Go as low as comfortable</li>
+              <li>• Keep weight in your heels</li>
+              <li>• Look straight ahead</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
     </Card>
