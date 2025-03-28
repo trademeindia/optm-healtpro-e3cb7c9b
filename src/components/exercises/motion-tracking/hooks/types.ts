@@ -1,6 +1,12 @@
 
-import { BodyAngles, FeedbackMessage, MotionState, MotionStats } from '@/lib/human/types';
+import { BodyAngles, MotionState, MotionStats } from '@/lib/human/types';
 import * as Human from '@vladmandic/human';
+
+// Define FeedbackMessage here to avoid the import error
+export interface FeedbackMessage {
+  message: string | null;
+  type: string;
+}
 
 export interface DetectionState {
   isDetecting: boolean;
@@ -12,9 +18,10 @@ export interface DetectionState {
 
 export interface DetectionResult {
   result: Human.Result | null;
-  angles: BodyAngles;
-  biomarkers: Record<string, any>;
-  newMotionState: MotionState | null;
+  error?: string | null;
+  angles?: BodyAngles;
+  biomarkers?: Record<string, any>;
+  newMotionState?: MotionState | null;
 }
 
 export interface UseHumanDetectionReturn {

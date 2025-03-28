@@ -69,20 +69,16 @@ export const getPostureFeedback = (angles: BodyAngles): { message: string, type:
   return feedback;
 };
 
-// Add the missing performDetection function
+// Implement the performDetection function
 export const performDetection = async (
-  videoElement: HTMLVideoElement | null,
-  canvasElement: HTMLCanvasElement | null
-) => {
-  if (!videoElement || !canvasElement) {
-    return { result: null, error: "Missing video or canvas element" };
+  videoElement: HTMLVideoElement | null
+): Promise<{ result: any; error: string | null }> => {
+  if (!videoElement) {
+    return { result: null, error: "Missing video element" };
   }
 
   try {
     const result = await human.detect(videoElement);
-    
-    // Draw the pose on the canvas
-    await human.draw.all(canvasElement, result);
     
     return { result, error: null };
   } catch (error) {

@@ -1,9 +1,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import * as Human from '@vladmandic/human';
-import { MotionState, BodyAngles } from '@/lib/human/types';
-import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep } from './useSessionStats';
-import { MotionStats } from '@/lib/human/types';
+import { MotionState, MotionStats } from '@/lib/human/types';
+import { getInitialStats, updateStatsForGoodRep, updateStatsForBadRep, toMotionStats } from './useSessionStats';
 
 interface UseSessionManagementProps {
   sessionId?: string;
@@ -11,29 +10,49 @@ interface UseSessionManagementProps {
 }
 
 export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessionManagementProps) => {
-  const [stats, setStats] = useState<MotionStats>(getInitialStats());
+  // Use MotionStats type for state to match the expected type in the component
+  const [stats, setStats] = useState<MotionStats>(() => {
+    const initialStats = getInitialStats();
+    return toMotionStats(initialStats);
+  });
+
   const [sessionData, setSessionData] = useState<any[]>([]);
   
   // Add a rep with good form
   const addGoodRep = useCallback(() => {
-    setStats(prev => updateStatsForGoodRep(prev));
+    setStats(prev => {
+      const updatedStats = updateStatsForGoodRep({
+        ...prev,
+        startTime: prev.lastUpdated || Date.now(),
+        lastUpdate: prev.lastUpdated || Date.now(),
+      });
+      return toMotionStats(updatedStats);
+    });
   }, []);
   
   // Add a rep with bad form
   const addBadRep = useCallback(() => {
-    setStats(prev => updateStatsForBadRep(prev));
+    setStats(prev => {
+      const updatedStats = updateStatsForBadRep({
+        ...prev,
+        startTime: prev.lastUpdated || Date.now(),
+        lastUpdate: prev.lastUpdated || Date.now(),
+      });
+      return toMotionStats(updatedStats);
+    });
   }, []);
   
   // Reset the session stats
   const resetSession = useCallback(() => {
-    setStats(getInitialStats());
+    const initialStats = getInitialStats();
+    setStats(toMotionStats(initialStats));
     setSessionData([]);
   }, []);
   
   // Save session data for a rep
   const saveRepData = useCallback((
     result: Human.Result,
-    angles: BodyAngles,
+    angles: any,
     biomarkers: Record<string, number | null>,
     motionState: MotionState,
     isGoodForm: boolean

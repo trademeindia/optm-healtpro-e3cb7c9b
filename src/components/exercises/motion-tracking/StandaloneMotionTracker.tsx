@@ -1,9 +1,9 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { human } from '@/lib/human';
-import { humanConfig } from '@/lib/human';
 
 const StandaloneMotionTracker: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -20,8 +20,7 @@ const StandaloneMotionTracker: React.FC = () => {
       try {
         console.log('Loading Human.js model...');
         
-        // We can't directly modify human.config, so we just use the humanConfig for reference
-        // Instead of modifying config, we'll just load the model
+        // Load the model directly
         await human.load();
         console.log('Human.js model loaded successfully');
         setModelLoaded(true);
