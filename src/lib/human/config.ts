@@ -8,14 +8,15 @@
 
 import * as Human from '@vladmandic/human';
 
-const humanConfig = {
+// Create a type-safe configuration object
+const humanConfig: Partial<Human.Config> = {
   // Main options
-  backend: 'webgl', // Use WebGL backend for best performance
+  backend: 'webgl' as Human.BackendType, // Type assertion to BackendType
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
   // Performance
   async: true, // Use async operations for better UI responsiveness
-  warmup: 'none', // No warmup needed for our use case
+  warmup: 'none' as Human.WarmupType, // Type assertion to WarmupType
   
   // Detection settings
   face: {
