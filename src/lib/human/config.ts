@@ -11,12 +11,12 @@ import * as Human from '@vladmandic/human';
 // Create a type-safe configuration object
 const humanConfig: Partial<Human.Config> = {
   // Main options
-  backend: 'webgl' as Human.BackendType, // Type assertion to BackendType
+  backend: 'webgl', // Use WebGL backend for best performance
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
   // Performance
   async: true, // Use async operations for better UI responsiveness
-  warmup: 'none' as Human.WarmupType, // Type assertion to WarmupType
+  warmup: 'none', // No warmup needed for our use case
   
   // Detection settings
   face: {
@@ -26,8 +26,10 @@ const humanConfig: Partial<Human.Config> = {
     enabled: true, // Enable body detection
     modelPath: 'blazepose.json', // Use BlazePose model
     minConfidence: 0.2, // Lower confidence threshold for more results
-    maxDetections: 1, // Only detect one person
+    // maxDetections property has been removed as it's not in the BodyConfig type
   },
+  
+  // Hand detection settings
   hand: {
     enabled: false, // Disable hand detection for performance
   },
