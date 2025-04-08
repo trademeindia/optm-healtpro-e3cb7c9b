@@ -7,7 +7,6 @@ import CameraView from './CameraView';
 import { FeedbackType, SquatState } from '@/lib/human/types';
 import { useCamera } from './hooks/useCamera';
 import usePoseDetection from './hooks/usePoseDetection';
-import PoseRenderer from './renderer/PoseRenderer';
 import SquatGuide from './components/SquatGuide';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import useSquatCounter from './hooks/useSquatCounter';
@@ -31,7 +30,8 @@ const PostureMonitor: React.FC = () => {
     toggleCamera,
     videoStatus,
     permission,
-    cameraError
+    cameraError,
+    retryCamera
   } = useCamera(videoRef);
   
   // Use pose detection
@@ -83,9 +83,18 @@ const PostureMonitor: React.FC = () => {
   };
 
   const handleRetryCameraClick = () => {
-    if (typeof toggleCamera === 'function') {
-      toggleCamera();
+    retryCamera();
+  };
+  
+  // Show informative message when camera is starting
+  const showCameraStatus = () => {
+    if (cameraError) {
+      return `Camera Error: ${cameraError}`;
     }
+    if (cameraActive) {
+      return "Camera is active";
+    }
+    return "Click 'Start Camera' to begin";
   };
   
   return (
@@ -149,6 +158,10 @@ const PostureMonitor: React.FC = () => {
                   </Button>
                 </>
               )}
+            </div>
+            
+            <div className="mt-2 text-sm text-muted-foreground">
+              {showCameraStatus()}
             </div>
             
             {customFeedback && (

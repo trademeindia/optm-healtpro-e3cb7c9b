@@ -46,6 +46,7 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
   // Request camera access
   const requestCameraAccess = useCallback(async () => {
     try {
+      console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
@@ -54,9 +55,11 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
         }
       });
       
+      console.log('Camera access granted');
       setPermission('granted');
       return { stream, error: null };
     } catch (err: any) {
+      console.error('Camera access error:', err);
       const permissionDenied = err.name === 'NotAllowedError' || 
                               err.name === 'PermissionDeniedError';
       
@@ -73,32 +76,45 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
   // Setup video element
   const setupVideoElement = useCallback(async (
     videoRef: React.RefObject<HTMLVideoElement>,
-    canvasRef: React.RefObject<HTMLCanvasElement>,
     stream: MediaStream
   ) => {
     if (!videoRef.current) {
+      console.error('Video element is null');
       return false;
     }
     
     try {
+      console.log('Setting up video element with stream');
       // Set the stream as source for video element
       videoRef.current.srcObject = stream;
       
       // Wait for video to load metadata
       await new Promise<void>((resolve) => {
-        if (videoRef.current!.readyState >= 2) {
+        if (!videoRef.current) {
+          resolve();
+          return;
+        }
+        
+        if (videoRef.current.readyState >= 2) {
+          console.log('Video already loaded');
           resolve();
         } else {
-          videoRef.current!.onloadeddata = () => resolve();
+          console.log('Waiting for video to load...');
+          videoRef.current.onloadeddata = () => {
+            console.log('Video loaded');
+            resolve();
+          };
+          
+          // Add a timeout in case onloadeddata never fires
+          setTimeout(() => {
+            console.log('Video load timeout, continuing anyway');
+            resolve();
+          }, 2000);
         }
       });
       
-      // Update canvas size
-      if (canvasRef.current) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-      }
-      
+      console.log('Video setup complete, dimensions:', 
+        videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
       return true;
     } catch (err) {
       console.error('Error setting up video element:', err);
@@ -109,6 +125,7 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
   // Toggle camera state
   const toggleCamera = useCallback(async () => {
     if (cameraActive) {
+      console.log('Stopping camera');
       // Stop camera
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -129,6 +146,7 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
       return;
     }
     
+    console.log('Starting camera');
     setIsInitializing(true);
     setCameraError(null);
     
@@ -150,11 +168,22 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
       
       streamRef.current = stream;
       
+      const videoSetupSuccess = await setupVideoElement(videoRef, stream);
+      if (!videoSetupSuccess) {
+        setCameraError('Failed to setup video element');
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setIsInitializing(false);
+        return;
+      }
+      
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        
         try {
+          console.log('Attempting to play video');
           await videoRef.current.play();
+          console.log('Video playback started successfully');
           
           setCameraActive(true);
           setVideoStatus({
@@ -168,24 +197,28 @@ export const useCamera = (videoRef: React.RefObject<HTMLVideoElement>): CameraHo
             errorCount: 0
           });
           
+          toast.success('Camera activated successfully');
         } catch (playError) {
           console.error('Error playing video:', playError);
-          setCameraError('Failed to start camera playback');
+          setCameraError('Failed to start camera playback. Please try again.');
           
           if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
           }
+          setIsInitializing(false);
         }
       }
     } catch (err: any) {
       console.error('Error toggling camera:', err);
       setCameraError(err.message || 'Error accessing camera');
+      setIsInitializing(false);
     } finally {
       if (mountedRef.current) {
         setIsInitializing(false);
       }
     }
-  }, [cameraActive, requestCameraAccess, videoRef]);
+  }, [cameraActive, requestCameraAccess, setupVideoElement, videoRef]);
   
   // Retry camera connection
   const retryCamera = useCallback(async () => {

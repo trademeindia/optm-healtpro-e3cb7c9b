@@ -56,3 +56,33 @@
     transform: scale(1);
   }
 }
+
+/* Mirror mode for selfie camera view */
+.mirror-mode {
+  transform: scaleX(-1);
+}
+
+/* Camera loading and error states */
+.camera-loading, .camera-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  z-index: 20;
+}
+
+/* Camera status indicator */
+.camera-status {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+}
