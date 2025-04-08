@@ -6,16 +6,14 @@
  * Adjust these settings to control detection accuracy, performance, and features.
  */
 
-import { BackendEnum, WarmupEnum } from '@vladmandic/human';
-
 const humanConfig = {
   // Main options
-  backend: BackendEnum.webgl, // Use WebGL backend for best performance
+  backend: 'webgl', // Use WebGL backend for best performance
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
   // Performance
   async: true, // Use async operations for better UI responsiveness
-  warmup: WarmupEnum.none, // No warmup needed for our use case
+  warmup: 'none', // No warmup needed for our use case
   
   // Detection settings
   face: {
