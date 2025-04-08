@@ -1,79 +1,75 @@
 
-import { MotionStats } from '@/lib/human/types';
+import { MotionStats, BodyAngles } from '@/lib/human/types';
 
 /**
- * Calculate the accuracy percentage based on good and bad reps
+ * Updates running averages for angles in the motion stats
+ * @param stats Current motion stats
+ * @param angles New body angles to incorporate
+ * @param repCount Current rep count to weight the average
+ * @returns Updated stats with new averages
  */
-export const calculateAccuracy = (goodReps: number, totalReps: number): number => {
-  if (totalReps === 0) return 0;
-  return Math.round((goodReps / totalReps) * 100);
-};
-
-/**
- * Estimate calories burned based on exercise stats
- * This is a simple approximation for demonstration
- */
-export const estimateCaloriesBurned = (
-  reps: number,
-  exerciseType: string = 'squat',
-  userWeight: number = 70 // Default 70kg if not provided
-): number => {
-  // MET values (Metabolic Equivalent of Task)
-  // These are rough estimates for different exercises
-  const metValues: Record<string, number> = {
-    squat: 5.0,
-    pushup: 4.0,
-    lunge: 4.5,
-    jumping_jack: 8.0,
-    default: 5.0
-  };
-  
-  // Get the appropriate MET value, default if not found
-  const met = metValues[exerciseType] || metValues.default;
-  
-  // Formula: calories = MET * weight in kg * time in hours
-  // For reps, we estimate time based on typical rep duration
-  const averageSecPerRep = 4; // Seconds
-  const timeInHours = (reps * averageSecPerRep) / 3600;
-  
-  // Calculate and return calories
-  return Math.round(met * userWeight * timeInHours * 10) / 10; // Round to 1 decimal place
-};
-
-/**
- * Update exercise stats based on new rep data
- */
-export const updateExerciseStats = (
-  currentStats: MotionStats,
-  isGoodForm: boolean
+export const updateAngleAverages = (
+  stats: MotionStats,
+  angles: BodyAngles,
+  repCount: number
 ): MotionStats => {
-  const newStats = { ...currentStats };
+  const { kneeAngle, hipAngle } = angles;
   
-  // Increment total reps
-  newStats.totalReps += 1;
-  
-  // Update good/bad rep counts
-  if (isGoodForm) {
-    newStats.goodReps += 1;
-    newStats.currentStreak += 1;
-    
-    // Update best streak if current is better
-    if (newStats.currentStreak > newStats.bestStreak) {
-      newStats.bestStreak = newStats.currentStreak;
-    }
-  } else {
-    newStats.badReps += 1;
-    newStats.currentStreak = 0;
+  if (repCount === 0) {
+    return {
+      ...stats,
+      averageKneeAngle: kneeAngle,
+      averageHipAngle: hipAngle
+    };
   }
   
-  // Calculate accuracy
-  newStats.accuracy = calculateAccuracy(newStats.goodReps, newStats.totalReps);
+  // Calculate running average
+  const newAvgKnee = kneeAngle !== null && stats.averageKneeAngle !== null
+    ? (stats.averageKneeAngle * repCount + kneeAngle) / (repCount + 1)
+    : kneeAngle || stats.averageKneeAngle;
   
-  // Update calories burned
-  newStats.caloriesBurned = estimateCaloriesBurned(newStats.totalReps);
+  const newAvgHip = hipAngle !== null && stats.averageHipAngle !== null
+    ? (stats.averageHipAngle * repCount + hipAngle) / (repCount + 1)
+    : hipAngle || stats.averageHipAngle;
   
-  // Update timestamp
-  newStats.lastUpdated = Date.now();
+  return {
+    ...stats,
+    averageKneeAngle: newAvgKnee,
+    averageHipAngle: newAvgHip
+  };
+};
+
+/**
+ * Calculates biomarkers based on motion stats and current angles
+ * @param stats Current motion stats
+ * @param angles Current body angles
+ * @returns Updated stats with biomarker values
+ */
+export const calculateBiomarkers = (
+  stats: MotionStats,
+  angles: BodyAngles,
+  repDuration?: number
+): MotionStats => {
+  // This would normally be a complex calculation based on various factors
+  // For demonstration, we'll use simplified calculations
   
-  return newStats;
+  // Symmetry: how balanced the movement is (simplified)
+  const symmetry = Math.min(100, Math.random() * 30 + 70); // 70-100 range for demo
+  
+  // Stability: how controlled the movement is
+  const stability = repDuration 
+    ? Math.min(100, 100 - Math.abs(repDuration - 2) * 10) // Ideal rep is ~2s
+    : Math.min(100, Math.random() * 30 + 70);
+  
+  // Range of Motion: how complete the movement is
+  const rangeOfMotion = angles.kneeAngle !== null
+    ? Math.min(100, 100 - Math.abs(angles.kneeAngle - 100) * 0.5)
+    : Math.min(100, Math.random() * 30 + 70);
+  
+  return {
+    ...stats,
+    symmetry,
+    stability,
+    rangeOfMotion
+  };
 };

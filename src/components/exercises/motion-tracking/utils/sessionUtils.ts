@@ -2,56 +2,60 @@
 import { MotionState, MotionStats } from '@/lib/human/types';
 
 /**
- * Create a new exercise session
+ * Initialize a new exercise session
  */
-export const createSession = async (exerciseType: string): Promise<string | undefined> => {
-  try {
-    // Placeholder implementation - would normally use API
-    console.log('Creating new session for exercise type:', exerciseType);
-    return `session-${Date.now()}`;
-  } catch (error) {
-    console.error('Error creating session:', error);
-    return undefined;
-  }
+export const initializeSessionStats = (): MotionStats => {
+  return {
+    reps: 0,
+    goodReps: 0,
+    badReps: 0,
+    averageKneeAngle: null,
+    averageHipAngle: null,
+    currentMotionState: MotionState.STANDING,
+    startTime: Date.now(),
+    duration: 0,
+    caloriesBurned: 0,
+    symmetry: 0,
+    stability: 0,
+    rangeOfMotion: 0
+  };
 };
 
 /**
- * Save detection data to the database
+ * Calculates session duration in seconds
+ * @param startTime - Start timestamp
+ * @returns Duration in seconds
  */
-export const saveDetectionData = async (
-  sessionId: string | undefined,
-  result: any,
-  angles: any,
-  biomarkers: any,
-  motionState: MotionState,
-  exerciseType: string,
-  stats: MotionStats
-) => {
-  if (!sessionId) return;
-  
-  try {
-    // Placeholder implementation - would normally use API
-    console.log('Saving detection data for session:', sessionId);
-    console.log('Stats:', stats);
-  } catch (error) {
-    console.error('Error saving detection data:', error);
-  }
+export const calculateSessionDuration = (startTime: number): number => {
+  return (Date.now() - startTime) / 1000;
 };
 
 /**
- * Complete an exercise session
+ * Updates session statistics with new data
+ * @param stats - Current session stats
+ * @param params - Parameters to update
+ * @returns Updated session stats
  */
-export const completeSession = async (
-  sessionId: string | undefined,
-  stats: MotionStats
-) => {
-  if (!sessionId) return;
+export const updateSessionStats = (
+  stats: MotionStats,
+  params: Partial<MotionStats>
+): MotionStats => {
+  return {
+    ...stats,
+    ...params,
+    duration: calculateSessionDuration(stats.startTime)
+  };
+};
+
+/**
+ * Creates a formatted summary of exercise session
+ * @param stats - Session statistics
+ * @returns Formatted summary text
+ */
+export const createSessionSummary = (stats: MotionStats): string => {
+  const { reps, goodReps, duration, caloriesBurned } = stats;
+  const formattedDuration = duration.toFixed(0);
+  const formattedCalories = caloriesBurned.toFixed(1);
   
-  try {
-    // Placeholder implementation - would normally use API
-    console.log('Completing session:', sessionId);
-    console.log('Final stats:', stats);
-  } catch (error) {
-    console.error('Error completing session:', error);
-  }
+  return `Completed ${reps} repetitions (${goodReps} good) in ${formattedDuration} seconds, burning approximately ${formattedCalories} calories.`;
 };

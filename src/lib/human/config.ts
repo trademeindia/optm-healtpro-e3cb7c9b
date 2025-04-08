@@ -6,9 +6,11 @@
  * Adjust these settings to control detection accuracy, performance, and features.
  */
 
+import { BackendEnum } from '@vladmandic/human';
+
 const humanConfig = {
   // Main options
-  backend: 'webgl', // Use WebGL backend for best performance
+  backend: 'webgl' as BackendEnum, // Use WebGL backend for best performance
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
   // Performance

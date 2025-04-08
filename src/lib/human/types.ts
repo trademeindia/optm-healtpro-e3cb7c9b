@@ -24,6 +24,23 @@ export enum MotionState {
   ASCENDING = 'ascending'
 }
 
+// Add the missing MotionStats type
+export interface MotionStats {
+  reps: number;
+  goodReps: number;
+  badReps: number;
+  averageKneeAngle: number | null;
+  averageHipAngle: number | null;
+  currentMotionState: MotionState;
+  startTime: number;
+  duration: number;
+  caloriesBurned: number;
+  lastRepTime?: number;
+  symmetry?: number;
+  stability?: number;
+  rangeOfMotion?: number;
+}
+
 export interface BodyAngles {
   kneeAngle: number | null;
   hipAngle: number | null;

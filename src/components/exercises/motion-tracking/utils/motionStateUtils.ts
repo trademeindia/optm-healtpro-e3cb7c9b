@@ -1,27 +1,50 @@
 
-import { MotionState } from '@/lib/human/types';
+import { BodyAngles, MotionState } from '@/lib/human/types';
 
-// Determine the current motion state based on knee angle
-export const determineMotionState = (kneeAngle: number | null): MotionState => {
-  if (kneeAngle === null) {
+/**
+ * Determines motion state based on body angles
+ * @param angles Current body angles
+ * @param previousState Previous motion state
+ * @returns Current motion state
+ */
+export const determineMotionState = (
+  angles: BodyAngles,
+  previousState: MotionState
+): MotionState => {
+  const { kneeAngle } = angles;
+  
+  if (!kneeAngle) return MotionState.STANDING;
+  
+  // Standing phase (knees mostly straight)
+  if (kneeAngle > 160) {
     return MotionState.STANDING;
   }
   
-  if (kneeAngle > 160) {
-    return MotionState.STANDING;
-  } else if (kneeAngle < 100) {
+  // Full motion phase (deep bend in knees)
+  if (kneeAngle < 100) {
     return MotionState.FULL_MOTION;
-  } else {
-    return MotionState.MID_MOTION;
   }
+  
+  // Determine if descending or ascending based on previous state
+  if (previousState === MotionState.STANDING || previousState === MotionState.DESCENDING) {
+    return MotionState.DESCENDING;
+  } else if (previousState === MotionState.FULL_MOTION || previousState === MotionState.ASCENDING) {
+    return MotionState.ASCENDING;
+  }
+  
+  return previousState;
 };
 
-// Check if a repetition has been completed
-export const isRepCompleted = (newState: MotionState, prevState: MotionState): boolean => {
-  return prevState === MotionState.FULL_MOTION && newState === MotionState.STANDING;
-};
-
-// Check if motion is in progress
-export const isMotionInProgress = (state: MotionState): boolean => {
-  return state === MotionState.MID_MOTION || state === MotionState.FULL_MOTION;
+/**
+ * Checks if a repetition was completed
+ * @param currentState Current motion state
+ * @param previousState Previous motion state
+ * @returns Boolean indicating if a rep was completed
+ */
+export const isRepCompleted = (
+  currentState: MotionState,
+  previousState: MotionState
+): boolean => {
+  // A rep is completed when moving from ascending back to standing
+  return previousState === MotionState.ASCENDING && currentState === MotionState.STANDING;
 };

@@ -1,5 +1,6 @@
 
 import { FeedbackType, BodyAngles } from '@/lib/human/types';
+import { human } from '@/lib/human/core';
 
 /**
  * Analyzes posture and provides feedback based on body angles
@@ -51,6 +52,25 @@ export const getPostureFeedback = (angles: BodyAngles) => {
     message: "Keep your movements controlled and steady",
     type: FeedbackType.INFO
   };
+};
+
+/**
+ * Performs body detection on video frames
+ * @param videoElement - HTML video element to process
+ * @returns Detection results or null if detection failed
+ */
+export const performDetection = async (videoElement: HTMLVideoElement) => {
+  if (!videoElement || videoElement.readyState < 2) {
+    return null;
+  }
+  
+  try {
+    const result = await human.detect(videoElement);
+    return result;
+  } catch (error) {
+    console.error('Error during pose detection:', error);
+    return null;
+  }
 };
 
 /**
