@@ -10,12 +10,12 @@ import * as Human from '@vladmandic/human';
 
 const humanConfig = {
   // Main options
-  backend: Human.BackendEnum.webgl, // Use WebGL backend for best performance
+  backend: 'webgl', // Use WebGL backend for best performance
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
   // Performance
   async: true, // Use async operations for better UI responsiveness
-  warmup: Human.WarmupEnum.none, // No warmup needed for our use case
+  warmup: 'none', // No warmup needed for our use case
   
   // Detection settings
   face: {
