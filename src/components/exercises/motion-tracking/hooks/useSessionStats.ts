@@ -15,6 +15,7 @@ export interface SessionStats {
   accuracy: number;
   currentStreak: number;
   bestStreak: number;
+  reps?: number; // For compatibility
 }
 
 // Initial stats
@@ -33,10 +34,16 @@ export const getInitialStats = (): SessionStats => ({
 
 // Convert SessionStats to MotionStats
 export const toMotionStats = (stats: SessionStats): MotionStats => ({
+  reps: stats.reps || stats.totalReps,
   totalReps: stats.totalReps,
   goodReps: stats.goodReps,
   badReps: stats.badReps,
   caloriesBurned: stats.caloriesBurned,
+  startTime: stats.startTime,
+  duration: 0, // Will be calculated elsewhere
+  currentMotionState: 'STANDING' as any, // Default value
+  averageKneeAngle: null,
+  averageHipAngle: null,
   lastUpdated: stats.lastUpdate,
   accuracy: stats.accuracy || (stats.totalReps > 0 ? (stats.goodReps / stats.totalReps) * 100 : 0),
   currentStreak: stats.currentStreak || 0,

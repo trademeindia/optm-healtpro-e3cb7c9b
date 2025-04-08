@@ -23,12 +23,22 @@ export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessio
     setStats(prev => {
       // Convert MotionStats to SessionStats, update it, then convert back
       const sessionStats: SessionStats = {
-        ...prev,
-        startTime: prev.lastUpdated,
-        lastUpdate: prev.lastUpdated
+        totalReps: prev.totalReps,
+        goodReps: prev.goodReps,
+        badReps: prev.badReps,
+        caloriesBurned: prev.caloriesBurned,
+        startTime: prev.startTime,
+        lastUpdate: prev.lastUpdated,
+        lastUpdated: prev.lastUpdated,
+        accuracy: prev.accuracy,
+        currentStreak: prev.currentStreak,
+        bestStreak: prev.bestStreak
       };
       const updatedSessionStats = updateStatsForGoodRep(sessionStats);
-      return toMotionStats(updatedSessionStats);
+      return {
+        ...prev,
+        ...toMotionStats(updatedSessionStats)
+      };
     });
   }, []);
   
@@ -37,12 +47,22 @@ export const useSessionManagement = ({ sessionId, onSessionComplete }: UseSessio
     setStats(prev => {
       // Convert MotionStats to SessionStats, update it, then convert back
       const sessionStats: SessionStats = {
-        ...prev,
-        startTime: prev.lastUpdated,
-        lastUpdate: prev.lastUpdated
+        totalReps: prev.totalReps,
+        goodReps: prev.goodReps,
+        badReps: prev.badReps,
+        caloriesBurned: prev.caloriesBurned,
+        startTime: prev.startTime,
+        lastUpdate: prev.lastUpdated,
+        lastUpdated: prev.lastUpdated,
+        accuracy: prev.accuracy,
+        currentStreak: prev.currentStreak,
+        bestStreak: prev.bestStreak
       };
       const updatedSessionStats = updateStatsForBadRep(sessionStats);
-      return toMotionStats(updatedSessionStats);
+      return {
+        ...prev,
+        ...toMotionStats(updatedSessionStats)
+      };
     });
   }, []);
   

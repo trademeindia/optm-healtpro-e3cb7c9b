@@ -7,6 +7,6 @@ export * from './statsUtils';
 import { determineMotionState as getMotionState } from './motionStateUtils';
 export { getMotionState };
 
-// Explicitly export from detectionUtils to avoid ambiguity
-import { performDetection } from './detectionUtils';
-export { performDetection };
+// Explicitly export from detectionUtils
+import { performDetection, getPostureFeedback, estimateCaloriesBurned, detectRepetition } from './detectionUtils';
+export { performDetection, getPostureFeedback, estimateCaloriesBurned, detectRepetition };

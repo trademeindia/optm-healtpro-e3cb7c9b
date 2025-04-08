@@ -3,6 +3,8 @@
  * Types for the Human.js integration
  */
 
+import { BackendEnum, WarmupEnum } from '@vladmandic/human';
+
 export enum FeedbackType {
   INFO = 'info',
   WARNING = 'warning',
@@ -24,11 +26,12 @@ export enum MotionState {
   ASCENDING = 'ascending'
 }
 
-// Add the missing MotionStats type
+// Updated MotionStats to match SessionStats requirements
 export interface MotionStats {
   reps: number;
   goodReps: number;
   badReps: number;
+  totalReps: number; // Added to match SessionStats
   averageKneeAngle: number | null;
   averageHipAngle: number | null;
   currentMotionState: MotionState;
@@ -36,6 +39,10 @@ export interface MotionStats {
   duration: number;
   caloriesBurned: number;
   lastRepTime?: number;
+  lastUpdated: number; // Added to match SessionStats
+  accuracy: number; // Added to match SessionStats
+  currentStreak: number; // Added to match SessionStats
+  bestStreak: number; // Added to match SessionStats
   symmetry?: number;
   stability?: number;
   rangeOfMotion?: number;
@@ -81,4 +88,13 @@ export interface DetectionOptions {
   showSkeleton?: boolean;
   onPoseDetected?: (pose: any) => void;
   onAngleUpdate?: (angles: BodyAngles) => void;
+}
+
+// Define DetectionResult interface to match what's used in useDetectionService
+export interface DetectionResult {
+  result: any;
+  error?: string | null;
+  angles?: BodyAngles;
+  biomarkers?: Record<string, any>;
+  newMotionState?: MotionState | null;
 }

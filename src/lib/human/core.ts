@@ -15,12 +15,13 @@ let modelLoaded = false;
 
 // Override the load method to track loading status
 const originalLoad = human.load.bind(human);
-human.load = async (...args): Promise<void> => {
+human.load = async (...args): Promise<boolean> => {
   console.log('Loading Human.js models...');
   try {
     await originalLoad(...args);
     console.log('Human.js models loaded successfully');
     modelLoaded = true;
+    return true;
   } catch (error) {
     console.error('Error loading Human.js models:', error);
     modelLoaded = false;

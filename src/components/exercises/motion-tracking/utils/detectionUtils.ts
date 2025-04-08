@@ -1,5 +1,5 @@
 
-import { FeedbackType, BodyAngles } from '@/lib/human/types';
+import { FeedbackType, BodyAngles, DetectionResult } from '@/lib/human/types';
 import { human } from '@/lib/human/core';
 
 /**
@@ -59,17 +59,25 @@ export const getPostureFeedback = (angles: BodyAngles) => {
  * @param videoElement - HTML video element to process
  * @returns Detection results or null if detection failed
  */
-export const performDetection = async (videoElement: HTMLVideoElement) => {
+export const performDetection = async (videoElement: HTMLVideoElement): Promise<DetectionResult | null> => {
   if (!videoElement || videoElement.readyState < 2) {
     return null;
   }
   
   try {
     const result = await human.detect(videoElement);
-    return result;
+    
+    // Transform the result to match DetectionResult interface
+    return {
+      result: result,
+      error: null
+    };
   } catch (error) {
     console.error('Error during pose detection:', error);
-    return null;
+    return {
+      result: null,
+      error: error instanceof Error ? error.message : 'Unknown error during detection'
+    };
   }
 };
 
