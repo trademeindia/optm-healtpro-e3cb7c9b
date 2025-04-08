@@ -1,129 +1,115 @@
 
-import { human } from '@/lib/human/core';
-import { BodyAngles, FeedbackType } from '@/lib/human/types';
-import { calculateBodyAngles } from '@/lib/human/angles';
-import { DetectionResult } from '../hooks/types';
+import { FeedbackType, BodyAngles } from '@/lib/human/types';
 
-// Helper function to map feedback type
-export const mapFeedbackType = (type: FeedbackType): FeedbackType => {
-  return type;
-};
-
-// Helper to check if detection is confident
-export const isDetectionConfident = (confidence: number | null): boolean => {
-  if (confidence === null) return false;
-  return confidence > 0.5; // 50% confidence threshold
-};
-
-// Extract body angles from pose data
-export const getBodyAngles = (pose: any): BodyAngles => {
-  if (!pose) {
+/**
+ * Analyzes posture and provides feedback based on body angles
+ */
+export const getPostureFeedback = (angles: BodyAngles) => {
+  const { kneeAngle, hipAngle, shoulderAngle } = angles;
+  
+  // No detection yet
+  if (kneeAngle === null && hipAngle === null) {
     return {
-      kneeAngle: null,
-      hipAngle: null,
-      shoulderAngle: null,
-      elbowAngle: null,
-      ankleAngle: null,
-      neckAngle: null
+      message: "Position yourself so your full body is visible",
+      type: FeedbackType.INFO
     };
   }
   
-  return calculateBodyAngles(pose);
-};
-
-// Simple function to estimate calories burned based on exercise duration and intensity
-export const estimateCaloriesBurned = (exerciseDuration: number, intensity: number): number => {
-  // Average MET (Metabolic Equivalent of Task) for moderate exercise is about 5
-  const MET = 3 + (intensity * 4); // Scale intensity from 0-1 to 3-7 MET
-  const weight = 70; // Default weight in kg
-  
-  // Formula: MET * weight * time in hours
-  return (MET * weight * (exerciseDuration / 3600)).toFixed(1) as unknown as number;
-};
-
-// Function to get feedback based on body alignment
-export const getPostureFeedback = (angles: BodyAngles): { message: string, type: FeedbackType } => {
-  // Default feedback
-  let feedback = {
-    message: "Maintain good posture during exercise",
-    type: FeedbackType.INFO
-  };
-  
-  // Check for knee issues (if knee angle exists)
-  if (angles.kneeAngle !== null) {
-    if (angles.kneeAngle < 90) {
-      feedback = {
-        message: "Be careful not to bend your knees too much",
-        type: FeedbackType.WARNING
-      };
-    }
-  }
-  
-  // Check for hip alignment
-  if (angles.hipAngle !== null && angles.hipAngle < 140) {
-    feedback = {
-      message: "Try to keep your back straighter",
+  // Check knee angle for squat form
+  if (kneeAngle !== null && kneeAngle < 90) {
+    return {
+      message: "Your knees are bent too much, don't go below 90 degrees",
       type: FeedbackType.WARNING
     };
   }
   
-  return feedback;
+  // Check hip angle for proper form
+  if (hipAngle !== null && hipAngle < 90) {
+    return {
+      message: "Keep your back straighter and don't bend forward too much",
+      type: FeedbackType.WARNING
+    };
+  }
+  
+  // Good form
+  if (kneeAngle !== null && kneeAngle >= 90 && kneeAngle <= 160) {
+    return {
+      message: "Good squat form, keep going!",
+      type: FeedbackType.SUCCESS
+    };
+  }
+  
+  // Standing position
+  if (kneeAngle !== null && kneeAngle > 160) {
+    return {
+      message: "Standing position detected, bend your knees to begin",
+      type: FeedbackType.INFO
+    };
+  }
+  
+  return {
+    message: "Keep your movements controlled and steady",
+    type: FeedbackType.INFO
+  };
 };
 
-// Implement the performDetection function
-export const performDetection = async (
-  videoElement: HTMLVideoElement | null
-): Promise<DetectionResult> => {
-  if (!videoElement) {
-    return { 
-      result: null, 
-      error: "Missing video element",
-      angles: {
-        kneeAngle: null,
-        hipAngle: null,
-        shoulderAngle: null,
-        elbowAngle: null,
-        ankleAngle: null,
-        neckAngle: null
-      },
-      biomarkers: {},
-      newMotionState: null
-    };
-  }
+/**
+ * Estimates calories burned during exercise
+ * @param durationSeconds - Exercise duration in seconds
+ * @param intensity - Exercise intensity factor (0.0 to 1.0)
+ * @returns Estimated calories burned
+ */
+export const estimateCaloriesBurned = (
+  durationSeconds: number,
+  intensity: number = 0.5,
+  bodyWeightKg: number = 70
+): number => {
+  // MET values for different exercise intensities
+  // MET = Metabolic Equivalent of Task
+  const MET_LIGHT = 3.0;  // Light exercise
+  const MET_MODERATE = 5.0;  // Moderate exercise
+  const MET_VIGOROUS = 8.0;  // Vigorous exercise
+  
+  // Calculate MET based on intensity
+  const met = MET_LIGHT + (intensity * (MET_VIGOROUS - MET_LIGHT));
+  
+  // Calories burned = MET × weight (kg) × duration (hours)
+  const durationHours = durationSeconds / 3600;
+  const caloriesBurned = met * bodyWeightKg * durationHours;
+  
+  return caloriesBurned;
+};
 
-  try {
-    const result = await human.detect(videoElement);
-    const angles = result?.body?.[0] ? getBodyAngles(result.body[0]) : {
-      kneeAngle: null,
-      hipAngle: null,
-      shoulderAngle: null,
-      elbowAngle: null,
-      ankleAngle: null,
-      neckAngle: null
-    };
-    
-    return { 
-      result, 
-      error: null,
-      angles,
-      biomarkers: {},
-      newMotionState: null
-    };
-  } catch (error) {
-    console.error("Detection error:", error);
-    return { 
-      result: null, 
-      error: error instanceof Error ? error.message : "Unknown detection error",
-      angles: {
-        kneeAngle: null,
-        hipAngle: null,
-        shoulderAngle: null,
-        elbowAngle: null,
-        ankleAngle: null,
-        neckAngle: null
-      },
-      biomarkers: {},
-      newMotionState: null
-    };
+/**
+ * Detects repetitions (reps) based on angle changes
+ * @param currentAngle - Current joint angle
+ * @param previousAngle - Previous joint angle
+ * @param threshold - Angle change threshold to count as movement
+ * @param inMotion - Current motion state
+ * @returns Updated motion state and rep count
+ */
+export const detectRepetition = (
+  currentAngle: number | null,
+  previousAngle: number | null,
+  threshold: number = 20,
+  inMotion: boolean = false
+): { inMotion: boolean; isNewRep: boolean } => {
+  if (currentAngle === null || previousAngle === null) {
+    return { inMotion, isNewRep: false };
   }
+  
+  const angleChange = Math.abs(currentAngle - previousAngle);
+  
+  // Starting motion
+  if (!inMotion && angleChange > threshold) {
+    return { inMotion: true, isNewRep: false };
+  }
+  
+  // Completing motion
+  if (inMotion && angleChange > threshold && currentAngle > 160) {
+    return { inMotion: false, isNewRep: true };
+  }
+  
+  // Continuing same state
+  return { inMotion, isNewRep: false };
 };

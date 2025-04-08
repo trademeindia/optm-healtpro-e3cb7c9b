@@ -5,6 +5,8 @@ import AppRoutes from './routes/Routes';
 import './styles/responsive/hotspots.css';
 import './styles/responsive/dialog.css';
 import './styles/responsive/anatomy-components.css';
+import './styles/responsive/mirror-mode.css';  // Import new mirror mode CSS
+import './styles/responsive/exercise-page.css'; // Import exercise page CSS
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Handle loading state

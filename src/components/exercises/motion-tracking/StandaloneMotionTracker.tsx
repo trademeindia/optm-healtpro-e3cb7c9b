@@ -13,6 +13,7 @@ const StandaloneMotionTracker: React.FC = () => {
   const [modelLoaded, setModelLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const requestRef = useRef<number>();
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Initialize model
   useEffect(() => {
@@ -40,6 +41,11 @@ const StandaloneMotionTracker: React.FC = () => {
       if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
       }
+      
+      // Also stop camera on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
@@ -52,6 +58,12 @@ const StandaloneMotionTracker: React.FC = () => {
         throw new Error('Your browser does not support camera access');
       }
       
+      // Stop any existing stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
+      console.log("Requesting camera access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
@@ -60,24 +72,49 @@ const StandaloneMotionTracker: React.FC = () => {
         }
       });
       
+      // Store stream reference for cleanup
+      streamRef.current = stream;
+      
       if (videoRef.current) {
+        console.log("Setting video source");
         videoRef.current.srcObject = stream;
-        videoRef.current.play()
-          .then(() => {
-            setCameraStarted(true);
-            toast.success("Camera started successfully");
-            
-            // Auto-start detection if model is loaded
-            if (modelLoaded) {
-              setTimeout(() => {
-                startDetection();
-              }, 500);
-            }
-          })
-          .catch(err => {
-            console.error("Error playing video:", err);
-            throw new Error("Failed to start camera playback");
-          });
+        
+        // Wait for video to be ready
+        await new Promise<void>((resolve) => {
+          if (!videoRef.current) return;
+          
+          if (videoRef.current.readyState >= 2) {
+            resolve();
+          } else {
+            videoRef.current.onloadeddata = () => resolve();
+          }
+        });
+        
+        console.log("Video ready, dimensions:", videoRef.current.videoWidth, "x", videoRef.current.videoHeight);
+        
+        // Size canvas to match video
+        if (canvasRef.current) {
+          canvasRef.current.width = videoRef.current.videoWidth || 640;
+          canvasRef.current.height = videoRef.current.videoHeight || 480;
+        }
+        
+        // Explicitly start playing
+        try {
+          await videoRef.current.play();
+          console.log("Video playback started");
+          setCameraStarted(true);
+          toast.success("Camera started successfully");
+          
+          // Auto-start detection if model is loaded
+          if (modelLoaded) {
+            setTimeout(() => {
+              startDetection();
+            }, 500);
+          }
+        } catch (playError) {
+          console.error("Error playing video:", playError);
+          throw new Error("Failed to start camera playback. Please check your browser settings.");
+        }
       }
     } catch (err) {
       console.error('Error starting camera:', err);
@@ -90,12 +127,30 @@ const StandaloneMotionTracker: React.FC = () => {
   // Detection loop
   const detectFrame = React.useCallback(async () => {
     if (!videoRef.current || !canvasRef.current || !isDetecting || !modelLoaded) {
+      requestRef.current = requestAnimationFrame(detectFrame);
       return;
     }
     
     try {
+      // Check if video is playing and has dimensions
+      if (videoRef.current.paused || videoRef.current.ended) {
+        console.log("Video is paused or ended, restarting playback");
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          console.error("Error restarting playback:", playError);
+        }
+      }
+      
+      if (!videoRef.current.videoWidth || !videoRef.current.videoHeight) {
+        console.log("Video dimensions not available yet");
+        requestRef.current = requestAnimationFrame(detectFrame);
+        return;
+      }
+      
       // Perform detection
       const result = await human.detect(videoRef.current);
+      console.log("Detection result:", result.body?.length > 0 ? "Body detected" : "No body detected");
       
       // Draw results on canvas
       const ctx = canvasRef.current.getContext('2d');
@@ -134,8 +189,11 @@ const StandaloneMotionTracker: React.FC = () => {
       
       // Make sure canvas dimensions match video
       if (videoRef.current && canvasRef.current) {
-        canvasRef.current.width = videoRef.current.videoWidth || 640;
-        canvasRef.current.height = videoRef.current.videoHeight || 480;
+        const vw = videoRef.current.videoWidth || 640;
+        const vh = videoRef.current.videoHeight || 480;
+        console.log(`Setting canvas dimensions to ${vw}x${vh}`);
+        canvasRef.current.width = vw;
+        canvasRef.current.height = vh;
       }
       
       // Start detection loop
@@ -210,14 +268,21 @@ const StandaloneMotionTracker: React.FC = () => {
               <>
                 <video 
                   ref={videoRef} 
-                  className="absolute inset-0 w-full h-full object-contain z-10"
+                  className="absolute inset-0 w-full h-full object-contain z-10 transform mirror-mode"
                   playsInline 
                   muted
+                  autoPlay
                 />
                 <canvas 
                   ref={canvasRef} 
-                  className="absolute inset-0 w-full h-full z-20"
+                  className="absolute inset-0 w-full h-full z-20 transform mirror-mode"
                 />
+                
+                {isDetecting && (
+                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs p-1.5 rounded">
+                    Tracking active
+                  </div>
+                )}
               </>
             )}
           </div>

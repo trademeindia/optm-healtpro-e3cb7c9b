@@ -1,42 +1,44 @@
 
-import * as Human from '@vladmandic/human';
+/**
+ * Human.js configuration
+ * 
+ * This file contains the configuration for the Human.js library.
+ * Adjust these settings to control detection accuracy, performance, and features.
+ */
 
-// Create a complete config
-export const humanConfig: Partial<Human.Config> = {
-  // Backend settings
-  backend: 'webgl',
+const humanConfig = {
+  // Main options
+  backend: 'webgl', // Use WebGL backend for best performance
+  modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human/models/', // CDN path for models
   
-  // Model paths
-  modelBasePath: '/',
-  
-  // Required properties
-  wasmPath: '/',
-  async: true,  // Use 'async' instead of 'asynch'
-  cacheModels: true,
-  
-  // Optimizations
-  warmup: 'none',
-  
-  // Media settings
-  filter: { enabled: false },
+  // Performance
+  async: true, // Use async operations for better UI responsiveness
+  warmup: 'none', // No warmup needed for our use case
   
   // Detection settings
-  face: { enabled: false },
-  hand: { enabled: false },
+  face: {
+    enabled: false, // Disable face detection for performance
+  },
   body: {
-    enabled: true,
-    modelPath: 'blazepose-lite.json',
-    minConfidence: 0.3,
-    maxDetected: 1
+    enabled: true, // Enable body detection
+    modelPath: 'blazepose.json', // Use BlazePose model
+    minConfidence: 0.2, // Lower confidence threshold for more results
+    maxDetections: 1, // Only detect one person
+  },
+  hand: {
+    enabled: false, // Disable hand detection for performance
   },
   
-  // Advanced settings
-  segmentation: { enabled: false },
-  gesture: { enabled: false },
+  // Advanced options
+  filter: {
+    enabled: true, // Enable result filtering
+    equalization: false, // No equalization needed
+    width: 0, // Auto
+    height: 0, // Auto
+  },
   
-  // Debugging settings
-  debug: false
+  // Debug options
+  debug: false,
 };
 
-// Default human export with configuration
 export default humanConfig;

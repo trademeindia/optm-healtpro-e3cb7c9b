@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Camera, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -21,6 +21,7 @@ const CameraView: React.FC<CameraViewProps> = ({
   const [cameraActive, setCameraActive] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const streamRef = useRef<MediaStream | null>(null);
   
   useEffect(() => {
     const startCamera = async () => {
@@ -28,6 +29,7 @@ const CameraView: React.FC<CameraViewProps> = ({
         setIsError(false);
         
         // Request camera permission and access
+        console.log("Requesting camera access in CameraView");
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'user',
@@ -37,14 +39,45 @@ const CameraView: React.FC<CameraViewProps> = ({
           audio: false
         });
         
+        // Store stream for cleanup
+        streamRef.current = stream;
+        
         if (videoRef.current) {
+          console.log("Setting video source in CameraView");
           videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
+          
+          // Wait for video to load metadata
+          await new Promise<void>((resolve) => {
+            if (!videoRef.current) return;
+            
+            if (videoRef.current.readyState >= 2) {
+              resolve();
+            } else {
+              videoRef.current.onloadeddata = () => resolve();
+            }
+          });
+          
+          // Set canvas dimensions to match video
+          if (canvasRef.current) {
+            const vw = videoRef.current.videoWidth || 640; 
+            const vh = videoRef.current.videoHeight || 480;
+            console.log(`Setting canvas dimensions to ${vw}x${vh}`);
+            canvasRef.current.width = vw;
+            canvasRef.current.height = vh;
+          }
+          
+          // Start playback
+          try {
+            await videoRef.current.play();
+            console.log("Video playback started in CameraView");
             setCameraActive(true);
             if (onCameraStart) {
               onCameraStart();
             }
-          };
+          } catch (playError) {
+            console.error("Error playing video:", playError);
+            throw new Error("Failed to start video playback");
+          }
         }
       } catch (error) {
         console.error('Camera error:', error);
@@ -61,12 +94,12 @@ const CameraView: React.FC<CameraViewProps> = ({
     
     // Clean up on unmount
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       }
     };
-  }, [videoRef, onCameraStart]);
+  }, [videoRef, canvasRef, onCameraStart]);
   
   // If there's an error accessing the camera
   if (isError) {
@@ -115,7 +148,7 @@ const CameraView: React.FC<CameraViewProps> = ({
       />
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none mirror-mode"
       />
       
       {/* Status indicator */}
