@@ -9,13 +9,291 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_sessions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          exercise_type: string
+          id: string
+          notes: string | null
+          patient_id: string
+          start_time: string
+          summary: Json | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          exercise_type: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          start_time?: string
+          summary?: Json | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          exercise_type?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          start_time?: string
+          summary?: Json | null
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          appointment_type: string
+          created_at: string
+          date: string
+          doctor_id: string
+          duration: number
+          id: string
+          location: string | null
+          notes: string | null
+          patient_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_type: string
+          created_at?: string
+          date: string
+          doctor_id: string
+          duration?: number
+          id?: string
+          location?: string | null
+          notes?: string | null
+          patient_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_type?: string
+          created_at?: string
+          date?: string
+          doctor_id?: string
+          duration?: number
+          id?: string
+          location?: string | null
+          notes?: string | null
+          patient_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      body_analysis: {
+        Row: {
+          angles: Json
+          biomarkers: Json | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          patient_id: string
+          posture_score: number | null
+          session_id: string
+          timestamp: string
+        }
+        Insert: {
+          angles: Json
+          biomarkers?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          posture_score?: number | null
+          session_id: string
+          timestamp?: string
+        }
+        Update: {
+          angles?: Json
+          biomarkers?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          posture_score?: number | null
+          session_id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      exercise_sessions: {
+        Row: {
+          angles: Json
+          created_at: string
+          exercise_type: string
+          id: string
+          notes: string | null
+          patient_id: string
+          timestamp: string
+        }
+        Insert: {
+          angles: Json
+          created_at?: string
+          exercise_type: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          timestamp?: string
+        }
+        Update: {
+          angles?: Json
+          created_at?: string
+          exercise_type?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      fitness_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_sync: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_sync?: string | null
+          provider: string
+          refresh_token: string
+          scope: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_sync?: string | null
+          provider?: string
+          refresh_token?: string
+          scope?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fitness_data: {
+        Row: {
+          created_at: string
+          data_type: string
+          end_time: string
+          id: string
+          metadata: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          end_time: string
+          id?: string
+          metadata?: Json | null
+          source: string
+          start_time: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          end_time?: string
+          id?: string
+          metadata?: Json | null
+          source?: string
+          start_time?: string
+          unit?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          email: string
+          id: string
+          name: string | null
+          picture: string | null
+          provider: string
+          role: string
+        }
+        Insert: {
+          email: string
+          id: string
+          name?: string | null
+          picture?: string | null
+          provider?: string
+          role?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string | null
+          picture?: string | null
+          provider?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_appointment_status: {
+        Args: { appointment_id: string; new_status: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
