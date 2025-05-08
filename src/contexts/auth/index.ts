@@ -9,6 +9,7 @@ type UserProfile = {
   name: string;
   role: string;
   avatar_url?: string;
+  patientId?: string; // Add patientId for patient users
 };
 
 interface AuthContextProps {
@@ -20,6 +21,13 @@ interface AuthContextProps {
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, name: string, role?: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  // Add compatibility with new auth context type
+  login: (email: string, password: string) => Promise<UserProfile | null>;
+  logout: () => Promise<void>;
+  signup: (email: string, password: string, name: string, role?: string) => Promise<UserProfile | null>;
+  loginWithSocialProvider: (provider: string) => Promise<void>;
+  handleOAuthCallback: (provider: string, code: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -30,7 +38,14 @@ const AuthContext = createContext<AuthContextProps>({
   signIn: async () => {},
   signOut: async () => {},
   signUp: async () => {},
-  updateProfile: async () => {}
+  updateProfile: async () => {},
+  // Add compatibility with new auth context type
+  login: async () => null,
+  logout: async () => {},
+  signup: async () => null,
+  loginWithSocialProvider: async () => {},
+  handleOAuthCallback: async () => {},
+  forgotPassword: async () => {}
 });
 
 // Create the AuthProvider component but export it separately
@@ -89,7 +104,8 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
           email: data.email,
           name: data.name || '',
           role: data.role || 'patient',
-          avatar_url: data.avatar_url
+          avatar_url: data.avatar_url,
+          patientId: data.patientId
         });
       }
     } catch (error) {
@@ -195,6 +211,49 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
       toast.error('Failed to update profile');
     }
   };
+  
+  // Add compatibility methods that map to the existing methods
+  const login = async (email: string, password: string): Promise<UserProfile | null> => {
+    await signIn(email, password);
+    return user; // Return the current user after sign in
+  };
+  
+  const logout = async (): Promise<void> => {
+    await signOut();
+  };
+  
+  const signup = async (email: string, password: string, name: string, role = 'patient'): Promise<UserProfile | null> => {
+    await signUp(email, password, name, role);
+    return user; // Return the current user after sign up
+  };
+  
+  const loginWithSocialProvider = async (provider: string): Promise<void> => {
+    // Basic implementation for compatibility
+    toast.info(`Social login with ${provider} is not fully implemented`);
+  };
+  
+  const handleOAuthCallback = async (provider: string, code: string): Promise<void> => {
+    // Basic implementation for compatibility
+    console.log(`Handling OAuth callback for ${provider} with code length ${code?.length || 0}`);
+  };
+  
+  const forgotPassword = async (email: string): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Password reset link sent to your email', {
+        duration: 5000
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset link', {
+        duration: 5000
+      });
+    }
+  };
 
   // This is the correct way to define a React component in a .ts file
   return React.createElement(AuthContext.Provider, {
@@ -206,7 +265,14 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
       signIn,
       signOut,
       signUp,
-      updateProfile
+      updateProfile,
+      // Add compatibility methods
+      login,
+      logout,
+      signup,
+      loginWithSocialProvider,
+      handleOAuthCallback,
+      forgotPassword
     }
   }, children);
 };
