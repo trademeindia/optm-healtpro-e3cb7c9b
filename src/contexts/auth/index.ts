@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +33,7 @@ const AuthContext = createContext<AuthContextProps>({
   updateProfile: async () => {}
 });
 
+// Create the AuthProvider component but export it separately
 export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -196,22 +196,19 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  return (
-    <AuthContext.Provider 
-      value={{
-        user,
-        session,
-        isAuthenticated: !!user,
-        isLoading,
-        signIn,
-        signOut,
-        signUp,
-        updateProfile
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  // This is the correct way to define a React component in a .ts file
+  return React.createElement(AuthContext.Provider, {
+    value: {
+      user,
+      session,
+      isAuthenticated: !!user,
+      isLoading,
+      signIn,
+      signOut,
+      signUp,
+      updateProfile
+    }
+  }, children);
 };
 
 export const useAuth = () => {
