@@ -1,73 +1,21 @@
 
-import React, { useState, useEffect, ErrorInfo } from 'react';
-import { useAuth } from './contexts/auth';
+import { Suspense } from 'react';
 import AppRoutes from './routes/Routes';
-import './styles/responsive/hotspots.css';
-import './styles/responsive/dialog.css';
-import './styles/responsive/anatomy-components.css';
-import './styles/responsive/mirror-mode.css';  // Import new mirror mode CSS
-import './styles/responsive/exercise-page.css'; // Import exercise page CSS
-import ErrorBoundary from './components/ErrorBoundary';
-
-// Handle loading state
-const Loading = () => (
-  <div className="flex h-screen w-full items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-  </div>
-);
+import './App.css';
+import { Toaster } from 'sonner';
 
 function App() {
-  const { user, authError } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [appError, setAppError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    
-    console.log('App component mounted');
-    
-    // Set up global error handler
-    const handleGlobalError = (event: ErrorEvent) => {
-      console.error('Unhandled global error in App:', event.error);
-      setAppError(event.error);
-      event.preventDefault();
-    };
-    
-    window.addEventListener('error', handleGlobalError);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('error', handleGlobalError);
-      console.log('App component unmounted');
-    };
-  }, []);
-
-  // Show auth errors at the app level
-  useEffect(() => {
-    if (authError) {
-      console.error('Auth error in App:', authError);
-      setAppError(authError);
-    }
-  }, [authError]);
-  
-  const handleAppError = (error: Error, errorInfo: ErrorInfo) => {
-    console.error("Error caught by App ErrorBoundary:", error, errorInfo);
-    setAppError(error);
-  };
-
-  if (loading) {
-    return <Loading />;
-  }
-
   return (
-    <ErrorBoundary onError={handleAppError}>
-      <div className="app-container full-height-layout">
+    <>
+      <Suspense fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      }>
         <AppRoutes />
-      </div>
-    </ErrorBoundary>
+      </Suspense>
+      <Toaster position="bottom-right" richColors />
+    </>
   );
 }
 
