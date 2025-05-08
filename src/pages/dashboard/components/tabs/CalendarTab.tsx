@@ -8,6 +8,7 @@ import { useCalendarEventListeners } from '@/hooks/calendar/useEventListeners';
 import { useAuth } from '@/contexts/auth';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
+import { User } from '@/contexts/auth/types';
 
 const CalendarTab: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month'>('week');
@@ -145,7 +146,15 @@ const CalendarTab: React.FC = () => {
         reloadCalendarIframe={reloadCalendarIframe}
         validAppointments={validAppointments}
         refreshCalendar={refreshCalendar}
-        currentUser={user}
+        currentUser={user ? {
+          id: user.id,
+          email: user.email,
+          name: user.name || null,
+          role: user.role as any,
+          provider: user.provider as any || 'email',
+          picture: user.avatar_url || null,
+          patientId: user.patientId
+        } : undefined}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { User as AppUser, Provider, UserRole } from './types';
 
 type UserProfile = {
   id: string;
@@ -10,6 +11,8 @@ type UserProfile = {
   role: string;
   avatar_url?: string;
   patientId?: string; // Add patientId for patient users
+  provider?: Provider;
+  picture?: string | null;
 };
 
 interface AuthContextProps {
@@ -22,9 +25,9 @@ interface AuthContextProps {
   signUp: (email: string, password: string, name: string, role?: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   // Add compatibility with new auth context type
-  login: (email: string, password: string) => Promise<UserProfile | null>;
+  login: (email: string, password: string) => Promise<AppUser | null>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string, name: string, role?: string) => Promise<UserProfile | null>;
+  signup: (email: string, password: string, name: string, role?: string) => Promise<AppUser | null>;
   loginWithSocialProvider: (provider: string) => Promise<void>;
   handleOAuthCallback: (provider: string, code: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -105,7 +108,9 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
           name: data.name || '',
           role: data.role || 'patient',
           avatar_url: data.avatar_url,
-          patientId: data.patientId
+          patientId: data.patientId,
+          provider: 'email',
+          picture: data.avatar_url || null
         });
       }
     } catch (error) {
@@ -213,18 +218,40 @@ export const AuthProviderComponent: React.FC<{ children: React.ReactNode }> = ({
   };
   
   // Add compatibility methods that map to the existing methods
-  const login = async (email: string, password: string): Promise<UserProfile | null> => {
+  const login = async (email: string, password: string): Promise<AppUser | null> => {
     await signIn(email, password);
-    return user; // Return the current user after sign in
+    if (!user) return null;
+    
+    // Convert UserProfile to AppUser
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as UserRole,
+      provider: user.provider as Provider || 'email',
+      picture: user.avatar_url || null,
+      patientId: user.patientId
+    };
   };
   
   const logout = async (): Promise<void> => {
     await signOut();
   };
   
-  const signup = async (email: string, password: string, name: string, role = 'patient'): Promise<UserProfile | null> => {
+  const signup = async (email: string, password: string, name: string, role = 'patient'): Promise<AppUser | null> => {
     await signUp(email, password, name, role);
-    return user; // Return the current user after sign up
+    if (!user) return null;
+    
+    // Convert UserProfile to AppUser
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as UserRole,
+      provider: 'email',
+      picture: user.avatar_url || null,
+      patientId: user.patientId
+    };
   };
   
   const loginWithSocialProvider = async (provider: string): Promise<void> => {

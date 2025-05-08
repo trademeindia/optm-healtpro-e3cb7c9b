@@ -29,5 +29,3 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 }
-
-// No need for a re-export here since Provider is already exported above
